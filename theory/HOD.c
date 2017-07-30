@@ -1,5 +1,6 @@
 /* bias evolution with redshift*/
 double b1_per_bin(double z, int ni); //model b1 using one non-evoling parameter per redshift bin
+double b1_per_bin_evolv(double z, int ni); //model b1 using one parameter per redshift bin, power-law evolution within each bin
 double b1_per_bin_pass_evolv(double z, int ni); //model b1 using one parameter per redshift bin + passive evolution
 double b1_growth_scaling(double z, int ni); //model b1 assuming b1(z) = b_{1,0}*G(z)
 double bgal_z(double z, int ni); //bias evolution within redshift bin, used by clustering/G-G-lensing routines without HOD modeling
@@ -26,6 +27,10 @@ void set_HOD(int n); //set HOD parameters
 
 
 /*********************** galaxy bias & HOD routines *********************************/
+double b1_per_bin_evolv(double z, int ni){
+  return gbias.b[ni]*pow((1.+z)/(1.+zmean(ni)),1.0);
+}
+
 double b1_per_bin(double z, int ni){
   return gbias.b[ni];
 }

@@ -141,7 +141,7 @@ int recompute_zphot_magnification(nuisancepara N){
   return res;
 }
 int recompute_IA(nuisancepara N){
-  if (N.A_ia != nuisance.A_ia) return 1;
+  if (N.A_ia != nuisance.A_ia || N.eta_ia != nuisance.eta_ia) return 1;
   for(int i = 0; i < tomo.shear_Nbin; i++){
     if (N.A_z[i]!= nuisance.A_z[i]){ return 1;}
   }

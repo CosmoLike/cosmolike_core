@@ -20,6 +20,9 @@ typedef struct {
   int shearcalib;
   int clusterMobs;
   int Planck;
+  int Planck15;
+  int BOSS_Chuang;
+  int H0_Efstathiou14;
   int BAO;
   int SN;
   int GRS;
@@ -33,13 +36,13 @@ typedef struct {
   int pos_pos;
   int clusterN;
   int clusterWL;
-// MANUWARNING: added "int gk, kk, ks;"
+ // MANUWARNING: added "int gk, kk, ks;"
    int gk;
    int kk;
    int ks;
   char probes[500];
 }likepara;
-likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0};
+likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0};
 
 typedef struct {
      double Omega_m;  /* matter density parameter                       */
@@ -328,7 +331,7 @@ typedef struct input_nuisance_params_mpp {
 } input_nuisance_params_mpp;
 
 typedef struct input_nuisance_params {
-    double bias[4];
+    double bias[10];
     double source_z_bias[10];
     double source_z_s;
     double lens_z_bias[10];

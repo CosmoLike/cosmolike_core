@@ -1,5 +1,8 @@
 #ifndef FASTPTMODE
 #include "pt.h"
+double K_CH0(double k_mpch){
+  return k_mpch*cosmology.coverH0;
+}
 double K_MPCH(double k_ch0){
   return k_ch0/cosmology.coverH0;
 }

@@ -262,7 +262,7 @@ double cov_G_shear_shear_real(double theta1, double theta2, double Dtheta, int z
     if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/theta1;
     n+=2;
   }
-  if (N)  printf("%e %e\n",res/(2.0*M_PI*survey.area*survey.area_conversion_factor),2.*N);
+//  if (N)  printf("%e %e\n",res/(2.0*M_PI*survey.area*survey.area_conversion_factor),2.*N);
 
   return res/(2.0*M_PI*survey.area*survey.area_conversion_factor)+2.*N;
 }
@@ -1112,6 +1112,6 @@ double cov_G_shear_rebin(double thetamin_i, double thetamax_i,double thetamin_j,
       cG+= cov_G_shear_no_shot_noise(ti,tj, dti,z1,z2,z3,z4,pm1,pm2)*(pow(thetamin_i+(ii+1.)*dti,2.)-pow(thetamin_i+(ii+0.)*dti,2.))*(pow(thetamin_j+(jj+1.)*dtj,2.)-pow(thetamin_j+(jj+0.)*dtj,2.));
     }
   }
-  if (N)  printf("%e %e\n",cG/((pow(thetamax_i,2.)-pow(thetamin_i,2.))*(pow(thetamax_j,2.)-pow(thetamin_j,2.))),2.*N);
+  //if (N)  printf("%e %e\n",cG/((pow(thetamax_i,2.)-pow(thetamin_i,2.))*(pow(thetamax_j,2.)-pow(thetamin_j,2.))),2.*N);
   return cG/((pow(thetamax_i,2.)-pow(thetamin_i,2.))*(pow(thetamax_j,2.)-pow(thetamin_j,2.)))+ 2.*N;
 }

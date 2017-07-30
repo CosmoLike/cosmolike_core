@@ -46,8 +46,8 @@ void set_data_ggl(int Ncl, double *ell, double *data, int start);
 void set_data_clustering(int Ncl, double *ell, double *data, int start);
 void set_data_cluster_N(double *data, int start);
 void set_data_cgl(double *ell_Cluster, double *data, int start);
-void compute_data_vector(char *details,double OMM, double S8, double NS, double W0,double WA, double OMB, double H0, double B1, double B2, double B3, double B4, double SP1, double SP2, double SP3, double SP4, double SP5, double SP6, double SP7, double SP8, double SP9, double SP10, double SPS1, double CP1, double CP2, double CP3, double CP4, double CP5, double CP6, double CP7, double CP8, double CP9, double CP10, double CPS1, double M1, double M2, double M3, double M4, double M5, double M6, double M7, double M8, double M9, double M10, double A_ia, double beta_ia, double eta_ia, double eta_ia_highz, double LF_alpha, double LF_P, double LF_Q, double LF_red_alpha, double LF_red_P, double LF_red_Q, double mass_obs_norm, double mass_obs_slope, double mass_z_slope, double mass_obs_scatter, double c1, double c2, double c3, double c4);
-double log_multi_like(double OMM, double S8, double NS, double W0,double WA, double OMB, double H0, double B1, double B2, double B3, double B4, double SP1, double SP2, double SP3, double SP4, double SP5, double SP6, double SP7, double SP8, double SP9, double SP10, double SPS1, double CP1, double CP2, double CP3, double CP4, double CP5, double CP6, double CP7, double CP8, double CP9, double CP10, double CPS1, double M1, double M2, double M3, double M4, double M5, double M6, double M7, double M8, double M9, double M10, double A_ia, double beta_ia, double eta_ia, double eta_ia_highz, double LF_alpha, double LF_P, double LF_Q, double LF_red_alpha, double LF_red_P, double LF_red_Q, double mass_obs_norm, double mass_obs_slope, double mass_z_slope, double mass_obs_scatter, double c1, double c2, double c3, double c4);
+void compute_data_vector(char *details,double OMM, double S8, double NS, double W0,double WA, double OMB, double H0, double MGSigma, double MGmu, double B1, double B2, double B3, double B4, double B5, double B6, double B7, double B8, double B9, double B10, double SP1, double SP2, double SP3, double SP4, double SP5, double SP6, double SP7, double SP8, double SP9, double SP10, double SPS1, double CP1, double CP2, double CP3, double CP4, double CP5, double CP6, double CP7, double CP8, double CP9, double CP10, double CPS1, double M1, double M2, double M3, double M4, double M5, double M6, double M7, double M8, double M9, double M10, double A_ia, double beta_ia, double eta_ia, double eta_ia_highz, double LF_alpha, double LF_P, double LF_Q, double LF_red_alpha, double LF_red_P, double LF_red_Q, double mass_obs_norm, double mass_obs_slope, double mass_z_slope, double mass_obs_scatter, double c1, double c2, double c3, double c4);
+double log_multi_like(double OMM, double S8, double NS, double W0,double WA, double OMB, double H0, double MGSigma, double MGmu, double B1, double B2, double B3, double B4, double B5, double B6, double B7, double B8, double B9, double B10, double SP1, double SP2, double SP3, double SP4, double SP5, double SP6, double SP7, double SP8, double SP9, double SP10, double SPS1, double CP1, double CP2, double CP3, double CP4, double CP5, double CP6, double CP7, double CP8, double CP9, double CP10, double CPS1, double M1, double M2, double M3, double M4, double M5, double M6, double M7, double M8, double M9, double M10, double A_ia, double beta_ia, double eta_ia, double eta_ia_highz, double LF_alpha, double LF_P, double LF_Q, double LF_red_alpha, double LF_red_P, double LF_red_Q, double mass_obs_norm, double mass_obs_slope, double mass_z_slope, double mass_obs_scatter, double c1, double c2, double c3, double c4);
 double log_like_wrapper(input_cosmo_params ic, input_nuisance_params in);
 int get_N_tomo_shear(void);
 int get_N_tomo_clustering(void);
@@ -286,22 +286,28 @@ int set_nuisance_cluster_Mobs(double mass_obs_norm, double mass_obs_slope, doubl
 return 1;
 }
 
-int set_nuisance_gbias(double B1, double B2, double B3, double B4)
+int set_nuisance_gbias(double B1, double B2, double B3, double B4, double B5, double B6, double B7, double B8, double B9, double B10)
 {
   int i;
   gbias.b[0] = B1;
   gbias.b[1] = B2;
   gbias.b[2] = B3;
   gbias.b[3] = B4;
+  gbias.b[4] = B5;
+  gbias.b[5] = B6;
+  gbias.b[6] = B7;
+  gbias.b[7] = B8;
+  gbias.b[8] = B9;
+  gbias.b[9] = B10;
   if(like.bias==1){
-    for (i = 0; i < 4; i++){
-      if (gbias.b[i] < 0.8 || gbias.b[i] > 2.0) return 0;
+    for (i = 0; i < 10; i++){
+      if (gbias.b[i] < 0.8 || gbias.b[i] > 4.0) return 0;
     }
   }
   return 1;
 } 
 
-double log_multi_like(double OMM, double S8, double NS, double W0,double WA, double OMB, double H0, double B1, double B2, double B3, double B4, double SP1, double SP2, double SP3, double SP4, double SP5, double SP6, double SP7, double SP8, double SP9, double SP10, double SPS1, double CP1, double CP2, double CP3, double CP4, double CP5, double CP6, double CP7, double CP8, double CP9, double CP10, double CPS1, double M1, double M2, double M3, double M4, double M5, double M6, double M7, double M8, double M9, double M10, double A_ia, double beta_ia, double eta_ia, double eta_ia_highz, double LF_alpha, double LF_P, double LF_Q, double LF_red_alpha, double LF_red_P, double LF_red_Q, double mass_obs_norm, double mass_obs_slope, double mass_z_slope, double mass_obs_scatter, double c1, double c2, double c3, double c4)
+double log_multi_like(double OMM, double S8, double NS, double W0,double WA, double OMB, double H0, double MGSigma, double MGmu, double B1, double B2, double B3, double B4, double B5, double B6, double B7, double B8, double B9, double B10, double SP1, double SP2, double SP3, double SP4, double SP5, double SP6, double SP7, double SP8, double SP9, double SP10, double SPS1, double CP1, double CP2, double CP3, double CP4, double CP5, double CP6, double CP7, double CP8, double CP9, double CP10, double CPS1, double M1, double M2, double M3, double M4, double M5, double M6, double M7, double M8, double M9, double M10, double A_ia, double beta_ia, double eta_ia, double eta_ia_highz, double LF_alpha, double LF_P, double LF_Q, double LF_red_alpha, double LF_red_P, double LF_red_Q, double mass_obs_norm, double mass_obs_slope, double mass_z_slope, double mass_obs_scatter, double c1, double c2, double c3, double c4)
 {
   int i,j,k,m=0,l;
   static double *pred;
@@ -340,7 +346,7 @@ double log_multi_like(double OMM, double S8, double NS, double W0,double WA, dou
     printf("IA parameters out of bounds\n");
     return -1.0e8; 
   }
-  if (set_nuisance_gbias(B1,B2,B3,B4)==0){
+  if (set_nuisance_gbias(B1,B2,B3,B4,B5,B6,B7,B8,B9,B10)==0){
     printf("Bias out of bounds\n");
     return -1.0e8;
   }
@@ -409,7 +415,7 @@ double log_multi_like(double OMM, double S8, double NS, double W0,double WA, dou
   return -0.5*chisqr+log_L_prior;
 }
 
-void compute_data_vector(char *details,double OMM, double S8, double NS, double W0,double WA, double OMB, double H0, double B1, double B2, double B3, double B4, double SP1, double SP2, double SP3, double SP4, double SP5, double SP6, double SP7, double SP8, double SP9, double SP10, double SPS1, double CP1, double CP2, double CP3, double CP4, double CP5, double CP6, double CP7, double CP8, double CP9, double CP10, double CPS1, double M1, double M2, double M3, double M4, double M5, double M6, double M7, double M8, double M9, double M10, double A_ia, double beta_ia, double eta_ia, double eta_ia_highz, double LF_alpha, double LF_P, double LF_Q, double LF_red_alpha, double LF_red_P, double LF_red_Q, double mass_obs_norm, double mass_obs_slope, double mass_z_slope, double mass_obs_scatter, double c1, double c2, double c3, double c4)
+void compute_data_vector(char *details,double OMM, double S8, double NS, double W0,double WA, double OMB, double H0, double MGSigma, double MGmu, double B1, double B2, double B3, double B4, double B5, double B6, double B7, double B8, double B9, double B10, double SP1, double SP2, double SP3, double SP4, double SP5, double SP6, double SP7, double SP8, double SP9, double SP10, double SPS1, double CP1, double CP2, double CP3, double CP4, double CP5, double CP6, double CP7, double CP8, double CP9, double CP10, double CPS1, double M1, double M2, double M3, double M4, double M5, double M6, double M7, double M8, double M9, double M10, double A_ia, double beta_ia, double eta_ia, double eta_ia_highz, double LF_alpha, double LF_P, double LF_Q, double LF_red_alpha, double LF_red_P, double LF_red_Q, double mass_obs_norm, double mass_obs_slope, double mass_z_slope, double mass_obs_scatter, double c1, double c2, double c3, double c4)
 {
 
   int i,j,k,m=0,l;
@@ -440,7 +446,7 @@ void compute_data_vector(char *details,double OMM, double S8, double NS, double 
   set_nuisance_shear_photoz(SP1,SP2,SP3,SP4,SP5,SP6,SP7,SP8,SP9,SP10,SPS1);
   set_nuisance_clustering_photoz(CP1,CP2,CP3,CP4,CP5,CP6,CP7,CP8,CP9,CP10,CPS1);
   set_nuisance_ia(A_ia,beta_ia,eta_ia,eta_ia_highz,LF_alpha,LF_P,LF_Q,LF_red_alpha,LF_red_P,LF_red_Q);
-  set_nuisance_gbias(B1,B2,B3,B4);
+  set_nuisance_gbias(B1,B2,B3,B4,B5,B6,B7,B8,B9,B10);
   set_nuisance_cluster_Mobs(mass_obs_norm,mass_obs_slope, mass_z_slope,mass_obs_scatter,c1,c2,c3,c4);
        
   int start=0;  
@@ -478,8 +484,7 @@ void compute_data_vector(char *details,double OMM, double S8, double NS, double 
 double log_like_wrapper(input_cosmo_params ic, input_nuisance_params in)
 {
   double like = log_multi_like(ic.omega_m, ic.sigma_8, ic.n_s, ic.w0, ic.wa, ic.omega_b, ic.h0, 
-
-    in.bias[0], in.bias[1], in.bias[2], in.bias[3], 
+    in.bias[0], in.bias[1], in.bias[2], in.bias[3], in.bias[4], in.bias[5], in.bias[6], in.bias[7], in.bias[8], in.bias[9], 
     in.source_z_bias[0], in.source_z_bias[1], in.source_z_bias[2], in.source_z_bias[3], in.source_z_bias[4], 
     in.source_z_bias[5], in.source_z_bias[6], in.source_z_bias[7], in.source_z_bias[8], in.source_z_bias[9], 
     in.source_z_s, 
