@@ -2,7 +2,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "../class/include/class.h"
+#include "modgrav.h"
+
+#ifndef USE_HICLASS
+    #include "../class/include/class.h"
+#else
+    #include "../hi_class/include/class.h"
+#endif
+#define EXIT_IF_INVALID_FOR_HORNDESKI
 
 #include <gsl/gsl_odeiv.h>
 #include <gsl/gsl_integration.h>
@@ -35,22 +42,24 @@
 double omv_vareos(double a);
 static inline double hoverh0(double a);
 double growfac(double a);
-//int func_for_growfac(double a,const double y[],double f[],void *params);
+int func_for_growfac(double a,const double y[],double f[],void *params);
 double Tsqr_EH_wiggle(double khoverMPC);
 //double int_for_sigma_r_sqr(double k, void * args);
 double sigma_r_sqr();
 //double Delta_L_wiggle(double k);
 //double Delta_lin_wiggle(double k,double a);
+
+double evaluate_class_tables(double k_coverh0, double a, int NL, int mode, int *status);
 double p_lin(double k,double a);
-//double int_sig_R_knl(double logk, void *args);
-//double int_neff(double lnk, void *args);
-//double int_cur(double lnk, void *args);
-//void nonlin_scale(double amp, double *R_NL, double *neff, double *Curv);
-//double Halofit(double k, double amp, double omm, double omv,double w_z, double R_NL, double neff,double Curv, double P_delta_Lin);
-//void Delta_halofit(double **table_P_NL,double logkmin, double logkmax, double dk, double da);
-//double Delta_NL_Halofit(double k_NL, double a); //k in h/Mpc
-//double Delta_NL_Coyote(double k_NL,double a); //k in h/Mpc
-//double Delta_NL_Coyote_only(double k_NL,double a); //k in h/Mpc
+double int_sig_R_knl(double logk, void *args);
+double int_neff(double lnk, void *args);
+double int_cur(double lnk, void *args);
+void nonlin_scale(double amp, double *R_NL, double *neff, double *Curv);
+double Halofit(double k, double amp, double omm, double omv,double w_z, double R_NL, double neff,double Curv, double P_delta_Lin);
+void Delta_halofit(double **table_P_NL,double logkmin, double logkmax, double dk, double da);
+double Delta_NL_Halofit(double k_NL, double a); //k in h/Mpc
+double Delta_NL_Coyote(double k_NL,double a); //k in h/Mpc
+double Delta_NL_Coyote_only(double k_NL,double a); //k in h/Mpc
 double Pdelta(double k_NL,double a); //k in coverH0 units
 
 //double int_for_chi(double a,void * args);
@@ -58,12 +67,41 @@ double f_K(double chi);
 double chi(double a);
 extern void emu(double *xstar, double *ystar, int *outtype);
 
+// Errors returned by CLASS (CLASS_SUCCESS is defined to always be 0)
+enum { 
+  CLASS_SUCCESS = 0,
+  CLASS_ERROR_PARSER,
+  CLASS_ERROR_INPUT,
+  CLASS_ERROR_BACKGROUND, 
+  CLASS_ERROR_THERMODYNAMICS,
+  CLASS_ERROR_PERTURB,
+  CLASS_ERROR_PRIMORDIAL,
+  CLASS_ERROR_NONLINEAR,
+  CLASS_ERROR_TRANSFER,
+  CLASS_ERROR_SPECTRA,
+  CLASS_ERROR_HORNDESKI_STABILITY
+};
+
+// Types of data that can be returned from CLASS (used by evaluate_class_tables)
+enum { 
+  CLASS_RETURN_POWSPEC, 
+  CLASS_RETURN_HORNDESKI_MU_EFF, 
+  CLASS_RETURN_HORNDESKI_MU_LIGHT, 
+  CLASS_RETURN_HORNDESKI_OMEGASMG,
+  CLASS_RETURN_HORNDESKI_ALPHA_B,
+  CLASS_RETURN_HORNDESKI_ALPHA_K,
+  CLASS_RETURN_HORNDESKI_ALPHA_M,
+  CLASS_RETURN_HORNDESKI_ALPHA_T,
+  CLASS_RETURN_HORNDESKI_CS2,
+};
+
 //c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //variable Omega_v
 //c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 double omv_vareos(double a)
 {
+  // FIXME: This should properly account for Horndeski
   return(cosmology.Omega_v*exp(-3.*((cosmology.w0+cosmology.wa+1.)*log(a)+cosmology.wa*(1.-a))));
 }
 
@@ -82,7 +120,6 @@ void omega_a(double aa,double *om_m,double *om_v)
 //growth factor including Dark energy parameters w0, wa
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 //function for growfac (DGL)
 int func_for_growfac(double a,const double y[],double f[],void *params)
 {
@@ -97,11 +134,19 @@ int func_for_growfac(double a,const double y[],double f[],void *params)
   double hub = hoverh0(a);
   double one_plus_mg_mu = 1.;
   hub = hub*hub;
-  f[0]=y[1];
+  f[0] = y[1];
+  
+  // Modified gravity correction to growth
   if(cosmology.MGmu != 0){
-    one_plus_mg_mu += cosmology.MGmu*omegav/hub/cosmology.Omega_v;
+    // Phenomenological mu-sigma parametrisation
+    one_plus_mg_mu += cosmology.MGmu * omegav/hub/cosmology.Omega_v;
+  }else if(cosmology.use_horndeski == 1){
+    // Horndeski parametrisation (assumes quasi-static approximation)
+    one_plus_mg_mu += horndeski_mu(a);
   }
-  f[1]=y[0]*3.*cosmology.Omega_m/(2.*hub*aa*aa*a)*one_plus_mg_mu-y[1]/a*(2.-(omegam+(3.*(cosmology.w0+cosmology.wa*(1.-a))+1)*omegav)/(2.*hub));
+  
+  f[1] = y[0] * 3.*cosmology.Omega_m/(2.*hub*aa*aa*a) * one_plus_mg_mu
+       - y[1] / a*(2.-(omegam + (3.*(cosmology.w0+cosmology.wa*(1.-a))+1)*omegav)/(2.*hub));
   return GSL_SUCCESS;
 }
 
@@ -116,6 +161,8 @@ double growfac(double a)
   static double *ai;
   static double *table;
   double res;
+  
+  
   
   gsl_interp *intf=gsl_interp_alloc(gsl_interp_linear,Ntable.N_a);
   gsl_interp_accel *acc=gsl_interp_accel_alloc();
@@ -182,6 +229,8 @@ double Tsqr_EH_wiggle(double khoverMPC)
   static double alpha_b;
   static double beta_b;
   static double k_silk;
+  
+  //invalid_for_horndeski(__func__);
   
   //if (omhh != cosmology.Omega_m*cosmology.h0*cosmology.h0 || obhh != cosmology.omb*cosmology.h0*cosmology.h0|| OMEGA_V != cosmology.Omega_v){  
     double theta_cmb,z_equality,z_drag,R_drag,R_equality;
@@ -407,6 +456,8 @@ void free_class_structs(
     printf("\n\nError in background_free \n=>%s\n",ba->error_message);
   }
 }
+
+
 int run_class(
 			   struct file_content *fc,
 	           struct background *ba,
@@ -420,33 +471,41 @@ int run_class(
   struct precision pr;        // for precision parameters 
   struct output op;           /* for output files */
   ErrorMsg errmsg; // for error messages 
-
+  
   if(input_init(fc,&pr,ba,th,pt,tr,pm,sp,nl,le,&op,errmsg) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS input:%s\n",errmsg);
     parser_free(fc);
-    return 1;
+    return CLASS_ERROR_INPUT;
   }
   if (background_init(&pr,ba) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS background:%s\n",ba->error_message);
-    return 1;
+    
+    if(strstr(ba->error_message, "instability") != NULL){
+      // Check for instability errors from Hi_CLASS
+      printf("%s\n", ba->error_message);
+      printf("Horndeski instability; model is not viable.\n");
+      return CLASS_ERROR_HORNDESKI_STABILITY;
+    }else{
+      fprintf(stderr,"cosmo3D.c: Error running CLASS background:%s\n",ba->error_message);
+    }
+    return CLASS_ERROR_BACKGROUND;
   }
   if (thermodynamics_init(&pr,ba,th) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS thermodynamics:%s\n",th->error_message);
     background_free(ba);  
-    return 1;
+    return CLASS_ERROR_THERMODYNAMICS;
   }
   if (perturb_init(&pr,ba,th,pt) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS perturb:%s\n",pt->error_message);
     thermodynamics_free(th);
     background_free(ba);  
-    return 1;
+    return CLASS_ERROR_PERTURB;
   }
   if (primordial_init(&pr,pt,pm) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS primordial:%s\n",pm->error_message);
     perturb_free(pt);
     thermodynamics_free(th);
     background_free(ba);  
-    return 1;
+    return CLASS_ERROR_PRIMORDIAL;
   }
 
   if (nonlinear_init(&pr,ba,th,pt,pm,nl) == _FAILURE_) {
@@ -455,7 +514,7 @@ int run_class(
     perturb_free(pt);
     thermodynamics_free(th);
     background_free(ba);  
-    return 1;
+    return CLASS_ERROR_NONLINEAR;
   }
 
   if (transfer_init(&pr,ba,th,pt,nl,tr) == _FAILURE_) {
@@ -465,7 +524,7 @@ int run_class(
     perturb_free(pt);
     thermodynamics_free(th);
     background_free(ba);  
-    return 1;
+    return CLASS_ERROR_TRANSFER;
   }
   if (spectra_init(&pr,ba,pt,pm,nl,tr,sp) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS spectra:%s\n",sp->error_message);
@@ -475,10 +534,15 @@ int run_class(
     perturb_free(pt);
     thermodynamics_free(th);
     background_free(ba);  
-    return 1;
+    return CLASS_ERROR_SPECTRA;
   }
-  return 0;
+  
+  // We can assume that the model is stable, as CLASS could compute it
+  cosmology.model_stability_flag = 0;
+  return CLASS_SUCCESS;
 }
+
+
 double get_class_s8(struct file_content *fc, int *status){
 //structures for class test run
     struct background ba;       // for cosmological background 
@@ -501,7 +565,11 @@ double get_class_s8(struct file_content *fc, int *status){
     sprintf(fc->value[position_kmax],"%e",10.);  
   }
   *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-  if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+  if (*status == CLASS_SUCCESS){
+      free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+  }else{
+      fprintf(stderr, "get_class_s8: CLASS failed.\n");
+  }
   if (k_max_old >0){
     sprintf(fc->value[position_kmax],"%e",k_max_old);      
   }
@@ -534,7 +602,11 @@ double get_class_As(struct file_content *fc, int position_As,double sigma8, int 
 
   *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
   A_s_guess*=pow(sigma8/sp.sigma8,2.);
-  if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+  if (*status == CLASS_SUCCESS){
+      free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+  }else{
+      fprintf(stderr, "get_class_As: CLASS failed.\n");
+  }
 
   if (k_max_old >0){
     sprintf(fc->value[position_kmax],"%e",k_max_old);      
@@ -542,11 +614,12 @@ double get_class_As(struct file_content *fc, int position_As,double sigma8, int 
   return A_s_guess;
 }
 
-int fill_class_parameters(struct file_content * fc,int parser_length){
-  int status =0;
+// Function to fill CLASS parameters struct with chosen cosmological parameters
+int fill_class_parameters(struct file_content * fc, int parser_length, int nonlinear){
+  int status = 0;
  // basic CLASS configuration parameters
   strcpy(fc->name[0],"output");
-  strcpy(fc->value[0],"mPk");
+  strcpy(fc->value[0],"mPk, tCl,lCl");
 
   strcpy(fc->name[2],"P_k_max_h/Mpc");
   //higher k_max makes CLASS very slow!
@@ -578,14 +651,15 @@ int fill_class_parameters(struct file_content * fc,int parser_length){
 //cosmological constant?
 // set Omega_Lambda = 0.0 if w !=-1
   if ((cosmology.w0 !=-1.0) || (cosmology.wa !=0)){
+    // FIXME: Figure out what do do with this block!
     strcpy(fc->name[11],"Omega_Lambda");
-    sprintf(fc->value[11],"%e",0.0);
+    sprintf(fc->value[11],"%e", 0.0);
 
     strcpy(fc->name[12],"w0_fld");
-    sprintf(fc->value[12],"%e",cosmology.w0);
+    sprintf(fc->value[12],"%e", cosmology.w0);
 
     strcpy(fc->name[13],"wa_fld");
-    sprintf(fc->value[13],"%e",cosmology.wa);
+    sprintf(fc->value[13],"%e", cosmology.wa);
   }
 // pass neutrino parameters
   if (cosmology.M_nu > 1.e-5 || cosmology.Omega_nu >0.){
@@ -595,16 +669,75 @@ int fill_class_parameters(struct file_content * fc,int parser_length){
     if (cosmology.Omega_nu >0.)
     {
       strcpy(fc->name[15],"Omega_ncdm"); 
-      sprintf(fc->value[15],"%e",cosmology.Omega_nu);
+      sprintf(fc->value[15],"%e", cosmology.Omega_nu);
     }    
     else{
       strcpy(fc->name[15],"m_ncdm"); //\Sigma(m_nu) in eV
-      sprintf(fc->value[15],"%e",cosmology.M_nu);
+      sprintf(fc->value[15],"%e", cosmology.M_nu);
     }
     strcpy(fc->name[16],"N_ur");
-    sprintf(fc->value[16],"%e",2.0328);
+    sprintf(fc->value[16],"%e", 2.0328);
   }
-  //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
+  
+  // Pass Horndeski parameters
+  int is_gr = (   (cosmology.mg_alpha_xk == 0.) 
+               && (cosmology.mg_alpha_xb == 0.) 
+               && (cosmology.mg_alpha_xm == 0.)
+               && (cosmology.mg_alpha_xt == 0.)
+               && (cosmology.mg_alpha_M2 == 1.)
+              );
+  // FIXME: KP if ((cosmology.use_horndeski == 0) && (is_gr == 0)){
+  //   cosmology.use_horndeski = 1;
+  // }
+
+  if ((cosmology.use_horndeski == 1) && (is_gr == 0))
+  {
+    // Use the \alpha_X(a) \propto \Omega_DE(a) redshift parametrisation
+    strcpy(fc->name[20], "gravity_model");
+    strcpy(fc->value[20], "propto_omega");
+    
+    // Set the alpha parameters using a list; 
+    // KP - it seems like a lot of
+    // people are against using sprintf (say it's dangerous)? 
+    // Should we change this?
+    strcpy(fc->name[21], "parameters_smg");
+    sprintf(fc->value[21], "%e, %e, %e, %e, %e", cosmology.mg_alpha_xk,
+                                                 cosmology.mg_alpha_xb,
+                                                 cosmology.mg_alpha_xm,
+                                                 cosmology.mg_alpha_xt,
+                                                 cosmology.mg_alpha_M2 );
+    
+    // Initial conditions of scalar field
+    strcpy(fc->name[22], "pert_initial_conditions_smg");
+    strcpy(fc->value[22], "single_clock");
+    
+    // Make sure stability tests are switched on; KP - do you mean off here?
+    strcpy(fc->name[23], "skip_stability_tests_smg");
+    strcpy(fc->value[23], "no");
+    
+    // Use a w0-wa expansion history
+    strcpy(fc->name[24], "expansion_model");
+    strcpy(fc->value[24], "wowa");
+    
+    // Set the expansion parameters (Omega_smg, w0, wa).
+    strcpy(fc->name[25], "expansion_smg");
+    sprintf(fc->value[25], "%e, %e, %e", 0.5, cosmology.w0, cosmology.wa);
+    // KP: Set Omega_smg to some small number and it is overwritten in the next step.
+
+    // Value of Omega_DE today
+    strcpy(fc->name[26], "Omega_smg");
+    sprintf(fc->value[26], "%e", cosmology.Omega_v);
+    // KP: Setting this in this way allows OmegaK to fuflfill the closure relation.
+
+
+    
+  } // end Horndeski section
+  else if((cosmology.use_horndeski == 1) && (is_gr == 1)){
+    cosmology.use_horndeski = 0;
+  }
+  
+  // Normalization comes last, so that all other parameters are filled in for 
+  // determining A_s if sigma_8 is specified
   if (cosmology.A_s){
 //     printf("passing A_s=%e directly\n",cosmology.A_s);
      strcpy(fc->name[parser_length-1],"A_s");
@@ -621,29 +754,69 @@ int fill_class_parameters(struct file_content * fc,int parser_length){
     }
     //printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
   }
-  strcpy(fc->name[1],"non linear");
-  strcpy(fc->value[1],"Halofit"); //to use Halofit within CLASS
+  
+  // Turn off Halofit if Horndeski is enabled, or if nonlinear mode is turned off
+  strcpy(fc->name[1], "non linear");
+  // if ( (cosmology.use_horndeski == 0) || (nonlinear == 0) ){
+  //   strcpy(fc->value[1], "Halofit");
+  // }else{
+  //   strcpy(fc->value[1], "");
+  // }
+  strcpy(fc->value[1], ""); //FIX ME: printing halofit when in horndeski?
+  
+  
+  
+  // FIXME: Output all parameters that we are passing to CLASS
+  FILE *fileforclass;
+  fileforclass = fopen("/Users/kpardo/Documents/hi_class_public/classparams.ini","w");
+  for(int i=0; i < 27; i++){
+    if (fc->read[i] == 1){
+      fprintf(fileforclass,"%s = %s\n", fc->name[i], fc->value[i]);
+    }
+  }
+  fprintf(fileforclass, "root = output/classparams00_");
+  
   return status;
 }
 
-double p_class(double k_coverh0,double a, int NL, int *status){
+
+double evaluate_class_tables(double k_coverh0, double a, int NL, int mode, int *status){
+  
   static cosmopara C;
   static double **table_P_L = 0;
   static double **table_P_NL = 0;
+  
+  static double *table_horndeski_cs2 = 0;
+  static double *table_horndeski_alpha_b = 0;
+  static double *table_horndeski_alpha_k = 0;
+  static double *table_horndeski_alpha_m = 0;
+  static double *table_horndeski_alpha_t = 0;
+  static double *table_horndeski_mu_eff = 0;
+  static double *table_horndeski_mu_light = 0;
+  
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   static int class_status = 0;
-  double val,klog;
+  double val, klog;
+  
   if (recompute_cosmo3D(C)){
+    //printf("+++ Recomputing; parameters changed! +++\n");
+    
     update_cosmopara(&C);
-    if (table_P_L ==0){
+    cosmology.model_stability_flag = -1; // We don't know if the model is stable yet
+    
+    // Allocate memory for power spectrum tables
+    if (table_P_L == 0){
       table_P_L = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1); 
-      table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1); 
+      if (NL == 1){
+        table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1); 
+      }
       da = (1. - limits.a_min)/(Ntable.N_a-1.);
       logkmin = log(limits.k_min_mpc*cosmology.coverH0);
       logkmax = log(limits.k_max_mpc_class*cosmology.coverH0);
       dk = (logkmax-logkmin)/(Ntable.N_k_nlin-1.);
     }
-    //allocate CLASS structures
+    
+    // Allocate CLASS structures
     struct background ba;       // for cosmological background 
     struct thermo th;           // for thermodynamics 
     struct perturbs pt;         // for source functions 
@@ -655,25 +828,32 @@ double p_class(double k_coverh0,double a, int NL, int *status){
     struct output op;
 
   	ErrorMsg errmsg; // for error messages 
-             
+    
+    // Initialise parser for CLASS parameters
   	struct file_content fc;
   	int parser_length = 30;
   	if (parser_init(&fc,parser_length,"none",errmsg) == _FAILURE_){
     	fprintf(stderr,"cosmo3D.c: CLASS parser init error:%s\n",errmsg);
     	*status = 1;
-    	return 0.;
+    	return CLASS_ERROR_PARSER;
   	}
-  	for (int i =0; i < parser_length; i++){
-    	strcpy(fc.name[i]," ");
-    	strcpy(fc.value[i]," ");
+  	for (int i=0; i < parser_length; i++){
+    	strcpy(fc.name[i], " ");
+    	strcpy(fc.value[i], " ");
   	}
-
-  	*status = fill_class_parameters(&fc,parser_length);
+    
+    // Collect input parameters, then run CLASS
+  	*status = fill_class_parameters(&fc, parser_length, NL);
   	if(*status>0) return 1; 
   	*status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
   	parser_free(&fc);
-  	if(*status>0) return 1; 
-    double aa,norm, k_class,Pk,ic;
+  	if(*status != CLASS_SUCCESS){
+      if (*status == CLASS_ERROR_HORNDESKI_STABILITY) cosmology.model_stability_flag = 0; // model is unstable
+      return 1;
+    }
+  	
+  	// Determine normalisation of power spectrum
+    double aa, norm, k_class,Pk,ic;
     int i,j,s;
     aa = limits.a_min;
     if (cosmology.A_s){
@@ -683,31 +863,191 @@ double p_class(double k_coverh0,double a, int NL, int *status){
     else{
       norm = log(pow(cosmology.sigma_8/sp.sigma8,2.)*pow(cosmology.h0/cosmology.coverH0,3.));
     }
+    
+    // Construct interpolation table for power spectrum
     //printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/sp.sigma8,2.));
-    if (*status ==0){
+    if (*status == 0){
       for (i=0; i<Ntable.N_a; i++, aa +=da) { 
         klog = logkmin;
         for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) { 
-          k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
+          k_class = exp(klog)*cosmology.h0/cosmology.coverH0;
           s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
           table_P_L[i][j] = log(Pk) +norm;
-          s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
-          table_P_NL[i][j] = log(Pk) +norm;
+          if (NL == 1){
+            s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
+            table_P_NL[i][j] = log(Pk) +norm;
+          }
         }
       }
-      free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-    }
+    } // end status check
+    
+    // Construct Horndeski interpolation tables (if requested)
+    if (cosmology.use_horndeski == 1){
+        double z = 0.;
+        double tau = 0.;
+        double fac1, fac2;
+        int last_index = 0;
+        double* pvecback = create_double_vector(0, ba.bg_size-1);
+        double alph, bxi, bB, alphaB, alphaK, alphaM, alphaT, cs2;
+        
+        // Allocate memory for Horndeski function tables
+        // (uses same sampling in 'a' as the power spectrum)
+        table_horndeski_cs2 = create_double_vector(0, Ntable.N_a-1);
+        table_horndeski_alpha_b = create_double_vector(0, Ntable.N_a-1);
+        table_horndeski_alpha_k = create_double_vector(0, Ntable.N_a-1);
+        table_horndeski_alpha_m = create_double_vector(0, Ntable.N_a-1);
+        table_horndeski_alpha_t = create_double_vector(0, Ntable.N_a-1);
+        table_horndeski_mu_eff = create_double_vector(0, Ntable.N_a-1);
+        table_horndeski_mu_light = create_double_vector(0, Ntable.N_a-1);
+        
+        // Populate tables with Horndeski function values
+        aa = limits.a_min;
+        for (i=0; i<Ntable.N_a; i++, aa+=da) {
+            
+            // Get values of all background parameters at this scale factor
+            *status = background_tau_of_z(&ba, fmax(1./aa-1.,0.), &tau);
+            if (*status != 0){
+                printf("ERROR: Failed to get tau(z).\n"); exit(1); 
+            }
+            *status = background_at_tau(&ba, tau, ba.long_info, ba.inter_normal, &last_index, pvecback);
+            if (*status != 0){
+                printf("ERROR: Failed to get background values at z.\n"); exit(1);
+            }
+            
+            // Fetch Horndeski quantities
+            cs2 = pvecback[ba.index_bg_cs2_smg];
+            alphaB = pvecback[ba.index_bg_braiding_smg];
+            alphaK = pvecback[ba.index_bg_kineticity_smg];
+            alphaM = 0.; // FIXME: Shouldn't be set to zero by default
+            alphaT = pvecback[ba.index_bg_tensor_excess_smg];
+            
+            alph = alphaK + 6.*alphaB*alphaB;
+            fac1 = 2. / alph / cs2; // FIXME: Can be inf
+            fac2 = alphaB*(1. + alphaT) + alphaT - alphaM;
+            
+            // Check for nan/inf
+            if (isnan(fac1) || isinf(fac1)) fac1 = 0.;
+            if (isnan(fac2) || isinf(fac2)) fac2 = 0.;
+            
+            //printf("Horndeski params: %3.3e // %3.3e, %3.3e, %3.3e, %3.3e // %3.3e, %3.3e, %3.3e\n", cs2, alphaB, alphaK, alphaM, alphaT, alph, fac1, fac2);
+            
+            // Populate vectors of Horndeski quantities
+            table_horndeski_cs2[i] = cs2;
+            table_horndeski_alpha_b[i] = alphaB;
+            table_horndeski_alpha_k[i] = alphaK;
+            table_horndeski_alpha_m[i] = alphaM;
+            table_horndeski_alpha_t[i] = alphaT;
+            
+            // FIXME: Check for consistency with Hi_CLASS notation!
+            // mu_eff (Eq. 3 of arXiv:1705.04714)
+            table_horndeski_mu_eff[i] = 1. + alphaT + fac1*fac2*fac2;
+            
+            // mu_light (Eq. 7 of arXiv:1705.04714)
+            table_horndeski_mu_light[i] = 1. + 0.5*alphaT + fac1*fac2*(alphaB + fac2);
+            
+            
+        } // end loop over a
+        
+        // Free temporary vector
+        free_double_vector(pvecback, 0, ba.bg_size-1);
+        
+    } // end Horndeski check
+    
+    // Free CLASS structures
+    if (*status == 0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+    
+  } // end recompute
+  
+  
+  // Return power spectrum if requested
+  if (mode == CLASS_RETURN_POWSPEC){
+    klog = log(k_coverh0);
+    if (isnan(klog) || class_status) return 0.0;
+    if (NL==1) val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.99), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+    else val = interpol2d_fitslope(table_P_L, Ntable.N_a, limits.a_min, 1., da, fmin(a,.99), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+    if(isnan(val)) return 0.0;
+    return exp(val);
   }
-  klog = log(k_coverh0);
-  if (isnan(klog) || class_status) return 0.0;
-  if (NL==1) val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.99), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
-  else val = interpol2d_fitslope(table_P_L, Ntable.N_a, limits.a_min, 1., da, fmin(a,.99), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
-  if(isnan(val)) return 0.0;
-  return exp(val);
+  
+  // Return Horndeski-related functions if requested
+  if (cosmology.use_horndeski == 1){
+            
+    // Identify which Horndeski function has been requested 
+    double* func;
+    switch (mode){
+      case CLASS_RETURN_HORNDESKI_ALPHA_B: func = table_horndeski_alpha_b; break;
+      case CLASS_RETURN_HORNDESKI_ALPHA_K: func = table_horndeski_alpha_k; break;
+      case CLASS_RETURN_HORNDESKI_ALPHA_M: func = table_horndeski_alpha_m; break;
+      case CLASS_RETURN_HORNDESKI_ALPHA_T: func = table_horndeski_alpha_t; break;
+      case CLASS_RETURN_HORNDESKI_CS2: func = table_horndeski_cs2; break;
+      case CLASS_RETURN_HORNDESKI_MU_EFF: func = table_horndeski_mu_eff; break;
+      case CLASS_RETURN_HORNDESKI_MU_LIGHT: func = table_horndeski_mu_light; break;
+      default:
+        fprintf(stderr, "cosmo3D.c: Horndeski parameter with ID '%d' not found.\n", mode);
+        *status = 1;
+        return 0.;
+    }
+    
+    // Interpolate value of this function and return
+    /* Interpolates f at the value x, where f is a double[n] array,	*
+     * representing a function between a and b, stepwidth dx.	*
+     * 'lower' and 'upper' are powers of a logarithmic power law	*
+     * extrapolation. If no	extrapolation desired, set these to 0	*/
+    val = interpol(func, Ntable.N_a, limits.a_min, 1., da, a, 0, 0);
+    //if(isnan(val)) return 0.0;
+    return val;
+  
+  } // end Horndeski check
+  
 }
-// linear power spectrum routine with k in units H_0/c; used in covariances.c for beat coupling and in halo.c
-double p_lin(double k,double a)
+
+// Evaluate Horndeski function at a given scale factor (e.g. alpha_X(a), cs^2(a))
+double horndeski_function(double a, char* func_name, int *status){
+    int mode = -1;
+    int NL = 0; // Non-linear mode (must be zero, i.e. NL switched off)
+    double k_dummy = 0.; // Dummy k value (will not be used)
+    
+    // Identify which Horndeski function is being requested
+    if (strcmp(func_name, "alpha_b")) mode = CLASS_RETURN_HORNDESKI_ALPHA_B;
+    if (strcmp(func_name, "alpha_k")) mode = CLASS_RETURN_HORNDESKI_ALPHA_K;
+    if (strcmp(func_name, "alpha_m")) mode = CLASS_RETURN_HORNDESKI_ALPHA_M;
+    if (strcmp(func_name, "alpha_t")) mode = CLASS_RETURN_HORNDESKI_ALPHA_T;
+    if (strcmp(func_name, "cs2")) mode = CLASS_RETURN_HORNDESKI_CS2;
+    if (strcmp(func_name, "mu_eff")) mode = CLASS_RETURN_HORNDESKI_MU_EFF;
+    if (strcmp(func_name, "mu_light")) mode = CLASS_RETURN_HORNDESKI_MU_LIGHT;
+    
+    // Safety check
+    if (mode < 0){ 
+        fprintf(stderr, 
+            "WARNING: cosmo3D.c:horndeski_function, mode '%d' not recognized.\n", 
+            mode);
+        *status = 1;
+        return 0.;
+    }
+    
+    // Evaluate function from table returned by CLASS
+    return evaluate_class_tables(k_dummy, a, NL, mode, status);
+}
+
+// Evaluate power spectrum from CLASS
+double p_class(double k_coverh0, double a, int NL, int *status){
+    double pk = 0.;
+    pk = evaluate_class_tables(k_coverh0, a, NL, CLASS_RETURN_POWSPEC, status);
+    return pk;
+}
+
+// Linear power spectrum routine with k in units H_0/c; used in covariances.c for beat coupling and in halo.c
+double p_lin(double k, double a)
 {
+  
+  // Use CLASS instead if Horndeski is being used
+  if ( cosmology.use_horndeski != 0 ){
+      fprintf(stderr, "WARNING: A function called p_lin(), but this should not be used in 'horndeski' mode.\n");
+      int status = 0;
+      double pk = p_class(k, a, 0, &status); // Switch off non-linear stuff
+      return pk;
+  }
+  
   static cosmopara C;
   static double **table_P_Lz = 0;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
@@ -744,7 +1084,7 @@ double p_lin(double k,double a)
   klog = log(k/cosmology.coverH0);
   val = interpol2d(table_P_Lz, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_lin, logkmin, logkmax, dk, klog, 1.0, 1.0);
   if(isnan(val) || (k==0)) return 0.0;
-  return 2.0*constants.pi_sqr*exp(val)/k/k/k;     
+  return 2.0*constants.pi_sqr*exp(val)/k/k/k;
 }
 
 
@@ -822,6 +1162,10 @@ double Halofit(double k, double amp, double omm, double omv,double w_z, double R
   double a_n,b_n,c_n,gamma_n,alpha_n,beta_n,nu_n,f1,f2,f3;
   
   double Delta_H,Delta_H_Prime,Delta_Q;
+  
+  // This function is not Horndeski-safe
+  invalid_for_horndeski(__func__);
+  
   //determine nonlinear scale, neff and curvature, see tak12 A4, A5
   y_scale=k*R_NL;
   
@@ -850,8 +1194,6 @@ double Halofit(double k, double amp, double omm, double omv,double w_z, double R
   //printf("Delta_Q %le Delta_H %le\n",Delta_Q,Delta_H);
  return Delta_H+Delta_Q;
 }
-
-
 
 
 void Delta_halofit(double **table_P_NL,double logkmin, double logkmax, double dk, double da)
@@ -906,7 +1248,6 @@ double Delta_NL_Halofit(double k_NL, double a)
   return exp(val);
   // returns the dimensionless power spectrum as a function of scale factor a and k  
 }
-
 
 double nonlinear_scale_computation(double a)
 {       
@@ -1003,7 +1344,7 @@ void determine_coyote_cosmo_calib(double *COSMO_emu, int *calibflag)
   } 
 }
   
-  
+
 double Delta_NL_Coyote(double k_NL,double a)
 {     
   static cosmopara C;
@@ -1030,7 +1371,7 @@ double Delta_NL_Coyote(double k_NL,double a)
     logkmax = log(limits.k_max_mpc);
     dk = (logkmax - logkmin)/(Ntable.N_k_nlin-1.);
     
-    //printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec,cosmology.sigma_8,cosmology.w0,cosmology.wa,cosmology.h0);
+    //printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec, cosmology.sigma_8,cosmology.w0,cosmology.wa,cosmology.h0);
     
     //compute Halofit; determine whether outside cosmology of emulator -> use recalibration factor
     Delta_halofit(table_P_NL_halofit,logkmin, logkmax, dk, da);
@@ -1171,7 +1512,6 @@ double Delta_NL_Coyote(double k_NL,double a)
   // returns the dimensionless power spectrum as a function of scale factor a and k in units of h/Mpc 
 }
 
-
 double Delta_NL_Coyote_only(double k_NL,double a)
 {     
   static cosmopara C;
@@ -1194,7 +1534,7 @@ double Delta_NL_Coyote_only(double k_NL,double a)
     logkmax = log(limits.k_max_mpc);
     dk = (logkmax - logkmin)/(Ntable.N_k_nlin-1.);
     
-    //printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec,cosmology.sigma_8,cosmology.w0,cosmology.wa,cosmology.h0);
+    //printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec,cosmology.sigma_8, cosmology.w0,cosmology.wa,cosmology.h0);
     
     //compute Halofit; determine whether outside cosmology of emulator -> break
    
@@ -1253,7 +1593,6 @@ double Delta_NL_Coyote_only(double k_NL,double a)
 }
 
 
-
 // double fraction_baryons(double k,double a)
 // {
 //   static int READ_TABLE=0;
@@ -1289,7 +1628,7 @@ double Delta_NL_Coyote_only(double k_NL,double a)
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 //Pdelta is called with k in units H0/c since the comoving distance chi is in units c/H0. Upstream Pdelta all routines are in h/mpc 
- double Pdelta(double k_NL,double a)
+ double Pdelta(double k_NL, double a)
 { 
   static int P_type = -1;
   if (P_type == -1){
@@ -1300,29 +1639,46 @@ double Delta_NL_Coyote_only(double k_NL,double a)
     if (strcmp(pdeltaparams.runmode,"CLASS")==0) P_type = 4;
     if (strcmp(pdeltaparams.runmode,"class")==0) P_type = 4;
     if (strcmp(pdeltaparams.runmode,"cosmo_sim_test") ==0) P_type = 5;
-
+    if (strcmp(pdeltaparams.runmode,"horndeski")==0) P_type = 6;
+  }
+  
+  // Sanity check (Coyote emulator and Halofit not supported in Hi_CLASS)
+  if (cosmology.use_horndeski == 1){
+    if (P_type != 6){
+      printf("Pdelta(): Run mode '%s' not supported! Use 'horndeski' only.\n", 
+             pdeltaparams.runmode);
+      exit(1);
+    }
   }
 
   //printf("%s set\n",pdeltaparams.runmode);
   double pdelta = 0.,kintern=k_NL/cosmology.coverH0,error,k_nonlin,res;
   int status;
   switch (P_type){
-    case 0: pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL; break;
-    case 1: pdelta=2.0*constants.pi_sqr*Delta_NL_Coyote(kintern,a)/k_NL/k_NL/k_NL; break;
-    case 2: pdelta=2.0*constants.pi_sqr*Delta_NL_Coyote_only(kintern,a)/k_NL/k_NL/k_NL; break;
-    case 3: pdelta=p_lin(k_NL,a); break;
-    case 4: pdelta=p_class(k_NL,a,1, &status); break;
-    case 5: k_nonlin=nonlinear_scale_computation(a);
-            if (kintern<0.01) pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
+    case 0: 
+            pdelta = 2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
+            break;
+    case 1: 
+            pdelta = 2.0*constants.pi_sqr*Delta_NL_Coyote(kintern,a)/k_NL/k_NL/k_NL;
+            break;
+    case 2: 
+            pdelta = 2.0*constants.pi_sqr*Delta_NL_Coyote_only(kintern,a)/k_NL/k_NL/k_NL; 
+            break;
+    case 3: pdelta = p_lin(k_NL,a); break;
+    case 4: pdelta = p_class(k_NL,a,1, &status); break;
+    case 5: 
+            k_nonlin = nonlinear_scale_computation(a);
+            if (kintern<0.01) pdelta = 2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
             else{ 
-              error=0.01*pow((pdeltaparams.DIFF_A*kintern/k_nonlin),pdeltaparams.DIFF_n);
-              pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)*(1.0+error)/k_NL/k_NL/k_NL;
+              error = 0.01*pow((pdeltaparams.DIFF_A*kintern/k_nonlin),pdeltaparams.DIFF_n);
+              pdelta = 2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)*(1.0+error)/k_NL/k_NL/k_NL;
             }
             break;
+    case 6: pdelta = p_class(k_NL, a, 0, &status); break; // Horndeski mode requires nonlinear=0
     default: 
             printf("cosmo3D:Pdelta: %s Pdelta runmode not defined\n",pdeltaparams.runmode);
             printf("using Halofit (standard)\n");
-            pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
+            pdelta = 2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
             break;
     }
     // if(((1./a-1.)<2.0) && (kintern >0.3) && (kintern <10.)) { 
