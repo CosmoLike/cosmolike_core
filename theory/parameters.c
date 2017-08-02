@@ -10,6 +10,7 @@ void set_cosmological_parameters_to_Tinker();
 void set_cosmological_parameters_to_BCC();
 void set_cosmological_parameters_to_chincilla();
 void set_cosmological_parameters_to_();
+void set_horndeski_parameters_to_LCDM();
 void set_cov_parameters_to_();
 void set_survey_parameters_to_();
 void set_survey_parameters_to_DES_COV_Y1();
@@ -560,6 +561,22 @@ void set_cosmological_parameters_to_Planck_15_TT_TE_EE_lowP()
   cosmology.rho_crit = 7.4775e+21;
   printf("Cosmology set to Planck_15\n");
   cosmology.f_NL = 0.0;
+}
+
+void set_horndeski_parameters_to_LCDM()
+{
+  // Set Horndeski parameters to their GR+LCDM values
+  cosmology.mg_alpha_xk = 1.; // FIXME: Should this be zero?
+  cosmology.mg_alpha_xb = 0.;
+  cosmology.mg_alpha_xm = 0.;
+  cosmology.mg_alpha_xt = 0.;
+  cosmology.mg_alpha_M2 = 1.;
+  
+  // Make sure Horndeski flag is set
+  cosmology.use_horndeski = 1;
+  cosmology.model_stability_flag = -1;
+  
+  printf("Horndeski parameters set to GR+LCDM values\n");
 }
 
 void set_cosmological_parameters_to_Joe()

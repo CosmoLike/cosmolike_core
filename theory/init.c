@@ -9,7 +9,7 @@ void init_survey(char *surveyname);
 void init_galaxies(char *SOURCE_ZFILE, char *LENS_ZFILE, char *lensphotoz, char *sourcephotoz, char *galsample);
 void init_cosmo();
 void init_cosmo_runmode(char *runmode);
-void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin, int Ntomo);
+void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin);
 void init_binning_real(int Nt, double min, double max);
 void init_probes(char *probes);
 void init_probes_real(char *probes);
@@ -37,7 +37,7 @@ void init_clphotoz_cmass();
 void init_clphotoz_LSST_gold();
 void init_clphotoz_source();
 void init_clusterMobs();
-void set_equal_tomo_bins();
+void set_equal_tomo_bins(int Ntomo);
 void init_IA(char *model,char *lumfct);
 void init_HOD_rm();
 void init_Pdelta();
@@ -63,11 +63,11 @@ double mask(int READ, int ci)
       }
       int N = 0;
       for (i=0;i<like.Ndata; i++){
+         if(i==399) printf("WL %d bins within angular mask\n",N);
+         if(i==699) printf("WL+GGL %d bins within angular mask\n",N);
         fscanf(F,"%d %le\n",&intspace,&mask[i]);
         maskc[i] = mask[i];
         N += mask[i];
-        if(i==399) printf("WL %d bins within angular mask\n",N);
-        if(i==699) printf("WL+GGL %d bins within angular mask\n",N);
       }
      fclose(F);
      printf("%d bins within angular mask\n",N);
@@ -135,8 +135,11 @@ int count_rows(char* filename,const char delimiter){
   }
   int count = 1;
   char *p;
-
+  
+  // FIXME: PJB: Fix pointer warning
   p = &line;
+  //p = line; // Use this to remove warning...?
+  
   while (*p != '\0')
   {
     if (*p == delimiter){
@@ -185,12 +188,12 @@ double invcov_mask(int READ, int ci, int cj)
               gsl_matrix_set(cov,j,i,(cov_G+cov_NG)*m);
             }
           } break;
-    case 10: while (fscanf(F,"%d %d %le %le %d %d %d %d %le %le\n", &i, &j, &doublespace, &doublespace,&intspace,&intspace,&intspace,&intspace,&cov_G,&cov_NG) ==10) {
+    case 10: while (fscanf(F,"%d %d %le %le %d %d %d %d %le %le\n", &i, &j, &doublespace, &doublespace,&intspace,&intspace,&intspace,&intspace,&cov_NG,&cov_G) ==10) {
             m = 1.0;
             if (i < like.Ndata && j < like.Ndata){
             // apply mask to off-diagonal covariance elements
               if (i!=j){m = mask(1,i)*mask(1,j);}
-              //printf("%d %d (/%d) %e %e\n",i,j,like.Ndata,cov_G,cov_NG);
+          //    printf("%d %d (/%d) %e %e\n",i,j,like.Ndata,cov_G,cov_NG);
               gsl_matrix_set(cov,i,j,(cov_G+cov_NG)*m);
               gsl_matrix_set(cov,j,i,(cov_G+cov_NG)*m);
             }
@@ -224,7 +227,8 @@ double invcov_read(int READ, int ci, int cj)
   if(READ==0 || inv == 0){
     inv   = create_double_matrix(0, like.Ndata-1, 0, like.Ndata-1);      
     FILE *F;
-    F=fopen(like.INV_FILE,"r");
+    F=fopen(like.INV_FILE, "r");
+    if (F == NULL){ printf("Could not open file %s.\n", like.INV_FILE); exit(1); }
     for (i=0;i<like.Ndata; i++){
       for (j=0;j<like.Ndata; j++){
        fscanf(F,"%d %d %le\n",&intspace,&intspace,&inv[i][j]);  
@@ -243,11 +247,12 @@ double data_read(int READ, int ci)
   static double *data = 0;
   
   if(READ==0 || data ==0){
-    data  = create_double_vector(0, like.Ndata-1);      
+    data = create_double_vector(0, like.Ndata-1);      
     FILE *F;
-    F=fopen(like.DATA_FILE,"r");
-    for (i=0;i<like.Ndata; i++){  
-      fscanf(F,"%d %le\n",&intspace,&data[i]);
+    F = fopen(like.DATA_FILE, "r");
+    if (F == NULL){ printf("Couldn't open file: %s.\n", like.DATA_FILE); exit(1); }
+    for (i=0; i < like.Ndata; i++){  
+      fscanf(F, "%d %le\n", &intspace, &data[i]);
     }
     fclose(F);
     printf("FINISHED READING DATA VECTOR\n");
@@ -273,12 +278,16 @@ void init_cosmo_runmode(char *runmode)
   printf("Initializing Standard Runmode/Cosmology\n");
   printf("-------------------------------------------\n");
   set_cosmological_parameters_to_Planck_15_TT_TE_EE_lowP();
+  
+  // Set Horndeski parameters to defaults if requested
+  if ( strcmp(runmode, "horndeski") == 0 ){
+    set_horndeski_parameters_to_LCDM();
+  }
   //set_cosmological_parameters_to_Joe();
-  sprintf(pdeltaparams.runmode,"%s",runmode);
-  printf("pdeltaparams.runmode =%s\n",pdeltaparams.runmode);
+  sprintf(pdeltaparams.runmode,"%s", runmode);
+  printf("pdeltaparams.runmode = %s\n",pdeltaparams.runmode);
 }
-
-void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin, int Ntomo)
+void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin)
 {
   printf("-------------------------------------------\n");
   printf("Initializing Binning\n");
@@ -289,7 +298,6 @@ void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, 
   like.lmin= lmin; //std=20
   like.lmax= lmax; //15,000
   like.lmax_shear = lmax_shear; //5000
-  tomo.shear_Nbin=Ntomo;
   //compute cluster ell bins acc to 2PCF l-bins
   double ell;
   int i,k=0;
@@ -393,12 +401,14 @@ void init_galaxies(char *SOURCE_ZFILE, char *LENS_ZFILE, char *lensphotoz, char 
   printf("\n");
   printf("PATH TO LENS_ZFILE: %s\n",redshift.clustering_REDSHIFT_FILE);
   init_lens_sample(lensphotoz,galsample);
-
-  if (strcmp(galsample,"redmagic")==0) set_clphotoz_priors_redmagic();
-  if (strcmp(galsample,"benchmark")==0) set_clphotoz_priors_benchmark();
-  if (strcmp(galsample,"cmass")==0) set_clphotoz_priors_cmass();
-  if (strcmp(galsample,"gold")==0) set_clphotoz_priors_LSST_gold();
-  if (strcmp(galsample,"source")==0) set_clphotoz_priors_source();
+  
+  if (strcmp(lensphotoz,"none")!=0){
+    if (strcmp(galsample,"redmagic")==0) set_clphotoz_priors_redmagic();
+    if (strcmp(galsample,"benchmark")==0) set_clphotoz_priors_benchmark();
+    if (strcmp(galsample,"cmass")==0) set_clphotoz_priors_cmass();
+    if (strcmp(galsample,"gold")==0) set_clphotoz_priors_LSST_gold();
+    if (strcmp(galsample,"source")==0) set_clphotoz_priors_source();
+  }
 }
 
 void init_clusters()
@@ -743,7 +753,7 @@ void init_source_sample_()
   if(strcmp(survey.sourcephotoz,"multihisto")==0) redshift.shear_photoz=4;
   //printf("Source Sample Redshift Errors set to %s: redshift.shear_photoz=%d\n",survey.sourcephotoz,redshift.shear_photoz);
 
-  if (redshift.shear_photoz!=4)  set_equal_tomo_bins();
+  if (redshift.shear_photoz!=4)  set_equal_tomo_bins(tomo.shear_Nbin);
   for (i=0;i<tomo.shear_Nbin; i++)
   {
     //printf("zmean_source=%f\n",zmean_source(i));
@@ -772,35 +782,35 @@ void init_source_sample(char *sourcephotoz)
   printf("Source Sample Redshift Errors set to %s: redshift.shear_photoz=%d\n",sourcephotoz,redshift.shear_photoz);
 
   if (strcmp(survey.name,"DES_SV")==0){
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(3);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage3();
       set_wlphotoz_priors_stage3();  
     }
   }
   if (strcmp(survey.name,"DES_Y1")==0 || strcmp(survey.name,"DES")==0){
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(5);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage3();
       set_wlphotoz_priors_stage3();  
     }
   }
   if (strcmp(survey.name,"Euclid")==0){
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(5);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage4();
       set_wlphotoz_priors_stage4();  
     }
   }
   if (strcmp(survey.name,"HSC")==0 ){
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(5);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage3();
       set_wlphotoz_priors_stage3();  
     }
   }
   if (strcmp(survey.name,"LSST")==0 || strcmp(survey.name,"WFIRST")==0) {
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(10);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage4();
       set_wlphotoz_priors_stage4();  
@@ -815,13 +825,12 @@ void init_baryons()
   printf("todo\n");
 }
 
-void set_equal_tomo_bins()
+void set_equal_tomo_bins(int Ntomo)
 {
   int k,j;
   double frac, zi;
-  
-  tomo.shear_Npowerspectra=(int) (tomo.shear_Nbin*(tomo.shear_Nbin+1)/2);
-  
+  tomo.shear_Nbin=Ntomo;
+  tomo.shear_Npowerspectra=(int) (Ntomo*(Ntomo+1)/2);
   zdistr_histo_1(0.1, NULL);
   int zbins =2000;
   double da = (redshift.shear_zdistrpar_zmax-redshift.shear_zdistrpar_zmin)/(1.0*zbins);
@@ -838,7 +847,7 @@ void set_equal_tomo_bins()
   printf("\n");
   printf("Source Sample - Tomographic Bin limits:\n");
   for(k=0;k<tomo.shear_Nbin-1;k++){
-    frac=(k+1.)/(1.*tomo.shear_Nbin)*sum[zbins-1];
+    frac=(k+1.)/(1.*Ntomo)*sum[zbins-1];
     j = 0;
     while (sum[j]< frac){
       j++;

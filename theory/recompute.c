@@ -29,6 +29,11 @@ void update_cosmopara (cosmopara *C){
   C->f_NL = cosmology.f_NL;
   C->MGSigma = cosmology.MGSigma;
   C->MGmu = cosmology.MGmu;
+  C->mg_alpha_xk = cosmology.mg_alpha_xk;
+  C->mg_alpha_xb = cosmology.mg_alpha_xb;
+  C->mg_alpha_xm = cosmology.mg_alpha_xm;
+  C->mg_alpha_xt = cosmology.mg_alpha_xt;
+  C->mg_alpha_M2 = cosmology.mg_alpha_M2;
   C->M_nu = cosmology.M_nu;
 }
 
@@ -85,13 +90,29 @@ void update_nuisance (nuisancepara *N){
   N->cluster_centering_alpha = nuisance.cluster_centering_alpha;
   N->cluster_centering_sigma = nuisance.cluster_centering_sigma;
 }
+
+// FIXME: Currently assume that all Horndeski parameters change the expansion history
 int recompute_expansion(cosmopara C){ //rules for recomputing growth factor & comoving distance
-  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
-  else{return 0;}
+  if (   C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v 
+      || C.w0 != cosmology.w0 || C.wa != cosmology.wa 
+      || C.mg_alpha_xk != cosmology.mg_alpha_xk
+      || C.mg_alpha_xb != cosmology.mg_alpha_xb
+      || C.mg_alpha_xm != cosmology.mg_alpha_xm
+      || C.mg_alpha_xt != cosmology.mg_alpha_xt
+      || C.mg_alpha_M2 != cosmology.mg_alpha_M2 
+      || C.MGmu != cosmology.MGmu 
+      || C.M_nu != cosmology.M_nu)
+  { return 1; }
+  else 
+  { return 0; }
 }
 
+// FIXME: Currently assume that none of the Horndeski parameters change the initial power spectrum
 int recompute_Delta(cosmopara C){ //rules for recomputing early time power spectrum Delta_L
-  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec){return 1;}
+  if (   C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v 
+      || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu 
+      || C.h0 != cosmology.h0 || C.omb != cosmology.omb 
+      || C.n_spec != cosmology.n_spec){return 1;}
   if (cosmology.A_s){
     if(C.A_s != cosmology.A_s){return 1;}
   }
@@ -102,7 +123,18 @@ int recompute_Delta(cosmopara C){ //rules for recomputing early time power spect
 }
 
 int recompute_cosmo3D(cosmopara C){
-  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
+  if (   C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v 
+      || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu 
+      || C.h0 != cosmology.h0 || C.omb != cosmology.omb 
+      || C.n_spec != cosmology.n_spec 
+      || C.w0 != cosmology.w0 || C.wa != cosmology.wa 
+      || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu 
+      || C.mg_alpha_xk != cosmology.mg_alpha_xk
+      || C.mg_alpha_xb != cosmology.mg_alpha_xb
+      || C.mg_alpha_xm != cosmology.mg_alpha_xm
+      || C.mg_alpha_xt != cosmology.mg_alpha_xt
+      || C.mg_alpha_M2 != cosmology.mg_alpha_M2 
+      || C.M_nu != cosmology.M_nu){ return 1;}
   if (cosmology.A_s){
     if(C.A_s != cosmology.A_s){return 1;}
   }

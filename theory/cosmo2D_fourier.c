@@ -1,4 +1,5 @@
 #include "pt.c"
+#include "modgrav.h"
 
 double W_kappa(double a, double fK, double nz);//complete lens efficiency weight
 double W_gal(double a, double nz); //complete weight for galaxy statistics
@@ -17,27 +18,28 @@ double C_shear_tomo(double l, int ni, int nj); //shear tomography power spectra
 double C_shear_tomo_nointerp(double l, int ni, int nj);
 /**********************************************************/
 
-double MG_Sigma(double a)
-{
-//  double aa=a*a;
-//  double omegam=cosmology.Omega_m/(aa*a);
-  double omegav=omv_vareos(a);
-  double hub=hoverh0(a);
-  hub = hub*hub;
- 
-  return cosmology.MGSigma*omegav/hub/cosmology.Omega_v;
-}
-
 double dchi_da(double a){
   return 1./(a*a*hoverh0(a));
 }
+
+
+// FIXME: If Horndeski mode is enabled, this function assumes the quasi-static 
+// approximation, which is invalid on large scales
 double W_kappa(double a, double fK, double nz){
-  double wkappa = 1.5*cosmology.Omega_m*fK/a*g_tomo(a,(int)nz);
+  double wkappa = 1.5 * cosmology.Omega_m * fK / a * g_tomo(a, (int)nz);
+  
   if(cosmology.MGSigma != 0.){
-    wkappa *= (1.+MG_Sigma(a));
+    // Phenomenological mu-sigma parametrisation
+    wkappa *= (1. + MG_Sigma(a));
+  }else if(cosmology.use_horndeski == 1){
+    // Horndeski parametrisation (assumes quasi-static approximation)
+    wkappa *= (1. + horndeski_sigma(a));
   }
+  
   return wkappa;
 }
+
+// FIXME: Does this need to be modified?
 double W_gal(double a, double nz){
   return gbias.b1_function(1./a-1.,(int)nz)*pf_photoz(1./a-1.,(int)nz)*hoverh0(a);
 }
@@ -125,8 +127,10 @@ double int_for_C_gl_tomo_b2(double a, void *params)
   fK     = f_K(chi(a));
   k      = ell/fK;
   
-  res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
-  res= res*(b1*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)));
+  res = W_HOD(a, ar[0]) * W_kappa(a, fK, ar[1]) * dchi_da(a)/fK/fK;
+  res = res * (  b1 * Pdelta(k,a) 
+               + g4 * (0.5 * b2 * PT_d1d2(k) 
+               + 0.5 * bs2 * PT_d1s2(k)) );
   return res;
 }
 double int_for_C_gl_tomo(double a, void *params)

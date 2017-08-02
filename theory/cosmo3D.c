@@ -4,11 +4,7 @@
 #include <assert.h>
 #include "modgrav.h"
 
-#ifndef USE_HICLASS
-    #include "../class/include/class.h"
-#else
-    #include "../hi_class/include/class.h"
-#endif
+#include "../hi_class/include/class.h"
 #define EXIT_IF_INVALID_FOR_HORNDESKI
 
 #include <gsl/gsl_odeiv.h>
@@ -560,6 +556,9 @@ double get_class_s8(struct file_content *fc, int *status){
   double A_s_guess;
   strcpy(fc->name[1],"non linear");
   strcpy(fc->value[1],"none");
+  // for(int i = 0; i<30; i++){
+  //   printf("%s: %s\n", fc->name[i], fc->value[i]);
+  // }
   if (strcmp(fc->name[position_kmax],"P_k_max_1/Mpc")){
     k_max_old = strtof(fc->value[position_kmax],NULL);
     sprintf(fc->value[position_kmax],"%e",10.);  
@@ -611,6 +610,7 @@ double get_class_As(struct file_content *fc, int position_As,double sigma8, int 
   if (k_max_old >0){
     sprintf(fc->value[position_kmax],"%e",k_max_old);      
   }
+
   return A_s_guess;
 }
 
@@ -742,17 +742,19 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
 //     printf("passing A_s=%e directly\n",cosmology.A_s);
      strcpy(fc->name[parser_length-1],"A_s");
      sprintf(fc->value[parser_length-1],"%e",cosmology.A_s);
+     
   }
   else{
     double A_s = get_class_As(fc,parser_length-1,cosmology.sigma_8, &status);
     strcpy(fc->name[parser_length-1],"A_s");
     sprintf(fc->value[parser_length-1],"%e",A_s);
+    
     if (status == 0){
   	  A_s *=pow(cosmology.sigma_8/get_class_s8(fc,&status),2.0);
 	    strcpy(fc->name[parser_length-1],"A_s");
   	  sprintf(fc->value[parser_length-1],"%e",A_s);
     }
-    //printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
+    printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
   }
   
   // Turn off Halofit if Horndeski is enabled, or if nonlinear mode is turned off
@@ -764,6 +766,9 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
   // }
   strcpy(fc->value[1], ""); //FIX ME: printing halofit when in horndeski?
   
+  // for(int i=0; i<30; i++){
+  //   printf("%s, %s\n", fc->name[i],fc->value[i]);
+  // }
   
   
   // FIXME: Output all parameters that we are passing to CLASS
@@ -775,6 +780,7 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
     }
   }
   fprintf(fileforclass, "root = output/classparams00_");
+  fclose(fileforclass);
   
   return status;
 }
