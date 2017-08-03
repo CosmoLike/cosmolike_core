@@ -138,12 +138,12 @@ H_ALL = $(addprefix include/, common.h svnversion.h $(addsuffix .h, $(basename $
 PRE_ALL = cl_ref.pre clt_permille.pre
 INI_ALL = explanatory.ini lcdm.ini
 MISC_FILES = Makefile CPU psd_FD_single.dat myselection.dat myevolution.dat README bbn/sBBN.dat external_Pk/* cpp
-PYTHON_FILES = python/classy.pyx python/setup.py python/cclassy.pxd python/test_class.py
+#PYTHON_FILES = python/classy.pyx python/setup.py python/cclassy.pxd python/test_class.py
 
 
 
 
-all: class libclass.a classy
+#all: class libclass.a classy
 
 libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
 	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
@@ -185,8 +185,8 @@ test_hyperspherical: $(TOOLS) $(TEST_HYPERSPHERICAL)
 tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 	tar czvf class.tar.gz $(C_ALL) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 
-classy: libclass.a python/classy.pyx python/cclassy.pxd
-	cd python; export CC=$(CC); $(PYTHON) setup.py install $(PYTHONFLAGS)
+#classy: libclass.a python/classy.pyx python/cclassy.pxd
+#	cd python; export CC=$(CC); $(PYTHON) setup.py install $(PYTHONFLAGS)
 
 clean: .base
 	rm -rf $(WRKDIR);
