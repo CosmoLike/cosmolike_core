@@ -144,6 +144,7 @@ typedef struct {
      int N_norm;
      int N_r_3d;
      int N_k_3d;
+     int N_a_halo;
 }Ntab;
 
 
@@ -160,6 +161,7 @@ Ntab Ntable = {
 50, //N_norm
 50, //N_r_3d
 25, //N_k_3d
+20, //N_a_halo
 };
  
 
