@@ -242,6 +242,7 @@ typedef struct {
   double cluster_centering_alpha;
   double cluster_centering_sigma;
   double cluster_centering_M_pivot;
+  char shear_REDSHIFT_FILE[200];
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
