@@ -84,7 +84,6 @@ void update_nuisance (nuisancepara *N){
   N->cluster_centering_f0 = nuisance.cluster_centering_f0;
   N->cluster_centering_alpha = nuisance.cluster_centering_alpha;
   N->cluster_centering_sigma = nuisance.cluster_centering_sigma;
-  strcpy(N->shear_REDSHIFT_FILE,nuisance.shear_REDSHIFT_FILE);
 }
 int recompute_expansion(cosmopara C){ //rules for recomputing growth factor & comoving distance
   if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
@@ -116,7 +115,6 @@ int recompute_cosmo3D(cosmopara C){
 int recompute_zphot_shear(nuisancepara N){
   static int photoz = -1;
   if (photoz != redshift.shear_photoz){photoz = redshift.shear_photoz; return 1;}
-  if (N.shear_REDSHIFT_FILE != nuisance.shear_REDSHIFT_FILE){return 1;}
   if (redshift.shear_photoz != 3 && redshift.shear_photoz != 4){return 0;}
   int i, res = 0;
   for(i = 0; i < tomo.shear_Nbin; i++){

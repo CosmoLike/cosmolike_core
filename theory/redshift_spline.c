@@ -266,21 +266,16 @@ double bias_zphot_shear (double z, int nz){
 double zdistr_histo_n(double z,  void *params) // return nz(z,j) based on redshift file with structure z[i] nz[0][i] .. nz[tomo.shear_Nbin-1][i]
 {
   double *array = (double*)params;
-  static double **tab =0;
-  static int zbins = 0;
+  static double **tab;
   FILE *ein;
   static double zhisto_max,zhisto_min,dz;
   
-  if (tab==0 || strcmp(redshift.shear_REDSHIFT_FILE,nuisance.shear_REDSHIFT_FILE)!=0){
+  if (tab==0){
     double *z_v;
-    int i,k;
-    if (tab != 0){
-      free_double_matrix(tab,0,tomo.shear_Nbin-1,0, zbins-1);
-    }
+    int i,k,zbins;
     zbins = line_count(redshift.shear_REDSHIFT_FILE);
     tab=create_double_matrix(0,tomo.shear_Nbin-1,0, zbins-1);
     z_v=create_double_vector(0, zbins-1);
-    printf("reading %s\n",redshift.shear_REDSHIFT_FILE);
     ein=fopen(redshift.shear_REDSHIFT_FILE,"r");
     for (i=0;i<zbins;i++){
       fscanf(ein, "%le", &z_v[i]);
@@ -317,7 +312,6 @@ double zdistr_histo_n(double z,  void *params) // return nz(z,j) based on redshi
       printf("Error in redshift.c:zdistr_histo_n: %s parameters incompatible with tomo.shear bin choice\nEXIT!\n",redshift.shear_REDSHIFT_FILE);
       exit(1);
     }
-    strcpy(nuisance.shear_REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE);
   }
   
   if ((z>=zhisto_min) &&(z<zhisto_max)){
@@ -330,19 +324,17 @@ double zdistr_histo_1(double z, void *params) //return nz(z) based on redshift f
 {
   static double *tab =0;
   FILE *ein;
-  static int zbins;
+  
   static double zhisto_max,zhisto_min,dz;
   
-  if (tab==0 || strcmp(redshift.shear_REDSHIFT_FILE,nuisance.shear_REDSHIFT_FILE)!=0){
+  if (tab==0){
     double *z_v,space1,space2;
-    if (tab != 0){free_double_vector(tab, 0, zbins-1);}
-    int i;
+    int i,zbins;
     zbins = line_count(redshift.shear_REDSHIFT_FILE);
     tab=create_double_vector(0, zbins-1);
     z_v=create_double_vector(0, zbins-1);
     ein=fopen(redshift.shear_REDSHIFT_FILE,"r");
-    printf("reading %s\n",redshift.shear_REDSHIFT_FILE);
-  
+    
     for (i=0;i<zbins;i++){
       fscanf(ein,"%le %le %le %le\n",&z_v[i],&space1,&space2,&tab[i]);
       if (i > 0 && z_v[i] < z_v[i-1]){break;}
@@ -354,7 +346,6 @@ double zdistr_histo_1(double z, void *params) //return nz(z) based on redshift f
     redshift.shear_zdistrpar_zmin = zhisto_min;
     redshift.shear_zdistrpar_zmax = zhisto_max;
     free_double_vector(z_v,0,zbins-1);
-    strcpy(nuisance.shear_REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE);
   }
   
   if ((z>=zhisto_min) &&(z<zhisto_max)){
@@ -380,7 +371,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   static gsl_interp_accel * photoz_accel[11];
 
   if (redshift.shear_photoz == -1){return n_of_z(zz,j);}
-  if ((redshift.shear_photoz != 4 && recompute_zphot_shear(N)) || table==0 || strcmp(redshift.shear_REDSHIFT_FILE,nuisance.shear_REDSHIFT_FILE)!=0){
+  if ((redshift.shear_photoz != 4 && recompute_zphot_shear(N)) || table==0){
     update_nuisance(&N);
     if (table == 0){
       int zbins1 = line_count(redshift.shear_REDSHIFT_FILE);
@@ -388,7 +379,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
       else {zbins = zbins1;}
       table   = create_double_matrix(0, tomo.shear_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
-      for (int i = 0; i < tomo.shear_Nbin+1; i++){
+      for (i = 0; i < tomo.shear_Nbin+1; i++){
         photoz_splines[i] = gsl_spline_alloc(Z_SPLINE_TYPE, zbins);
         photoz_accel[i] = gsl_interp_accel_alloc();
       }
@@ -641,7 +632,6 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     if ((redshift.clustering_photoz != 4 && recompute_zphot_clustering(N)) || table==0){
     update_nuisance(&N);
     if (table == 0){
-      int i;
       zbins = line_count(redshift.clustering_REDSHIFT_FILE);
       if (redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){zbins*=20;}//upsample if convolving with analytic photo-z model
       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);
@@ -653,7 +643,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
       if (redshift.clustering_photoz ==4){//if multihisto, force zmin, zmax, tomo bins to match supplied file
         FILE *ein;
         double space;
-        int k;
+        int i,k;
         ein=fopen(redshift.clustering_REDSHIFT_FILE,"r");
         for (i=0;i<zbins;i++){
           fscanf(ein, "%le", &z_v[i]);
