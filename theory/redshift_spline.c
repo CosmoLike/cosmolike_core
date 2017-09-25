@@ -379,7 +379,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
       else {zbins = zbins1;}
       table   = create_double_matrix(0, tomo.shear_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
-      for (i = 0; i < tomo.shear_Nbin+1; i++){
+      for (int i = 0; i < tomo.shear_Nbin+1; i++){
         photoz_splines[i] = gsl_spline_alloc(Z_SPLINE_TYPE, zbins);
         photoz_accel[i] = gsl_interp_accel_alloc();
       }
@@ -636,7 +636,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
       if (redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){zbins*=20;}//upsample if convolving with analytic photo-z model
       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
-      for (i = 0; i < tomo.clustering_Nbin+1; i++){
+      for (int i = 0; i < tomo.clustering_Nbin+1; i++){
         photoz_splines[i] = gsl_spline_alloc(Z_SPLINE_TYPE, zbins);
         photoz_accel[i] = gsl_interp_accel_alloc();
       }
