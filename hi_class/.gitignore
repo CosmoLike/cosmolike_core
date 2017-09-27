@@ -2,3 +2,5 @@ class
 libclass.a
 *.o
 *.so
+python/classy.c
+build/
