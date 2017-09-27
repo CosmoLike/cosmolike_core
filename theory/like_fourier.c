@@ -24,7 +24,7 @@
 #include "basics.c"
 #include "structs.c"
 #include "parameters.c"
-#include "../emu13/emu.c"
+#include "../emu17/emu.c"
 #include "recompute.c"
 #include "cosmo3D.c"
 #include "redshift.c"

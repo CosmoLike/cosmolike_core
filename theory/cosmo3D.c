@@ -1309,6 +1309,7 @@ double Pdelta(double k_NL,double a)
   static int P_type = -1;
   if (P_type == -1){
     if (strcmp(pdeltaparams.runmode,"Halofit")==0) P_type = 0;
+    if (strcmp(pdeltaparams.runmode,"halofit")==0) P_type = 0;
     if (strcmp(pdeltaparams.runmode,"emu")==0) P_type = 1;
     if (strcmp(pdeltaparams.runmode,"emu_only")==0) P_type = 2;
     if (strcmp(pdeltaparams.runmode,"linear")==0) P_type = 3;
