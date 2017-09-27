@@ -1,0 +1,4 @@
+class
+libclass.a
+*.o
+*.so
