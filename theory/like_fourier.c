@@ -24,7 +24,7 @@
 #include "basics.c"
 #include "structs.c"
 #include "parameters.c"
-#include "../emu17/emu.c"
+#include "../emu17/P_cb/emu.c"
 #include "recompute.c"
 #include "cosmo3D.c"
 #include "redshift.c"
@@ -695,8 +695,8 @@ int main(void)
   init_Pdelta("Halofit",0.8,0.35);
   //compute_data_vector("fid",0.3156,0.831,0.9645,-1.,0.,0.0491685,0.6727,1.35,1.5,1.65,1.8,0.0,0.0, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.05,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0, 0.01,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5.92,1.1,-0.47,0.0,0.0,0.0,0.0, 0.0,0.0,0.0,1.72+log(1.e+14*0.7),1.08,0.0,0.25,0.9,0.9,0.9,0.9);
 
- init_data_inv("cov/cov_LSST_2.600000e+01_1.800000e+04_Rmin10_Ncl25_Ntomo10_2pt_clusterN_clusterWL_inv","datav/LSST_all_2pt_clusterN_clusterWL_fid");
- */
+  init_data_inv("cov/cov_LSST_2.600000e+01_1.800000e+04_Rmin10_Ncl25_Ntomo10_2pt_clusterN_clusterWL_inv","datav/LSST_all_2pt_clusterN_clusterWL_fid");
+  */
 
   // begin = clock();
   
