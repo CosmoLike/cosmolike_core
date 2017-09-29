@@ -12,27 +12,27 @@
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_errno.h>
 
-//====
-//in 1/Mpc 
-#define k_max_coyote 8.5691 
-#define k_min_coyote 0.0008694
-//#define k_min_coyote 0.0008694
-//===
-#define a_max_coyote 1.0
-#define a_min_coyote 0.2
 
-#define omhh_max_coyote 1.550000e-01
-#define omhh_min_coyote 1.200000e-01
-#define ombhh_max_coyote 2.350000e-02
-#define ombhh_min_coyote 2.150000e-02
-#define ns_max_coyote 1.050000e+00
-#define ns_min_coyote 8.500000e-01
-#define h0_max_coyote 8.500000e-01 
-#define h0_min_coyote 5.500000e-01
-#define w_max_coyote -7.000000e-01
-#define w_min_coyote -1.300000e+00
-#define s8_max_coyote 9.000000e-01
-#define s8_min_coyote 6.000000e-01
+//===
+#define a_max_emu 1.0
+#define a_min_emu 0.333334
+
+#define omhh_max_emu 1.550000e-01
+#define omhh_min_emu 1.200000e-01
+#define ombhh_max_emu 2.350000e-02
+#define ombhh_min_emu 2.150000e-02
+#define s8_max_emu 9.000000e-01
+#define s8_min_emu 7.000000e-01
+#define h0_max_emu 8.500000e-01 
+#define h0_min_emu 5.500000e-01
+#define ns_max_emu 1.050000e+00
+#define ns_min_emu 8.500000e-01
+#define w_max_emu -7.000000e-01
+#define w_min_emu -1.300000e+00
+#define wa_max_emu 1.29 //value correspond to -(w_0+w_a)^(1/4)
+#define wa_min_emu 0.3 //value correspond to -(w_0+w_a)^(1/4)
+#define onuhh_max_emu 0.01
+#define onuhh_min_emu -0.000000001 //slighyl smaller than 0 since problems otherwise if Omega_nu=0.0
 
 //void omega_a(double aa,double *om_m,double *om_v);
 double omv_vareos(double a);
@@ -54,14 +54,14 @@ void nonlin_scale(double amp, double *R_NL, double *neff, double *Curv);
 double Halofit(double k, double amp, double omm, double omv,double w_z, double R_NL, double neff,double Curv, double P_delta_Lin);
 void Delta_halofit(double **table_P_NL,double logkmin, double logkmax, double dk, double da);
 double Delta_NL_Halofit(double k_NL, double a); //k in h/Mpc
-double Delta_NL_Coyote(double k_NL,double a); //k in h/Mpc
-double Delta_NL_Coyote_only(double k_NL,double a); //k in h/Mpc
+double Delta_NL_emu(double k_NL,double a); //k in h/Mpc
+double Delta_NL_emu_only(double k_NL,double a); //k in h/Mpc
 double Pdelta(double k_NL,double a); //k in coverH0 units
 
 //double int_for_chi(double a,void * args);
 double f_K(double chi);
 double chi(double a);
-extern void emu(double *xstar, double *ystar, int *outtype);
+extern void emu(double *xstar, double *ystar, double *kstar);
 
 // Errors returned by CLASS (CLASS_SUCCESS is defined to always be 0)
 enum { 
@@ -165,7 +165,7 @@ double growfac(double a)
   
   if (recompute_expansion(C))
   {
-    
+
     if(table!=0) free_double_vector(table,0, Ntable.N_a-1);
     if(ai!=0) free_double_vector(ai,0, Ntable.N_a-1);    
     ai=create_double_vector(0, Ntable.N_a-1);
@@ -229,16 +229,16 @@ double Tsqr_EH_wiggle(double khoverMPC)
   //invalid_for_horndeski(__func__);
   
   //if (omhh != cosmology.Omega_m*cosmology.h0*cosmology.h0 || obhh != cosmology.omb*cosmology.h0*cosmology.h0|| OMEGA_V != cosmology.Omega_v){  
-    double theta_cmb,z_equality,z_drag,R_drag,R_equality;
-    double z_drag_b1, z_drag_b2;
-    double alpha_c_a1, alpha_c_a2, beta_c_b1, beta_c_b2, alpha_b_G, y;
-    
-    omhh = cosmology.Omega_m*cosmology.h0*cosmology.h0;  
-    obhh = cosmology.omb*cosmology.h0*cosmology.h0;
-    OMEGA_V = cosmology.Omega_v;
-    f_baryon = obhh/omhh; 
+  double theta_cmb,z_equality,z_drag,R_drag,R_equality;
+  double z_drag_b1, z_drag_b2;
+  double alpha_c_a1, alpha_c_a2, beta_c_b1, beta_c_b2, alpha_b_G, y;
+
+  omhh = cosmology.Omega_m*cosmology.h0*cosmology.h0;  
+  obhh = cosmology.omb*cosmology.h0*cosmology.h0;
+  OMEGA_V = cosmology.Omega_v;
+  f_baryon = obhh/omhh; 
     //printf("%le\n",f_baryon);
-    
+
     theta_cmb=2.728/2.7;// Tcmb in units of 2.7 K 
     z_equality= 2.50e4*omhh/POW4(theta_cmb);//Redshift of matter-radiation equality, really 1+z 
     
@@ -266,10 +266,10 @@ double Tsqr_EH_wiggle(double khoverMPC)
     beta_b= 0.5+f_baryon+(3.-2.*f_baryon)*sqrt(pow(17.2*omhh,2.0)+1);//Baryon envelope shift 
   //}  
   // Start of TFfit_onek from the original tf_fit.c at http://background.uchicago.edu/~whu/transfer/transferpage.html
-  double T_c_ln_beta,T_c_ln_nobeta , T_c_C_alpha, T_c_C_noalpha;
-  double q,qsqr, xx, xx_tilde;
-  double T_c_f, T_c, s_tilde, T_b_T0, T_b;
-  
+    double T_c_ln_beta,T_c_ln_nobeta , T_c_C_alpha, T_c_C_noalpha;
+    double q,qsqr, xx, xx_tilde;
+    double T_c_f, T_c, s_tilde, T_b_T0, T_b;
+
   double k=khoverMPC*cosmology.h0; //internally this routine uses Mpc^-1 not h/Mpc
   q = k/13.41/k_equality; 
   qsqr =SQR(q);
@@ -316,7 +316,7 @@ double sigma_r_sqr()
   {
     integral = int_gsl_integrate_medium_precision(int_for_sigma_r_sqr,(void*)array,1e-4,1e6,NULL,512);
     res = 9.0*integral;   //see Peackock97, eq. 29
-  update_cosmopara(&C);
+    update_cosmopara(&C);
 
   }
   if (!(res>0.0)){
@@ -362,14 +362,14 @@ double Delta_L_wiggle(double k)
       klog = logkmin;
       
       for (i=0; i<Ntable.N_k_lin; i++, klog += dk) {  
-	table_P[i]=log(norm*pow(exp(klog),cosmology.n_spec+3.0)*Tsqr_EH_wiggle(exp(klog)));
-      }
+       table_P[i]=log(norm*pow(exp(klog),cosmology.n_spec+3.0)*Tsqr_EH_wiggle(exp(klog)));
+     }
       //printf("finished Delta_L_wiggle\n");   
-    }
-  }
-  klog=log(k);
-  f1=interpol(table_P, Ntable.N_k_lin, logkmin, logkmax, dk,klog, 1.0,1.0 );
-  return exp(f1);  
+   }
+ }
+ klog=log(k);
+ f1=interpol(table_P, Ntable.N_k_lin, logkmin, logkmax, dk,klog, 1.0,1.0 );
+ return exp(f1);  
 }
 
 
@@ -378,9 +378,9 @@ double Delta_L_wiggle(double k)
 //   static cosmopara C;
 //   static double **table_P_Lz = 0;
 //   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
-  
+
 //   double om_m,om_v,amp,ampsqr,grow0,aa,klog,val;
-  
+
 //   //      printf("plin test a=%le k=%le\n",a,k_NL);
 //   int i,j;
 //   if (a >= 0.99999){a =0.99999;}
@@ -397,7 +397,7 @@ double Delta_L_wiggle(double k)
 //       omega_a(aa,&om_m,&om_v);
 //       amp=growfac(aa)/grow0;
 //       ampsqr=amp*amp;
-      
+
 //       logkmin = log(limits.k_min_mpc);
 //       logkmax = log(limits.k_max_mpc);
 //       dk = (logkmax - logkmin)/(Ntable.N_k_lin-1.);
@@ -412,14 +412,14 @@ double Delta_L_wiggle(double k)
 //   return exp(val);     
 // }
 void free_class_structs(               
-               struct background *ba,
-               struct thermo *th,
-               struct perturbs *pt,
-               struct transfers *tr,
-               struct primordial *pm,
-               struct spectra *sp,
-               struct nonlinear *nl,
-               struct lensing *le){
+ struct background *ba,
+ struct thermo *th,
+ struct perturbs *pt,
+ struct transfers *tr,
+ struct primordial *pm,
+ struct spectra *sp,
+ struct nonlinear *nl,
+ struct lensing *le){
   if (lensing_free(le) == _FAILURE_) {
     printf("\n\nError in lensing_free \n=>%s\n",le->error_message);
   }
@@ -455,15 +455,15 @@ void free_class_structs(
 
 
 int run_class(
-			   struct file_content *fc,
-	           struct background *ba,
-               struct thermo *th,
-               struct perturbs *pt,
-               struct transfers *tr,
-               struct primordial *pm,
-               struct spectra *sp,
-               struct nonlinear *nl,
-               struct lensing *le){
+  struct file_content *fc,
+  struct background *ba,
+  struct thermo *th,
+  struct perturbs *pt,
+  struct transfers *tr,
+  struct primordial *pm,
+  struct spectra *sp,
+  struct nonlinear *nl,
+  struct lensing *le){
   struct precision pr;        // for precision parameters 
   struct output op;           /* for output files */
   ErrorMsg errmsg; // for error messages 
@@ -540,43 +540,42 @@ int run_class(
 
 
 double get_class_s8(struct file_content *fc, int *status){
-//structures for class test run
-    struct background ba;       // for cosmological background 
-    struct thermo th;           // for thermodynamics 
-    struct perturbs pt;         // for source functions 
-    struct transfers tr;        // for transfer functions 
-    struct primordial pm;       // for primordial spectra 
-    struct spectra sp;          // for output spectra 
-    struct nonlinear nl;        // for non-linear spectra 
-    struct lensing le;
+  // Structures for class test run
+  struct background ba;       // for cosmological background 
+  struct thermo th;           // for thermodynamics 
+  struct perturbs pt;         // for source functions 
+  struct transfers tr;        // for transfer functions 
+  struct primordial pm;       // for primordial spectra 
+  struct spectra sp;          // for output spectra 
+  struct nonlinear nl;        // for non-linear spectra 
+  struct lensing le;
 
-  //temporarily overwrite P_k_max_1/Mpc to speed up sigma_8 calculation
+  // Temporarily overwrite P_k_max_1/Mpc to speed up sigma_8 calculation
   double k_max_old = 0.;
-  int position_kmax =2;
-  double A_s_guess;
-  strcpy(fc->name[1],"non linear");
-  strcpy(fc->value[1],"none");
-  // for(int i = 0; i<30; i++){
-  //   printf("%s: %s\n", fc->name[i], fc->value[i]);
-  // }
-  if (strcmp(fc->name[position_kmax],"P_k_max_1/Mpc")){
-    k_max_old = strtof(fc->value[position_kmax],NULL);
-    sprintf(fc->value[position_kmax],"%e",10.);  
+  int position_kmax = 2;
+  double sigma8;
+  strcpy(fc->name[1], "non linear");
+  strcpy(fc->value[1], "none");
+  if (strcmp(fc->name[position_kmax], "P_k_max_1/Mpc")){
+    k_max_old = strtof(fc->value[position_kmax], NULL);
+    sprintf(fc->value[position_kmax], "%e", 10.);  
   }
   *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
   if (*status == CLASS_SUCCESS){
+      sigma8 = sp.sigma8;
       free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
   }else{
       fprintf(stderr, "get_class_s8: CLASS failed.\n");
+      return -1.;
   }
-  if (k_max_old >0){
-    sprintf(fc->value[position_kmax],"%e",k_max_old);      
+  if (k_max_old > 0){
+    sprintf(fc->value[position_kmax], "%e", k_max_old);      
   }
-  return sp.sigma8;
+  return sigma8;
 }
 
-double get_class_As(struct file_content *fc, int position_As,double sigma8, int *status){
-//structures for class test run
+double get_class_As(struct file_content *fc, int position_As, double sigma8, int *status){
+    // Structures for class test run
     struct background ba;       // for cosmological background 
     struct thermo th;           // for thermodynamics 
     struct perturbs pt;         // for source functions 
@@ -586,43 +585,44 @@ double get_class_As(struct file_content *fc, int position_As,double sigma8, int 
     struct nonlinear nl;        // for non-linear spectra 
     struct lensing le;
 
-  //temporarily overwrite P_k_max_1/Mpc to speed up sigma_8 calculation
-  double k_max_old = 0.;
-  int position_kmax =2;
-  double A_s_guess;
-  strcpy(fc->name[1],"non linear");
-  strcpy(fc->value[1],"none");
-  if (strcmp(fc->name[position_kmax],"P_k_max_1/Mpc")){
-    k_max_old = strtof(fc->value[position_kmax],NULL);
-    sprintf(fc->value[position_kmax],"%e",10.);  
-  }
-  A_s_guess = 2.43e-9*pow(sigma8/0.87659,2.0);
-  sprintf(fc->value[position_As],"%e",A_s_guess);
+    // Temporarily overwrite P_k_max_1/Mpc to speed up sigma_8 calculation
+    double k_max_old = 0.;
+    int position_kmax =2;
+    double A_s_guess;
+    strcpy(fc->name[1],"non linear");
+    strcpy(fc->value[1],"none");
+    if (strcmp(fc->name[position_kmax],"P_k_max_1/Mpc")){
+      k_max_old = strtof(fc->value[position_kmax],NULL);
+      sprintf(fc->value[position_kmax],"%e",10.);  
+    }
+    A_s_guess = 2.43e-9 * pow(sigma8/0.87659,2.0);
+    sprintf(fc->value[position_As],"%e",A_s_guess);
+    
+    *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+    A_s_guess *= pow(sigma8/sp.sigma8, 2.);
+    if (*status == CLASS_SUCCESS){
+        free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+    }else{
+        fprintf(stderr, "get_class_As: CLASS failed.\n");
+    }
 
-  *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-  A_s_guess*=pow(sigma8/sp.sigma8,2.);
-  if (*status == CLASS_SUCCESS){
-      free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-  }else{
-      fprintf(stderr, "get_class_As: CLASS failed.\n");
+    if (k_max_old >0){
+      sprintf(fc->value[position_kmax],"%e",k_max_old);      
+    }
+    return A_s_guess;
   }
 
-  if (k_max_old >0){
-    sprintf(fc->value[position_kmax],"%e",k_max_old);      
-  }
-
-  return A_s_guess;
-}
 
 // Function to fill CLASS parameters struct with chosen cosmological parameters
-int fill_class_parameters(struct file_content * fc, int parser_length, int nonlinear){
+int fill_class_parameters(struct file_content * fc, int parser_length){
   int status = 0;
- // basic CLASS configuration parameters
+  
+  // Basic CLASS configuration parameters
   strcpy(fc->name[0],"output");
-  strcpy(fc->value[0],"mPk, tCl,lCl");
+  strcpy(fc->value[0],"mPk");
 
+  // Higher k_max makes CLASS very slow!
   strcpy(fc->name[2],"P_k_max_h/Mpc");
-  //higher k_max makes CLASS very slow!
   sprintf(fc->value[2],"%e",limits.k_max_mpc_class);//limits.k_max_mpc/10.);
 
   strcpy(fc->name[3],"z_max_pk");
@@ -634,7 +634,7 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
   strcpy(fc->name[5],"lensing");
   strcpy(fc->value[5],"no");
 
-  // now, copy over cosmology parameters
+  // Now, copy over cosmology parameters
   strcpy(fc->name[6],"h");
   sprintf(fc->value[6],"%e",cosmology.h0);
 
@@ -644,14 +644,12 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
   strcpy(fc->name[8],"Omega_b");
   sprintf(fc->value[8],"%e",cosmology.omb);
 
-
   strcpy(fc->name[10],"n_s");
   sprintf(fc->value[10],"%e",cosmology.n_spec);
 
-//cosmological constant?
-// set Omega_Lambda = 0.0 if w !=-1
-  if ((cosmology.w0 !=-1.0) || (cosmology.wa !=0)){
-    // FIXME: Figure out what do do with this block!
+  // Cosmological constant?
+  // Set Omega_Lambda = 0.0 if w !=-1
+  if ((cosmology.w0 !=-1.0) || (cosmology.wa != 0.0)){
     strcpy(fc->name[11],"Omega_Lambda");
     sprintf(fc->value[11],"%e", 0.0);
 
@@ -661,7 +659,8 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
     strcpy(fc->name[13],"wa_fld");
     sprintf(fc->value[13],"%e", cosmology.wa);
   }
-// pass neutrino parameters
+  
+  // Pass neutrino parameters
   if (cosmology.M_nu > 1.e-5 || cosmology.Omega_nu >0.){
     strcpy(fc->name[14],"N_ncdm");
     sprintf(fc->value[14],"%d",1);
@@ -679,17 +678,15 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
     sprintf(fc->value[16],"%e", 2.0328);
   }
   
-  // Pass Horndeski parameters
+  // Test whether Horndeski parameters are set to GR values
   int is_gr = (   (cosmology.mg_alpha_xk == 0.) 
                && (cosmology.mg_alpha_xb == 0.) 
                && (cosmology.mg_alpha_xm == 0.)
                && (cosmology.mg_alpha_xt == 0.)
                && (cosmology.mg_alpha_M2 == 1.)
               );
-  // FIXME: KP if ((cosmology.use_horndeski == 0) && (is_gr == 0)){
-  //   cosmology.use_horndeski = 1;
-  // }
-
+              
+  // Pass Horndeski parameters if enabled
   if ((cosmology.use_horndeski == 1) && (is_gr == 0))
   {
     // Use the \alpha_X(a) \propto \Omega_DE(a) redshift parametrisation
@@ -697,9 +694,6 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
     strcpy(fc->value[20], "propto_omega");
     
     // Set the alpha parameters using a list; 
-    // KP - it seems like a lot of
-    // people are against using sprintf (say it's dangerous)? 
-    // Should we change this?
     strcpy(fc->name[21], "parameters_smg");
     sprintf(fc->value[21], "%e, %e, %e, %e, %e", cosmology.mg_alpha_xk,
                                                  cosmology.mg_alpha_xb,
@@ -711,7 +705,7 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
     strcpy(fc->name[22], "pert_initial_conditions_smg");
     strcpy(fc->value[22], "single_clock");
     
-    // Make sure stability tests are switched on; KP - do you mean off here?
+    // Make sure stability tests are switched on
     strcpy(fc->name[23], "skip_stability_tests_smg");
     strcpy(fc->value[23], "no");
     
@@ -720,67 +714,47 @@ int fill_class_parameters(struct file_content * fc, int parser_length, int nonli
     strcpy(fc->value[24], "wowa");
     
     // Set the expansion parameters (Omega_smg, w0, wa).
+    // (set Omega_smg to some small number; overwritten in the next step)
     strcpy(fc->name[25], "expansion_smg");
     sprintf(fc->value[25], "%e, %e, %e", 0.5, cosmology.w0, cosmology.wa);
-    // KP: Set Omega_smg to some small number and it is overwritten in the next step.
 
     // Value of Omega_DE today
+    // FIXME: Setting this way allows OmegaK to fulfill closure relation
     strcpy(fc->name[26], "Omega_smg");
     sprintf(fc->value[26], "%e", cosmology.Omega_v);
-    // KP: Setting this in this way allows OmegaK to fuflfill the closure relation.
-
-
     
   } // end Horndeski section
-  else if((cosmology.use_horndeski == 1) && (is_gr == 1)){
-    cosmology.use_horndeski = 0;
-  }
+  //else if((cosmology.use_horndeski == 1) && (is_gr == 1)){
+  //  // FIXME: This needs to be undone at some point...
+  //  cosmology.use_horndeski = 0;
+  //}
   
   // Normalization comes last, so that all other parameters are filled in for 
   // determining A_s if sigma_8 is specified
   if (cosmology.A_s){
-//     printf("passing A_s=%e directly\n",cosmology.A_s);
+    // printf("passing A_s=%e directly\n",cosmology.A_s);
      strcpy(fc->name[parser_length-1],"A_s");
      sprintf(fc->value[parser_length-1],"%e",cosmology.A_s);
-     
-  }
-  else{
+  }else{
     double A_s = get_class_As(fc,parser_length-1,cosmology.sigma_8, &status);
     strcpy(fc->name[parser_length-1],"A_s");
     sprintf(fc->value[parser_length-1],"%e",A_s);
     
     if (status == 0){
-  	  A_s *=pow(cosmology.sigma_8/get_class_s8(fc,&status),2.0);
-	    strcpy(fc->name[parser_length-1],"A_s");
-  	  sprintf(fc->value[parser_length-1],"%e",A_s);
+  	  A_s *= pow(cosmology.sigma_8/get_class_s8(fc,&status), 2.0);
+	  strcpy(fc->name[parser_length-1], "A_s");
+  	  sprintf(fc->value[parser_length-1], "%e", A_s);
     }
-    printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
+    // printf("Determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
   }
   
-  // Turn off Halofit if Horndeski is enabled, or if nonlinear mode is turned off
+  // Turn off Halofit if Horndeski is enabled
   strcpy(fc->name[1], "non linear");
-  // if ( (cosmology.use_horndeski == 0) || (nonlinear == 0) ){
-  //   strcpy(fc->value[1], "Halofit");
-  // }else{
-  //   strcpy(fc->value[1], "");
-  // }
-  strcpy(fc->value[1], ""); //FIX ME: printing halofit when in horndeski?
-  
-  // for(int i=0; i<30; i++){
-  //   printf("%s, %s\n", fc->name[i],fc->value[i]);
-  // }
-  
-  
-  // FIXME: Output all parameters that we are passing to CLASS
-  FILE *fileforclass;
-  fileforclass = fopen("/Users/kpardo/Documents/hi_class_public/classparams.ini","w");
-  for(int i=0; i < 27; i++){
-    if (fc->read[i] == 1){
-      fprintf(fileforclass,"%s = %s\n", fc->name[i], fc->value[i]);
-    }
+  if (cosmology.use_horndeski == 1){
+    strcpy(fc->value[1], ""); // Turn off Halofit
+  }else{
+    strcpy(fc->value[1], "Halofit");
   }
-  fprintf(fileforclass, "root = output/classparams00_");
-  fclose(fileforclass);
   
   return status;
 }
@@ -803,6 +777,13 @@ double evaluate_class_tables(double k_coverh0, double a, int NL, int mode, int *
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   static int class_status = 0;
   double val, klog;
+  
+  // Sanity check: NL should be switched off if in Horndeski mode
+  if ((NL != 0) && (cosmology.use_horndeski == 1)){
+    fprintf(stderr, "evaluate_class_tables(): NL==1 is not allowed when Horndeski mode is enabled.\n");
+    *status = 1;
+    return 0.;
+  }
   
   if (recompute_cosmo3D(C)){
     //printf("+++ Recomputing; parameters changed! +++\n");
@@ -863,11 +844,12 @@ double evaluate_class_tables(double k_coverh0, double a, int NL, int mode, int *
     int i,j,s;
     aa = limits.a_min;
     if (cosmology.A_s){
-      norm = 3.*log(cosmology.h0/cosmology.coverH0);
+      norm = 3. * log(cosmology.h0/cosmology.coverH0);
       cosmology.sigma_8 = sp.sigma8;
     }
     else{
-      norm = log(pow(cosmology.sigma_8/sp.sigma8,2.)*pow(cosmology.h0/cosmology.coverH0,3.));
+      norm = log(pow(cosmology.sigma_8/sp.sigma8, 2.)
+           * pow(cosmology.h0/cosmology.coverH0, 3.));
     }
     
     // Construct interpolation table for power spectrum
@@ -878,16 +860,16 @@ double evaluate_class_tables(double k_coverh0, double a, int NL, int mode, int *
         for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) { 
           k_class = exp(klog)*cosmology.h0/cosmology.coverH0;
           s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
-          table_P_L[i][j] = log(Pk) +norm;
+          table_P_L[i][j] = log(Pk) + norm;
           if (NL == 1){
             s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
-            table_P_NL[i][j] = log(Pk) +norm;
+            table_P_NL[i][j] = log(Pk) + norm;
           }
         }
       }
     } // end status check
     
-    // Construct Horndeski interpolation tables (if requested)
+    // Construct Horndeski interpolation tables if requested
     if (cosmology.use_horndeski == 1){
         double z = 0.;
         double tau = 0.;
@@ -950,8 +932,6 @@ double evaluate_class_tables(double k_coverh0, double a, int NL, int mode, int *
             
             // mu_light (Eq. 7 of arXiv:1705.04714)
             table_horndeski_mu_light[i] = 1. + 0.5*alphaT + fac1*fac2*(alphaB + fac2);
-            
-            
         } // end loop over a
         
         // Free temporary vector
@@ -1000,7 +980,7 @@ double evaluate_class_tables(double k_coverh0, double a, int NL, int mode, int *
      * 'lower' and 'upper' are powers of a logarithmic power law	*
      * extrapolation. If no	extrapolation desired, set these to 0	*/
     val = interpol(func, Ntable.N_a, limits.a_min, 1., da, a, 0, 0);
-    //if(isnan(val)) return 0.0;
+    if(isnan(val)) return 0.0;
     return val;
   
   } // end Horndeski check
@@ -1025,7 +1005,7 @@ double horndeski_function(double a, char* func_name, int *status){
     // Safety check
     if (mode < 0){ 
         fprintf(stderr, 
-            "WARNING: cosmo3D.c:horndeski_function, mode '%d' not recognized.\n", 
+            "ERROR: cosmo3D.c:horndeski_function, mode '%d' not recognized.\n", 
             mode);
         *status = 1;
         return 0.;
@@ -1136,7 +1116,7 @@ void nonlin_scale(double amp, double *R_NL, double *neff, double *Curv)
   double array[1];
   double logRmin = -3.0;
   double logRmax =  4.0; 
-   
+
   iterstep=0;  
   while(converged==0)
   {        
@@ -1161,7 +1141,7 @@ void nonlin_scale(double amp, double *R_NL, double *neff, double *Curv)
   //printf("%d %le\n",iterstep,amp);  
 }                  
 
- 
+
 double Halofit(double k, double amp, double omm, double omv,double w_z, double R_NL, double neff,double Curv, double P_delta_Lin)
 {
   double y_scale,n2eff,n3eff,n4eff;
@@ -1198,7 +1178,7 @@ double Halofit(double k, double amp, double omm, double omv,double w_z, double R
   Delta_H_Prime=(a_n*pow(y_scale,3.0*f1))/(1.0+b_n*pow(y_scale,f2)+pow(c_n*f3*y_scale,3.0-gamma_n));
   Delta_H=Delta_H_Prime/(1.0+nu_n*pow(y_scale,-2.0)); // using mu=0.0 Tak A12
   //printf("Delta_Q %le Delta_H %le\n",Delta_Q,Delta_H);
- return Delta_H+Delta_Q;
+  return Delta_H+Delta_Q;
 }
 
 
@@ -1210,7 +1190,7 @@ void Delta_halofit(double **table_P_NL,double logkmin, double logkmax, double dk
   
   grow0=growfac(1.);
   aa = limits.a_min;
-  //binning in k and a must be the same as in Coyote
+  //binning in k and a must be the same as in emu
   for (i=0; i<Ntable.N_a; i++, aa +=da) { 
     if(aa>1.0) aa=1.0;
     omega_a(aa,&omm,&omv);
@@ -1287,87 +1267,101 @@ double nonlinear_scale_computation(double a)
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-void determine_coyote_cosmo_calib(double *COSMO_emu, int *calibflag)
+void determine_emu_cosmo_calib(double *COSMO_emu, int *calibflag)
 {
   COSMO_emu[3] = cosmology.h0;
-  if( cosmology.h0<= h0_min_coyote){  
-    COSMO_emu[3]=h0_min_coyote+0.000001;
+  if( cosmology.h0<= h0_min_emu){  
+    COSMO_emu[3]=h0_min_emu+0.000001;
     *calibflag=1;
   }
-  if(cosmology.h0>= h0_max_coyote){  
-    COSMO_emu[3]=h0_max_coyote-0.000001;
-    *calibflag=1;}
-  
-  
-  COSMO_emu[1] = cosmology.Omega_m*COSMO_emu[3]*COSMO_emu[3];
-  COSMO_emu[0] = cosmology.omb*COSMO_emu[3]*COSMO_emu[3];
-  COSMO_emu[2] = cosmology.n_spec;
-  COSMO_emu[4] = cosmology.w0;
-  COSMO_emu[5] = cosmology.sigma_8;  
+  if(cosmology.h0>= h0_max_emu){  
+    COSMO_emu[3]=h0_max_emu-0.000001;
+    *calibflag=1;
+  }
 
-  if (COSMO_emu[0] <= ombhh_min_coyote){ 
-    COSMO_emu[0]= ombhh_min_coyote+0.000001;
+  COSMO_emu[0] = cosmology.Omega_m*COSMO_emu[3]*COSMO_emu[3];
+  COSMO_emu[1] = cosmology.omb*COSMO_emu[3]*COSMO_emu[3];
+  COSMO_emu[2] = cosmology.sigma_8;  
+  COSMO_emu[4] = cosmology.n_spec;
+  COSMO_emu[5] = cosmology.w0;
+  COSMO_emu[6] = cosmology.wa;
+  COSMO_emu[7] = cosmology.Omega_nu*COSMO_emu[3]*COSMO_emu[3];
+
+  if(COSMO_emu[0]  <= omhh_min_emu){  
+    COSMO_emu[0]=omhh_min_emu+0.000001;
     *calibflag=1;
   }
-  if (COSMO_emu[0] >= ombhh_max_coyote){ 
-    COSMO_emu[0]=ombhh_max_coyote-0.000001;
+  if(COSMO_emu[0] >= omhh_max_emu){  
+    COSMO_emu[0]=omhh_max_emu-0.000001;
+    *calibflag=1;
+  }
+  if(COSMO_emu[1] <= ombhh_min_emu){ 
+    COSMO_emu[1]= ombhh_min_emu+0.000001;
+    *calibflag=1;
+  }
+  if(COSMO_emu[1] >= ombhh_max_emu){ 
+    COSMO_emu[1]=ombhh_max_emu-0.000001;
     *calibflag=1;   
-  }
-  if(COSMO_emu[1]  <= omhh_min_coyote){  
-    COSMO_emu[1]=omhh_min_coyote+0.000001;
-    *calibflag=1;
-  }
-  if(COSMO_emu[1] >= omhh_max_coyote){  
-    COSMO_emu[1]=omhh_max_coyote-0.000001;
-    *calibflag=1;
-  }
-  if(cosmology.n_spec <= ns_min_coyote){ 
-    COSMO_emu[2]=ns_min_coyote+0.000001;
+  }    
+  if(COSMO_emu[2]<= s8_min_emu){  
+    COSMO_emu[2]=s8_min_emu+0.000001;
     *calibflag=1; 
   }
-  if(cosmology.n_spec >= ns_max_coyote){  
-    COSMO_emu[2]=ns_max_coyote-0.000001;
+  if(COSMO_emu[2]>= s8_max_emu){  
+    COSMO_emu[2]=s8_max_emu-0.000001;
+    *calibflag=1;    
+  }    
+  if(cosmology.n_spec <= ns_min_emu){ 
+    COSMO_emu[4]=ns_min_emu+0.000001;
+    *calibflag=1; 
+  }
+  if(cosmology.n_spec >= ns_max_emu){  
+    COSMO_emu[4]=ns_max_emu-0.000001;
     *calibflag=1;   
-  }
-  if( cosmology.w0<= w_min_coyote){  
-    COSMO_emu[4]=w_min_coyote+0.000001;
+  }    
+  if(cosmology.w0<= w_min_emu){  
+    COSMO_emu[5]=w_min_emu+0.000001;
     *calibflag=1; 
   }
-  if( cosmology.w0>= w_max_coyote){  
-    COSMO_emu[4]=w_max_coyote-0.000001;
+  if(cosmology.w0>= w_max_emu){  
+    COSMO_emu[5]=w_max_emu-0.000001;
+    *calibflag=1; 
+  }   
+  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) <= wa_min_emu){  
+    COSMO_emu[6]=-(pow((wa_min_emu+0.000001),4)+COSMO_emu[5]);
     *calibflag=1; 
   }
-  if(cosmology.sigma_8<= s8_min_coyote){  
-    COSMO_emu[5]=s8_min_coyote+0.000001;
+  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) >= wa_max_emu){  
+    COSMO_emu[6]=(pow((wa_min_emu-0.000001),4)+COSMO_emu[5]);
+    *calibflag=1; 
+  }    
+  if(COSMO_emu[7]<= onuhh_min_emu){  
+    COSMO_emu[7]=onuhh_min_emu+0.000001;
     *calibflag=1; 
   }
-  if( cosmology.sigma_8>= s8_max_coyote){  
-    COSMO_emu[5]=s8_max_coyote-0.000001;
-    *calibflag=1;    
-  }
-  if(cosmology.wa != 0.0){  
-    *calibflag=1;    
-  } 
+  if(COSMO_emu[7]>= onuhh_max_emu){  
+    COSMO_emu[7]=onuhh_max_emu-0.000001;
+    *calibflag=1; 
+  }   
 }
-  
 
-double Delta_NL_Coyote(double k_NL,double a)
+
+double Delta_NL_emu(double k_NL,double a)
 {     
   static cosmopara C;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
-  
+
   static double **table_P_NL=0;
   static double **table_P_NL_halofit=0;
   static double **table_P_NL_halofit_calibrate=0;
-  
+
   double aa,klog,val; 
-  double COSMO_orig[7],COSMO_emu[7],ystar[2*582],kstar[582],p_coyote[582],coyote_min,coyote_max;
+  double COSMO_orig[9],COSMO_emu[9],ystar[351],kstar[351],p_emu[351],emu_min,emu_max,k_max_emu,k_min_emu;
   int type=1,calibflag=0;
   int i,j,k;
-  
+
   if (recompute_cosmo3D(C)){
     update_cosmopara(&C);
-
     if (table_P_NL!=0) free_double_matrix(table_P_NL,0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);     
     if (table_P_NL_halofit!=0) free_double_matrix(table_P_NL_halofit,0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
     table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
@@ -1376,149 +1370,149 @@ double Delta_NL_Coyote(double k_NL,double a)
     logkmin = log(limits.k_min_mpc);
     logkmax = log(limits.k_max_mpc);
     dk = (logkmax - logkmin)/(Ntable.N_k_nlin-1.);
-    
-    //printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec, cosmology.sigma_8,cosmology.w0,cosmology.wa,cosmology.h0);
-    
+
+    //printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec,cosmology.sigma_8,cosmology.w0,cosmology.wa,cosmology.h0);
+
     //compute Halofit; determine whether outside cosmology of emulator -> use recalibration factor
     Delta_halofit(table_P_NL_halofit,logkmin, logkmax, dk, da);
-    determine_coyote_cosmo_calib(COSMO_emu, &calibflag);    
-    
+    determine_emu_cosmo_calib(COSMO_emu, &calibflag);    
     if(calibflag==0){
       //printf("INSIDE Emulator cosmology\n");
-      COSMO_emu[3] =COSMO_emu[3]*100;
       aa = limits.a_min;
       //binning in k and a must be the same as in  Delta_halofit
       for (i=0; i<Ntable.N_a; i++, aa +=da) {
-	gsl_interp_accel *acc = gsl_interp_accel_alloc ();
-	gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 582);
-	COSMO_emu[6] = (1.0/aa)-1.0; //emu takes 7 args 6 cosmopara and 7th redshift    
-	if(fabs(COSMO_emu[6])<1.e-10) {
-	  COSMO_emu[6]=0.0;
-	}
-	if(aa >= a_min_coyote){
-	  emu(COSMO_emu,ystar, &type);
-	  for (k=0; k<582; k++){
-	    kstar[k]=ystar[k];
-	    p_coyote[k]=ystar[k+582];
-	    //printf("%le %le\n",kstar[k],p_coyote[k]);
-	  }
-	  gsl_spline_init (timspline, kstar, p_coyote, 582);
+       gsl_interp_accel *acc = gsl_interp_accel_alloc ();
+       gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 351);
+	COSMO_emu[8] = (1.0/aa)-1.0; //emu takes 9 args 8 cosmopara and 7th is redshift    
+	if(fabs(COSMO_emu[8])<1.e-10) {
+   COSMO_emu[8]=0.0;
+ }
+ if(aa >= a_min_emu){
+   emu(COSMO_emu,ystar,kstar);
+   for (k=0; k<351; k++){
+     p_emu[k]=ystar[350];
+     printf("%le %le\n",kstar[k],p_emu[k]);
+   }
+   gsl_spline_init (timspline, kstar, p_emu, 351);
 
-	  coyote_min=log(p_coyote[0]/Delta_NL_Halofit(kstar[0]/cosmology.h0,aa));
-	  coyote_max=log(p_coyote[581]/Delta_NL_Halofit(kstar[581]/cosmology.h0,aa));
-	  //printf("%le %le\n",kstar[k-1],p_coyote[k-1]);
+   emu_min=log(p_emu[0]/Delta_NL_Halofit(kstar[0]/cosmology.h0,aa));
+   emu_max=log(p_emu[350]/Delta_NL_Halofit(kstar[350]/cosmology.h0,aa));
+	  //printf("%le %le\n",kstar[k-1],p_emu[k-1]);
 	  klog = logkmin; // log k in h/MPC
 	  for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
-	    if ((klog >= log(k_min_coyote/cosmology.h0)) && (klog <= log(k_max_coyote/cosmology.h0))){
-	      table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc));
-	      //printf("Coyote used\n");
-	    }
-	    if(klog>log(k_max_coyote/cosmology.h0))  table_P_NL[i][j]=coyote_max+table_P_NL_halofit[i][j];
-	    if(klog<log(k_min_coyote/cosmology.h0)) table_P_NL[i][j]=coyote_min+table_P_NL_halofit[i][j];
-	      //printf("Halofit used: exceeded Coyote k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_coyote/cosmology.h0,k_max_coyote/cosmology.h0);
-	    }
-	  }
-	if(aa < a_min_coyote){
-	  //printf("non coyote %le\n",aa);
-	  for (j=0; j<Ntable.N_k_nlin; j++) {
-	    table_P_NL[i][j]=table_P_NL_halofit[i][j]; // coyote goes down to z=4, Halofit and Coyote difference small since pdelta is almost linear -> no need for calibration here
+     if ((klog >= log(k_min_emu/cosmology.h0)) && (klog <= log(k_max_emu/cosmology.h0))){
+       table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc));
+	      //printf("emu used\n");
+     }
+     if(klog>log(k_max_emu/cosmology.h0))  table_P_NL[i][j]=emu_max+table_P_NL_halofit[i][j];
+     if(klog<log(k_min_emu/cosmology.h0)) table_P_NL[i][j]=emu_min+table_P_NL_halofit[i][j];
+	      //printf("Halofit used: exceeded emu k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_emu/cosmology.h0,k_max_emu/cosmology.h0);
+   }
+ }
+ if(aa < a_min_emu){
+	  //printf("non emu %le\n",aa);
+   for (j=0; j<Ntable.N_k_nlin; j++) {
+	    table_P_NL[i][j]=table_P_NL_halofit[i][j]; // emu goes down to z=4, Halofit and emu difference small since pdelta is almost linear -> no need for calibration here
 	  }
 	}
 	gsl_spline_free (timspline);
 	gsl_interp_accel_free (acc);
-      }
-    }
-    if(calibflag==1){      
+}
+}
+if(calibflag==1){      
       //printf("OUTSIDE Emulator cosmology\n");
       // to restore the cosmology structure later 
-      COSMO_orig[1] = cosmology.Omega_m;
-      COSMO_orig[0] = cosmology.omb;
-      COSMO_orig[2] = cosmology.n_spec;
-      COSMO_orig[3] = cosmology.h0;
-      COSMO_orig[4] = cosmology.w0;
-      COSMO_orig[5] = cosmology.sigma_8;  
-      COSMO_orig[6] = cosmology.wa;
-      
-      if (table_P_NL_halofit_calibrate!=0) free_double_matrix(table_P_NL_halofit_calibrate,0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
-      table_P_NL_halofit_calibrate = create_double_matrix(0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
-      
-      // set cosmology to compute the Halofit calibration power spectrum 
-      cosmology.Omega_m=COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3];
-      cosmology.Omega_v=1.0-cosmology.Omega_m;
-      cosmology.omb=COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3];
-      cosmology.n_spec=COSMO_emu[2];
-      cosmology.h0 =COSMO_emu[3];
-      cosmology.w0=COSMO_emu[4];
-      cosmology.sigma_8=COSMO_emu[5];  
-      cosmology.wa=0.0;  
-      
-//      Delta_halofit(table_P_NL_halofit_calibrate,logkmin, logkmax, dk, da);
-           
-      COSMO_emu[3] = COSMO_emu[3]*100.0;
-        aa = limits.a_min;
-      //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
-      for (i=0; i<Ntable.N_a; i++, aa +=da) {
-	gsl_interp_accel *acc = gsl_interp_accel_alloc ();
-	gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 582);
-	COSMO_emu[6] = (1.0/aa)-1.0; //emu takes 7 args 6 cosmopara and 7th redshift    
-	if(fabs(COSMO_emu[6])<1.e-10) {
-	  COSMO_emu[6]=0.0;
-	}
-	if(aa >= a_min_coyote){
-	  //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
-	  emu(COSMO_emu,ystar, &type);
-	  for (k=0; k<582; k++){
-	    kstar[k]=ystar[k];
-	    p_coyote[k]=ystar[k+582]/Delta_NL_Halofit(kstar[k]/cosmology.h0,aa);
-	    //printf("%le %le\n",kstar[k],p_coyote[k]);
-	  }
-	  gsl_spline_init (timspline, kstar, p_coyote, 582);
+  COSMO_orig[0] = cosmology.Omega_m;
+  COSMO_orig[1] = cosmology.omb;
+  COSMO_orig[2] = cosmology.sigma_8;  
+  COSMO_orig[3] = cosmology.h0;
+  COSMO_orig[4] = cosmology.n_spec;
+  COSMO_orig[5] = cosmology.w0;
+  COSMO_orig[6] = cosmology.wa;
+  COSMO_orig[7] = cosmology.Omega_nu;
 
-	  coyote_min=p_coyote[0];
-	  coyote_max=p_coyote[581];
-	  //printf("%le %le\n",kstar[k-1],p_coyote[k-1]);
+  if (table_P_NL_halofit_calibrate!=0) free_double_matrix(table_P_NL_halofit_calibrate,0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
+  table_P_NL_halofit_calibrate = create_double_matrix(0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
+
+      // set cosmology to compute the Halofit calibration power spectrum 
+  cosmology.Omega_m=COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3];
+  cosmology.Omega_v=1.0-cosmology.Omega_m;
+  cosmology.omb=COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3];
+  cosmology.sigma_8=COSMO_emu[2];
+  cosmology.h0 =COSMO_emu[3];
+  cosmology.n_spec=COSMO_emu[4];
+  cosmology.w0=COSMO_emu[5];
+  cosmology.wa=COSMO_emu[6];
+  cosmology.Omega_nu=COSMO_emu[7];
+
+  //Delta_halofit(table_P_NL_halofit_calibrate,logkmin, logkmax, dk, da);
+
+  aa = limits.a_min;
+      //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
+  for (i=0; i<Ntable.N_a; i++, aa +=da) {
+   gsl_interp_accel *acc = gsl_interp_accel_alloc ();
+   gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 351);
+	COSMO_emu[8] = (1.0/aa)-1.0; //emu takes 7 args 6 cosmopara and 7th redshift    
+	if(fabs(COSMO_emu[8])<1.e-10) {
+   COSMO_emu[8]=0.0;
+ }
+ if(aa >= a_min_emu){
+	  //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
+   emu(COSMO_emu,ystar,kstar);
+   for (k=0; k<351; k++){
+     kstar[k]=ystar[k];
+     p_emu[k]=ystar[k+351]/Delta_NL_Halofit(kstar[k]/cosmology.h0,aa);
+	    //printf("%le %le\n",kstar[k],p_emu[k]);
+   }
+   gsl_spline_init (timspline, kstar, p_emu, 351);
+
+   emu_min=p_emu[0];
+   emu_max=p_emu[350];
+	  //printf("%le %le\n",kstar[k-1],p_emu[k-1]);
 	  klog = logkmin; // log k in h/MPC
 	  for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
-	    if ((klog >= log(k_min_coyote/cosmology.h0)) && (klog <= log(k_max_coyote/cosmology.h0))){
-	      table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc))+table_P_NL_halofit[i][j];
-	      //printf("Coyote used\n");
-	    }
-	    if(klog>log(k_max_coyote/cosmology.h0))  table_P_NL[i][j]=log(coyote_max)+table_P_NL_halofit[i][j];
-	    if(klog<log(k_min_coyote/cosmology.h0)) table_P_NL[i][j]=log(coyote_min)+table_P_NL_halofit[i][j];
-	      //printf("Halofit used: exceeded Coyote k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_coyote/cosmology.h0,k_max_coyote/cosmology.h0);
-	    }
-	  }
-	if(aa < a_min_coyote){
-	  //printf("non coyote %le\n",aa);
-	  for (j=0; j<Ntable.N_k_nlin; j++) {
-	    table_P_NL[i][j]=table_P_NL_halofit[i][j]; // coyote goes down to z=4, Halofit and Coyote difference small since pdelta is almost linear -> no need for calibration here
+     if ((klog >= log(k_min_emu/cosmology.h0)) && (klog <= log(k_max_emu/cosmology.h0))){
+       table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc))+table_P_NL_halofit[i][j];
+	      //printf("emu used\n");
+     }
+     if(klog>log(k_max_emu/cosmology.h0))  table_P_NL[i][j]=log(emu_max)+table_P_NL_halofit[i][j];
+     if(klog<log(k_min_emu/cosmology.h0)) table_P_NL[i][j]=log(emu_min)+table_P_NL_halofit[i][j];
+	      //printf("Halofit used: exceeded emu k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_emu/cosmology.h0,k_max_emu/cosmology.h0);
+   }
+ }
+ if(aa < a_min_emu){
+	  //printf("non emu %le\n",aa);
+   for (j=0; j<Ntable.N_k_nlin; j++) {
+	    table_P_NL[i][j]=table_P_NL_halofit[i][j]; // emu goes out to to z=2, Halofit and emu difference small since pdelta is more linear -> no need for calibration here
 	  }
 	}
 	gsl_spline_free (timspline);
 	gsl_interp_accel_free (acc);
-	cosmology.Omega_m=COSMO_orig[1];
+	cosmology.Omega_m=COSMO_orig[0];
 	cosmology.Omega_v=1.0-cosmology.Omega_m;
-	cosmology.omb=COSMO_orig[0];
-	cosmology.n_spec=COSMO_orig[2];
-	cosmology.h0 =COSMO_orig[3];
-	cosmology.w0=COSMO_orig[4];
-	cosmology.sigma_8=COSMO_orig[5];  	
-	cosmology.wa=COSMO_orig[6];
-      }      
-    }
-  }
+	cosmology.omb=COSMO_orig[1];
+  cosmology.sigma_8=COSMO_orig[2];  
+  cosmology.h0 =COSMO_orig[3];
+  cosmology.n_spec=COSMO_orig[4];
+  cosmology.w0=COSMO_orig[5];
+  cosmology.wa=COSMO_orig[6];
+  cosmology.Omega_nu=COSMO_orig[7];
+}      
+}
+}
 //  printf("%le\n",k_NL);
-  klog = log(k_NL);
-//  if(a < a_min_coyote || klog>log(k_max_coyote/cosmology.h0) || klog<log(k_min_coyote/cosmology.h0))printf("Halofit used: exceeded Coyote a or k range a=%le k=%le\n",a,exp(klog));
+klog = log(k_NL);
+//  if(a < a_min_emu || klog>log(k_max_emu/cosmology.h0) || klog<log(k_min_emu/cosmology.h0))printf("Halofit used: exceeded emu a or k range a=%le k=%le\n",a,exp(klog));
 
 
-  val = interpol2d(table_P_NL, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec, 0.0);
+val = interpol2d(table_P_NL, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec, 0.0);
 //  printf("%le %le\n",k_NL,exp(val));
-  return exp(val); 
+return exp(val); 
   // returns the dimensionless power spectrum as a function of scale factor a and k in units of h/Mpc 
 }
 
-double Delta_NL_Coyote_only(double k_NL,double a)
+// Using the cosmic emulator only routines, no extrapolation in redshift, k, or cosmology
+double Delta_NL_emu_only(double k_NL,double a)
 {     
   static cosmopara C;
 
@@ -1526,8 +1520,7 @@ double Delta_NL_Coyote_only(double k_NL,double a)
   static double **table_P_NL=0;
   
   double aa,klog,val; 
-  double COSMO_emu[7],ystar[2*582],kstar[582],p_coyote[582],coyote_min,coyote_max;
-  int type=1;
+  double COSMO_emu[9],ystar[351],kstar[351],p_emu[351],emu_min,emu_max,k_min_emu,k_max_emu;
   int i,j,k;
   
   if (recompute_cosmo3D(C)){
@@ -1540,61 +1533,64 @@ double Delta_NL_Coyote_only(double k_NL,double a)
     logkmax = log(limits.k_max_mpc);
     dk = (logkmax - logkmin)/(Ntable.N_k_nlin-1.);
     
-    //printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec,cosmology.sigma_8, cosmology.w0,cosmology.wa,cosmology.h0);
+    printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec,cosmology.sigma_8,cosmology.w0,cosmology.wa,cosmology.h0);
     
     //compute Halofit; determine whether outside cosmology of emulator -> break
-   
-   COSMO_emu[1] = cosmology.Omega_m*cosmology.h0*cosmology.h0;
-   COSMO_emu[0] = cosmology.omb*cosmology.h0*cosmology.h0;
-   COSMO_emu[2] = cosmology.n_spec;
-   COSMO_emu[3] = cosmology.h0*100.;
-   COSMO_emu[4] = cosmology.w0;
-   COSMO_emu[5] = cosmology.sigma_8;   
-   COSMO_emu[6] = 0.0;
+
+    COSMO_emu[0] = cosmology.Omega_m*cosmology.h0*cosmology.h0;
+    COSMO_emu[1] = cosmology.omb*cosmology.h0*cosmology.h0;
+    COSMO_emu[2] = cosmology.sigma_8;   
+    COSMO_emu[3] = cosmology.h0;
+    COSMO_emu[4] = cosmology.n_spec;
+    COSMO_emu[5] = cosmology.w0;
+    COSMO_emu[7] = cosmology.Omega_nu*cosmology.h0*cosmology.h0;
 
     aa = limits.a_min;
       //binning in k and a must be the same as in  Delta_halofit
-     
-      for (i=0; i<Ntable.N_a; i++, aa +=da) {
-  gsl_interp_accel *acc = gsl_interp_accel_alloc ();
-  gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 582);
-  
-  COSMO_emu[6] = (1.0/aa)-1.0; //emu takes 7 args 6 cosmopara and 7th redshift    
-  if(aa < a_min_coyote) COSMO_emu[6] = 4.0; //max redshift
-  if(fabs(COSMO_emu[6])<1.e-10)   COSMO_emu[6]=0.0;
-   emu(COSMO_emu,ystar, &type);
-    for (k=0; k<582; k++){
-      kstar[k]=ystar[k];
-      p_coyote[k]=ystar[k+582];
-      //printf("%le %le\n",kstar[k],p_coyote[k]);
-    }
-    gsl_spline_init (timspline, kstar, p_coyote, 582);
 
-    coyote_min=p_coyote[0];
-    coyote_max=p_coyote[581];
-    //printf("%le %le\n",kstar[k-1],p_coyote[k-1]);
+    for (i=0; i<Ntable.N_a; i++, aa +=da) {
+      gsl_interp_accel *acc = gsl_interp_accel_alloc ();
+      gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 351);
+
+  COSMO_emu[8] = (1.0/aa)-1.0; //emu takes 9 args 8 cosmopara and 7th redshift    
+  if(aa < a_min_emu) COSMO_emu[8] = 2.0; //max redshift for emu is 2.02
+  if(fabs(COSMO_emu[8])<1.e-10)   COSMO_emu[8]=0.0;
+   COSMO_emu[6] = cosmology.wa; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
+   emu(COSMO_emu,ystar,kstar);
+   for (k=0; k<351; k++){
+    p_emu[k]=ystar[k];
+      //printf("%le %le\n",kstar[k],p_emu[k]);
+  }
+  gsl_spline_init (timspline, kstar, p_emu, 351);
+
+  emu_min=p_emu[0];
+  emu_max=p_emu[350];
+  k_min_emu=kstar[0];
+  k_max_emu=kstar[350];
+
+    //printf("%le %le\n",kstar[k-1],p_emu[k-1]);
     klog = logkmin; // log k in h/MPC
     for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
-      if ((klog >= log(k_min_coyote/cosmology.h0)) && (klog <= log(k_max_coyote/cosmology.h0))){
+      if ((klog >= log(k_min_emu/cosmology.h0)) && (klog <= log(k_max_emu/cosmology.h0))){
         table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc));
-        //printf("Coyote used\n");
+        //printf("emu used\n");
       }
-      if(klog>log(k_max_coyote/cosmology.h0))  table_P_NL[i][j]=log(coyote_max);
-      if(klog<log(k_min_coyote/cosmology.h0)) table_P_NL[i][j]=log(coyote_min);
-        //printf("Halofit used: exceeded Coyote k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_coyote/cosmology.h0,k_max_coyote/cosmology.h0);
-      }
-      gsl_interp_accel_free(acc);
-      gsl_spline_free(timspline);    
-     }
-   }    
+      if(klog>log(k_max_emu/cosmology.h0))  table_P_NL[i][j]=log(emu_max);
+      if(klog<log(k_min_emu/cosmology.h0)) table_P_NL[i][j]=log(emu_min);
+        //printf("Halofit used: exceeded emu k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_emu/cosmology.h0,k_max_emu/cosmology.h0);
+    }
+    gsl_interp_accel_free(acc);
+    gsl_spline_free(timspline);    
+  }
+}    
 
   //  printf("%le\n",k_NL);
-  klog = log(k_NL);
-//  if(a < a_min_coyote || klog>log(k_max_coyote/cosmology.h0) || klog<log(k_min_coyote/cosmology.h0))printf("Halofit used: exceeded Coyote a or k range a=%le k=%le\n",a,exp(klog));
+klog = log(k_NL);
+//  if(a < a_min_emu || klog>log(k_max_emu/cosmology.h0) || klog<log(k_min_emu/cosmology.h0))printf("Halofit used: exceeded emu a or k range a=%le k=%le\n",a,exp(klog));
 
-  val = interpol2d(table_P_NL, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec, 0.0);
+val = interpol2d(table_P_NL, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec, 0.0);
 //  printf("%le %le\n",k_NL,exp(val));
-  return exp(val); 
+return exp(val); 
   // returns the dimensionless power spectrum as a function of scale factor a and k in units of h/Mpc 
 }
 
@@ -1634,13 +1630,14 @@ double Delta_NL_Coyote_only(double k_NL,double a)
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 //Pdelta is called with k in units H0/c since the comoving distance chi is in units c/H0. Upstream Pdelta all routines are in h/mpc 
- double Pdelta(double k_NL, double a)
+double Pdelta(double k_NL, double a)
 { 
   static int P_type = -1;
   if (P_type == -1){
     if (strcmp(pdeltaparams.runmode,"Halofit")==0) P_type = 0;
-    if (strcmp(pdeltaparams.runmode,"Coyote")==0) P_type = 1;
-    if (strcmp(pdeltaparams.runmode,"Coyote_only")==0) P_type = 2;
+    if (strcmp(pdeltaparams.runmode,"halofit")==0) P_type = 0;
+    if (strcmp(pdeltaparams.runmode,"emu")==0) P_type = 1;
+    if (strcmp(pdeltaparams.runmode,"emu_only")==0) P_type = 2;
     if (strcmp(pdeltaparams.runmode,"linear")==0) P_type = 3;
     if (strcmp(pdeltaparams.runmode,"CLASS")==0) P_type = 4;
     if (strcmp(pdeltaparams.runmode,"class")==0) P_type = 4;
@@ -1665,10 +1662,10 @@ double Delta_NL_Coyote_only(double k_NL,double a)
             pdelta = 2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
             break;
     case 1: 
-            pdelta = 2.0*constants.pi_sqr*Delta_NL_Coyote(kintern,a)/k_NL/k_NL/k_NL;
+            pdelta = 2.0*constants.pi_sqr*Delta_NL_emu(kintern,a)/k_NL/k_NL/k_NL;
             break;
     case 2: 
-            pdelta = 2.0*constants.pi_sqr*Delta_NL_Coyote_only(kintern,a)/k_NL/k_NL/k_NL; 
+            pdelta = 2.0*constants.pi_sqr*Delta_NL_emu_only(kintern,a)/k_NL/k_NL/k_NL; 
             break;
     case 3: pdelta = p_lin(k_NL,a); break;
     case 4: pdelta = p_class(k_NL,a,1, &status); break;
@@ -1682,11 +1679,11 @@ double Delta_NL_Coyote_only(double k_NL,double a)
             break;
     case 6: pdelta = p_class(k_NL, a, 0, &status); break; // Horndeski mode requires nonlinear=0
     default: 
-            printf("cosmo3D:Pdelta: %s Pdelta runmode not defined\n",pdeltaparams.runmode);
+            printf("WARNING: cosmo3D:Pdelta(): %s Pdelta runmode not defined\n", pdeltaparams.runmode);
             printf("using Halofit (standard)\n");
             pdelta = 2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
             break;
-    }
+  }
     // if(((1./a-1.)<2.0) && (kintern >0.3) && (kintern <10.)) { 
     //   res=sqrt(pdelta*fraction_baryons(kintern, a)*pdelta);
     // }

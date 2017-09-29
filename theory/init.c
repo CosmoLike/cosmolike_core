@@ -508,7 +508,13 @@ void init_probes(char *probes)
     like.pos_pos=1;
     printf("Position-Position computation initialized\n");
   }
-
+  if(strcmp(probes,"ggl_cl")==0){
+    like.Ndata=like.Ncl*(tomo.ggl_Npowerspectra+tomo.clustering_Npowerspectra);
+    like.shear_pos=1;
+    like.pos_pos=1;
+    printf("Shear-Position computation initialized\n");
+    printf("Position-Position computation initialized\n");
+  }
   if(strcmp(probes,"all_2pt")==0){
     like.Ndata=like.Ncl*(tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Npowerspectra);
     like.shear_shear=1;
