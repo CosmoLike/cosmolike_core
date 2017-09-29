@@ -319,6 +319,7 @@ double sigma_r_sqr()
     update_cosmopara(&C);
 
   }
+  
   if (!(res>0.0)){
     fprintf(stderr,"failed with sigma_r_sqr = %le\n", res);
   }
@@ -830,7 +831,7 @@ double evaluate_class_tables(double k_coverh0, double a, int NL, int mode, int *
   	}
     
     // Collect input parameters, then run CLASS
-  	*status = fill_class_parameters(&fc, parser_length, NL);
+  	*status = fill_class_parameters(&fc, parser_length);
   	if(*status>0) return 1; 
   	*status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
   	parser_free(&fc);
@@ -1028,7 +1029,7 @@ double p_lin(double k, double a)
   
   // Use CLASS instead if Horndeski is being used
   if ( cosmology.use_horndeski != 0 ){
-      fprintf(stderr, "WARNING: A function called p_lin(), but this should not be used in 'horndeski' mode.\n");
+      //fprintf(stderr, "WARNING: A function called p_lin(), but this should not be used in 'horndeski' mode.\n");
       int status = 0;
       double pk = p_class(k, a, 0, &status); // Switch off non-linear stuff
       return pk;
