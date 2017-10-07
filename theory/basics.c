@@ -195,6 +195,8 @@ void SVD_inversion(gsl_matrix *cov, gsl_matrix *inverseSVD,int Nmatrix)
         for (j=0;j<Nmatrix;j++){
             gsl_matrix_set(inverseSVD,i,j,gsl_vector_get(x,j));
         }
+        gsl_vector_free(b);
+        gsl_vector_free(x);
     }
     gsl_matrix_free(V);
     gsl_matrix_free(U);
