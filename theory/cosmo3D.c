@@ -257,7 +257,7 @@ double int_for_sigma_r_sqr(double k, void * args)
   double kR, res, x;
   kR = k*8.; // r=8 Mpc/h
   x = (sin(kR) - kR*cos(kR))/(kR*kR*kR);
-  res = pow(k,2.+cosmology.n_spec)*Tsqr_EH_wiggle(k)*x*x;
+  res = pow(k,2.+cosmology.n_spec+ 0.5*cosmology.alpha_s*log(k/0.05))*Tsqr_EH_wiggle(k)*x*x;
   return res;
 }
 
@@ -296,7 +296,7 @@ double Delta_L_wiggle(double k)
   if (k < limits.k_min_mpc || k > limits.k_max_mpc){
     norm=cosmology.sigma_8*cosmology.sigma_8/sigma_r_sqr(); 
     
-    return norm*pow(k,cosmology.n_spec+3.0)*Tsqr_EH_wiggle(k);
+    return norm*pow(k,cosmology.n_spec+ 0.5*cosmology.alpha_s*log(k/0.05)+3.0)*Tsqr_EH_wiggle(k);
     //printf("outside Delta_L_tab\n");   
   }
   else{  
@@ -317,7 +317,7 @@ double Delta_L_wiggle(double k)
       klog = logkmin;
       
       for (i=0; i<Ntable.N_k_lin; i++, klog += dk) {  
-       table_P[i]=log(norm*pow(exp(klog),cosmology.n_spec+3.0)*Tsqr_EH_wiggle(exp(klog)));
+       table_P[i]=log(norm*pow(exp(klog),cosmology.n_spec+ 0.5*cosmology.alpha_s*log(k/0.05)+3.0)*Tsqr_EH_wiggle(exp(klog)));
      }
       //printf("finished Delta_L_wiggle\n");   
    }
