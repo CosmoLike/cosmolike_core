@@ -566,7 +566,7 @@ void set_cosmological_parameters_to_Planck_15_TT_TE_EE_lowP()
 void set_horndeski_parameters_to_LCDM()
 {
   // Set Horndeski parameters to their GR+LCDM values
-  cosmology.mg_alpha_xk = 1.; // FIXME: Should this be zero?
+  cosmology.mg_alpha_xk = 0.;
   cosmology.mg_alpha_xb = 0.;
   cosmology.mg_alpha_xm = 0.;
   cosmology.mg_alpha_xt = 0.;
