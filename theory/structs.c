@@ -76,13 +76,12 @@ typedef struct {
 }cosmopara;
 //cosmopara cosmology = {.A_s = 0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0};
 
-// FIXME: Should default Horndeski parameters all be zero?
 cosmopara cosmology = {.A_s = 0., .alpha_s =0.0, .M_nu =0., .Omega_nu = 0.,
                        .coverH0 = 2997.92458, .rho_crit = 7.4775e+21, 
                        .MGSigma = 0., .MGmu = 0.,
                        .use_horndeski = 0, .model_stability_flag = -1,
-                       .mg_alpha_xk = 1., .mg_alpha_xb = 0., .mg_alpha_xm = 0., 
-                       .mg_alpha_xt = 0., .mg_alpha_M2 = 0.};
+                       .mg_alpha_xk = 0., .mg_alpha_xb = 0., .mg_alpha_xm = 0., 
+                       .mg_alpha_xt = 0., .mg_alpha_M2 = 1.};
 
 typedef struct {
   int shear_Nbin; // number of tomography bins
