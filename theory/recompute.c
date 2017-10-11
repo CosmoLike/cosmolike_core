@@ -5,6 +5,7 @@ void update_nuisance (nuisancepara *N);
 int recompute_expansion(cosmopara C);
 int recompute_Delta(cosmopara C);
 int recompute_cosmo3D(cosmopara C);
+int recompute_horndeski_Mstar2(cosmopara C);
 int recompute_zphot_shear(nuisancepara N);
 int recompute_zphot_clustering(nuisancepara N);
 int recompute_zphot_magnification(nuisancepara N);
@@ -141,6 +142,19 @@ int recompute_cosmo3D(cosmopara C){
   else{
     if (C.sigma_8 != cosmology.sigma_8){return 1;}
   }
+  return 0;
+}
+
+int recompute_horndeski_Mstar2(cosmopara C){
+  if (   C.Omega_m != cosmology.Omega_m 
+      || C.Omega_v != cosmology.Omega_v 
+      || C.Omega_nu != cosmology.Omega_nu
+      || C.h0 != cosmology.h0 
+      || C.w0 != cosmology.w0 
+      || C.wa != cosmology.wa 
+      || C.mg_alpha_xm != cosmology.mg_alpha_xm
+      || C.mg_alpha_M2 != cosmology.mg_alpha_M2 )
+      {return 1;}
   return 0;
 }
 

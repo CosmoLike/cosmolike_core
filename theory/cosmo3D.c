@@ -39,6 +39,8 @@ double omv_vareos(double a);
 static inline double hoverh0(double a);
 double growfac(double a);
 int func_for_growfac(double a,const double y[],double f[],void *params);
+double func_for_M2(double a);
+double horndeski_M2(double a);
 double Tsqr_EH_wiggle(double khoverMPC);
 //double int_for_sigma_r_sqr(double k, void * args);
 double sigma_r_sqr();
@@ -112,7 +114,7 @@ void omega_a(double aa,double *om_m,double *om_v)
   *om_m=cosmology.Omega_m /(cosmology.Omega_m +aa*(omv_vareos(aa) *a2 +omega_curv));
   *om_v=omv_vareos(aa)*a2*aa/(cosmology.Omega_m+aa*(a2*omv_vareos(aa) +omega_curv));
 }
-//c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //growth factor including Dark energy parameters w0, wa
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -158,8 +160,6 @@ double growfac(double a)
   static double *table;
   double res;
   
-  
-  
   gsl_interp *intf=gsl_interp_alloc(gsl_interp_linear,Ntable.N_a);
   gsl_interp_accel *acc=gsl_interp_accel_alloc();
   
@@ -203,6 +203,64 @@ double growfac(double a)
   gsl_interp_accel_free(acc);
   gsl_interp_free(intf);
   return(res);
+}
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// Horndeski modified Planck mass as a fn of scale factor
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+double func_for_M2(double a){
+    // Integrand for modified Planck mass squared, (M_*)^2
+    // From Eq. 2.11 of 1605.06102
+    // \int \alpha_M(a) d\log(a)
+    double hub = hoverh0(a); // Dim'less Hubble rate
+    return cosmology.mg_alpha_xm / a 
+         * omv_vareos(a) / cosmology.Omega_v / (hub*hub);
+}
+
+double horndeski_M2(double a)
+{
+  // Modified Planck mass squared, (M_*)^2(a)
+  const double MINA = 1.e-8;
+  const double MAXA = 1.0;
+  static cosmopara C;
+  static double *ai;
+  static double *table;
+  double res;
+  
+  gsl_interp *intf = gsl_interp_alloc(gsl_interp_linear, Ntable.N_a);
+  gsl_interp_accel *acc = gsl_interp_accel_alloc();
+  
+  if (recompute_horndeski_Mstar2(C)){
+    
+    // (Re)allocate arrays as needed
+    if(table!=0) free_double_vector(table, 0, Ntable.N_a-1);
+    if(ai!=0) free_double_vector(ai, 0, Ntable.N_a-1);    
+    ai = create_double_vector(0, Ntable.N_a-1);
+    table = create_double_vector(0, Ntable.N_a-1);
+    
+    // Populate scale factor array
+    for(int i=0; i < Ntable.N_a; i++) {
+      ai[i] = MINA + i*(MAXA - MINA)/(1.*Ntable.N_a - 1.);
+    }
+    
+    // Cumulative integral
+    int_cumtrapz_reverse(&func_for_M2, ai, table, Ntable.N_a);
+    
+    // Transform output array
+    for(int i=0; i < Ntable.N_a; i++){
+        table[i] = cosmology.mg_alpha_M2 * exp(table[i]);
+    }
+    update_cosmopara(&C);
+  }
+  
+  // Interpolate to get result at this value of a
+  gsl_interp_init(intf, ai, table, Ntable.N_a);
+  res = gsl_interp_eval(intf, ai, table, a, acc);
+  gsl_interp_accel_free(acc);
+  gsl_interp_free(intf);
+  return res;
 }
 
 
