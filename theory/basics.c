@@ -56,6 +56,7 @@ double int_gsl_integrate_high_precision(double (*func)(double, void*),void *arg,
 double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter);
 double int_gsl_integrate_low_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter);
 double int_gsl_integrate_cov_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter);
+void int_cumtrapz_reverse(double (*func)(double), double *x, double *y, int Nsamp);
 
 void hankel_kernel_FT(double x, fftw_complex *res, double *arg, int argc);
 
@@ -281,6 +282,18 @@ double int_gsl_integrate_cov_precision(double (*func)(double, void*),void *arg,d
   gsl_integration_cquad_workspace_free(wcrude);
   return res;
 }
+
+
+void int_cumtrapz_reverse(double (*func)(double), double *x, double *y, int Nsamp){
+    y[Nsamp-1] = 0.0;
+    assert(Nsamp >= 2);
+    
+    // Cumulative trapezoidal rule integrator that works in reverse
+    for (int i=Nsamp-2; i > 0; i--){
+        y[i] = y[i+1] + 0.5 * (x[i] - x[i+1]) * ((*func)(x[i+1]) + (*func)(x[i]));
+    }
+}
+    
 
 int line_count(char *filename)
 {

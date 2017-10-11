@@ -11,8 +11,18 @@ test: class like_fourier.o
 	    -L../hi_class -lfftw3 -lgsl -lgslcblas -lclass -lm
 
 like_fourier.o: ../theory/like_fourier.c ../theory/cosmo3D.c
-	gcc -Wno-missing-braces -Wno-missing-field-initializers -g \
-	    -fPIC -fopenmp -c ../theory/like_fourier.c
+	gcc -Wno-missing-braces -Wno-missing-field-initializers \
+	    -Wno-unused-result \
+	    -g -O3 -fPIC -fopenmp -c ../theory/like_fourier.c
+
+lib: like_fourier.o
+	gcc -std=c99 -Wno-missing-braces -Wno-missing-field-initializers \
+	    -ffast-math -funroll-loops \
+	    -shared -o like_fourier.so -fPIC like_fourier.o \
+	    -g -O3 \
+	    -L../hi_class \
+	    -lfftw3 -lgsl -lgslcblas -lm -lclass
+	    
 
 class:
 	cd ../hi_class; $(MAKE)
