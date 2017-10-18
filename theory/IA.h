@@ -1,3 +1,6 @@
+/** @file IA.h
+*/ 
+
 static double LF_coefficients[2][5] = {{-1.,0.,0.,0.,0.},{-1.,0.,0.,0.,0.}};//{Phistat, alpha, Mstar,Q,P} [0][] =red,[1][] = all
 static double LF_coefficients_GAMA[2][5] = {{1.11e-3,-0.57,-20.34,1.8,-1.2},{0.94e-3,-1.23,-20.70,0.7,1.8}};//from GAMA survey http://arxiv.org/pdf/1111.0166v2.pdf
 static double LF_coefficients_DEEP2[2][5] = {{1.11e-3,-0.57,-20.34,1.20,-1.15},{0.94e-3,-1.23,-20.70,1.23,-.3}};//P,Q from DEEP2 (B-band), otherwise GAMA

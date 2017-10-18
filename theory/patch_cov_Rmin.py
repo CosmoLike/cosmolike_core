@@ -1,4 +1,6 @@
 #!/usr/bin/python
+""" @file patch_cov_Rmin.py """
+
 import sys
 sys.path.insert(0, '/home/teifler/Python-2.7.8/')
 import math, numpy as np

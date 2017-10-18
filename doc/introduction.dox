@@ -1,0 +1,11 @@
+/*! \mainpage cosmolike_core documentation
+ 
+  \section intro_sec Introduction
+
+  Here we describe the core routines for the cosmolike cosmological likelihood computation software. 
+ 
+  \subsection step1 Step 1: Installation
+  
+  Here's what you need to install cosmolike_core...
+ */
+

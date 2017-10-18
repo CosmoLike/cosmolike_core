@@ -1,4 +1,6 @@
 #!/usr/bin/python
+""" @file inv_cov.py """
+
 import sys
 sys.path.insert(0, '/home/teifler/Python-2.7.8/')
 import math, numpy as np

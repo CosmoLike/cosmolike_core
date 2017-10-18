@@ -1,4 +1,6 @@
 #!/usr/bin/python
+""" @file patch_cov_HOD.py """
+
 import sys
 sys.path.insert(0, '/usr/local/lib/python2.7/site-packages/')
 import math, numpy as np
