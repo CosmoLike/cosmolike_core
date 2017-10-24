@@ -8,6 +8,8 @@ double log_L_wlphotoz();
 double log_L_clphotoz();
 double log_L_shear_calib();
 double log_like_f_red();
+double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]); //CH
+
 
 void set_ia_priors();
 void set_lin_bias_priors();
@@ -294,6 +296,30 @@ double log_L_Planck_BAO_SN() // using the Planck 15 fid values and error bars as
  
  return 0.5*log_L;
  }
+
+//CH
+double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]) 
+{
+  int c,r;
+  double sum,prod[n_param];
+ 
+  sum = 0;
+  for (r = 0; r < n_param; r++) {
+    for (c = 0; c < n_param; c++) {
+      sum = sum + invcov[r][c]*param_diff[r];
+    }
+    prod[r] = sum;
+    sum = 0;
+  }
+  sum = 0;
+
+  for (c = 0; c < n_param; c++) {
+    sum = sum + param_diff[c]*prod[c];
+  }
+
+  return sum;
+}
+
 
  double log_L_ia()
 {
