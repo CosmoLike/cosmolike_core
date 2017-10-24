@@ -9,7 +9,7 @@ double log_L_clphotoz();
 double log_L_shear_calib();
 double log_like_f_red();
 double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]); //CH
-
+double log_L_Planck_BAO(); //CH
 
 void set_ia_priors();
 void set_lin_bias_priors();
@@ -289,8 +289,8 @@ double log_L_Planck_BAO_SN() // using the Planck 15 fid values and error bars as
   double w_pivot=cosmology.w0+(1.0-(1.0/(1.0+0.266)))*cosmology.wa; // see table 4 in aubourg et al 2014
 
   log_L-=(cosmology.Omega_m - 0.3156)*(cosmology.Omega_m - 0.3156)/(0.011*0.011);
-  log_L-=(cosmology.h0 - 0.6727)*(cosmology.h0 - 0.6727)/(0.11*0.11);
-  log_L-=(omegab - omegab_fid)*(omegab - omegab_fid)/(0.003*0.003);
+  log_L-=(cosmology.h0 - 0.6727)*(cosmology.h0 - 0.6727)/(0.11*0.11); // CH: 0.011 change this
+  log_L-=(omegab - omegab_fid)*(omegab - omegab_fid)/(0.003*0.003); // CH: 0.0003 change this
   log_L-=(w_pivot +1.0)*(w_pivot +1.0)/(0.11*0.11);
   log_L-=(cosmology.wa - 0.0)*(cosmology.wa - 0.0)/(0.4*0.4);
  
@@ -320,6 +320,75 @@ double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], doubl
   return sum;
 }
 
+double log_L_Planck_BAO(); 
+{
+  double log_L = 0.;
+  int n_param = 7;
+  double param[n_param],param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+
+  param_fid[0] = 0.3156; // table 22.3 and 2.6: 0.3515 vs 0.3156
+  param_fid[1] = 0.831; // table 22.3 and 2.6: 0.805 vs 0.831
+  param_fid[2] = 0.9645; // table 22.3 and 2.6: 0.9641 vs 0.9645
+  param_fid[3] = -0.51;// table 22.3 and 2.6: -0.51 vs -1
+  param_fid[4] = -1.47; // table 22.3 and 2.6: -1.47 vs 0
+  param_fid[5] = 0.0491685; // table 22.3 and 2.6: 0.054296875 (mean omb/mean h0/mean h0) vs 0.0491685
+  param_fid[6] = 0.6727;// table 22.3 and 2.6: 0.64 vs 0.6727
+
+  param_diff[0] = 0.0; // correct var name?
+  param_diff[1] = 0.0; // correct var name?
+  param_diff[2] = 0.0; // correct var name?
+  param_diff[3] = 0.0; 
+  param_diff[4] = 0.0;
+  param_diff[5] = 0.0; 
+  param_diff[6] = 0.0;
+  
+  //int i=0][ retval][ n_param=7;
+  //const char *filename = "WFIRST_forecasts/external/planck2015/base_w_wa_plikHM_TTTEEE_lowTEB_BAO_derived.invcov"
+  //FILE *fp = fopen(filename][ "r");
+  //if(fp == NULL) {
+  //  printf("error in opening file\n");
+  //  // handle it
+  //}
+  //while(i < 100 && (retval = fscanf(fp][ "%f"][ &table[i++])) == 1) ; 
+  // for (c = 0; c < m; c++)
+  //  for (d = 0; d < n; d++)
+  //    fscanf("%s"][ &first[c][d]);
+  //fclose(fp);
+
+  table[0][0] = 3.442773636043086299e+05;
+  table[0][1] = -3.281528975774925584e+03;
+  table[0][2] = 4.223751718258632900e+04;
+  table[0][3] = 5.740046996583572036e+04;
+  table[0][4] = 1.402402708926357082e+04;
+  table[0][5] = -2.224036778035511728e+06;
+  table[0][6] = 2.332254678321330175e+03;
+  table[1][1] = 6.756741760279611299e+03;
+  table[1][2] = -5.865074244740566428e+03;
+  table[1][3] = 1.830059137792245110e+03;
+  table[1][4] = 4.612130664489993706e+02;  
+  table[1][5] = -6.382180176268087962e+03;
+  table[1][6] = -3.541115518810364193e+01;
+  table[2][2] = 1.124456967110088153e+05;
+  table[2][3] =  -1.113749658779218589e+04;
+  table[2][4] = -2.737196201619052317e+03;
+  table[2][5] = -6.674308884330913133e+04;
+  table[2][6] = -5.453396609500290282e+01;
+  table[3][3] = 1.653044419421476778e+04;
+  table[3][4] = 3.981535638365368868e+03; 
+  table[3][5] = -5.041652556500012288e+05;
+  table[3][6] = 4.443326410537395645e+02; 
+  table[4][4] = 9.646471544546448058e+02;
+  table[4][5] = -1.221265275655894220e+05;  
+  table[4][6] = 1.063489255231453114e+0;
+  table[5][5] = 2.061194555626458302e+07;
+  table[5][6] = -1.014669320901232095e+04;
+  table[6][6] = 2.705876628789031457e+01;
+
+  log_L = do_matrix_mult_invcov(n_param,table, param_diff);
+
+  return 0.5*log_L
+}
 
  double log_L_ia()
 {
