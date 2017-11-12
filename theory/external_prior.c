@@ -287,8 +287,8 @@ double log_L_Planck_BAO_SN() // using the Planck 15 fid values and error bars as
   double w_pivot=cosmology.w0+(1.0-(1.0/(1.0+0.266)))*cosmology.wa; // see table 4 in aubourg et al 2014
 
   log_L-=(cosmology.Omega_m - 0.3156)*(cosmology.Omega_m - 0.3156)/(0.011*0.011);
-  log_L-=(cosmology.h0 - 0.6727)*(cosmology.h0 - 0.6727)/(0.11*0.11);
-  log_L-=(omegab - omegab_fid)*(omegab - omegab_fid)/(0.003*0.003);
+  log_L-=(cosmology.h0 - 0.6727)*(cosmology.h0 - 0.6727)/(0.011*0.011);
+  log_L-=(omegab - omegab_fid)*(omegab - omegab_fid)/(0.0003*0.0003);
   log_L-=(w_pivot +1.0)*(w_pivot +1.0)/(0.11*0.11);
   log_L-=(cosmology.wa - 0.0)*(cosmology.wa - 0.0)/(0.4*0.4);
  
