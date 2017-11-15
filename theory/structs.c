@@ -20,6 +20,7 @@ typedef struct {
   int shearcalib;
   int clusterMobs;
   int Planck;
+  int Planck15_BAO_w0wa; //CH
   int Planck15;
   int BOSS_Chuang;
   int H0_Efstathiou14;

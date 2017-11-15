@@ -366,6 +366,7 @@ double log_multi_like(double OMM, double S8, double NS, double W0,double WA, dou
   if(like.SN==1) log_L_prior+=log_L_SN();
   if(like.BAO==1) log_L_prior+=log_L_BAO();
   if(like.Planck==1) log_L_prior+=log_L_Planck();
+  if(like.Planck15_BAO_w0wa==1) log_L_prior+=log_L_Planck15_BAO_w0wa(); //CH
   if(like.IA!=0) log_L_prior+=log_L_ia();
   if(like.IA!=0) log_L_prior+=log_like_f_red();
   if(like.wlphotoz!=0) log_L_prior+=log_L_wlphotoz();
@@ -397,15 +398,19 @@ double log_multi_like(double OMM, double S8, double NS, double W0,double WA, dou
     set_data_cgl(ell_Cluster,pred, start);
   }
   chisqr=0.0;
-  for (i=0; i<like.Ndata; i++){
-    for (j=0; j<like.Ndata; j++){
-      a=(pred[i]-data_read(1,i))*invcov_read(1,i,j)*(pred[j]-data_read(1,j));
-      chisqr=chisqr+a;
-    }
+  //CH BEGINS (commented out when running external prior alone)
+  //for (i=0; i<like.Ndata; i++){
+  //  for (j=0; j<like.Ndata; j++){
+  //    a=(pred[i]-data_read(1,i))*invcov_read(1,i,j)*(pred[j]-data_read(1,j));
+  //    chisqr=chisqr+a;
+  //  }
+ //CH ENDS   
    //  if (fabs(data_read(1,i)/pred[i]-1.0) >1.e-4){
    // printf("%d %le %le %le\n",i,data_read(1,i),pred[i],data_read(1,i)/pred[i]);
    //  }
-  }
+  //CH BEGINS (commented out when running external prior alone)
+  //}
+  //CH ENDS
   if (chisqr<0.0){
     printf("errror: chisqr < 0\n");
   }
