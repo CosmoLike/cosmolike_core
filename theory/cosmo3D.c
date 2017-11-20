@@ -890,6 +890,12 @@ double Delta_NL_Halofit(double k_NL, double a)
   double klog,val; 
 
   if (recompute_cosmo3D(C)){
+    if (cosmology.sigma_8 < 0.01){
+      printf("called Delta_NL_Halofit with cosmology.sigma_8 = %e\n");
+      printf("Halofit implementation in CosmoLike does not support A_s normalization\n");
+      printf("EXIT\n");
+      exit(1);
+    }
     update_cosmopara(&C);
     if (table_P_NL!=0) free_double_matrix(table_P_NL,0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
     table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);     
