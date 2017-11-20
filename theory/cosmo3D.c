@@ -1018,7 +1018,7 @@ void determine_emu_cosmo_calib(double *COSMO_emu, int *calibflag)
   }   
 }
 
-  
+
 double Delta_NL_emu(double k_NL,double a)
 {     
   static cosmopara C;
@@ -1044,145 +1044,144 @@ double Delta_NL_emu(double k_NL,double a)
     logkmax = log(limits.k_max_mpc);
     dk = (logkmax - logkmin)/(Ntable.N_k_nlin-1.);
 
-    //printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec,cosmology.sigma_8,cosmology.w0,cosmology.wa,cosmology.h0);
-
-    //compute Halofit; determine whether outside cosmology of emulator -> use recalibration factor
     Delta_halofit(table_P_NL_halofit,logkmin, logkmax, dk, da);
     determine_emu_cosmo_calib(COSMO_emu, &calibflag);    
+    printf("Cosmo %le %le %le %le %le %le %le %le\n",COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5],COSMO_emu[6],COSMO_emu[7]);
     if(calibflag==0){
-      //printf("INSIDE Emulator cosmology\n");
+      printf("INSIDE Emulator cosmology\n");
       aa = limits.a_min;
       //binning in k and a must be the same as in  Delta_halofit
       for (i=0; i<Ntable.N_a; i++, aa +=da) {
-       gsl_interp_accel *acc = gsl_interp_accel_alloc ();
-       gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 351);
-	COSMO_emu[8] = (1.0/aa)-1.0; //emu takes 9 args 8 cosmopara and 7th is redshift    
-	if(fabs(COSMO_emu[8])<1.e-10) {
-   COSMO_emu[8]=0.0;
- }
- if(aa >= a_min_emu){
-   emu(COSMO_emu,ystar,kstar);
-   for (k=0; k<351; k++){
-     p_emu[k]=ystar[350];
-     printf("%le %le\n",kstar[k],p_emu[k]);
-   }
-   gsl_spline_init (timspline, kstar, p_emu, 351);
+        gsl_interp_accel *acc = gsl_interp_accel_alloc ();
+        gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 351);
+        COSMO_emu[8] = (1.0/aa)-1.0; 
+        //emu takes 9 args 8 cosmopara and 9th is redshift    
+        if(fabs(COSMO_emu[8])<1.e-10) {
+          COSMO_emu[8]=0.01;
+        }
+        if(aa >= a_min_emu){
+          emu(COSMO_emu,ystar,kstar);
+          for (k=0; k<351; k++){
+            p_emu[k]=ystar[k];
+            //printf("%le %le\n",kstar[k],p_emu[k]);
+          }
+          gsl_spline_init (timspline, kstar, p_emu, 351);
+          emu_min=log(p_emu[0]/Delta_NL_Halofit(kstar[0]/cosmology.h0,aa));
+          emu_max=log(p_emu[350]/Delta_NL_Halofit(kstar[350]/cosmology.h0,aa));
+          k_min_emu=kstar[0];
+          k_max_emu=kstar[350];
 
-   emu_min=log(p_emu[0]/Delta_NL_Halofit(kstar[0]/cosmology.h0,aa));
-   emu_max=log(p_emu[350]/Delta_NL_Halofit(kstar[350]/cosmology.h0,aa));
-	  //printf("%le %le\n",kstar[k-1],p_emu[k-1]);
-	  klog = logkmin; // log k in h/MPC
-	  for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
-     if ((klog >= log(k_min_emu/cosmology.h0)) && (klog <= log(k_max_emu/cosmology.h0))){
-       table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc));
-	      //printf("emu used\n");
-     }
-     if(klog>log(k_max_emu/cosmology.h0))  table_P_NL[i][j]=emu_max+table_P_NL_halofit[i][j];
-     if(klog<log(k_min_emu/cosmology.h0)) table_P_NL[i][j]=emu_min+table_P_NL_halofit[i][j];
-	      //printf("Halofit used: exceeded emu k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_emu/cosmology.h0,k_max_emu/cosmology.h0);
-   }
- }
- if(aa < a_min_emu){
-	  //printf("non emu %le\n",aa);
-   for (j=0; j<Ntable.N_k_nlin; j++) {
-	    table_P_NL[i][j]=table_P_NL_halofit[i][j]; // emu goes down to z=4, Halofit and emu difference small since pdelta is almost linear -> no need for calibration here
-	  }
-	}
-	gsl_spline_free (timspline);
-	gsl_interp_accel_free (acc);
-}
-}
-if(calibflag==1){      
-      //printf("OUTSIDE Emulator cosmology\n");
-      // to restore the cosmology structure later 
-  COSMO_orig[0] = cosmology.Omega_m;
-  COSMO_orig[1] = cosmology.omb;
-  COSMO_orig[2] = cosmology.sigma_8;  
-  COSMO_orig[3] = cosmology.h0;
-  COSMO_orig[4] = cosmology.n_spec;
-  COSMO_orig[5] = cosmology.w0;
-  COSMO_orig[6] = cosmology.wa;
-  COSMO_orig[7] = cosmology.Omega_nu;
+          klog = logkmin; // log k in h/MPC
+          for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
+            if ((klog >= log(k_min_emu/cosmology.h0)) && (klog <= log(k_max_emu/cosmology.h0))){
+              table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc));
+            }
+            if(klog>log(k_max_emu/cosmology.h0)) table_P_NL[i][j]=emu_max+table_P_NL_halofit[i][j];
+            if(klog<log(k_min_emu/cosmology.h0)) table_P_NL[i][j]=emu_min+table_P_NL_halofit[i][j];
+	           //printf("Halofit used: exceeded emu k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_emu/cosmology.h0,k_max_emu/cosmology.h0);
+          }
+        }
+        if(aa < a_min_emu){
+	     //printf("non emu %le\n",aa);
+          for (j=0; j<Ntable.N_k_nlin; j++) {
+	           table_P_NL[i][j]=table_P_NL_halofit[i][j]; // emu goes down to z=4, Halofit and emu difference small since pdelta is almost linear -> no need for calibration here
+          }
+        }
+        gsl_spline_free (timspline);
+        gsl_interp_accel_free (acc);
+      }
+    }
+    if(calibflag==1){      
+    //printf("OUTSIDE Emulator cosmology\n");
+    // to restore the cosmology structure later 
+    COSMO_orig[0] = cosmology.Omega_m;
+    COSMO_orig[1] = cosmology.omb;
+    COSMO_orig[2] = cosmology.sigma_8;  
+    COSMO_orig[3] = cosmology.h0;
+    COSMO_orig[4] = cosmology.n_spec;
+    COSMO_orig[5] = cosmology.w0;
+    COSMO_orig[6] = cosmology.wa;
+    COSMO_orig[7] = cosmology.Omega_nu;
 
-  if (table_P_NL_halofit_calibrate!=0) free_double_matrix(table_P_NL_halofit_calibrate,0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
-  table_P_NL_halofit_calibrate = create_double_matrix(0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
-
+    if (table_P_NL_halofit_calibrate!=0) free_double_matrix(table_P_NL_halofit_calibrate,0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
+        table_P_NL_halofit_calibrate = create_double_matrix(0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
       // set cosmology to compute the Halofit calibration power spectrum 
-  cosmology.Omega_m=COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3];
-  cosmology.Omega_v=1.0-cosmology.Omega_m;
-  cosmology.omb=COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3];
-  cosmology.sigma_8=COSMO_emu[2];
-  cosmology.h0 =COSMO_emu[3];
-  cosmology.n_spec=COSMO_emu[4];
-  cosmology.w0=COSMO_emu[5];
-  cosmology.wa=COSMO_emu[6];
-  cosmology.Omega_nu=COSMO_emu[7];
+      cosmology.Omega_m=COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3];
+      cosmology.Omega_v=1.0-cosmology.Omega_m;
+      cosmology.omb=COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3];
+      cosmology.sigma_8=COSMO_emu[2];
+      cosmology.h0 =COSMO_emu[3];
+      cosmology.n_spec=COSMO_emu[4];
+      cosmology.w0=COSMO_emu[5];
+      cosmology.wa=COSMO_emu[6];
+      cosmology.Omega_nu=COSMO_emu[7];
 
-  //Delta_halofit(table_P_NL_halofit_calibrate,logkmin, logkmax, dk, da);
+      //Delta_halofit(table_P_NL_halofit_calibrate,logkmin, logkmax, dk, da);
 
-  aa = limits.a_min;
+      aa = limits.a_min;
       //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
-  for (i=0; i<Ntable.N_a; i++, aa +=da) {
-   gsl_interp_accel *acc = gsl_interp_accel_alloc ();
-   gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 351);
-	COSMO_emu[8] = (1.0/aa)-1.0; //emu takes 7 args 6 cosmopara and 7th redshift    
-	if(fabs(COSMO_emu[8])<1.e-10) {
-   COSMO_emu[8]=0.0;
- }
- if(aa >= a_min_emu){
-	  //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
-   emu(COSMO_emu,ystar,kstar);
-   for (k=0; k<351; k++){
-     kstar[k]=ystar[k];
-     p_emu[k]=ystar[k+351]/Delta_NL_Halofit(kstar[k]/cosmology.h0,aa);
-	    //printf("%le %le\n",kstar[k],p_emu[k]);
-   }
-   gsl_spline_init (timspline, kstar, p_emu, 351);
+      for (i=0; i<Ntable.N_a; i++, aa +=da) {
+        gsl_interp_accel *acc = gsl_interp_accel_alloc ();
+        gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 351);
+	      COSMO_emu[8] = (1.0/aa)-1.0; //emu takes 7 args 6 cosmopara and 7th redshift    
+	      if(fabs(COSMO_emu[8])<1.e-10) {
+          COSMO_emu[8]=0.0;
+        }
+        if(aa >= a_min_emu){
+	       //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
+          emu(COSMO_emu,ystar,kstar);
+          for (k=0; k<351; k++){
+            kstar[k]=ystar[k];
+            p_emu[k]=ystar[k+351]/Delta_NL_Halofit(kstar[k]/cosmology.h0,aa);
+	         //printf("%le %le\n",kstar[k],p_emu[k]);
+          }
+          gsl_spline_init (timspline, kstar, p_emu, 351);
 
-   emu_min=p_emu[0];
-   emu_max=p_emu[350];
-	  //printf("%le %le\n",kstar[k-1],p_emu[k-1]);
-	  klog = logkmin; // log k in h/MPC
-	  for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
-     if ((klog >= log(k_min_emu/cosmology.h0)) && (klog <= log(k_max_emu/cosmology.h0))){
-       table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc))+table_P_NL_halofit[i][j];
-	      //printf("emu used\n");
-     }
-     if(klog>log(k_max_emu/cosmology.h0))  table_P_NL[i][j]=log(emu_max)+table_P_NL_halofit[i][j];
-     if(klog<log(k_min_emu/cosmology.h0)) table_P_NL[i][j]=log(emu_min)+table_P_NL_halofit[i][j];
-	      //printf("Halofit used: exceeded emu k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_emu/cosmology.h0,k_max_emu/cosmology.h0);
-   }
- }
- if(aa < a_min_emu){
-	  //printf("non emu %le\n",aa);
-   for (j=0; j<Ntable.N_k_nlin; j++) {
-	    table_P_NL[i][j]=table_P_NL_halofit[i][j]; // emu goes out to to z=2, Halofit and emu difference small since pdelta is more linear -> no need for calibration here
-	  }
-	}
-	gsl_spline_free (timspline);
-	gsl_interp_accel_free (acc);
-	cosmology.Omega_m=COSMO_orig[0];
-	cosmology.Omega_v=1.0-cosmology.Omega_m;
-	cosmology.omb=COSMO_orig[1];
-  cosmology.sigma_8=COSMO_orig[2];  
-  cosmology.h0 =COSMO_orig[3];
-  cosmology.n_spec=COSMO_orig[4];
-  cosmology.w0=COSMO_orig[5];
-  cosmology.wa=COSMO_orig[6];
-  cosmology.Omega_nu=COSMO_orig[7];
-}      
-}
-}
-//  printf("%le\n",k_NL);
-klog = log(k_NL);
-//  if(a < a_min_emu || klog>log(k_max_emu/cosmology.h0) || klog<log(k_min_emu/cosmology.h0))printf("Halofit used: exceeded emu a or k range a=%le k=%le\n",a,exp(klog));
+          emu_min=p_emu[0];
+          emu_max=p_emu[350];
+	       //printf("%le %le\n",kstar[k-1],p_emu[k-1]);
+	        klog = logkmin; // log k in h/MPC
+          for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
+            if ((klog >= log(k_min_emu/cosmology.h0)) && (klog <= log(k_max_emu/cosmology.h0))){
+              table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc))+table_P_NL_halofit[i][j];
+	           //printf("emu used\n");
+            }
+            if(klog>log(k_max_emu/cosmology.h0))  table_P_NL[i][j]=log(emu_max)+table_P_NL_halofit[i][j];
+            if(klog<log(k_min_emu/cosmology.h0)) table_P_NL[i][j]=log(emu_min)+table_P_NL_halofit[i][j];
+	         //printf("Halofit used: exceeded emu k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_emu/cosmology.h0,k_max_emu/cosmology.h0);
+          }
+        }
+        if(aa < a_min_emu){
+	     //printf("non emu %le\n",aa);
+          for (j=0; j<Ntable.N_k_nlin; j++) {
+            table_P_NL[i][j]=table_P_NL_halofit[i][j]; 
+            // emu goes out to to z=2, Halofit and emu difference small since pdelta is more linear -> no need for calibration here
+          }
+        }
+        gsl_spline_free (timspline);
+        gsl_interp_accel_free (acc);
+        cosmology.Omega_m=COSMO_orig[0];
+        cosmology.Omega_v=1.0-cosmology.Omega_m;
+        cosmology.omb=COSMO_orig[1];
+        cosmology.sigma_8=COSMO_orig[2];  
+        cosmology.h0 =COSMO_orig[3];
+        cosmology.n_spec=COSMO_orig[4];
+        cosmology.w0=COSMO_orig[5];
+        cosmology.wa=COSMO_orig[6];
+        cosmology.Omega_nu=COSMO_orig[7];
+      }      
+    }
+  }
+  //  printf("%le\n",k_NL);
+  klog = log(k_NL);
+  //  if(a < a_min_emu || klog>log(k_max_emu/cosmology.h0) || klog<log(k_min_emu/cosmology.h0))printf("Halofit used: exceeded emu a or k range a=%le k=%le\n",a,exp(klog));
 
-
-val = interpol2d(table_P_NL, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec, 0.0);
-//  printf("%le %le\n",k_NL,exp(val));
-return exp(val); 
+  val = interpol2d(table_P_NL, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec, 0.0);
+  //  printf("%le %le\n",k_NL,exp(val));
+  return exp(val); 
   // returns the dimensionless power spectrum as a function of scale factor a and k in units of h/Mpc 
 }
+
 
 // using the cosmic emulator only routines, no extrapolation in redshift, k, or cosmology
 double Delta_NL_emu_only(double k_NL,double a)

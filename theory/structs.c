@@ -307,6 +307,8 @@ typedef struct input_cosmo_params_mpp {
     double omega_b;
     double omega_nuh2;
     double h0;
+    double MGSigma;
+    double MGmu;
 } input_cosmo_params_mpp;
 
 typedef struct input_cosmo_params {

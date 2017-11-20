@@ -331,7 +331,7 @@ void init_priors(char *cosmoPrior1, char *cosmoPrior2, char *cosmoPrior3, char *
   if(strcmp(cosmoPrior1,"Planck_BAO_SN_Aubourg")==0)like.Aubourg_Planck_BAO_SN=1;
   if(strcmp(cosmoPrior2,"DES_SN")==0) like.SN=1;
   if(strcmp(cosmoPrior3,"PhotoBAO")==0) like.BAO=1;
-  if(strcmp(cosmoPrior4,"Planck")==0) like.Planck=1;  
+  if(strcmp(cosmoPrior4,"Planck")==0) like.Planck=1; 
 }
 
 
