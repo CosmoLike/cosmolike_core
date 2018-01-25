@@ -9,7 +9,7 @@ double log_L_clphotoz();
 double log_L_shear_calib();
 double log_like_f_red();
 double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]); //CH
-double log_L_Planck_BAO(); //CH
+double log_L_Planck_BAO_w0wa(); //CH
 
 void set_ia_priors();
 void set_lin_bias_priors();
@@ -327,7 +327,7 @@ double log_L_Planck15_BAO_w0wa()
   double param_fid[n_param], param_diff[n_param];
   double table[n_param][n_param]; 
   int c, r;
-
+  
   table[0][0] = 3.44277e+05;
   table[0][1] = -3.28153e+03;
   table[0][2] = 4.22375e+04;
@@ -382,19 +382,6 @@ double log_L_Planck15_BAO_w0wa()
   log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
 
   return log_L;
-}
-
- double log_L_ia()
-{
-  if (like.IA ==3){return 0.;}
-  double log_L = 0.;
-  log_L -=  pow(( nuisance.LF_alpha - prior.LF_alpha[0])/ prior.LF_alpha[1],2.0);
-  log_L -=  pow(( nuisance.LF_P - prior.LF_P[0])/ prior.LF_P[1],2.0);
-  log_L -=  pow(( nuisance.LF_Q - prior.LF_Q[0])/ prior.LF_Q[1],2.0);
-  log_L -=  pow(( nuisance.LF_red_alpha - prior.LF_red_alpha[0])/ prior.LF_red_alpha[1],2.0);
-  log_L -=  pow(( nuisance.LF_red_P - prior.LF_red_P[0])/ prior.LF_red_P[1],2.0);
-  log_L -=  pow(( nuisance.LF_red_Q - prior.LF_red_Q[0])/ prior.LF_red_Q[1],2.0);
-  return 0.5*log_L;
 }
 
  double log_L_ia()
