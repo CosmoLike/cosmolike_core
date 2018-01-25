@@ -9,7 +9,7 @@ double log_L_clphotoz();
 double log_L_shear_calib();
 double log_like_f_red();
 double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]); //CH
-double log_L_Planck_BAO_w0wa(); //CH
+double log_L_Planck15_BAO_w0wa(); //CH
 
 void set_ia_priors();
 void set_lin_bias_priors();
