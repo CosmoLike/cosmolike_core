@@ -9,7 +9,7 @@ double log_L_clphotoz();
 double log_L_shear_calib();
 double log_like_f_red();
 double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]); //CH
-
+double log_L_Planck_BAO(); //CH
 
 void set_ia_priors();
 void set_lin_bias_priors();
@@ -303,16 +303,15 @@ double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], doubl
   int c,r;
   double sum,prod[n_param];
  
-  sum = 0;
   for (r = 0; r < n_param; r++) {
+    sum = 0.0;  
     for (c = 0; c < n_param; c++) {
-      sum = sum + invcov[r][c]*param_diff[r];
+      sum = sum + invcov[r][c]*param_diff[c];
     }
     prod[r] = sum;
-    sum = 0;
   }
-  sum = 0;
 
+  sum = 0.0;
   for (c = 0; c < n_param; c++) {
     sum = sum + param_diff[c]*prod[c];
   }
@@ -320,6 +319,83 @@ double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], doubl
   return sum;
 }
 
+//CH
+double log_L_Planck15_BAO_w0wa()
+{
+  double log_L = 0.;
+  int n_param = 7;
+  double param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+  int c, r;
+
+  table[0][0] = 3.44277e+05;
+  table[0][1] = -3.28153e+03;
+  table[0][2] = 4.22375e+04;
+  table[0][3] = 5.74005e+04;
+  table[0][4] = 1.40240e+04;
+  table[0][5] = -2.22404e+06;
+  table[0][6] = 2.33225e+05;
+  table[1][1] = 6.75674e+03;
+  table[1][2] = -5.86507e+03;
+  table[1][3] = 1.83006e+03;
+  table[1][4] = 4.61213e+02;
+  table[1][5] = -6.38218e+03;
+  table[1][6] = -3.54112e+03;
+  table[2][2] = 1.12446e+05;
+  table[2][3] = -1.11375e+04;
+  table[2][4] = -2.73720e+03;
+  table[2][5] = -6.67431e+04;
+  table[2][6] = -5.45340e+03;
+  table[3][3] = 1.65304e+04;
+  table[3][4] = 3.98154e+03;
+  table[3][5] = -5.04165e+05;
+  table[3][6] = 4.44333e+04;
+  table[4][4] = 9.64647e+02;
+  table[4][5] = -1.22127e+05;
+  table[4][6] = 1.06349e+04;
+  table[5][5] = 2.06119e+07;
+  table[5][6] = -1.01467e+06;
+  table[6][6] = 2.70588e+05;
+
+  for (c = 0; c < n_param; c++) {
+    for (r = c + 1; r < n_param; r++) {
+      table[r][c] = table[c][r];
+    }
+  }
+
+  param_fid[0] = 3.5098925e-01;
+  param_fid[1] = 8.0467525e-01;
+  param_fid[2] = 9.6406051e-01;
+  param_fid[3] = -5.0551771e-01;
+  param_fid[4] = -1.46884482e+00;
+  param_fid[5] = 5.462452e-02;
+  param_fid[6] = 6.3983876e-01;
+
+  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
+  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
+  param_diff[2] = cosmology.n_spec-param_fid[2]; 
+  param_diff[3] = cosmology.w0-param_fid[3]; 
+  param_diff[4] = cosmology.wa-param_fid[4];
+  param_diff[5] = cosmology.omb-param_fid[5];
+  param_diff[6] = cosmology.h0-param_fid[6];
+  
+  log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
+
+  return log_L;
+}
+
+ double log_L_ia()
+{
+  if (like.IA ==3){return 0.;}
+  double log_L = 0.;
+  log_L -=  pow(( nuisance.LF_alpha - prior.LF_alpha[0])/ prior.LF_alpha[1],2.0);
+  log_L -=  pow(( nuisance.LF_P - prior.LF_P[0])/ prior.LF_P[1],2.0);
+  log_L -=  pow(( nuisance.LF_Q - prior.LF_Q[0])/ prior.LF_Q[1],2.0);
+  log_L -=  pow(( nuisance.LF_red_alpha - prior.LF_red_alpha[0])/ prior.LF_red_alpha[1],2.0);
+  log_L -=  pow(( nuisance.LF_red_P - prior.LF_red_P[0])/ prior.LF_red_P[1],2.0);
+  log_L -=  pow(( nuisance.LF_red_Q - prior.LF_red_Q[0])/ prior.LF_red_Q[1],2.0);
+  return 0.5*log_L;
+}
 
  double log_L_ia()
 {
