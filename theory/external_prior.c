@@ -327,7 +327,7 @@ double log_L_Planck15_BAO_w0wa()
   double param_fid[n_param], param_diff[n_param];
   double table[n_param][n_param]; 
   int c, r;
-  
+
   table[0][0] = 3.44277e+05;
   table[0][1] = -3.28153e+03;
   table[0][2] = 4.22375e+04;
