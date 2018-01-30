@@ -10,6 +10,7 @@ double log_L_shear_calib();
 double log_like_f_red();
 double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]); //CH
 double log_L_Planck15_BAO_w0wa(); //CH
+double log_L_Planck15_BAO_H070p6_JLA_w0wa(); //CH
 
 void set_ia_priors();
 void set_lin_bias_priors();
@@ -397,7 +398,70 @@ double log_L_Planck15_BAO_w0wa()
   return 0.5*log_L;
 }
 
+//CH
+double log_L_Planck15_BAO_H070p6_JLA_w0wa()
+{
+  double log_L = 0.;
+  int n_param = 7;
+  double param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+  int c, r;
+  table[0][0] = 1.25403e+06;
+  table[0][1] = -1.68487e+04;
+  table[0][2] = 1.07247e+05;
+  table[0][3] = 1.46946e+05;
+  table[0][4] = 3.72662e+04;
+  table[0][5] = -3.15490e+06;
+  table[0][6] = 1.22441e+06;
+  table[1][1] = 6.40426e+03;
+  table[1][2] = -7.19010e+03;
+  table[1][3] = 2.79656e+02;
+  table[1][4] = 8.82725e+01;
+  table[1][5] = 1.14697e+04;
+  table[1][6] = -1.85914e+04;
+  table[2][2] = 1.14261e+05;
+  table[2][3] = -4.71337e+03;
+  table[2][4] = -1.19919e+03;
+  table[2][5] = -1.15936e+05;
+  table[2][6] = 7.10418e+04;
+  table[3][3] = 2.42113e+04;
+  table[3][4] = 6.07750e+03;
+  table[3][5] = -5.72657e+05;
+  table[3][6] = 1.38794e+05;
+  table[4][4] = 1.53328e+03;
+  table[4][5] = -1.44471e+05;
+  table[4][6] = 3.49984e+04;
+  table[5][5] = 2.60247e+07;
+  table[5][6] = -1.26930e+06;
+  table[6][6] = 1.44367e+06;
+
+  for (c = 0; c < n_param; c++) {
+    for (r = c + 1; r < n_param; r++) {
+      table[r][c] = table[c][r];
+    }
+  }
+
+  param_fid[0] = 3.08672e-01;
+  param_fid[1] = 8.41330e-01;
+  param_fid[2] = 9.63707e-01;
+  param_fid[3] = -9.35997e-01;
+  param_fid[4] = -3.82183e-01;
+  param_fid[5] = 4.79953e-02;
+  param_fid[6] = 6.80887e-01;
     
+  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
+  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
+  param_diff[2] = cosmology.n_spec-param_fid[2]; 
+  param_diff[3] = cosmology.w0-param_fid[3]; 
+  param_diff[4] = cosmology.wa-param_fid[4];
+  param_diff[5] = cosmology.omb-param_fid[5];
+  param_diff[6] = cosmology.h0-param_fid[6];
+  
+  log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
+
+  return log_L;
+}
+
 double log_L_wlphotoz()
 {
   int i;
