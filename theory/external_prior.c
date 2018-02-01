@@ -80,7 +80,7 @@ void set_clusterMobs_priors()
   prior.cluster_Mobs_beta[1]=0.5;
   prior.cluster_Mobs_sigma[1]=0.2;
   
-  prior.cluster_completeness[0] = 0.9;  
+  p[0] = 0.9;  
   prior.cluster_completeness[1] = 0.05;
   
   like.clusterMobs=1;
@@ -204,7 +204,7 @@ void set_clphotoz_priors_source()
   like.clphotoz=1;
 }
 
-void set_clphotoz_priors_LSST_gold()
+void set_clphotoz_priors_LSST_SRD()
 {
   int i;
   printf("Setting Gaussian clustering photo-z Priors redmagic\n");

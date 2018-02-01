@@ -638,13 +638,13 @@ void multi_zdistricalc()
   FILE *F;
   char filename[200];
   
-  double z0[6]={0.41,0.42,0.44,0.46,0.48,0.5};
-  alpha=1.27;
-  double beta[6]={1.2,1.18,1.14,1.1,1.06,1.02};
+  double z0[4]={0.28,0.26,0.13,0.11};
+  alpha=1.;
+  double beta[4]={0.9,0.94,0.78,0.68};
   redshiftclustering.histogram_zbins=0;
   
-  for(j=0;j<6;j++){  
-    sprintf(filename,"../../cosmolike_light/zdistris/zdistributions_LSSTawakens/zdistri_model_%d",j);
+  for(j=0;j<4;j++){  
+    sprintf(filename,"zdistri_model_z0=%le_beta=%le",z0[j],beta[j]);
     F=fopen(filename,"w");
     
     redshiftclustering.z0        = z0[j];
@@ -661,7 +661,6 @@ void multi_zdistricalc()
     }
     fclose(F);
   }
-  printf("hallo\n");
 }
 
 void normalization_tomography_binning(char *filename)
@@ -729,8 +728,8 @@ int main(void)
 //BCC_zdistricalc();
 //DES_zdistricalc();
 //LSST_zdistricalc();
-LSST_gold_zdistricalc();
-//multi_zdistricalc();
+//LSST_gold_zdistricalc();
+multi_zdistricalc();
 
 //  WFIRST_zdistricalc();
 //  Euclid_zdistricalc();
