@@ -22,8 +22,9 @@ void set_galaxies_DES_Y1(void);
 void set_galaxies_DES_SV(double density);
 void set_galaxies_CMASS(double density); // MANUWARNING: not yet really implemented!
 void set_galaxies_source();
-void set_clusters_LSST(); //set parameters for LSST/WFIRST forecasts
+void set_clusters_LSST(); //set parameters for LSST forecasts
 void set_clusters_DES(); //set parameters for DES forecasts
+void set_clusters_WFIRST(); //set parameters for WFIRST forecasts
 void init_wlphotoz_stage3();
 void init_wlphotoz_stage4();
 void init_lens_sample(char *lensphotoz, char *galsample);
@@ -420,8 +421,10 @@ void init_clusters()
   printf("-----------------------------------\n");
 
   if (strcmp(survey.name,"LSST")==0 || strcmp(survey.name,"WFIRST")==0 || strcmp(survey.name,"HSC")==0) set_clusters_LSST();
+  if (strcmp(survey.name,"WFIRST")==0)
+    set_clusters_WFIRST();
   if (strcmp(survey.name,"Euclid")==0 || strcmp(survey.name,"DES")==0)
-     set_clusters_DES();
+    set_clusters_DES();
 
  set_clusterMobs_priors(); 
 }
@@ -1251,11 +1254,7 @@ void set_galaxies_source(void)
 }
 
 
-
-
-
-
-/*********** set cluster parameters for DES forecasts ********/
+/*********** set cluster parameters for LSST forecasts ********/
 void set_clusters_LSST(){
   int i,j;
   //N200-M relationship from Rykoff et al. 2012 (http://iopscience.iop.org/0004-637X/746/2/178/pdf/0004-637X_746_2_178.pdf) - Eq. B4 for \Delta = 200 mean version
@@ -1309,6 +1308,7 @@ void set_clusters_LSST(){
   printf("Clusters cgl_Npowerspectra=%d\n",tomo.cgl_Npowerspectra);
 }
 
+/*********** set cluster parameters for DES forecasts ********/
 void set_clusters_DES(){
   int i,j;
   //N200-M relationship from Rykoff et al. 2012 (http://iopscience.iop.org/0004-637X/746/2/178/pdf/0004-637X_746_2_178.pdf) - Eq. B4 for \Delta = 200 mean version
@@ -1358,6 +1358,62 @@ void set_clusters_DES(){
   //  }
   printf("Clusters set to DES\n");
 }
+
+void set_clusters_WFIRST(){
+  int i,j;
+  //N200-M relationship from Rykoff et al. 2012 (http://iopscience.iop.org/0004-637X/746/2/178/pdf/0004-637X_746_2_178.pdf) - Eq. B4 for \Delta = 200 mean version
+  nuisance.cluster_Mobs_lgM0 = 1.72+log(1.e+14*0.7); //back to Msun/h instead of Msun/h70 normalization
+  nuisance.cluster_Mobs_sigma = 0.25;
+  nuisance.cluster_Mobs_alpha = 1.08;
+  nuisance.cluster_Mobs_beta = 0.0;
+  nuisance.cluster_Mobs_N_pivot = 60.;
+  // completeness - adjusts later
+  nuisance.cluster_completeness[0] = 0.9;
+  nuisance.cluster_completeness[1] = 0.9;
+  nuisance.cluster_completeness[2] = 0.9;
+  nuisance.cluster_completeness[3] = 0.9;
+  //no miscentering so far
+  nuisance.cluster_centering_f0 = 1.0;
+  nuisance.cluster_centering_alpha = 0;
+  nuisance.cluster_centering_sigma = 0;
+  nuisance.cluster_centering_M_pivot = 1.e+14;
+  printf("%e %e %e %e\n",nuisance.cluster_Mobs_lgM0,nuisance.cluster_Mobs_alpha,nuisance.cluster_Mobs_beta,nuisance.cluster_Mobs_N_pivot);
+  tomo.cluster_Nbin = 5; // number of cluster redshift bins
+  tomo.cluster_zmin[0] = 0.1;
+  tomo.cluster_zmax[0] = 0.4;
+  tomo.cluster_zmin[1] = 0.4;
+  tomo.cluster_zmax[1] = 0.7;
+  tomo.cluster_zmin[2] = 0.7;
+  tomo.cluster_zmax[2] = 1.0;
+  tomo.cluster_zmin[3] = 1.0;
+  tomo.cluster_zmax[3] = 1.5;
+  tomo.cluster_zmin[4] = 1.5;
+  tomo.cluster_zmax[4] = 2.0;
+  tomo.cgl_Npowerspectra = 0;// number of cluster-lensing tomography combinations
+  for (i = 0; i < tomo.cluster_Nbin; i++){
+    for(j = 0; j<tomo.shear_Nbin;j++){
+      tomo.cgl_Npowerspectra += test_zoverlap_c(i,j);
+    }
+  }
+
+  Cluster.N200_min = 10.;
+  Cluster.N200_max = 100.;
+  Cluster.N200_Nbin = 4;
+  //upper bin boundaries - note that bin boundaries need to be integers!
+  int Nlist[8] = {30,40,55,Cluster.N200_max};
+  Cluster.N_min[0] = Cluster.N200_min;
+  Cluster.N_max[0] = Nlist[0];
+  for (i = 1; i < Cluster.N200_Nbin; i++){
+    Cluster.N_min[i] = Nlist[i-1];
+    Cluster.N_max[i] = Nlist[i];
+  }
+ for (i = 0; i < Cluster.N200_Nbin; i++){
+    printf ("Richness bin %d: %e - %e (%e Msun/h - %e Msun/h), N(z = 0.3) = %e, N(z = 0.7) = %e\n", i,Cluster.N_min[i],Cluster.N_max[i],exp(lgM_obs(Cluster.N_min[i], 0.75)),exp(lgM_obs(Cluster.N_max[i], 0.75)),N_N200(0,i),N_N200(2,i));
+  }
+  printf("Clusters set to LSST\n");
+  printf("Clusters cgl_Npowerspectra=%d\n",tomo.cgl_Npowerspectra);
+}
+
 
 void set_galaxies_benchmark_LSST()
 { 
