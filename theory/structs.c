@@ -10,6 +10,7 @@ typedef struct {
   double *theta;
   double cosmax;
   double Rmin_bias;
+  double Rmin_shear;
   double lmax_shear;
   double lmax_kappacmb;
   int baryons;
