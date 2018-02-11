@@ -1,3 +1,7 @@
+// VM begins
+#include <gsl_sf_erf.h>
+// VM ends
+
 /* cluster number counts & cluster lensing routines*/
 
 double lgM_obs(double N200, double a); //mass observable relation
@@ -14,6 +18,263 @@ double C_cl_g_tomo(double l, int nzc1, int nN1, int nzl1);//angular cluster x ga
 double C_ccl_tomo(double l, int nz1, int nN1, int nz2, int nN2);//angular cluster clustering power spectrum - only needed in covariance computation
 double C_cgl_tomo_nointerp(double l, int nz, int nN, int zs);//angular cluster lensing power spectrum
 
+// VM begins
+double probability_true_richness_given_mass(const double true_lambda, 
+double* params) {
+  const double mass = params[0];
+  const double mass_min = params[1];
+  const double mass_M1 = params[2];
+  const double intrinsic_alpha = params[3];
+  // intrisic scatter of mass-richness relation
+  const double intrinsic_sigma = param[4];
+
+  // average true satellite richness given mass
+  const double atsrgm = 
+                     pow((mass - mass_min)/(mass_M1 - mass_min), intrinsic_alpha);
+
+  // Now we need skewness and variance of the skew-normal distribution
+  // (which is a function of the instrinsic sigma of the mass-richness relation
+  // and also the mean true satellite richness).
+  // We just need to read this once
+  static int first = 0;
+  static double *falpha;
+  static double *fsigma;
+  NagError fail;
+
+  if(first == 0) {
+    first = 1;
+
+    double *vector_intrinsic_sigma;
+    double *vector_atsrgm;
+    double *vector_alpha;
+    double *vector_sigma;
+    const int size_vector_intrinsic_sigma = 14;
+    const int size_vector_atsrgm_table = 42;
+    {
+      FILE* file_intrinsic_sigma;
+      file_intrinsic_sigma = fopen("sig_intr_grid.dat", "r");
+      if(file_intrinsic_sigma == 0) {
+        printf("Can't open intrinsic sigma file \n");
+        exit(1);
+      }
+      vector_intrinsic_sigma = 
+                    (double*) malloc(size_vector_intrinsic_sigma, sizeof(double));
+      for (int i=0; i<size_vector_intrinsic_sigma; i++) {
+        fscanf(file_intrinsic_sigma,"%d", &vector_intrinsic_sigma[i]);
+      }
+      fclose(file_intrinsic_sigma);
+    }
+    {
+      FILE* file_atsrgm;
+      file_atsrgm = fopen("l_sat_grid.dat", "r");
+      if(file_atsrgm == 0) {
+        printf("Can't open intrinsic true satellite richness file \n");
+        exit(1);
+      }
+      vector_atsrgm = (double*) malloc(size_vector_atsrgm, sizeof(double));
+      for (int i=0; i<size_vector_atsrgm; i++) {
+        fscanf(file_atsrgm, "%d", &vector_atsrgm[i]);
+      }
+      fclose(file_atsrgm);
+    }
+    {
+      FILE* file_alpha;
+      file_alpha = fopen("skew_table.dat", "r");
+      if(file_alpha == 0) {
+        printf("Can't open skewness file file \n");
+        exit(1);
+      }
+      const int size_vector_alpha=size_vector_atsrgm*size_vector_intrinsic_sigma;
+      vector_alpha = (double*) malloc(size_vector_alpha, sizeof(double));
+      for (int i=0; i<size_vector_intrinsic_sigma; i++) {
+        for (int j=0; j<size_vector_atsrgm; j++) {
+          fscanf(file_alpha, "%d", &vector_alpha[i*size_vector_atsrgm+j]);
+        }
+      }
+      fclose(file_alpha);
+    }
+    {
+      FILE* file_sigma;
+      file_sigma = fopen("sig_skew_table.dat", "r");
+      if(file_sigma == 0) {
+        printf("Can't open sigma file \n");
+        exit(1);
+      }
+      const int size_vector_sigma=size_vector_atsrgm*size_vector_intrinsic_sigma;
+      vector_sigma = (double*) malloc(size_vector_sigma, sizeof(double));
+      for (int i=0; i<size_vector_intrinsic_sigma; i++) {
+        for (int j=0; j<size_vector_atsrgm; j++) {
+          fscanf(file_sigma,"%d",&table_sigma[i*size_vector_atsrgm+j]);
+        }
+      }
+      fclose(file_sigma);
+    }
+
+    INIT_FAIL(fail);
+    nag_2d_spline_interpolant(size_vector_intrinsic_sigma, size_vector_atsrgm,
+              vector_intrinsic_sigma, vector_atsrgm, vector_alpha, falpha, &fail);
+    if(fail.code != NE_NOERROR) {
+      printf("NAG Fail \n");
+      exit(1);
+    }
+
+    INIT_FAIL(fail);
+    nag_2d_spline_interpolant(n_intrinsic_sigma_table, n_atsrgm_table,
+              vector_intrinsic_sigma, vector_atsrgm, vector_sigma, fsigma, &fail);
+    if(fail.code != NE_NOERROR) {
+      printf("NAG Fail \n");
+      exit(1);
+    }
+  }
+
+  double alpha = 0;
+  {
+    INIT_FAIL(fail);
+    Integer m = 1;
+    double xx[1] = {intrinsic_sigma};
+    double yy[1] = {atsrgm};
+    double zz[1];
+    nag_2d_spline_eval(m, xx, yy, zz, falpha, &fail);
+    if(fail.code != NE_NOERROR) {
+      printf("NAG Fail \n");
+      exit(1);
+    }
+    alpha = zz[1];
+  }
+  double sigma = 0;
+  {
+    INIT_FAIL(fail);
+    Integer m = 1;
+    double xx[1] = {intrinsic_sigma};
+    double yy[1] = {atsrgm};
+    double zz[1];
+    nag_2d_spline_eval(m, xx, yy, zz, fsigma, &fail);
+    if(fail.code != NE_NOERROR) {
+      printf("NAG Fail \n");
+      exit(1);
+    }
+    sigma = zz[1];
+  }
+  const double x = 1.0/(M_SQRT2*abs(sigma));
+  double result = exp(-(true_lambda-atsrgm)*(true_lambda-atsrgm)*x*x)*x/M_SQRTPI;
+  result *= gsl_sf_erf(-alpha*(true_lambda-atsrgm)*x);
+  return result;
+}
+
+double
+probability_observed_richness_given_true_richness(const double observed_lambda, 
+double* params) {
+  // The relation between observed and true richness depends on projection
+  // effects and photometric noise
+
+  // observed_lambda = observed richness
+  // \mu = mean of the distribution
+  // \sigma = spread of the distribution
+  // tau = related to the skewness of the distribution
+
+  // fmask = fraction of the distribution that lives in the left tail.
+  // Physically: it has to do with the line of sight effects that suppress 
+  // richness in small clusters near big ones
+
+  // fprj = fraction of the distribution that lives in the right tail.
+  // Physically: it has to with projection effects that may merge two halos
+  // into a single one with combined richness
+
+  const double true_lambda = params[0];
+  const double mu = params[1];
+  const double sigma = params[2];
+  const double tau = params[3];
+  const double fmask = params[4];
+  const double fprj = params[5];
+
+  const double x = 1.0/(M_SQRT2*abs(sigma));
+  const double y = 1.0/true_lambda;
+  const double j = exp(0.5*tau*(2*mu+tau*sigma*sigma-2*observed_lambda));
+
+  double r0 = exp((observed_lambda-mu)*(observed_lambda-mu)*x*x);
+  r0 *= (1-fmask)*(1-fprj)*x/M_SQRTPI;
+
+  double r1 = 0.5*((1-fmask)*fprj*tau + fmaks*fprj*y)*j;
+  r1 *= gsl_sf_erf((mu+tau*sigma*sigma-observed_lambda)*x);
+
+  double r2 = 0.5*fmask*y;
+  r2 *= gsl_sf_erf((mu-observed_lambda-true_lambda)*x) - 
+  gsl_sf_erf((mu-observed_lambda)*x);
+
+  double r3 = 0.5*fmask*fprj*y*exp(-tau*true_lambda)*j;
+  r3 *= gsl_sf_erf((mu+tau*sigma*sigma-observed_lambda-true_lambda)*x);
+
+  return r0 + r1 + r2 + r3;
+}
+
+double probability_observed_richness_given_mass_integrand(const double 
+true_lambda, void* params) {
+  // lambda = true richness
+  double *array = (double *) params;
+
+  const double observed_lambda = array[0];
+
+  const double mu = array[1];
+  const double sigma = array[2];
+  const double tau = array[3];
+  const double fmask = array[4];
+  const double fprj = array[5];
+
+  const double mass = array[6];
+  const double mass_min = array[7];
+  const double mass_M1 = array[8];
+  const double slope = array[9];
+
+  double params_1[6];
+  params_1[0] = true_lambda;
+  params_1[1] = mu;
+  params_1[2] = sigma;
+  params_1[3] = tau;
+  params_1[4] = fmask;
+  params_1[5] = fprj;
+  const double r1 = 
+  probability_observed_richness_given_true_richness(observed_lambda, params_1);
+
+  double params_2[4];
+  params_2[0] = mass;
+  params_2[1] = mass_min;
+  params_2[2] = mass_M1;
+  params_2[3] = slope;
+  const double r2 = probability_true_richness_given_mass(true_lambda, params_2);
+
+  return r1*r2;
+}
+
+double probability_observed_richness_given_mass(const double observed_lambda) {
+  // Integration over semi-infinite positive x-axis
+
+  gsl_function f;
+  f.function = &probability_observed_richness_given_mass_integrand;
+  f.params = &alpha;
+  const double epsabs = 0.0;
+  const double epsrel = 1e-4; // TODO: tweak this later
+  double result = 0.0;
+  double abserr = 0.0;
+  gsl_integration_workspace* wp = gsl_integration_workspace_alloc(200);
+
+  int status = gsl_integration_qagiu(f,0,epsabs,epsrel,200,wp,&result,&abserr);
+  if(status) {
+    printf ("error: %s\n", gsl_strerror (status));
+    gsl_integration_workspace_free(wp);
+    exit(1);
+  }
+  gsl_integration_workspace_free(wp);
+
+  return result;
+}
+
+double int_da_n_Mobs(double a, void* params){
+  double *array = (double *) params;
+  array[0] = a;
+  return pow(f_K(chi(a)),2.0)*dchi_da(a)*int_gsl_integrate_high_precision(int_n_Mobs, (void*)array,lgMmin(a,(int) array[1]),lgMmax(a,(int) array[1]),NULL,1000);
+}
+
+// VM ends
 
 
 /*********** N200-M relation routines***********/
