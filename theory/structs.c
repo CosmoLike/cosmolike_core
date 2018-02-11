@@ -244,6 +244,10 @@ typedef struct {
   double cluster_Mobs_alpha;
   double cluster_Mobs_beta;
   double cluster_Mobs_N_pivot;
+  double cluster_Mobs_lgN0;
+  double cluster_Mobs_sigma0;
+  double cluster_Mobs_sigma_qm;
+  double cluster_Mobs_sigma_qz;
   double cluster_completeness[10];
   double cluster_centering_f0;
   double cluster_centering_alpha;
@@ -285,6 +289,10 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double cluster_Mobs_alpha[2];
   double cluster_Mobs_beta[2];
   double cluster_Mobs_N_pivot[2];
+  double cluster_Mobs_lgN0[2];
+  double cluster_Mobs_sigma0[2];
+  double cluster_Mobs_sigma_qm[2];
+  double cluster_Mobs_sigma_qz[2];
   double cluster_completeness[2];
   double cluster_centering_f0[2];
   double cluster_centering_alpha[2];

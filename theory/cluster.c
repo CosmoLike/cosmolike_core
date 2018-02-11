@@ -16,13 +16,22 @@ double C_cgl_tomo_nointerp(double l, int nz, int nN, int zs);//angular cluster l
 
 
 
-/*********** N200-M relation routines***********/
+/*********** N200-M relation routines ***********/
 double lgM_obs(double N200, double a){
   return nuisance.cluster_Mobs_lgM0 + log(N200/nuisance.cluster_Mobs_N_pivot)*nuisance.cluster_Mobs_alpha + log(1./a)*nuisance.cluster_Mobs_beta;
 }
 double scatter_lgM_obs(double N200, double a){
   return nuisance.cluster_Mobs_sigma;
 }
+
+/*********** M->N200 relation routines with the scatter as a function os M and z ***********/
+double lgN200_obs(double M, double a){
+  return nuisance.cluster_Mobs_lgN0 + log(M/(3.e+14))*nuisance.cluster_Mobs_alpha + log(1./a)*nuisance.cluster_Mobs_beta;
+}
+double scatter_lgN200_obs_mz(double M, double a){
+  return nuisance.cluster_Mobs_sigma0 + log(M/(3.e+14))*nuisance.cluster_Mobs_sigma_qm + log(1./a)*nuisance.cluster_Mobs_sigma_qz;
+}
+
 /********** systematics models *************/ //simple place-holder routines for now, to be 
 double N200_completeness(int nz, int nN){
   return nuisance.cluster_completeness[nz];
@@ -40,6 +49,7 @@ double lgMmax(double a,int nN){// speed up of mass integrals for Gaussian scatte
   return fmin(log(limits.M_max),lgM_obs(Cluster.N_max[nN],a)+5.*scatter_lgM_obs(Cluster.N_max[nN],a));
   
 }
+
 double int_n_Mobs(double lgM, void* params){
   double *array = (double *) params;
   double x1,x2;
@@ -47,6 +57,15 @@ double int_n_Mobs(double lgM, void* params){
   x2 = (lgM_obs(Cluster.N_max[(int)array[1]],array[0])-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],array[0]));
   return exp(lgM)*massfunc(exp(lgM),array[0])*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
 }
+
+double int_n_Mobs_forward(double lgM, void* params){
+  double *array = (double *) params;
+  double x1,x2;
+  x1 = (log(Cluster.N_min[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(lgM, array[0]));
+  x2 = (log(Cluster.N_max[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(lgM, array[0]));
+  return exp(lgM)*massfunc(exp(lgM),array[0])*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+}
+
 double int_b_Mobs(double lgM, void* params){
   double *array = (double *) params;
   double x1,x2;
@@ -68,6 +87,12 @@ double int_da_n_Mobs(double a, void* params){
   return pow(f_K(chi(a)),2.0)*dchi_da(a)*int_gsl_integrate_high_precision(int_n_Mobs, (void*)array,lgMmin(a,(int) array[1]),lgMmax(a,(int) array[1]),NULL,1000);
 }
 
+double int_da_n_Mobs_forward(double a, void* params){
+  double *array = (double *) params;
+  array[0] = a;
+  return pow(f_K(chi(a)),2.0)*dchi_da(a)*int_gsl_integrate_high_precision(int_n_Mobs_forward, (void*)array,log(limits.M_min),log(limits.M_max),NULL,1000);
+}
+
 double n_N200 (int nz, int nN){
   static cosmopara C;
   static nuisancepara N;
@@ -79,7 +104,8 @@ double n_N200 (int nz, int nN){
     for (z = 0; z < tomo.cluster_Nbin; z++){
       for (n = 0; n< Cluster.N200_Nbin; n++){
         array[1] = (double) n;
-        table[z][n] = int_gsl_integrate_medium_precision(int_da_n_Mobs, (void*)array, 1./(tomo.cluster_zmax[z]+1), 1./(tomo.cluster_zmin[z]+1),NULL,1000);
+	//        table[z][n] = int_gsl_integrate_medium_precision(int_da_n_Mobs, (void*)array, 1./(tomo.cluster_zmax[z]+1), 1./(tomo.cluster_zmin[z]+1),NULL,1000);
+	table[z][n] = int_gsl_integrate_medium_precision(int_da_n_Mobs_forward, (void*)array, 1./(tomo.cluster_zmax[z]+1), 1./(tomo.cluster_zmin[z]+1),NULL,1000);
         
       }
     }
