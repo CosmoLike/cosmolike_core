@@ -1,5 +1,6 @@
-CXX=gcc-6
-
+CXX=gcc -std=c99
+GSL_LIB=/share/sw/free/gsl/2.1/lib
+GSL_INC=/share/sw/free/gsl/2.1/lib
 # DEFINE DEBUG TESTS
 DEBUG := 1
 
@@ -11,7 +12,7 @@ GSL   := 1
 
 LDFLAGS  =
 CXXFLAGS += -fmax-errors=1
-
+HEADERS = util.h
 ifdef DEBUG
 CXXFLAGS += -O0 -g -DDEBUG -W -Wall -Wextra -Wcomment -pedantic 
 else
@@ -29,12 +30,16 @@ LDFLAGS += ${NAG_LIB}/libnagc_mkl.so -lpthread
 endif 
 
 all: test
-
-main.o: main.c
+chtotest: chto_test.o util.o
+	$(CXX) chto_test.o util.o $(LDFLAGS) -o chtotest
+chto_test.o: chto_test.c util.h
+	$(CXX) -c $(CXXFLAGS) chto_test.c
+main.o: main.c util.h
 	$(CXX) -c $(CXXFLAGS) main.c
-
-test: main.o
-	$(CXX) main.o $(LDFLAGS) -o $@
+util.o: util.c util.h
+	$(CXX) -c $(CXXFLAGS) util.c
+test: main.o util.o
+	$(CXX) main.o util.o $(LDFLAGS) -o $@
 
 clean:
 	rm -rf test *.o
