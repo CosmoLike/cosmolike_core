@@ -6,6 +6,7 @@
 #include <gsl/gsl_interp2d.h>
 #include <gsl/gsl_spline2d.h>
 #include <gsl/gsl_sf_erf.h>
+#include <gsl/gsl_integration.h>
 #endif
 
 typedef struct {
@@ -15,8 +16,12 @@ typedef struct {
   double intrinsic_alpha;
   double intrinsic_sigma;
   double true_lambda;
+  double obs_lambda_min[10];
+  double obs_lambda_max[10];
+  double obs_lambda;
   double z;
   double k;
+  int N_lambda;
 } Par_lamba_obs;
 
 double probability_true_richness_given_mass(const double true_lambda, 
@@ -354,6 +359,36 @@ void* params) {
 
   return r0 + r1 + r2 + r3;
 }
+double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter)
+{
+  double res, err;
+  gsl_integration_cquad_workspace *w = gsl_integration_cquad_workspace_alloc(niter);
+  gsl_function F;
+  F.function = func;
+  F.params  = arg;
+ gsl_integration_cquad(&F,a,b,0,1.e-3,w,&res,&err,0);
+  if(NULL!=error)
+    *error=err;
+  gsl_integration_cquad_workspace_free(w);
+  return res;
+}
+double int_ltrue_probability_observed_richness_given_mass(double true_lambda, void * params){
+  Par_lamba_obs *p=(Par_lamba_obs *)params;
+  return probability_observed_richness_given_true_richness(p->obs_lambda, params)*probability_true_richness_given_mass(true_lambda,params);
+}
+double int_lobs_probability_observed_richness_given_mass(double obs_lambda, void * params){
+  Par_lamba_obs *p=(Par_lamba_obs *)params;
+  p->obs_lambda = obs_lambda;
+  return int_gsl_integrate_medium_precision(int_ltrue_probability_observed_richness_given_mass,params,1.,500.,NULL,1000);
+}
+double probability_observed_richness_given_mass(int N_lambda, void * params) {
+  Par_lamba_obs *p=(Par_lamba_obs *)params;
+  p->N_lambda = N_lambda;
+  printf("calculating P(l_obs =[%.1f,%.1f]|M)\n",p->obs_lambda_min[N_lambda],p->obs_lambda_max[N_lambda]);
+  double int_l = int_gsl_integrate_medium_precision(int_lobs_probability_observed_richness_given_mass,params,p->obs_lambda_min[N_lambda],p->obs_lambda_max[N_lambda],NULL,1000);
+  printf("%.1f\n",int_l);
+  return int_l;
+}
 
 int main() {
   const double true_z = 0.3;
@@ -372,7 +407,11 @@ int main() {
   p.intrinsic_sigma = intrinsic_sigma;
   p.z = true_z;
   p.true_lambda = true_lambda;
-  
+  p.obs_lambda_min[0] = 5;
+  p.obs_lambda_max[0] = 15;
+  p.obs_lambda_min[1] = 15;
+  p.obs_lambda_max[1] = 30;
+  probability_observed_richness_given_mass(0,&p);
   {
     double r1 = probability_true_richness_given_mass(true_lambda, &p);
     printf("%lf \n",r1);
