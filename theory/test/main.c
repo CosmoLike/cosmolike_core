@@ -384,9 +384,9 @@ double int_lobs_probability_observed_richness_given_mass(double obs_lambda, void
 double probability_observed_richness_given_mass(int N_lambda, void * params) {
   Par_lambda_obs *p=(Par_lambda_obs *)params;
   p->N_lambda = N_lambda;
-  printf("calculating P(l_obs =[%.1f,%.1f]|M)\n",p->obs_lambda_min[N_lambda],p->obs_lambda_max[N_lambda]);
+  //printf("calculating P(l_obs =[%.1f,%.1f]|M=%e)\n",p->obs_lambda_min[N_lambda],p->obs_lambda_max[N_lambda],p->mass);
   double int_l = int_gsl_integrate_medium_precision(int_lobs_probability_observed_richness_given_mass,params,p->obs_lambda_min[N_lambda],p->obs_lambda_max[N_lambda],NULL,1000);
-  printf("%.1f\n",int_l);
+  //printf("%.1f\n",int_l);
   return int_l;
 }
 
@@ -409,9 +409,18 @@ int main() {
   p.true_lambda = true_lambda;
   p.obs_lambda_min[0] = 5;
   p.obs_lambda_max[0] = 15;
-  p.obs_lambda_min[1] = 15;
-  p.obs_lambda_max[1] = 30;
-  probability_observed_richness_given_mass(0,&p);
+  p.obs_lambda_min[1] = 5;
+  p.obs_lambda_max[1] = 20;
+  printf("probability_observed_richness_given_mass(l_obs =[%.1f,%.1f]|M)\n",p.obs_lambda_min[0],p.obs_lambda_max[0]);
+  for (double m = 12.0; m < 15.5; m+=0.5){
+    p.mass = pow(10.,m);
+    printf("%.1f %e\n",m,  probability_observed_richness_given_mass(0,&p));
+  }
+  printf("probability_observed_richness_given_mass(l_obs =[%.1f,%.1f]|M)\n",p.obs_lambda_min[1],p.obs_lambda_max[1]);
+  for (double m = 12.0; m < 15.5; m+=0.5){
+    p.mass = pow(10.,m);
+    printf("%.1f %e\n",m,  probability_observed_richness_given_mass(1,&p));
+  }
   {
     double r1 = probability_true_richness_given_mass(true_lambda, &p);
     printf("%lf \n",r1);
