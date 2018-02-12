@@ -22,11 +22,11 @@ typedef struct {
   double z;
   double k;
   int N_lambda;
-} Par_lamba_obs;
+} Par_lambda_obs;
 
 double probability_true_richness_given_mass(const double true_lambda, 
 void * params) {
-  Par_lamba_obs *p=(Par_lamba_obs *)params;
+  Par_lambda_obs *p=(Par_lambda_obs *)params;
   const double mass = p->mass;
   const double mass_min = p->mass_min;
   const double mass_M1 = p->mass_M1;
@@ -186,7 +186,7 @@ void* params) {
   // fprj = fraction of the distribution that lives in the right tail.
   // Physically: it has to with projection effects that may merge two halos
   // into a single one with combined richness
-  Par_lamba_obs *p=(Par_lamba_obs *)params;
+  Par_lambda_obs *p=(Par_lambda_obs *)params;
 
   const double true_lambda = p->true_lambda;
   const double z = p->z;
@@ -373,16 +373,16 @@ double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *ar
   return res;
 }
 double int_ltrue_probability_observed_richness_given_mass(double true_lambda, void * params){
-  Par_lamba_obs *p=(Par_lamba_obs *)params;
+  Par_lambda_obs *p=(Par_lambda_obs *)params;
   return probability_observed_richness_given_true_richness(p->obs_lambda, params)*probability_true_richness_given_mass(true_lambda,params);
 }
 double int_lobs_probability_observed_richness_given_mass(double obs_lambda, void * params){
-  Par_lamba_obs *p=(Par_lamba_obs *)params;
+  Par_lambda_obs *p=(Par_lambda_obs *)params;
   p->obs_lambda = obs_lambda;
   return int_gsl_integrate_medium_precision(int_ltrue_probability_observed_richness_given_mass,params,1.,500.,NULL,1000);
 }
 double probability_observed_richness_given_mass(int N_lambda, void * params) {
-  Par_lamba_obs *p=(Par_lamba_obs *)params;
+  Par_lambda_obs *p=(Par_lambda_obs *)params;
   p->N_lambda = N_lambda;
   printf("calculating P(l_obs =[%.1f,%.1f]|M)\n",p->obs_lambda_min[N_lambda],p->obs_lambda_max[N_lambda]);
   double int_l = int_gsl_integrate_medium_precision(int_lobs_probability_observed_richness_given_mass,params,p->obs_lambda_min[N_lambda],p->obs_lambda_max[N_lambda],NULL,1000);
@@ -399,7 +399,7 @@ int main() {
   const double intrinsic_sigma = 0.3;
   const double observed_lambda = 8;
 
-  Par_lamba_obs p;
+  Par_lambda_obs p;
   p.mass = pow(10.0, 13);
   p.mass_min = mass_min;
   p.mass_M1 = mass_M1;
