@@ -8,14 +8,26 @@
 #include <gsl/gsl_sf_erf.h>
 #endif
 
+typedef struct {
+  double mass;
+  double mass_min;
+  double mass_M1;
+  double intrinsic_alpha;
+  double intrinsic_sigma;
+  double true_lambda;
+  double z;
+  double k;
+} Par_lamba_obs;
+
 double probability_true_richness_given_mass(const double true_lambda, 
-double* params) {
-  const double mass = params[0];
-  const double mass_min = params[1];
-  const double mass_M1 = params[2];
-  const double intrinsic_alpha = params[3];
+void * params) {
+  Par_lamba_obs *p=(Par_lamba_obs *)params;
+  const double mass = p->mass;
+  const double mass_min = p->mass_min;
+  const double mass_M1 = p->mass_M1;
+  const double intrinsic_alpha = p->intrinsic_alpha;
   // intrisic scatter of mass-richness relation
-  const double intrinsic_sigma = params[4];
+  const double intrinsic_sigma = p->intrinsic_sigma;
 
   // average true satellite richness given mass
   const double atsrgm = 
@@ -152,7 +164,7 @@ double* params) {
 
 double
 probability_observed_richness_given_true_richness(const double observed_lambda, 
-double* params) {
+void* params) {
   // The relation between observed and true richness depends on projection
   // effects and photometric noise
 
@@ -169,9 +181,10 @@ double* params) {
   // fprj = fraction of the distribution that lives in the right tail.
   // Physically: it has to with projection effects that may merge two halos
   // into a single one with combined richness
+  Par_lamba_obs *p=(Par_lamba_obs *)params;
 
-  const double true_lambda = params[0];
-  const double z = params[1];
+  const double true_lambda = p->true_lambda;
+  const double z = p->z;
   static int first = 0;
   static double* vector_z;
   static double* vector_lambda;
@@ -350,33 +363,31 @@ int main() {
   const double intrinsic_alpha = 0.7;
   const double intrinsic_sigma = 0.3;
   const double observed_lambda = 8;
+
+  Par_lamba_obs p;
+  p.mass = pow(10.0, 13);
+  p.mass_min = mass_min;
+  p.mass_M1 = mass_M1;
+  p.intrinsic_alpha = intrinsic_alpha;
+  p.intrinsic_sigma = intrinsic_sigma;
+  p.z = true_z;
+  p.true_lambda = true_lambda;
   
   {
-    double params[5];
-    params[0] = pow(10.0, 13); // just some example
-    params[1] = mass_min;
-    params[2] = mass_M1; 
-    params[3] = intrinsic_alpha;  
-    params[4] = intrinsic_sigma; 
-
-    double r1 = probability_true_richness_given_mass(true_lambda, params);
+    double r1 = probability_true_richness_given_mass(true_lambda, &p);
     printf("%lf \n",r1);
 
-    double r2 = probability_true_richness_given_mass(0.5*true_lambda, params);
+    double r2 = probability_true_richness_given_mass(0.5*true_lambda, &p);
     printf("%lf \n",r2);
   }
 
   {
-    double params[2];
-    params[0] = true_lambda;
-    params[1] = true_z;
-
     double r3 =   
-      probability_observed_richness_given_true_richness(observed_lambda,params);
+      probability_observed_richness_given_true_richness(observed_lambda,&p);
     printf("%lf \n",r3);
 
     double r4 =
-      probability_observed_richness_given_true_richness(observed_lambda,params);
+      probability_observed_richness_given_true_richness(observed_lambda,&p);
     printf("%lf \n",r4);
   }
 
