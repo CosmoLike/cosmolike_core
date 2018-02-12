@@ -1,6 +1,4 @@
 CXX=gcc -std=c99
-GSL_LIB=/share/sw/free/gsl/2.1/lib
-GSL_INC=/share/sw/free/gsl/2.1/lib
 # DEFINE DEBUG TESTS
 DEBUG := 1
 
