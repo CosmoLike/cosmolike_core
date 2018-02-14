@@ -61,8 +61,8 @@ double int_n_Mobs(double lgM, void* params){
 double int_n_Mobs_forward(double lgM, void* params){
   double *array = (double *) params;
   double x1,x2;
-  x1 = (log(Cluster.N_min[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(lgM, array[0]));
-  x2 = (log(Cluster.N_max[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(lgM, array[0]));
+  x1 = (log(Cluster.N_min[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(exp(lgM), array[0]));
+  x2 = (log(Cluster.N_max[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(exp(lgM), array[0]));
   return exp(lgM)*massfunc(exp(lgM),array[0])*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
 }
 
@@ -73,6 +73,15 @@ double int_b_Mobs(double lgM, void* params){
   x2 = (lgM_obs(Cluster.N_max[(int)array[1]],array[0])-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],array[0]));
   return exp(lgM)*massfunc(exp(lgM),array[0])*B1(exp(lgM),array[0])*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
 }
+
+double int_b_Mobs_forward(double lgM, void* params){
+  double *array = (double *) params;
+  double x1,x2;
+  x1 = (log(Cluster.N_min[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(exp(lgM), array[0]));
+  x2 = (log(Cluster.N_max[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(exp(lgM), array[0]));
+  return exp(lgM)*massfunc(exp(lgM),array[0])*B1(exp(lgM),array[0])*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+}
+
 double int_M_Mobs(double lgM, void* params){
   double *array = (double *) params;
   double x1,x2;
@@ -90,7 +99,8 @@ double int_da_n_Mobs(double a, void* params){
 double int_da_n_Mobs_forward(double a, void* params){
   double *array = (double *) params;
   array[0] = a;
-  return pow(f_K(chi(a)),2.0)*dchi_da(a)*int_gsl_integrate_high_precision(int_n_Mobs_forward, (void*)array,log(limits.M_min),log(limits.M_max),NULL,1000);
+  //  return pow(f_K(chi(a)),2.0)*dchi_da(a)*int_gsl_integrate_high_precision(int_n_Mobs_forward, (void*)array,log(limits.M_min),log(limits.M_max),NULL,1000);
+  return pow(f_K(chi(a)),2.0)*dchi_da(a)*int_gsl_integrate_high_precision(int_n_Mobs_forward, (void*)array,log(1.e12),log(limits.M_max),NULL,1000);
 }
 
 double n_N200 (int nz, int nN){
@@ -138,7 +148,8 @@ double b_cluster (int nz, int nN){ //mean bias of clusters in redshift bin nz, r
       a= array[0];
       for (n = 0; n< Cluster.N200_Nbin; n++){
         array[1] = (double) n;
-        table[z][n] = int_gsl_integrate_medium_precision(int_b_Mobs, (void*)array, lgMmin(a,n),lgMmax(a,n),NULL,1000)/int_gsl_integrate_medium_precision(int_n_Mobs, (void*)array, lgMmin(a,n),lgMmax(a,n),NULL,1000);
+        //table[z][n] = int_gsl_integrate_medium_precision(int_b_Mobs_forward, (void*)array, lgMmin(a,n),lgMmax(a,n),NULL,1000)/int_gsl_integrate_medium_precision(int_n_Mobs_forward, (void*)array, lgMmin(a,n),lgMmax(a,n),NULL,1000);
+	table[z][n] = int_gsl_integrate_medium_precision(int_b_Mobs_forward, (void*)array, log(1.e12),log(limits.M_max) ,NULL,1000)/int_gsl_integrate_medium_precision(int_n_Mobs_forward, (void*)array, log(1.e12),log(limits.M_max),NULL,1000);
       }
     }
     update_cosmopara(&C); update_nuisance(&N);
@@ -183,6 +194,17 @@ double int_P_cm_1h(double lgM, void *params){
   u_m = m/(cosmology.rho_crit*cosmology.Omega_m)*u_nfw_c(conc(m,a),array[0],m,a); //density profile
   return m*massfunc(m,a)*u_m*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1))*P_cm_offcentering(array[2],m,a);
 }
+
+double int_P_cm_1h_forward(double lgM, void *params){
+  double x1,x2,m,a,u_m;
+  double *array = (double *) params;
+  m = exp(lgM); a = array[0];
+  x1 = (log(Cluster.N_min[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(exp(lgM), array[0]));
+  x2 = (log(Cluster.N_max[(int)array[1]])-lgN200_obs(exp(lgM),array[0]))/(sqrt(2.0)*scatter_lgN200_obs_mz(exp(lgM), array[0]));
+  u_m = m/(cosmology.rho_crit*cosmology.Omega_m)*u_nfw_c(conc(m,a),array[2],m,a); //density profile
+  return m*massfunc(m,a)*u_m*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1))*P_cm_offcentering(array[2],m,a);
+}
+
 double P_cm_1h(double k, double a,int nz, int nN){ 
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.,amin =0., amax = 0.;
   static int N_a = 20, N_k_nlin = 30;
@@ -210,7 +232,8 @@ double P_cm_1h(double k, double a,int nz, int nN){
       klog  = logkmin;
       for (j=0; j<N_k_nlin; j++, klog += dk) {
         array[2]= exp(klog);
-        table_P_cm[i][j] = log(int_gsl_integrate_medium_precision(int_P_cm_1h, (void*)array, lgMmin(aa,nN), lgMmax(aa,nN),NULL,1000)/int_gsl_integrate_medium_precision(int_n_Mobs, (void*)array, lgMmin(aa,nN), lgMmax(aa,nN),NULL,1000));
+	//        table_P_cm[i][j] = log(int_gsl_integrate_medium_precision(int_P_cm_1h_forward, (void*)array, lgMmin(aa,nN), lgMmax(aa,nN),NULL,1000)/int_gsl_integrate_medium_precision(int_n_Mobs_forward, (void*)array, lgMmin(aa,nN), lgMmax(aa,nN),NULL,1000));
+	table_P_cm[i][j] = log(int_gsl_integrate_medium_precision(int_P_cm_1h_forward, (void*)array, log(1.e12),log(limits.M_max),NULL,1000)/int_gsl_integrate_medium_precision(int_n_Mobs_forward, (void*)array, log(1.e12),log(limits.M_max),NULL,1000));
       }
     }
   }
