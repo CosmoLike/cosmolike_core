@@ -778,7 +778,7 @@ void set_survey_parameters_to_DES()
 //check Chang 2013 for details
 void set_survey_parameters_to_LSST()
 {
-  survey.area   = 18000.0;
+  survey.area   = 10401.0;
   survey.n_gal   = 26.0;
   survey.sigma_e   = 0.37;  
   survey.area_conversion_factor = 60.0*60.0*constants.arcmin*constants.arcmin;
