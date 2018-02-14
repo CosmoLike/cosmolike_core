@@ -737,7 +737,6 @@ void set_cosmological_parameters_to_MILLENIUM()
   printf("Cosmology set  to Sato\n");
 }
 
-
 void set_survey_parameters_to_DES_Y1()
 {
   survey.area   = 1000.;
