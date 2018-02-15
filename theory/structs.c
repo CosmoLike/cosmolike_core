@@ -178,6 +178,7 @@ typedef struct{
   int lbin;
   double l_min;
   double l_max;
+  char model[256];
 } clusterpara;
 clusterpara Cluster;
 

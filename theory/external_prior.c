@@ -78,18 +78,40 @@ void set_ia_priors()
 
 void set_clusterMobs_priors()
 {
-  prior.cluster_Mobs_lgM0[0]=1.72+log(1.e+14*0.7);
-  prior.cluster_Mobs_alpha[0]=1.08;
-  prior.cluster_Mobs_beta[0]=0.0;
-  prior.cluster_Mobs_sigma[0]=0.25;
-    
-  prior.cluster_Mobs_lgM0[1]=1.0;
-  prior.cluster_Mobs_alpha[1]=0.2;
-  prior.cluster_Mobs_beta[1]=0.5;
-  prior.cluster_Mobs_sigma[1]=0.2;
+  if (strcmp(survey.name,"LSST_Y10")==0 || strcmp(survey.name,"LSST_Y1")==0 ){
+    // flat prior
+    prior.cluster_Mobs_lgN0[0]=0.5;
+    prior.cluster_Mobs_lgN0[1]=5.0;
 
-  prior.cluster_completeness[0] = 0.9;
-  prior.cluster_completeness[1] = 0.05;
+    prior.cluster_Mobs_alpha[0]=0.0;
+    prior.cluster_Mobs_alpha[1]=2.0;
+    
+    prior.cluster_Mobs_beta[0]=-1.5;
+    prior.cluster_Mobs_beta[1]=1.5;
+    
+    prior.cluster_Mobs_sigma0[0]=0.0;
+    prior.cluster_Mobs_sigma0[1]=1.5;
+    
+    prior.cluster_Mobs_sigma_qm[0] = -1.5;
+    prior.cluster_Mobs_sigma_qm[1] = -1.5;
+
+    prior.cluster_Mobs_sigma_qz[0] = -1.5;
+    prior.cluster_Mobs_sigma_qz[1] = -1.5;
+
+  } else {
+    prior.cluster_Mobs_lgM0[0]=1.72+log(1.e+14*0.7);
+    prior.cluster_Mobs_alpha[0]=1.08;
+    prior.cluster_Mobs_beta[0]=0.0;
+    prior.cluster_Mobs_sigma[0]=0.25;
+    
+    prior.cluster_Mobs_lgM0[1]=1.0;
+    prior.cluster_Mobs_alpha[1]=0.2;
+    prior.cluster_Mobs_beta[1]=0.5;
+    prior.cluster_Mobs_sigma[1]=0.2;
+
+    prior.cluster_completeness[0] = 0.9;
+    prior.cluster_completeness[1] = 0.05;
+  }
   
   like.clusterMobs=1;
 }
@@ -595,16 +617,33 @@ double log_L_shear_calib()
 
 double log_L_clusterMobs()
 {
-  int i;
   double log_L = 0.; 
-  log_L -=  pow((nuisance.cluster_Mobs_lgM0 - prior.cluster_Mobs_lgM0[0])/ prior.cluster_Mobs_lgM0[1],2.0);
-  log_L -=  pow((nuisance.cluster_Mobs_alpha - prior.cluster_Mobs_alpha[0])/ prior.cluster_Mobs_alpha[1],2.0);
-  log_L -=  pow((nuisance.cluster_Mobs_beta - prior.cluster_Mobs_beta[0])/ prior.cluster_Mobs_beta[1],2.0);
-  log_L -=  pow((nuisance.cluster_Mobs_sigma - prior.cluster_Mobs_sigma[0])/ prior.cluster_Mobs_sigma[1],2.0);
-  for (i=0;i<4; i++){
-  log_L -=  pow((nuisance.cluster_completeness[i] - prior.cluster_completeness[0])/ prior.cluster_completeness[1],2.0);
-  }  
-  return 0.5*log_L;
+  if (strcmp(survey.name,"LSST_Y10")==0 || strcmp(survey.name,"LSST_Y1")==0 ){
+    if (nuisance.cluster_Mobs_lgN0 < prior.cluster_Mobs_lgN0[0] ||
+	nuisance.cluster_Mobs_lgN0 > prior.cluster_Mobs_lgN0[1] ||
+	nuisance.cluster_Mobs_alpha < prior.cluster_Mobs_alpha[0] ||
+	nuisance.cluster_Mobs_alpha > prior.cluster_Mobs_alpha[1] ||
+	nuisance.cluster_Mobs_beta < prior.cluster_Mobs_beta[0] ||
+	nuisance.cluster_Mobs_beta > prior.cluster_Mobs_beta[1] ||
+	nuisance.cluster_Mobs_sigma0 < prior.cluster_Mobs_sigma0[0] ||
+	nuisance.cluster_Mobs_sigma0 > prior.cluster_Mobs_sigma0[1] ||
+	nuisance.cluster_Mobs_sigma_qm < prior.cluster_Mobs_sigma_qm[0] ||
+	nuisance.cluster_Mobs_sigma_qm > prior.cluster_Mobs_sigma_qm[1] ||
+	nuisance.cluster_Mobs_sigma_qz < prior.cluster_Mobs_sigma_qz[0] ||
+	nuisance.cluster_Mobs_sigma_qz > prior.cluster_Mobs_sigma_qz[1]
+	) log_L = -1.0e8;
+  } else {
+    int i;
+    log_L -=  pow((nuisance.cluster_Mobs_lgM0 - prior.cluster_Mobs_lgM0[0])/ prior.cluster_Mobs_lgM0[1],2.0);
+    log_L -=  pow((nuisance.cluster_Mobs_alpha - prior.cluster_Mobs_alpha[0])/ prior.cluster_Mobs_alpha[1],2.0);
+    log_L -=  pow((nuisance.cluster_Mobs_beta - prior.cluster_Mobs_beta[0])/ prior.cluster_Mobs_beta[1],2.0);
+    log_L -=  pow((nuisance.cluster_Mobs_sigma - prior.cluster_Mobs_sigma[0])/ prior.cluster_Mobs_sigma[1],2.0);
+    for (i=0;i<4; i++){
+      log_L -=  pow((nuisance.cluster_completeness[i] - prior.cluster_completeness[0])/ prior.cluster_completeness[1],2.0);
+    }
+    log_L = 0.5*log_L;
+  }
+  return log_L;
 }
 
 
