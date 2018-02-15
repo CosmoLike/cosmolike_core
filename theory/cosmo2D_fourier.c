@@ -17,97 +17,21 @@ double C_shear_tomo(double l, int ni, int nj); //shear tomography power spectra
 double C_shear_tomo_nointerp(double l, int ni, int nj);
 /**********************************************************/
 
-double MG_Sigma(double a)
-{
-//  double aa=a*a;
-//  double omegam=cosmology.Omega_m/(aa*a);
-  double omegav=omv_vareos(a);
-  double hub=hoverh0(a);
-  hub = hub*hub;
- 
-  return cosmology.MGSigma*omegav/hub/cosmology.Omega_v;
-}
-
-double MG_mu_horndeski(double a){
-  //this is all in the quasistatic limit!!
-  //also assumes Mpl = Mstar!!!!
-  double aa=a*a;
-  double omegam=cosmology.Omega_m/(aa*a);
-  double omegav=omv_vareos(a);
-  double hub = hoverh0(a);
-  double one_plus_mg_mu = 1.;
-  hub = hub*hub;
-  //alpha function redshift scaling
-  double fz = omegav/hub*1./cosmology.Omega_v;
-  double wde = cosmology.w0 + cosmology.wa*(1. - a);
-  double H = (100. * cosmology.h0 / constants.lightspeed) * hoverh0(a);
-  double Hprime = -0.5*H*H*(omegam/hub+omegav/hub*(1.+3.*wde))-H*H;
-  double fzprime = -3.*wde * a*H * omegam/hub * fz;
-  //define actual alpha functions: fz*alpha_X,0
-  double alpha_K = cosmology.MGalpha_K*fz;
-  double alpha_B = cosmology.MGalpha_B*fz;
-  double alpha_T = cosmology.MGalpha_T*fz;
-  double alpha_M = cosmology.MGalpha_M*fz;
-  //helpful functions (see Tessa Baker's notes)
-  double horndeski_alpha = alpha_K + 1.5*alpha_B*alpha_B;
-  double cs_term1 = (2.-alpha_B)*(Hprime - (alpha_M -alpha_T)*H*H-H*H*alpha_B/(2.*(1.+alpha_T)));
-  //!!!!!!!!Assuming Mpl = Mstar!!!!!!!!!!!!!
-  double cs_term2 = -H*cosmology.MGalpha_B*fzprime + 1.5*H*H*omegam/hub;
-  double horndeski_cs_sqrd = -(cs_term1 + cs_term2)/(H*H*horndeski_alpha);
-
-  //given by Eqn 43 in Tessa Baker notes
-  //!!!!currently assuming Mpl = Mstar!!!!
-  double mu_term1 = horndeski_alpha*horndeski_cs_sqrd*(1+alpha_T)*(1+alpha_T);
-  double mu_term2 = (-alpha_B*(1+alpha_T)+ 2*(alpha_T - alpha_M))*(-alpha_B*(1+alpha_T)+ 2*(alpha_T - alpha_M));
-  double mu = (mu_term1+mu_term2)/(horndeski_alpha*horndeski_cs_sqrd) -1.;
-  return mu+1;
-}
-
-double MG_Sigma_horndeski(double a){
-  //this is all in the quasistatic limit!!
-  //also assumes Mpl = Mstar!!!!
-  double aa=a*a;
-  double omegam=cosmology.Omega_m/(aa*a);
-  double omegav=omv_vareos(a);
-  double hub = hoverh0(a);
-  double one_plus_mg_mu = 1.;
-  hub = hub*hub;
-  //alpha function redshift scaling
-  double fz = omegav/hub*1./cosmology.Omega_v;
-  double wde = cosmology.w0 + cosmology.wa*(1. - a);
-  double H = (100. * cosmology.h0 / constants.lightspeed) * hoverh0(a);
-  double Hprime = -0.5*H*H*(omegam/hub+omegav/hub*(1.+3.*wde))-H*H;
-  double fzprime = -3.*wde * a*H * omegam/hub * fz;
-  //define actual alpha functions: fz*alpha_X,0
-  double alpha_K = cosmology.MGalpha_K*fz;
-  double alpha_B = cosmology.MGalpha_B*fz;
-  double alpha_T = cosmology.MGalpha_T*fz;
-  double alpha_M = cosmology.MGalpha_M*fz;
-  //helpful functions (see Tessa Baker's notes)
-  double horndeski_alpha = alpha_K + 1.5*alpha_B*alpha_B;
-  double cs_term1 = (2.-alpha_B)*(Hprime - (alpha_M -alpha_T)*H*H-H*H*alpha_B/(2.*(1.+alpha_T)));
-  //!!!!!!!!Assuming Mpl = Mstar!!!!!!!!!!!!!
-  double cs_term2 = -H*cosmology.MGalpha_B*fzprime + 1.5*H*H*omegam/hub;
-  double horndeski_cs_sqrd = -(cs_term1 + cs_term2)/(H*H*horndeski_alpha);
-
-  //given by gamma Eqn. 44 in Tessa Baker notes
-  double num = horndeski_alpha*horndeski_cs_sqrd-alpha_B*(-alpha_B/(2.*(1.+alpha_T))+alpha_T-alpha_M);
-  double denom = horndeski_alpha*horndeski_cs_sqrd*(1.+alpha_T)+(-alpha_B*(1.+alpha_T)+2.*(alpha_T-alpha_M))*(-alpha_B*(1.+alpha_T)+2.*(alpha_T-alpha_M));
-  double one_plus_mu_mg = MG_mu_horndeski(a);
-  // printf("a=%e, sigma=%e\n",a,0.5*one_plus_mu_mg*(num/denom+1.));
-  return 0.5*one_plus_mu_mg*(num/denom+1.);
-}
-
 double dchi_da(double a){
   return 1./(a*a*hoverh0(a));
 }
 double W_kappa(double a, double fK, double nz){
   double wkappa = 1.5*cosmology.Omega_m*fK/a*g_tomo(a,(int)nz);
+  double aa=a*a;
+  double omegam=cosmology.Omega_m/(aa*a);
+  double omegav=omv_vareos(a);
+  double hub = hoverh0(a);
+  hub = hub*hub;
   if(cosmology.MGSigma != 0.){
-    wkappa *= (1.+MG_Sigma(a));
+    wkappa *= (1.+MG_sigma(a, omegav, hub));
   }
   else if (cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
-    wkappa*= (1.+MG_Sigma_horndeski(a));
+    wkappa*= (1.+horndeski_sigma(a, omegav, hub, omegam));
   }
   return wkappa;
 }

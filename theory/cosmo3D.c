@@ -99,35 +99,10 @@ int func_for_growfac(double a,const double y[],double f[],void *params)
   hub = hub*hub;
   f[0]=y[1];
   if(cosmology.MGmu != 0){
-    one_plus_mg_mu += cosmology.MGmu*omegav/hub/cosmology.Omega_v;
+    one_plus_mg_mu += MG_mu(omegav, hub);
   }
   else if (cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
-    //this is all in the quasistatic limit!!
-    //also assumes Mpl = Mstar!!!!
-    //alpha function redshift scaling
-    double fz = omegav/hub*1./cosmology.Omega_v;
-    double wde = cosmology.w0 + cosmology.wa*(1. - a);
-    double H = (100. * cosmology.h0 / constants.lightspeed) * hoverh0(a);
-    double Hprime = -0.5*H*H*(omegam/hub+omegav/hub*(1.+3.*wde))-H*H;
-    double fzprime = -3.*wde * a*H * omegam/hub * fz;
-    //define actual alpha functions: fz*alpha_X,0
-    double alpha_K = cosmology.MGalpha_K*fz;
-    double alpha_B = cosmology.MGalpha_B*fz;
-    double alpha_T = cosmology.MGalpha_T*fz;
-    double alpha_M = cosmology.MGalpha_M*fz;
-    //helpful functions (see Tessa Baker's notes)
-    double horndeski_alpha = alpha_K + 1.5*alpha_B*alpha_B;
-    double cs_term1 = (2.-alpha_B)*(Hprime - (alpha_M -alpha_T)*H*H-H*H*alpha_B/(2.*(1.+alpha_T)));
-    //!!!!!!!!Assuming Mpl = Mstar!!!!!!!!!!!!!
-    double cs_term2 = -H*cosmology.MGalpha_B*fzprime + 1.5*H*H*omegam/hub;
-    double horndeski_cs_sqrd = -(cs_term1 + cs_term2)/(H*H*horndeski_alpha);
-
-    //given by Eqn 43 in Tessa Baker notes
-    //!!!!currently assuming Mpl = Mstar!!!!
-    double mu_term1 = horndeski_alpha*horndeski_cs_sqrd*(1+alpha_T)*(1+alpha_T);
-    double mu_term2 = (-alpha_B*(1+alpha_T)+ 2*(alpha_T - alpha_M))*(-alpha_B*(1+alpha_T)+ 2*(alpha_T - alpha_M));
-    one_plus_mg_mu += (mu_term1+mu_term2)/(horndeski_alpha*horndeski_cs_sqrd) - 1.;
-    // printf("a = %e ;Mu = %e \n", a, (one_plus_mg_mu-1.)*cosmology.Omega_v*hub/omegav);
+    one_plus_mg_mu += horndeski_mu(a, omegav, hub, omegam);
   }
   f[1]=y[0]*3.*cosmology.Omega_m/(2.*hub*aa*aa*a)*one_plus_mg_mu-y[1]/a*(2.-(omegam+(3.*(cosmology.w0+cosmology.wa*(1.-a))+1)*omegav)/(2.*hub));
   return GSL_SUCCESS;
