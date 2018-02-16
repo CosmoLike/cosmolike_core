@@ -61,7 +61,7 @@ double lgMmax(double a,int nN){// speed up of mass integrals for Gaussian scatte
 double Mobs_x(double Nobs, double lgM, double a){
   if(strcmp(Cluster.model, "default")==0){ // default is backward with constant scatter
     return (lgM_obs(Nobs,a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Nobs,a));
-  }else if(strcmp(Cluster.model, "Murata_etal_2018")==0){
+  }else if(strcmp(Cluster.model, "Murata_etal_2018")==0){ // Eq. 16 in Murata et al. (2018) http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1707.01907
     return (log(Nobs)-lgN200_model(exp(lgM),a))/(sqrt(2.0)*scatter_lgN200_model_mz(exp(lgM), a));
   }
 }
