@@ -182,7 +182,7 @@ double int_P_cm_1h(double lgM, void *params){
   m = exp(lgM); a = array[0];
   x1 = Mobs_x(Cluster.N_min[(int)array[1]], lgM, a);
   x2 = Mobs_x(Cluster.N_max[(int)array[1]], lgM, a);
-  u_m = m/(cosmology.rho_crit*cosmology.Omega_m)*u_nfw_c(conc(m,a),array[0],m,a); //density profile
+  u_m = m/(cosmology.rho_crit*cosmology.Omega_m)*u_nfw_c(conc(m,a),array[2],m,a); //density profile
   return m*massfunc(m,a)*u_m*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1))*P_cm_offcentering(array[2],m,a);
 }
 
