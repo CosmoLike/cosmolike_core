@@ -3,6 +3,7 @@
 double lgM_obs(double N200, double a); //mass observable relation
 double lgMmin(double a, int nN); //lower integration boundary for mass integrals over richness bin nN at scale factor a - change to log(limits.M_min) for general scatter distribution
 double lgMmax(double a, int nN); //upper integration boundary for mass integrals over richness bin nN at scale factor a - change to log(limits.M_max) for general scatter distribution
+double Mobs_x(double Nobs, double lgM, double a); // x in the covolution for scaling relation P(x)
 double int_n_Mobs(double lgM, void* params);//number density integrand for cluster halo model calculations
 double n_N200(int nz, int nN); //projected cluster density [1/radian]
 double N_N200(int nz, int nN); // cluster numbercounts in redshift bin nz, richness bin nN
@@ -61,8 +62,6 @@ double Mobs_x(double Nobs, double lgM, double a){
   if(strcmp(Cluster.model, "default")==0){ // default is backward with constant scatter
     return (lgM_obs(Nobs,a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Nobs,a));
   }else if(strcmp(Cluster.model, "Murata_etal_2018")==0){
-    double scatter;
-    scatter = (log(Nobs)-lgN200_model(exp(lgM),a))/(sqrt(2.0)*scatter_lgN200_model_mz(exp(lgM), a));
     return (log(Nobs)-lgN200_model(exp(lgM),a))/(sqrt(2.0)*scatter_lgN200_model_mz(exp(lgM), a));
   }
 }
