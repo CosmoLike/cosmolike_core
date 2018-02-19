@@ -361,7 +361,7 @@ typedef struct input_nuisance_params {
     double eta_ia;
     double eta_ia_highz;
     double lf[6];
-    double m_lambda[4];
+    double m_lambda[6];
     double cluster_c[4];
 
 } input_nuisance_params;
