@@ -48,6 +48,9 @@ double lgMmin(double a,int nN){ // speed up of mass integrals for Gaussian scatt
     return fmax(log(limits.M_min),lgM_obs(Cluster.N_min[nN],a)-5.*scatter_lgM_obs(Cluster.N_min[nN],a));
   } else if(strcmp(Cluster.model, "Murata_etal_2018")==0){ // foward model with mass- and redshift-dependent MOR scatter
     return log(1.e12);
+  } else {
+    fprintf(stderr, "Error: Cluster.model should be 'default' or 'Rykoff_2012'");
+    exit(1);
   }
 }
 double lgMmax(double a,int nN){// speed up of mass integrals for Gaussian scatter - change to log(limits.M_max) for general scatter distribution
@@ -55,14 +58,20 @@ double lgMmax(double a,int nN){// speed up of mass integrals for Gaussian scatte
     return fmin(log(limits.M_max),lgM_obs(Cluster.N_max[nN],a)+5.*scatter_lgM_obs(Cluster.N_max[nN],a));
   } else if(strcmp(Cluster.model, "Murata_etal_2018")==0){
     return log(limits.M_max);
+  } else {
+    fprintf(stderr, "Error: Cluster.model should be 'default' or 'Rykoff_2012'");
+    exit(1);
   }
 }
 
 double Mobs_x(double Nobs, double lgM, double a){
-  if(strcmp(Cluster.model, "default")==0){ // default is backward with constant scatter
+  if(strcmp(Cluster.model, "default")==0){ // Eq. B4 in Rykoff et al. (2012) http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1104.2089
     return (lgM_obs(Nobs,a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Nobs,a));
-  }else if(strcmp(Cluster.model, "Murata_etal_2018")==0){ // Eq. 16 in Murata et al. (2018) http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1707.01907
+  } else if (strcmp(Cluster.model, "Murata_etal_2018")==0){ // Eq. 16 in Murata et al. (2018) http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1707.01907
     return (log(Nobs)-lgN200_model(exp(lgM),a))/(sqrt(2.0)*scatter_lgN200_model_mz(exp(lgM), a));
+  } else {
+    fprintf(stderr, "Error: Cluster.model should be 'default' or 'Rykoff_2012'");
+    exit(1);
   }
 }
 

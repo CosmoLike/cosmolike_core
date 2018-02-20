@@ -180,7 +180,7 @@ typedef struct{
   double l_max;
   char model[256];
 } clusterpara;
-clusterpara Cluster;
+clusterpara Cluster = {.model = "default"};
 
 typedef struct {
   char runmode[300];

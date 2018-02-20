@@ -93,10 +93,10 @@ void set_clusterMobs_priors()
     prior.cluster_Mobs_sigma0[1]=1.5;
     
     prior.cluster_Mobs_sigma_qm[0] = -1.5;
-    prior.cluster_Mobs_sigma_qm[1] = -1.5;
+    prior.cluster_Mobs_sigma_qm[1] = 1.5;
 
     prior.cluster_Mobs_sigma_qz[0] = -1.5;
-    prior.cluster_Mobs_sigma_qz[1] = -1.5;
+    prior.cluster_Mobs_sigma_qz[1] = 1.5;
 
   } else {
     prior.cluster_Mobs_lgM0[0]=1.72+log(1.e+14*0.7);
@@ -619,18 +619,12 @@ double log_L_clusterMobs()
 {
   double log_L = 0.; 
   if (strcmp(survey.name,"LSST_Y10")==0 || strcmp(survey.name,"LSST_Y1")==0 ){
-    if (nuisance.cluster_Mobs_lgN0 < prior.cluster_Mobs_lgN0[0] ||
-	nuisance.cluster_Mobs_lgN0 > prior.cluster_Mobs_lgN0[1] ||
-	nuisance.cluster_Mobs_alpha < prior.cluster_Mobs_alpha[0] ||
-	nuisance.cluster_Mobs_alpha > prior.cluster_Mobs_alpha[1] ||
-	nuisance.cluster_Mobs_beta < prior.cluster_Mobs_beta[0] ||
-	nuisance.cluster_Mobs_beta > prior.cluster_Mobs_beta[1] ||
-	nuisance.cluster_Mobs_sigma0 < prior.cluster_Mobs_sigma0[0] ||
-	nuisance.cluster_Mobs_sigma0 > prior.cluster_Mobs_sigma0[1] ||
-	nuisance.cluster_Mobs_sigma_qm < prior.cluster_Mobs_sigma_qm[0] ||
-	nuisance.cluster_Mobs_sigma_qm > prior.cluster_Mobs_sigma_qm[1] ||
-	nuisance.cluster_Mobs_sigma_qz < prior.cluster_Mobs_sigma_qz[0] ||
-	nuisance.cluster_Mobs_sigma_qz > prior.cluster_Mobs_sigma_qz[1]
+    if ((nuisance.cluster_Mobs_lgN0 < prior.cluster_Mobs_lgN0[0] && nuisance.cluster_Mobs_lgN0 > prior.cluster_Mobs_lgN0[1]) ||
+	(nuisance.cluster_Mobs_alpha < prior.cluster_Mobs_alpha[0] && nuisance.cluster_Mobs_alpha > prior.cluster_Mobs_alpha[1]) ||
+	(nuisance.cluster_Mobs_beta < prior.cluster_Mobs_beta[0] && nuisance.cluster_Mobs_beta > prior.cluster_Mobs_beta[1]) ||
+	(nuisance.cluster_Mobs_sigma0 < prior.cluster_Mobs_sigma0[0] &&	nuisance.cluster_Mobs_sigma0 > prior.cluster_Mobs_sigma0[1]) ||
+	(nuisance.cluster_Mobs_sigma_qm < prior.cluster_Mobs_sigma_qm[0] && nuisance.cluster_Mobs_sigma_qm > prior.cluster_Mobs_sigma_qm[1]) ||
+	(nuisance.cluster_Mobs_sigma_qz < prior.cluster_Mobs_sigma_qz[0] && nuisance.cluster_Mobs_sigma_qz > prior.cluster_Mobs_sigma_qz[1])
 	) log_L = -1.0e8;
   } else {
     int i;
