@@ -97,6 +97,10 @@ int test_kmax(double l, int zl){ //test whether the (l,zl) bin is in the linear 
   return 0;
 }
 
+
+
+
+
 int test_zoverlap(int zl, int zs){ //test whether source bin zs is behind lens bin zl
   if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}
   if (redshift.shear_photoz < 4 && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}
