@@ -636,15 +636,7 @@ double log_L_shear_calib()
 double log_L_clusterMobs()
 {
   double log_L = 0.; 
-  if (strcmp(survey.name,"LSST_Y10")==0 || strcmp(survey.name,"LSST_Y1")==0 ){
-    if ((nuisance.cluster_Mobs_lgN0 < prior.cluster_Mobs_lgN0[0] && nuisance.cluster_Mobs_lgN0 > prior.cluster_Mobs_lgN0[1]) ||
-	(nuisance.cluster_Mobs_alpha < prior.cluster_Mobs_alpha[0] && nuisance.cluster_Mobs_alpha > prior.cluster_Mobs_alpha[1]) ||
-	(nuisance.cluster_Mobs_beta < prior.cluster_Mobs_beta[0] && nuisance.cluster_Mobs_beta > prior.cluster_Mobs_beta[1]) ||
-	(nuisance.cluster_Mobs_sigma0 < prior.cluster_Mobs_sigma0[0] &&	nuisance.cluster_Mobs_sigma0 > prior.cluster_Mobs_sigma0[1]) ||
-	(nuisance.cluster_Mobs_sigma_qm < prior.cluster_Mobs_sigma_qm[0] && nuisance.cluster_Mobs_sigma_qm > prior.cluster_Mobs_sigma_qm[1]) ||
-	(nuisance.cluster_Mobs_sigma_qz < prior.cluster_Mobs_sigma_qz[0] && nuisance.cluster_Mobs_sigma_qz > prior.cluster_Mobs_sigma_qz[1])
-	) log_L = -1.0e8;
-  } else {
+  if (strcmp(Cluster.model, "default")==0){
     int i;
     log_L -=  pow((nuisance.cluster_Mobs_lgM0 - prior.cluster_Mobs_lgM0[0])/ prior.cluster_Mobs_lgM0[1],2.0);
     log_L -=  pow((nuisance.cluster_Mobs_alpha - prior.cluster_Mobs_alpha[0])/ prior.cluster_Mobs_alpha[1],2.0);
