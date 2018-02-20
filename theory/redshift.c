@@ -36,7 +36,6 @@ double amax_lens(int i);
 
 //routines for association of a pair redshift bin numbers and power spectrum tomography bin
 int test_kmax(double l, int zl); //valid l + lens/clustering redshift combination?
-int test_kmax_shear(double l, int z1, int z2); ////valid l + z1,z2 redshift combination?
 int test_zoverlap_cov(int zl, int zs); //restrict NG covaraince computation to source behind lens configurations
 int test_zoverlap(int zl, int zs); //valid lens + source redshift bin combination?
 int test_zoverlap_c (int zc, int zs); //valid cluster + source redshift bin combination?
@@ -97,6 +96,9 @@ int test_kmax(double l, int zl){ //test whether the (l,zl) bin is in the linear 
   if((l+0.5)/chiref[zl] < kmax){ return 1;}
   return 0;
 }
+
+
+
 
 
 int test_zoverlap(int zl, int zs){ //test whether source bin zs is behind lens bin zl

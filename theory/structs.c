@@ -363,7 +363,6 @@ typedef struct input_nuisance_params {
     double lf[6];
     double m_lambda[6];
     double cluster_c[4];
-
 } input_nuisance_params;
 
 typedef struct {
