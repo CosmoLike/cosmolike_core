@@ -22,17 +22,24 @@ double dchi_da(double a){
 }
 double W_kappa(double a, double fK, double nz){
   double wkappa = 1.5*cosmology.Omega_m*fK/a*g_tomo(a,(int)nz);
-  double aa=a*a;
-  double omegam=cosmology.Omega_m/(aa*a);
-  double omegav=omv_vareos(a);
-  double hub = hoverh0(a);
-  hub = hub*hub;
-  if(cosmology.MGSigma != 0.){
-    wkappa *= (1.+MG_sigma(a, omegav, hub));
-  }
-  else if (cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
-    wkappa*= (1.+horndeski_sigma(a, omegav, hub, omegam));
-  }
+  #ifdef MODGRAV
+  //if you need modgrav functions put -DMODGRAV in your make file before the include statements.
+    double omegam=cosmology.Omega_m/(a*a*a);
+    double omegav=omv_vareos(a);
+    double hub = hoverh0(a);
+    hub = hub*hub;
+    if(cosmology.MGSigma != 0.){
+      wkappa *= (1.+MG_sigma(a, omegav, hub));
+    }
+    else if (cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
+      wkappa*= (1.+horndeski_sigma(a, omegav, hub, omegam));
+    }
+  #endif
+  #ifndef MODGRAV
+    if (cosmology.MGSigma != 0. || cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
+      error(" Need to put -DMODGRAV in compiler directions.\n");
+    }
+  #endif
   return wkappa;
 }
 double W_gal(double a, double nz){

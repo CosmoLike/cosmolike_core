@@ -98,12 +98,20 @@ int func_for_growfac(double a,const double y[],double f[],void *params)
   double one_plus_mg_mu = 1.;
   hub = hub*hub;
   f[0]=y[1];
-  if(cosmology.MGmu != 0){
-    one_plus_mg_mu += MG_mu(omegav, hub);
-  }
-  else if (cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
-    one_plus_mg_mu += horndeski_mu(a, omegav, hub, omegam);
-  }
+  //if you need modgrav functions put -DMODGRAV in your make file before the include statements.
+  #ifdef MODGRAV
+    if(cosmology.MGmu != 0){
+      one_plus_mg_mu += MG_mu(omegav, hub);
+    }
+    else if (cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
+      one_plus_mg_mu += horndeski_mu(a, omegav, hub, omegam);
+    }
+  #endif
+  #ifndef MODGRAV
+    if (cosmology.MGmu != 0. || cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
+      error(" Need to put -DMODGRAV in compiler directions.\n");
+    }
+  #endif
   f[1]=y[0]*3.*cosmology.Omega_m/(2.*hub*aa*aa*a)*one_plus_mg_mu-y[1]/a*(2.-(omegam+(3.*(cosmology.w0+cosmology.wa*(1.-a))+1)*omegav)/(2.*hub));
   return GSL_SUCCESS;
 }
