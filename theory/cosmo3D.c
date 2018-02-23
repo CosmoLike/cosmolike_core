@@ -103,12 +103,12 @@ int func_for_growfac(double a,const double y[],double f[],void *params)
     if(cosmology.MGmu != 0){
       one_plus_mg_mu += MG_mu(omegav, hub);
     }
-    else if (cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
+    else if (cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
       one_plus_mg_mu += horndeski_mu(a, omegav, hub, omegam);
     }
   #endif
   #ifndef MODGRAV
-    if (cosmology.MGmu != 0. || cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
+    if (cosmology.MGmu != 0. || cosmology.MGalpha_K != 0|| cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
       error(" Need to put -DMODGRAV in compiler directions.\n");
     }
   #endif

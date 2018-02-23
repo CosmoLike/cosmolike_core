@@ -59,7 +59,7 @@ double horndeski_sigma(double a, double omegav, double hub, double omegam){
   double num = alpha*cs_sqrd-alpha_B*(-alpha_B/(2.*(1.+alpha_T))+alpha_T-alpha_M);
   double denom = alpha*cs_sqrd*(1.+alpha_T)+(-alpha_B*(1.+alpha_T)+2.*(alpha_T-alpha_M))*(-alpha_B*(1.+alpha_T)+2.*(alpha_T-alpha_M));
   double mu = horndeski_mu(a, omegav, hub, omegam);
-  return 0.5*(1+mu)*(num/denom+1.);
+  return 0.5*(1.+mu)*(num/denom+1.);
 }
 double horndeski_cs_sqrd(double a, double fz, double fzprime, double H, double Hprime, double omegam, double hub){
   double alpha_K = cosmology.MGalpha_K*fz;

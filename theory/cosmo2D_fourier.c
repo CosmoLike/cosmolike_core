@@ -31,7 +31,7 @@ double W_kappa(double a, double fK, double nz){
     if(cosmology.MGSigma != 0.){
       wkappa *= (1.+MG_sigma(a, omegav, hub));
     }
-    else if (cosmology.MGalpha_K != 0 || cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
+    else if (cosmology.MGalpha_B != 0 || cosmology.MGalpha_T != 0 || cosmology.MGalpha_M != 0){
       wkappa*= (1.+horndeski_sigma(a, omegav, hub, omegam));
     }
   #endif
