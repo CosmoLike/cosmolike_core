@@ -633,6 +633,7 @@ double get_class_s8(struct file_content *fc, int *status){
  cosmology.A_s = A_s;
     //printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
 }
+printf("%e\n",get_class_s8(fc,&status));
 strcpy(fc->name[1],"non linear");
   strcpy(fc->value[1],"Halofit"); //to use Halofit within CLASS
   return status;
@@ -702,12 +703,26 @@ double p_class(double k_coverh0,double a, int NL, int *status){
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) { 
         k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
         s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
+        //***KP TEST***
+        //I pipe the output from my ./like_fourier
+        //to a file and then delete all of the extra
+        //information to plot this.
+        if (i==Ntable.N_a-1){
+          printf("%e %e\n", k_class, Pk);
+        }
         table_P_L[i][j] = log(Pk) +norm;
         s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
         table_P_NL[i][j] = log(Pk) +norm;
       }
     }
     free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+  }
+  //***KP TEST***
+  //Again, I just take this from the output screen
+  //in order to use this as the .ini file for my
+  //other CLASS calculation.
+  for (int i =0; i < parser_length; i++){
+    printf("%s = %s\n", fc.name[i],fc.value[i]);
   }
 }
 klog = log(k_coverh0);
