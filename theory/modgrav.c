@@ -30,7 +30,7 @@ double horndeski_mu(double a, double omegav, double hub, double omegam){
   double alpha_T = cosmology.MGalpha_T*fz;
   double alpha_M = cosmology.MGalpha_M*fz;
   ////////////
-  double mu_term1 = alpha*cs_sqrd*(1+alpha_T)*(1+alpha_T);
+  double mu_term1 = alpha*cs_sqrd*(1+alpha_T);
   double mu_term2 = (-alpha_B*(1+alpha_T)+ 2*(alpha_T - alpha_M))*(-alpha_B*(1+alpha_T)+ 2*(alpha_T - alpha_M));
   double mu = (mu_term1+mu_term2)/(alpha*cs_sqrd) - 1.;
   return mu;
