@@ -1402,7 +1402,6 @@ double a_chi(double chi1){
     double *table_a,*table_chi;
     table_a  = create_double_vector(0, Ntable.N_a-1);
     table_chi  = create_double_vector(0, Ntable.N_a-1);
-    double aa, fK;
     for (int i = 0; i < Ntable.N_a; i++){
       table_a[i] = 1.0 - (1.0 - 0.99*limits.a_min)/(Ntable.N_a-1.)*(double)i;
       table_chi[i] = int_gsl_integrate_medium_precision(int_for_chi,NULL, table_a[i], 1.,NULL,1000);
