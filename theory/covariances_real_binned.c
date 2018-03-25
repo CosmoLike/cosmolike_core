@@ -504,7 +504,7 @@ double cov_G_gl_no_shot_noise_binned (double theta1_min,double theta1_max, doubl
   }
   return res/(2.0*M_PI*survey.area*survey.area_conversion_factor);
 }
-double cov_G_gl_binned(double thetamin_i, double thetamax_i,double thetamin_j,double thetamax_j, int z1,int z2,int z3,int z4){
+double cov_G_gl_gl_real_binned(double thetamin_i, double thetamax_i,double thetamin_j,double thetamax_j, int z1,int z2,int z3,int z4){
   double N= 0.;
   if (z1 == z3 && z2 ==z4 && fabs(thetamin_i-thetamin_j)<1.e-7){
     N = pow(survey.sigma_e,2.0)/(2.0*M_PI*(thetamax_i*thetamax_i-thetamin_i*thetamin_i)*nlens(z1)*nsource(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
@@ -516,7 +516,7 @@ double cov_G_gl_binned(double thetamin_i, double thetamax_i,double thetamin_j,do
 /***************************************************/
 /************ clustering NG, bin averaged **********/
 /***************************************************/
-double int2_for_cov_NG_gl_binned(double l2,void *params){
+double int2_for_cov_NG_cl_binned(double l2,void *params){
   double *ar = (double *) params;
   double l1,tri = 0.,res =0;
   int n1,n2,n3,n4,j0;
@@ -606,7 +606,7 @@ double cov_G_cl_no_shot_noise_binned (double theta1_min,double theta1_max, doubl
   }
   return res/(2.0*M_PI*survey.area*survey.area_conversion_factor);
 }
-double cov_G_cl_binned(double thetamin_i, double thetamax_i,double thetamin_j,double thetamax_j, int z1,int z2,int z3,int z4){
+double cov_G_cl_cl_real_binned(double thetamin_i, double thetamax_i,double thetamin_j,double thetamax_j, int z1,int z2,int z3,int z4){
   double N= 0.;
   if (z1 ==z3 && z2 ==z4 && fabs(thetamin_i-thetamin_j)<1.e-7){
     N = 1./(M_PI*(pow(thetamax_i,2.)-pow(thetamin_i,2.0))*nlens(z1)*nlens(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor); //(number of galaxy pairs in the survey contributing to annulus of width Dtheta centered at theta1)^-1
@@ -671,7 +671,7 @@ double cov_NG_cl_gl_real_binned(double theta1_min, double theta1_max,double thet
 double int_for_cov_G_cl_gl_binned(double l, void *params){
   double *ar = (double *) params;
   double JJ,C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
-
+  int n1,n2,n3,n4;
   n1 = (int) ar[1];n2 = (int) ar[2];n3 = (int) ar[3];n4 = (int) ar[4];
   C13 = C_cl_tomo(l,n1,n3);C24 = C_gl_tomo_all(l,n2,n4);
   C14 = C_gl_tomo_all(l,n1,n4);C23 = C_cl_tomo(l,n2,n3);
@@ -683,7 +683,7 @@ double int_for_cov_G_cl_gl_binned(double l, void *params){
   
   return (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23)*l*JJ;
 }
-double cov_G_cl_gl_binned (double theta1_min,double theta1_max, double theta2_min, double theta2_max, int z1,int z2, int z3, int z4){
+double cov_G_cl_gl_real_binned (double theta1_min,double theta1_max, double theta2_min, double theta2_max, int z1,int z2, int z3, int z4){
  double N =0., array[11],res = 0., result =1.;
   array[1] = (double) z1; array[2] = (double) z2;array[3] = (double) z3;array[4] = (double) z4;
   array[5] = theta1_min; array[6] = theta1_max;
@@ -781,12 +781,12 @@ double int_for_cov_G_cl_shear_binned(double l, void *params){
   
   return (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23)*l*JJ;
 }
-double cov_G_cl_shear_binned (double theta1_min,double theta1_max, double theta2_min, double theta2_max, int z1,int z2, int z3, int z4, int pm){
+double cov_G_cl_shear_real_binned (double theta1_min,double theta1_max, double theta2_min, double theta2_max, int z1,int z2, int z3, int z4, int pm){
  double N =0., array[11],res = 0., result =1.;
   array[1] = (double) z1; array[2] = (double) z2;array[3] = (double) z3;array[4] = (double) z4;
   array[5] = theta1_min; array[6] = theta1_max;
   array[7] = theta2_min; array[8] = theta2_max;
-  array[10] = (double) pm
+  array[10] = (double) pm;
   unsigned int n = 1;
   double x2 =0, x1 = 1.,t = (theta1_min+theta1_max)/2.; //x1 = l_min for Covariance integration, OK for typical angular scales of interest
   while (x2 <= x1){ //find first root of J0/4(l*theta1) with l > 1
@@ -881,12 +881,12 @@ double int_for_cov_G_gl_shear_binned(double l, void *params){
   
   return (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23)*l*JJ;
 }
-double cov_G_gl_shear_binned (double theta1_min,double theta1_max, double theta2_min, double theta2_max, int z1,int z2, int z3, int z4, int pm){
+double cov_G_gl_shear_real_binned (double theta1_min,double theta1_max, double theta2_min, double theta2_max, int z1,int z2, int z3, int z4, int pm){
  double N =0., array[11],res = 0., result =1.;
   array[1] = (double) z1; array[2] = (double) z2;array[3] = (double) z3;array[4] = (double) z4;
   array[5] = theta1_min; array[6] = theta1_max;
   array[7] = theta2_min; array[8] = theta2_max;
-  array[10] = (double) pm
+  array[10] = (double) pm;
   unsigned int n = 1;
   double x2 =0, x1 = 1.,t = (theta1_min+theta1_max)/2.; //x1 = l_min for Covariance integration, OK for typical angular scales of interest
   while (x2 <= x1){ //find first root of J0/4(l*theta1) with l > 1
