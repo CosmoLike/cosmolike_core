@@ -232,9 +232,9 @@ double tri_3h_cov(double k1, double k2, double a){
 
 double int_for_variance (double logk, void *params){
   double *ar = (double *) params;
-  double k = exp(logk);
-  double x = pow(4.0*ar[1],0.5)*k*chi(ar[0]); //theta_s*k*chi(a)
-  return k*k/constants.twopi*p_lin(k,ar[0])*pow(gsl_sf_bessel_J1(x)/x,2.0);
+  double x = pow(4.*ar[1],0.5)*(k*chi(ar[0])-0.5); //theta_s*k*chi(a)
+  if (x < 0){return 0.;}
+  return k*k/constants.twopi*p_lin(k,ar[0])*pow(2.0*gsl_sf_bessel_J1(x)/x,2.0);
 }
 
 double survey_variance (double a, double fsky){
@@ -258,9 +258,7 @@ double survey_variance (double a, double fsky){
     
     for (i=0; i<Ntable.N_a; i++, aa += da) {
       array[0] = aa;
-      //printf("SV%e\n",aa);
-      result = int_gsl_integrate_high_precision(int_for_variance,(void*)array,log(1.e-6),log(1.e+6),NULL,2000);
-      //printf("SV %e %e\n",aa,result);
+        result = int_gsl_integrate_high_precision(int_for_variance_healpix,(void*)array,log(limits.k_min_cH0),log(limits.k_max_cH0),NULL,2000);
       table_SV[i]=result;
     }
   }
