@@ -31,7 +31,16 @@ double J0_binned(double l, double tmin, double tmax){
 double J2_binned(double l, double tmin, double tmax){
   return 1./(l*l*tmax*tmax-l*l*tmin*tmin)*(4.*gsl_sf_bessel_J0(l*tmin)-4.*gsl_sf_bessel_J0(l*tmax)+2.*l*tmin*gsl_sf_bessel_J1(l*tmin)-2.*l*tmax*gsl_sf_bessel_J1(l*tmax));
 }
+
+double xJ4 (double x, void *params){
+  double *ar = (double *) params;
+  return 2.*x*gsl_sf_bessel_Jn(4,x*ar[0]);
+}
 double J4_binned(double l, double tmin, double tmax){
+  if (tmin*l < 1.0){
+  	double array[1] ={l};
+  	return int_gsl_integrate_high_precision(xJ4,(void*)array,tmin,tmax,NULL,1000)/(tmax*tmax-tmin*tmin);
+  }
   double j1_max = gsl_sf_bessel_J1(l*tmax);
   double j1_min = gsl_sf_bessel_J1(l*tmin);
 
@@ -73,7 +82,7 @@ double C_gl_tomo_all(double l, int ni, int nj)  //slower version of G-G lensing 
     
     update_cosmopara(&C); update_nuisance(&N); update_galpara(&G);
   }
-  f1 = exp(interpol(table[10*ni+nj], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.,1.));
+  f1 = exp(interpol(table[10*ni+nj], Ntable.N_ell, logsmin, logsmax, ds, log(l), 0.,0.));
   if (isnan(f1)){f1 = 0;}
   return f1;
   // return C_gl_tomo(l,ni,nj);
@@ -92,13 +101,13 @@ double bin_cov_NG_shear_shear_tomo(double l1,double l2, int z1, int z2, int z3, 
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(10.);
+    logsmin = log(1.);
     logsmax = log(5.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_shear_shear_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -110,7 +119,7 @@ double bin_cov_NG_shear_shear_tomo(double l1,double l2, int z1, int z2, int z3, 
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,1.0,1.0));}
+    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
   return res;
 }
 double bin_cov_NG_gl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -118,7 +127,7 @@ double bin_cov_NG_gl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   static int Z2 = -42;
   static int Z3 = -42;
   static int Z4 = -42;
-  static int Ntab = 50;
+  static int Ntab = 20;
   static double **table=0;
   static double ds = .0, logsmin = .0, logsmax = .0;
   int i,j;
@@ -126,13 +135,13 @@ double bin_cov_NG_gl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(10.);
+    logsmin = log(1.);
     logsmax = log(5.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_gl_gl_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -144,7 +153,7 @@ double bin_cov_NG_gl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,1.0,1.0));}
+    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
   return res;
 }
 double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -160,13 +169,13 @@ double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(10.);
+    logsmin = log(1.);
     logsmax = log(5.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_cl_cl_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -178,7 +187,7 @@ double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,1.0,1.0));}
+    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
   return res;
 }
 double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -194,13 +203,13 @@ double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(10.);
+    logsmin = log(1.);
     logsmax = log(5.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_cl_shear_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -212,7 +221,7 @@ double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,1.0,1.0));}
+    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
   return res;
 }
 double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -228,13 +237,13 @@ double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(10.);
+    logsmin = log(1.);
     logsmax = log(5.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_cl_gl_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -246,7 +255,7 @@ double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,1.0,1.0));}
+    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
   return res;
 }
 double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -262,13 +271,13 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(10.);
+    logsmin = log(1.);
     logsmax = log(5.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -280,7 +289,7 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,1.0,1.0));}
+    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
   return res;
 }
 
@@ -481,7 +490,6 @@ double int_for_cov_G_gl_binned(double l, void *params){
 
   JJ = J2_binned(l,ar[5],ar[6]);  
   JJ *= J2_binned(l,ar[7],ar[8]);
-  
   return (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23)*l*JJ;
 }
 double cov_G_gl_no_shot_noise_binned (double theta1_min,double theta1_max, double theta2_min, double theta2_max, int z1,int z2, int z3, int z4){
@@ -495,7 +503,7 @@ double cov_G_gl_no_shot_noise_binned (double theta1_min,double theta1_max, doubl
     x2 = gsl_sf_bessel_zero_Jnu (2.,n)/t;
     n++;
   }
-  while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){
+  while (fabs(result) > 1.e-5*fabs(res) && x1<5.e+4){
     result=int_gsl_integrate_medium_precision(int_for_cov_G_gl_binned,(void*)array, x1, x2 ,NULL,1000);
     res = res+result;
     x1 = x2;
