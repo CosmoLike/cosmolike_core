@@ -28,7 +28,15 @@ double cov_G_cl_shear_real_binned(double theta1_min, double theta1_max,double th
 double J0_binned(double l, double tmin, double tmax){
   return 2./(l*tmax*tmax-l*tmin*tmin)*(tmax*gsl_sf_bessel_J1(l*tmax)-tmin*gsl_sf_bessel_J1(l*tmin));
 }
+double xJ2 (double x, void *params){
+  double *ar = (double *) params;
+  return 2.*x*gsl_sf_bessel_Jn(2,x*ar[0]);
+}
 double J2_binned(double l, double tmin, double tmax){
+  if (tmin*l < 1.0){
+    double array[1] ={l};
+    return int_gsl_integrate_high_precision(xJ2,(void*)array,tmin,tmax,NULL,1000)/(tmax*tmax-tmin*tmin);
+  }
   return 1./(l*l*tmax*tmax-l*l*tmin*tmin)*(4.*gsl_sf_bessel_J0(l*tmin)-4.*gsl_sf_bessel_J0(l*tmax)+2.*l*tmin*gsl_sf_bessel_J1(l*tmin)-2.*l*tmax*gsl_sf_bessel_J1(l*tmax));
 }
 
@@ -320,7 +328,7 @@ double int_for_cov_NG_shear_binned(double l1, void *params){
     if (j0==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/array[7];
     n++;
   }
-  while (fabs(result) > 1.e-3*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+  while (fabs(result) > 1.e-4*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
     result=int_gsl_integrate_low_precision(int2_for_cov_NG_shear_binned,(void*)array, x1, x2 ,NULL,512);
     res = res+result;
     x1 = x2;
@@ -446,7 +454,7 @@ double int_for_cov_NG_gl_binned(double l1, void *params){
     x2 = gsl_sf_bessel_zero_Jnu (2.,n)/array[7];
     n++;
   }
-  while (fabs(result) > 1.e-3*fabs(res) && x1<5.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+  while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
     result=int_gsl_integrate_low_precision(int2_for_cov_NG_gl_binned,(void*)array, x1, x2 ,NULL,512);
     res = res+result;
     x1 = x2;
@@ -545,7 +553,7 @@ double int_for_cov_NG_cl_binned(double l1, void *params){
     x2 = gsl_sf_bessel_zero_J0 (n)/array[7];
     n++;
   }
-  while (fabs(result) > 1.e-3*fabs(res) && x1<5.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+  while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
     result=int_gsl_integrate_low_precision(int2_for_cov_NG_cl_binned,(void*)array, x1, x2 ,NULL,512);
     res = res+result;
     x1 = x2;
@@ -645,7 +653,7 @@ double int_for_cov_NG_cl_gl_binned(double l1, void *params){
     x2 = gsl_sf_bessel_zero_Jnu (2.,n)/array[7];
     n++;
   }
-  while (fabs(result) > 1.e-3*fabs(res) && x1<5.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+  while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
     result=int_gsl_integrate_low_precision(int2_for_cov_NG_cl_gl_binned,(void*)array, x1, x2 ,NULL,512);
     res = res+result;
     x1 = x2;
@@ -740,7 +748,7 @@ double int_for_cov_NG_cl_shear_binned(double l1, void *params){
     if (j0==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/array[6];
     n++;
   }
-  while (fabs(result) > 1.e-3*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+  while (fabs(result) > 1.e-4*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
     result=int_gsl_integrate_low_precision(int2_for_cov_NG_cl_shear_binned,(void*)array, x1, x2 ,NULL,512);
     res = res+result;
     x1 = x2;
@@ -838,7 +846,7 @@ double int_for_cov_NG_gl_shear_binned(double l1, void *params){
     if (j0==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/array[6];
     n++;
   }
-  while (fabs(result) > 1.e-3*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+  while (fabs(result) > 1.e-4*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
     result=int_gsl_integrate_low_precision(int2_for_cov_NG_gl_shear_binned,(void*)array, x1, x2 ,NULL,512);
     res = res+result;
     x1 = x2;
