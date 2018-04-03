@@ -79,6 +79,11 @@ void update_nuisance (nuisancepara *N){
   N->cluster_Mobs_sigma = nuisance.cluster_Mobs_sigma;
   N->cluster_Mobs_alpha = nuisance.cluster_Mobs_alpha;
   N->cluster_Mobs_beta = nuisance.cluster_Mobs_beta;
+  N->cluster_Mobs_lgN0 = nuisance.cluster_Mobs_lgN0;
+  N->cluster_Mobs_sigma0 = nuisance.cluster_Mobs_sigma0;
+  N->cluster_Mobs_sigma_qm = nuisance.cluster_Mobs_sigma_qm;
+  N->cluster_Mobs_sigma_qz = nuisance.cluster_Mobs_sigma_qz;
+
   for(i = 0; i < tomo.cluster_Nbin; i++){
     N->cluster_completeness[i] = nuisance.cluster_completeness[i];
   }
@@ -154,7 +159,7 @@ int recompute_shear(cosmopara C, nuisancepara N){
   else{return 0;}
 }
 int recompute_clusters(cosmopara C, nuisancepara N){
-  if (recompute_cosmo3D(C) || N.cluster_Mobs_lgM0 != nuisance.cluster_Mobs_lgM0 || N.cluster_Mobs_sigma != nuisance.cluster_Mobs_sigma || N.cluster_Mobs_alpha != nuisance.cluster_Mobs_alpha || N.cluster_Mobs_beta != nuisance.cluster_Mobs_beta || N.cluster_completeness[0] != nuisance.cluster_completeness[0] || N.cluster_centering_f0 != nuisance.cluster_centering_f0 || N.cluster_centering_alpha != nuisance.cluster_centering_alpha || N.cluster_centering_sigma != nuisance.cluster_centering_sigma){return 1;}
+  if (recompute_cosmo3D(C) || N.cluster_Mobs_lgM0 != nuisance.cluster_Mobs_lgM0 || N.cluster_Mobs_sigma != nuisance.cluster_Mobs_sigma || N.cluster_Mobs_alpha != nuisance.cluster_Mobs_alpha || N.cluster_Mobs_beta != nuisance.cluster_Mobs_beta ||   N.cluster_Mobs_lgN0 != nuisance.cluster_Mobs_lgN0 ||  N.cluster_Mobs_sigma0 != nuisance.cluster_Mobs_sigma0 ||  N.cluster_Mobs_sigma_qm != nuisance.cluster_Mobs_sigma_qm ||  N.cluster_Mobs_sigma_qz != nuisance.cluster_Mobs_sigma_qz || N.cluster_completeness[0] != nuisance.cluster_completeness[0] || N.cluster_centering_f0 != nuisance.cluster_centering_f0 || N.cluster_centering_alpha != nuisance.cluster_centering_alpha || N.cluster_centering_sigma != nuisance.cluster_centering_sigma){return 1;}
   else{return 0;}
 }
 

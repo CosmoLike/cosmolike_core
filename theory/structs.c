@@ -179,8 +179,9 @@ typedef struct{
   int lbin;
   double l_min;
   double l_max;
+  char model[256];
 } clusterpara;
-clusterpara Cluster;
+clusterpara Cluster = {.model = "default"};
 
 typedef struct {
   char runmode[300];
@@ -245,6 +246,10 @@ typedef struct {
   double cluster_Mobs_alpha;
   double cluster_Mobs_beta;
   double cluster_Mobs_N_pivot;
+  double cluster_Mobs_lgN0;
+  double cluster_Mobs_sigma0;
+  double cluster_Mobs_sigma_qm;
+  double cluster_Mobs_sigma_qz;
   double cluster_completeness[10];
   double cluster_centering_f0;
   double cluster_centering_alpha;
@@ -286,6 +291,10 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double cluster_Mobs_alpha[2];
   double cluster_Mobs_beta[2];
   double cluster_Mobs_N_pivot[2];
+  double cluster_Mobs_lgN0[2];
+  double cluster_Mobs_sigma0[2];
+  double cluster_Mobs_sigma_qm[2];
+  double cluster_Mobs_sigma_qz[2];
   double cluster_completeness[2];
   double cluster_centering_f0[2];
   double cluster_centering_alpha[2];
@@ -352,9 +361,8 @@ typedef struct input_nuisance_params {
     double eta_ia;
     double eta_ia_highz;
     double lf[6];
-    double m_lambda[4];
+    double m_lambda[6];
     double cluster_c[4];
-
 } input_nuisance_params;
 
 typedef struct {
