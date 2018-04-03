@@ -66,8 +66,6 @@ double mask(int READ, int ci)
         fscanf(F,"%d %le\n",&intspace,&mask[i]);
         maskc[i] = mask[i];
         N += mask[i];
-        if(i==399) printf("WL %d bins within angular mask\n",N);
-        if(i==699) printf("WL+GGL %d bins within angular mask\n",N);
       }
      fclose(F);
      printf("%d bins within angular mask\n",N);
