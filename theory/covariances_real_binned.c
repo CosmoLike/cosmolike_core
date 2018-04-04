@@ -694,7 +694,7 @@ double int_for_cov_G_cl_gl_binned(double l, void *params){
   if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
   if (n2 == n3){N23= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
 
-  JJ = J2_binned(l,ar[5],ar[6]);  
+  JJ = J0_binned(l,ar[5],ar[6]);  
   JJ *= J2_binned(l,ar[7],ar[8]);
   
   return (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23)*l*JJ;
@@ -786,10 +786,8 @@ double int_for_cov_G_cl_shear_binned(double l, void *params){
   double JJ,C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
   int n1,n2,n3,n4;
   n1 = (int) ar[1];n2 = (int) ar[2];n3 = (int) ar[3];n4 = (int) ar[4];
-  C13 = C_cl_tomo(l,n1,n3);C24 = C_gl_tomo_all(l,n2,n4);
-  C14 = C_gl_tomo_all(l,n1,n4);C23 = C_cl_tomo(l,n2,n3);
-  if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
-  if (n2 == n3){N23= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
+  C13 = C_gl_tomo_all(l,n1,n3);C24 = C_gl_tomo_all(l,n2,n4);
+  C14 = C_gl_tomo_all(l,n1,n4);C23 = C_gl_tomo_all(l,n2,n3);
 
   JJ = J0_binned(l,ar[5],ar[6]);  
   if ((int)ar[10] == 1){JJ *= J0_binned(l,ar[7],ar[8]);}
@@ -888,8 +886,8 @@ double int_for_cov_G_gl_shear_binned(double l, void *params){
   C24 = C_shear_tomo(l,(int) ar[2],(int) ar[4]);
   C14 = C_gl_tomo_all(l,(int) ar[1],(int) ar[4]);
   C23 = C_shear_tomo(l,(int) ar[2],(int) ar[3]);
-  if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
-  if (n2 == n3){N23= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
+  if (n2 == n3){N23= pow(survey.sigma_e,2.0)/(2.0*nsource((int) ar[2])*survey.n_gal_conversion_factor);}
+  if (n2 == n4){N24= pow(survey.sigma_e,2.0)/(2.0*nsource((int) ar[2])*survey.n_gal_conversion_factor);}
 
   JJ = J2_binned(l,ar[5],ar[6]);  
   if ((int)ar[10] == 1){JJ *= J0_binned(l,ar[7],ar[8]);}
