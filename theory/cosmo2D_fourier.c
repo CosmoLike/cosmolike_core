@@ -212,7 +212,7 @@ double C_shear_tomo_nointerp(double l, int ni, int nj) //shear tomography power 
   int j,k;
   if (ni <= nj){j =nj; k = ni;}
   else{j = ni; k = nj;}
-  return int_gsl_integrate_low_precision(int_for_C_shear_tomo,(void*)array,amin_source(j),amax_source(k),NULL,1000);
+  return int_gsl_integrate_medium_precision(int_for_C_shear_tomo,(void*)array,amin_source(j),amax_source(k),NULL,1000);
 }
 
 /*********** angular power spectra - with look-up tables ******************/

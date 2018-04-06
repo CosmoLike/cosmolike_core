@@ -674,7 +674,7 @@ double C_shear_shear_IA(double s, int ni, int nj)
   if (ni <= nj){j =nj; k = ni;}
 
   switch(like.IA){
-    case 1: return int_gsl_integrate_low_precision(int_for_C_shear_shear_IA,(void*)array,amin_source(j),amax_source(k),NULL,1000);
+    case 1: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA,(void*)array,amin_source(j),amax_source(k),NULL,1000);
     case 3: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_Az,(void*)array,amin_source(j),amax_source(k),NULL,1000);
     case 4: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_mpp,(void*)array,amin_source(j),amax_source(k),NULL,1000);
     default: { printf("IA.c: C_shear_shear_IA does not support like.IA = %d\nEXIT\n", like.IA);
@@ -687,7 +687,7 @@ double C_ggl_IA(double s, int nl, int ns)
 {
   double array[3] = {(double) nl, (double) ns,s};
   switch(like.IA){
-    case 1: return int_gsl_integrate_low_precision(int_for_C_ggl_IA,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+    case 1: return int_gsl_integrate_medium_precision(int_for_C_ggl_IA,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
     case 3: if (gbias.b2[nl]) return int_gsl_integrate_low_precision(int_for_C_ggl_IA_Az_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
             return int_gsl_integrate_low_precision(int_for_C_ggl_IA_Az,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
     case 4: if (gbias.b2[nl]) return int_gsl_integrate_low_precision(int_for_C_ggl_IA_mpp_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
