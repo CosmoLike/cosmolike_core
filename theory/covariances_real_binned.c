@@ -908,7 +908,7 @@ double cov_G_gl_shear_real_binned (double theta1_min,double theta1_max, double t
     n++;
   }
   while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){
-    result=int_gsl_integrate_medium_precision(int_for_cov_G_cl_shear_binned,(void*)array, x1, x2 ,NULL,1000);
+    result=int_gsl_integrate_medium_precision(int_for_cov_G_gl_shear_binned,(void*)array, x1, x2 ,NULL,1000);
     res = res+result;
     x1 = x2;
     x2 = gsl_sf_bessel_zero_Jnu (2.,n)/t;
