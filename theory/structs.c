@@ -401,3 +401,12 @@ typedef struct{
    double sigma_p; // in km/s
 } GRSpara_mt;
 
+typedef struct {
+  char FILE_logPkR[500];
+  char scenario[100];  //available options: mb2, illustris, eagle, HzAGN, owls_AGN, owls_DBLIMFV1618, owls_NOSN, owls_NOSN_NOZCOOL, owls_NOZCOOL, owls_REF, owls_WDENS, owls_WML1V848, owls_WML4
+  int Nabins;
+  int Nkbins;
+  double z_bins[50];
+  int isPkbary;     // if isPkbary=1
+}barypara;
+barypara bary ={.isPkbary=0};

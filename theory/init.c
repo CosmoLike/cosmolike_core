@@ -1491,4 +1491,3 @@ void init_HOD_rm(){
   redm.hod[3] = 12.2;
   redm.hod[4] = 1.0;
 }
-

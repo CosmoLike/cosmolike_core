@@ -13,6 +13,8 @@ int recompute_ii(cosmopara C, nuisancepara N); //for shear 2-pt statics
 int recompute_ggl(cosmopara C, galpara G, nuisancepara N,int i);//for gg-lensing statistics
 int recompute_clustering(cosmopara C, galpara G, nuisancepara N, int i, int j);//clustering
 int recompute_clusters(cosmopara C, nuisancepara N); //recompute criteria
+int recompute_PkRatio(barypara B);
+void update_PkRatio(barypara *B);
 
 void update_cosmopara (cosmopara *C){
   C->Omega_m = cosmology.Omega_m;
@@ -192,3 +194,11 @@ int recompute_clustering(cosmopara C, galpara G, nuisancepara N, int i, int j){
 }
 
 
+int recompute_PkRatio(barypara B){
+	if (strcmp(B.scenario,bary.scenario)!=0){return 1;}
+	return 0;
+}
+
+void update_PkRatio(barypara *B){
+	sprintf((*B).scenario,bary.scenario);
+}
