@@ -93,6 +93,7 @@ double w_tomo_exact(int nt, int ni, int nj){
   if (recompute_clustering(C,G,N,ni,nj)){
     for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
       for (l = 1; l < LMAX; l++){
+  		//h printf("in recompute_clustering nz,l: %d %d \n",nz,l);
         if (l < 20){Cl[l]=C_cl_tomo_nointerp(l,nz,nz);}
         else Cl[l]=C_cl_tomo(1.0*l,nz,nz);
       }

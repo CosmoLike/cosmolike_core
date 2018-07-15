@@ -1299,10 +1299,16 @@ double PkRatio_baryons(double kintern,double a){
 	static double *a_bins = 0 ;
 	static double **TblogPkR =0 ;
 	
+	const gsl_interp2d_type *T = gsl_interp2d_bilinear;
+	gsl_interp2d *interp2d = gsl_interp2d_alloc (T, bary.Nkbins, bary.Nabins);
+	double *GSLPKR = malloc(bary.Nkbins * bary.Nabins * sizeof(double));
+		
 	if (bary.isPkbary == 0) return 1. ;
 	
 	if (recompute_PkRatio(B)){
 		update_PkRatio(&B);
+		
+		printf("in recompute PkRatio \n");
 		
 		if (TblogPkR!=0) free_double_matrix(TblogPkR,0,bary.Nkbins-1, 0, bary.Nabins-1);
 		TblogPkR = create_double_matrix(0,bary.Nkbins-1, 0, bary.Nabins-1);
@@ -1319,7 +1325,7 @@ double PkRatio_baryons(double kintern,double a){
 		
 		infile=fopen(bary.FILE_logPkR, "r");
 		if(infile==NULL){
-		    printf("Error opening file");
+		    printf("Error opening logPkRatio file\n");
 		    exit(1);
 		}
 		
@@ -1333,11 +1339,6 @@ double PkRatio_baryons(double kintern,double a){
 		}
 		fclose(infile);		
 	}
-	
-	const gsl_interp2d_type *T = gsl_interp2d_bilinear;
-	gsl_interp2d *interp2d = gsl_interp2d_alloc (T, bary.Nkbins, bary.Nabins);
-	double *GSLPKR = malloc(bary.Nkbins * bary.Nabins * sizeof(double));
-	
 	
 	for (int i=0;i<bary.Nkbins;i++){
 		for (int j=0;j<bary.Nabins;j++){
@@ -1360,10 +1361,11 @@ double PkRatio_baryons(double kintern,double a){
 	//if (logkin > logk_bins[Nkbins-1])   logkin = logk_bins[Nkbins-1];
 	
 	//res = gsl_interp2d_eval(interp2d, logk_bins, a_bins, GSLPKR, logkin, a, NULL, NULL);   // log(Pk_ratio)
-	res = gsl_interp2d_eval_extrap(interp2d, logk_bins, a_bins, GSLPKR, logkin, a, NULL, NULL);    // allow extrapolation beyond k>1500 (for he case of )
+	res = gsl_interp2d_eval_extrap(interp2d, logk_bins, a_bins, GSLPKR, logkin, a, NULL, NULL);    // allow extrapolation beyond k>1500 
 	res = pow(10, res)	;  // Pk_ratio
 			
 	gsl_interp2d_free(interp2d);
+	free(GSLPKR);
 	return res;
 }
 
@@ -1409,9 +1411,9 @@ double Pdelta(double k_NL,double a)
     break;
   }
 
-//    double z = 1./a -1 ; 
+//      double z = 1./a -1 ; 
 //	  if (z > 4.) { 
-//	  	  printf("	z:%lf    a:%lf   	k_Mpc:%lf    PkRatio:%lf \n",z,a,kintern,PkRatio_baryons(kintern, a));
+//		 printf("	z:%lf    a:%lf   	k_Mpc:%lf    PkRatio:%lf \n",z,a,kintern,PkRatio_baryons(kintern, a));
 //	  }
   
   if (bary.isPkbary==1) pdelta = pdelta*PkRatio_baryons(kintern, a);

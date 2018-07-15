@@ -247,6 +247,7 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
         l2 = j*tomo.clustering_Nbin + k;
         llog = logsmin;
         for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
+			//h printf("in C_cl_tomo building table k,j,i: %d, %d, %d \n",k,j,i);
           res = C_cl_tomo_nointerp(exp(llog),k,j);
         //  if (res < 0){printf("negative clustering power spectrum C_cl(%e,%d)- error\n", exp(llog),k); res =0.;}
           table[l1][i]= log(C_cl_tomo_nointerp(exp(llog),k,j));
@@ -255,6 +256,7 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
       }
     }
     update_cosmopara(&C); update_nuisance(&N); update_galpara(&G);
+	//h printf("in C_cl_tomo finish recompute_clustering \n");
   }
   double f1 = exp(interpol(table[ni*tomo.clustering_Nbin + nj], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));
   if (isnan(f1)){f1 = 0.;}
