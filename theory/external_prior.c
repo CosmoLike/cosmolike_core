@@ -11,6 +11,9 @@ double log_like_f_red();
 double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]); //CH
 double log_L_Planck15_BAO_w0wa(); //CH
 double log_L_Planck15_BAO_H070p6_JLA_w0wa(); //CH
+double log_L_Planck18_BAO_Riess18_JLA_w0wa(); //CH
+double log_L_Planck18_BAO_w0wa(); //CH
+double log_L_Planck18_w0(); //CH
 
 void set_ia_priors();
 void set_lin_bias_priors();
@@ -398,7 +401,7 @@ double log_L_Planck15_BAO_w0wa()
   return 0.5*log_L;
 }
 
-//CH
+//CH 
 double log_L_Planck15_BAO_H070p6_JLA_w0wa()
 {
   double log_L = 0.;
@@ -456,6 +459,187 @@ double log_L_Planck15_BAO_H070p6_JLA_w0wa()
   param_diff[4] = cosmology.wa-param_fid[4];
   param_diff[5] = cosmology.omb-param_fid[5];
   param_diff[6] = cosmology.h0-param_fid[6];
+  
+  log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
+
+  return log_L;
+}
+
+//CH 2018/07/17
+double log_L_Planck18_BAO_Riess18_JLA_w0wa()
+{
+  double log_L = 0.;
+  int n_param = 7;
+  double param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+  int c, r;
+  table[0][0] = 3.91544e+06;
+  table[0][1] = -5.90017e+05;
+  table[0][2] = 2.04428e+05;
+  table[0][3] = 2.05546e+05;
+  table[0][4] = 4.86403e+04;
+  table[0][5] = -1.02470e+07;
+  table[0][6] = 3.21296e+06;
+  table[1][1] = 1.79051e+05;
+  table[1][2] = -4.28772e+04;
+  table[1][3] = 1.10827e+04;
+  table[1][4] = 3.63540e+03;
+  table[1][5] = 1.36650e+06;
+  table[1][6] = -4.46291e+05;
+  table[2][2] = 1.26726e+05;
+  table[2][3] = -1.07711e+04;
+  table[2][4] = -2.89739e+03;
+  table[2][5] = -3.12134e+05;
+  table[2][6] = 1.35001e+05;
+  table[3][3] = 3.69435e+04;
+  table[3][4] = 9.23807e+03;
+  table[3][5] = -8.44080e+05;
+  table[3][6] = 1.79807e+05;
+  table[4][4] = 2.32343e+03;
+  table[4][5] = -2.03684e+05;
+  table[4][6] = 4.27423e+04;
+  table[5][5] = 4.83819e+07;
+  table[5][6] = -6.46972e+06;
+  table[6][6] = 2.90633e+06;
+  param_fid[0] = 2.95257e-01;
+  param_fid[1] = 8.37317e-01;
+  param_fid[2] = 9.64499e-01;
+  param_fid[3] = -1.00147e+00;
+  param_fid[4] = -3.32983e-01;
+  param_fid[5] = 4.60516e-02;
+  param_fid[6] = 6.97096e-01;
+
+  for (c = 0; c < n_param; c++) {
+    for (r = c + 1; r < n_param; r++) {
+      table[r][c] = table[c][r];
+    }
+  }
+
+  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
+  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
+  param_diff[2] = cosmology.n_spec-param_fid[2]; 
+  param_diff[3] = cosmology.w0-param_fid[3]; 
+  param_diff[4] = cosmology.wa-param_fid[4];
+  param_diff[5] = cosmology.omb-param_fid[5];
+  param_diff[6] = cosmology.h0-param_fid[6];
+  
+  log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
+
+  return log_L;
+}
+
+//CH 2018/07/17
+double log_L_Planck18_BAO_w0wa()
+{
+  double log_L = 0.;
+  int n_param = 7;
+  double param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+  int c, r;
+  table[0][0] = 6.78890e+05;
+  table[0][1] = -1.57721e+05;
+  table[0][2] = 5.15938e+04;
+  table[0][3] = 4.25312e+04;
+  table[0][4] = 9.74958e+03;
+  table[0][5] = -3.57564e+06;
+  table[0][6] = 4.44898e+05;
+  table[1][1] = 1.12864e+05;
+  table[1][2] = -1.19553e+04;
+  table[1][3] = 2.29815e+04;
+  table[1][4] = 6.07805e+03;
+  table[1][5] = 6.20572e+05;
+  table[1][6] = -8.00370e+04;
+  table[2][2] = 1.12060e+05;
+  table[2][3] = -1.19553e+04;
+  table[2][4] = -2.96474e+03;
+  table[2][5] = -1.18012e+05;
+  table[2][6] = -1.70556e+03;
+  table[3][3] = 2.30273e+04;
+  table[3][4] = 5.65183e+03;
+  table[3][5] = -4.46117e+05;
+  table[3][6] = 4.30261e+04;
+  table[4][4] = 1.39546e+03;
+  table[4][5] = -1.05193e+05;
+  table[4][6] = 9.95900e+03;
+  table[5][5] = 2.75140e+07;
+  table[5][6] = -1.65229e+06;
+  table[6][6] = 4.48558e+05;
+  param_fid[0] = 3.41667e-01;
+  param_fid[1] = 7.95474e-01;
+  param_fid[2] = 9.64545e-01;
+  param_fid[3] = -5.77797e-01;
+  param_fid[4] = -1.31630e+00;
+  param_fid[5] = 5.33105e-02;
+  param_fid[6] = 6.48927e-01;
+
+  for (c = 0; c < n_param; c++) {
+    for (r = c + 1; r < n_param; r++) {
+      table[r][c] = table[c][r];
+    }
+  }
+
+  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
+  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
+  param_diff[2] = cosmology.n_spec-param_fid[2]; 
+  param_diff[3] = cosmology.w0-param_fid[3]; 
+  param_diff[4] = cosmology.wa-param_fid[4];
+  param_diff[5] = cosmology.omb-param_fid[5];
+  param_diff[6] = cosmology.h0-param_fid[6];
+  
+  log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
+
+  return log_L;
+}
+
+//CH 2018/07/17
+double log_L_Planck18_w0()
+{
+  double log_L = 0.;
+  int n_param = 6;
+  double param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+  int c, r;
+  //var_derived: ['omegam', 'sigma8', 'ns', 'w', 'omegab', 'h0']
+  table[0][0] = 2.96336e+06;
+  table[0][1] = -3.29741e+05;
+  table[0][2] = 1.05809e+05;
+  table[0][3] = 2.71328e+05;
+  table[0][4] = -9.32882e+06;
+  table[0][5] = 2.53296e+06;
+  table[1][1] = 1.70713e+05;
+  table[1][2] = -3.67360e+04;
+  table[1][3] = 4.38186e+04;
+  table[1][4] = 6.95686e+05;
+  table[1][5] = -2.09522e+05;
+  table[2][2] = 1.20693e+05;
+  table[2][3] = -2.22763e+04;
+  table[2][4] = -7.31831e+04;
+  table[2][5] = 4.37545e+04;
+  table[3][3] = 7.39254e+04;
+  table[3][4] = -1.27156e+06;
+  table[3][5] = 2.69293e+05;
+  table[4][4] = 4.79954e+07;
+  table[4][5] = -6.50670e+06;
+  table[5][5] = 2.42902e+06;
+  param_fid[0] = 3.03785e-01;
+  param_fid[1] = 8.22263e-01;
+  param_fid[2] = 9.65449e-01;
+  param_fid[3] = -1.04080e+00;
+  param_fid[4] = 4.75908e-02;
+  param_fid[5] = 6.86273e-01;
+
+  for (c = 0; c < n_param; c++) {
+    for (r = c + 1; r < n_param; r++) {
+      table[r][c] = table[c][r];
+    }
+  }
+
+  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
+  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
+  param_diff[2] = cosmology.n_spec-param_fid[2]; 
+  param_diff[3] = cosmology.w0-param_fid[3]; 
+  param_diff[4] = cosmology.omb-param_fid[4];
+  param_diff[5] = cosmology.h0-param_fid[5];
   
   log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
 
