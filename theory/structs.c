@@ -23,7 +23,7 @@ typedef struct {
   int Planck15;
   int Planck15_BAO_w0wa; //CH
   int Planck15_BAO_H070p6_JLA_w0wa; //CH
-  int Planck18_BAO_Riess18_JLA_w0wa; //CH
+  int Planck18_BAO_Riess18_Pantheon_w0wa; //CH
   int Planck18_BAO_w0wa; //CH
   int Planck18_w0; //CH
   int BOSS_Chuang;

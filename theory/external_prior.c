@@ -11,7 +11,7 @@ double log_like_f_red();
 double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]); //CH
 double log_L_Planck15_BAO_w0wa(); //CH
 double log_L_Planck15_BAO_H070p6_JLA_w0wa(); //CH
-double log_L_Planck18_BAO_Riess18_JLA_w0wa(); //CH
+double log_L_Planck18_BAO_Riess18_Pantheon_w0wa(); //CH
 double log_L_Planck18_BAO_w0wa(); //CH
 double log_L_Planck18_w0(); //CH
 
@@ -466,48 +466,48 @@ double log_L_Planck15_BAO_H070p6_JLA_w0wa()
 }
 
 //CH 2018/07/17
-double log_L_Planck18_BAO_Riess18_JLA_w0wa()
+double log_L_Planck18_BAO_Riess18_Pantheon_w0wa()
 {
   double log_L = 0.;
   int n_param = 7;
   double param_fid[n_param], param_diff[n_param];
   double table[n_param][n_param]; 
   int c, r;
-  table[0][0] = 3.91544e+06;
-  table[0][1] = -5.90017e+05;
-  table[0][2] = 2.04428e+05;
-  table[0][3] = 2.05546e+05;
-  table[0][4] = 4.86403e+04;
-  table[0][5] = -1.02470e+07;
-  table[0][6] = 3.21296e+06;
-  table[1][1] = 1.79051e+05;
-  table[1][2] = -4.28772e+04;
-  table[1][3] = 1.10827e+04;
-  table[1][4] = 3.63540e+03;
-  table[1][5] = 1.36650e+06;
-  table[1][6] = -4.46291e+05;
-  table[2][2] = 1.26726e+05;
-  table[2][3] = -1.07711e+04;
-  table[2][4] = -2.89739e+03;
-  table[2][5] = -3.12134e+05;
-  table[2][6] = 1.35001e+05;
-  table[3][3] = 3.69435e+04;
-  table[3][4] = 9.23807e+03;
-  table[3][5] = -8.44080e+05;
-  table[3][6] = 1.79807e+05;
-  table[4][4] = 2.32343e+03;
-  table[4][5] = -2.03684e+05;
-  table[4][6] = 4.27423e+04;
-  table[5][5] = 4.83819e+07;
-  table[5][6] = -6.46972e+06;
-  table[6][6] = 2.90633e+06;
-  param_fid[0] = 2.95257e-01;
-  param_fid[1] = 8.37317e-01;
-  param_fid[2] = 9.64499e-01;
-  param_fid[3] = -1.00147e+00;
-  param_fid[4] = -3.32983e-01;
-  param_fid[5] = 4.60516e-02;
-  param_fid[6] = 6.97096e-01;
+  table[0][0] = 4.30741e+06;
+  table[0][1] = -6.29653e+05;
+  table[0][2] = 2.30239e+05;
+  table[0][3] = 2.40526e+05;
+  table[0][4] = 5.75393e+04;
+  table[0][5] = -1.09309e+07;
+  table[0][6] = 3.63645e+06;
+  table[1][1] = 1.84962e+05;
+  table[1][2] = -4.30980e+04;
+  table[1][3] = 9.10127e+03;
+  table[1][4] = 3.25867e+03;
+  table[1][5] = 1.38575e+06;
+  table[1][6] = -4.94260e+05;
+  table[2][2] = 1.26977e+05;
+  table[2][3] = -7.56824e+03;
+  table[2][4] = -2.11814e+03;
+  table[2][5] = -4.02713e+05;
+  table[2][6] = 1.58351e+05;
+  table[3][3] = 4.14100e+04;
+  table[3][4] = 1.04261e+04;
+  table[3][5] = -9.36525e+05;
+  table[3][6] = 2.14609e+05;
+  table[4][4] = 2.64176e+03;
+  table[4][5] = -2.28031e+05;
+  table[4][6] = 5.15943e+04;
+  table[5][5] = 4.94180e+07;
+  table[5][6] = -7.29198e+06;
+  table[6][6] = 3.34690e+06;
+  param_fid[0] = 2.97717e-01;
+  param_fid[1] = 8.33421e-01;
+  param_fid[2] = 9.64631e-01;
+  param_fid[3] = -9.99383e-01;
+  param_fid[4] = -2.88583e-01;
+  param_fid[5] = 4.64837e-02;
+  param_fid[6] = 6.93855e-01;
 
   for (c = 0; c < n_param; c++) {
     for (r = c + 1; r < n_param; r++) {

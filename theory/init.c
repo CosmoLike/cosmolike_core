@@ -339,14 +339,14 @@ void init_priors(char *cosmoPrior1, char *cosmoPrior2, char *cosmoPrior3, char *
     like.Planck15_BAO_w0wa=1;  
   } else if(strcmp(cosmoPrior4,"Planck15_BAO_H070p6_JLA_w0wa")==0){
     like.Planck15_BAO_H070p6_JLA_w0wa=1;  
-  } else if(strcmp(cosmoPrior4,"Planck18_BAO_Riess18_JLA_w0wa")==0){
-    like.Planck18_BAO_Riess18_JLA_w0wa=1;  
+  } else if(strcmp(cosmoPrior4,"Planck18_BAO_Riess18_Pantheon_w0wa")==0){
+    like.Planck18_BAO_Riess18_Pantheon_w0wa=1;  
   } else if(strcmp(cosmoPrior4,"Planck18_BAO_w0wa")==0){
     like.Planck18_BAO_w0wa=1; 
   } else if(strcmp(cosmoPrior4,"Planck18_w0")==0){
     like.Planck18_w0=1;          
   } else {
-    printf("Error from like_fourier.c: cosmoPrior4 can only be Planck, Planck15_BAO_w0wa, Planck15_BAO_H070p6_JLA_w0wa, Planck18_BAO_Riess18_JLA_w0wa, Planck18_BAO_w0wa, or Planck18_w0."); //CH: no real error handling.
+    printf("Error from like_fourier.c: cosmoPrior4 can only be Planck, Planck15_BAO_w0wa, Planck15_BAO_H070p6_JLA_w0wa, Planck18_BAO_Riess18_Pantheon_w0wa, Planck18_BAO_w0wa, or Planck18_w0."); //CH: no real error handling.
   }
   //CH ENDS
 }
