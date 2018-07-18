@@ -9,7 +9,7 @@ void init_survey(char *surveyname);
 void init_galaxies(char *SOURCE_ZFILE, char *LENS_ZFILE, char *lensphotoz, char *sourcephotoz, char *galsample);
 void init_cosmo();
 void init_cosmo_runmode(char *runmode);
-void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin);
+void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin, int Ntomo);
 void init_binning_real(int Nt, double min, double max);
 void init_probes(char *probes);
 void init_probes_real(char *probes);
@@ -37,7 +37,7 @@ void init_clphotoz_cmass();
 void init_clphotoz_LSST_gold();
 void init_clphotoz_source();
 void init_clusterMobs();
-void set_equal_tomo_bins(int Ntomo);
+void set_equal_tomo_bins();
 void init_IA(char *model,char *lumfct);
 void init_HOD_rm();
 void init_Pdelta();
@@ -277,7 +277,8 @@ void init_cosmo_runmode(char *runmode)
   sprintf(pdeltaparams.runmode,"%s",runmode);
   printf("pdeltaparams.runmode =%s\n",pdeltaparams.runmode);
 }
-void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin)
+
+void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin, int Ntomo)
 {
   printf("-------------------------------------------\n");
   printf("Initializing Binning\n");
@@ -288,6 +289,7 @@ void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, 
   like.lmin= lmin; //std=20
   like.lmax= lmax; //15,000
   like.lmax_shear = lmax_shear; //5000
+  tomo.shear_Nbin=Ntomo;
   //compute cluster ell bins acc to 2PCF l-bins
   double ell;
   int i,k=0;
@@ -325,29 +327,11 @@ void init_priors(char *cosmoPrior1, char *cosmoPrior2, char *cosmoPrior3, char *
   printf("---------------------------------------\n");
   
   like.Planck=like.BAO=like.Aubourg_Planck_BAO_SN=like.SN=0;
-  like.Planck15_BAO_w0wa=like.Planck15_BAO_H070p6_JLA_w0wa=0; //CH
-  like.Planck18_BAO_Riess18_Pantheon_w0wa=like.Planck18_BAO_w0wa=like.Planck18_w0=0; //CH
 
   if(strcmp(cosmoPrior1,"Planck_BAO_SN_Aubourg")==0)like.Aubourg_Planck_BAO_SN=1;
   if(strcmp(cosmoPrior2,"DES_SN")==0) like.SN=1;
   if(strcmp(cosmoPrior3,"PhotoBAO")==0) like.BAO=1;
-  //CH BEGINS
-  if(strcmp(cosmoPrior4,"Planck")==0){ 
-    like.Planck=1;  
-  } else if(strcmp(cosmoPrior4,"Planck15_BAO_w0wa")==0){
-    like.Planck15_BAO_w0wa=1;  
-  } else if(strcmp(cosmoPrior4,"Planck15_BAO_H070p6_JLA_w0wa")==0){
-    like.Planck15_BAO_H070p6_JLA_w0wa=1;  
-  } else if(strcmp(cosmoPrior4,"Planck18_BAO_Riess18_Pantheon_w0wa")==0){
-    like.Planck18_BAO_Riess18_Pantheon_w0wa=1;  
-  } else if(strcmp(cosmoPrior4,"Planck18_BAO_w0wa")==0){
-    like.Planck18_BAO_w0wa=1; 
-  } else if(strcmp(cosmoPrior4,"Planck18_w0")==0){
-    like.Planck18_w0=1;          
-  } else {
-    printf("Error from like_fourier.c: cosmoPrior4 can only be Planck, Planck15_BAO_w0wa, Planck15_BAO_H070p6_JLA_w0wa, Planck18_BAO_Riess18_Pantheon_w0wa, Planck18_BAO_w0wa, or Planck18_w0."); //CH: no real error handling.
-  }
-  //CH ENDS
+  if(strcmp(cosmoPrior4,"Planck")==0) like.Planck=1; 
 }
 
 
@@ -417,7 +401,7 @@ void init_galaxies(char *SOURCE_ZFILE, char *LENS_ZFILE, char *lensphotoz, char 
   if (strcmp(galsample,"source")==0) set_clphotoz_priors_source();
 }
 
-/*void init_clusters()
+void init_clusters()
 {
   printf("\n");
   printf("-----------------------------------\n");
@@ -429,7 +413,7 @@ void init_galaxies(char *SOURCE_ZFILE, char *LENS_ZFILE, char *lensphotoz, char 
      set_clusters_DES();
 
  set_clusterMobs_priors(); 
-}*/
+}
 
 
 void init_cmb(char * cmbName) {
@@ -514,7 +498,13 @@ void init_probes(char *probes)
     like.pos_pos=1;
     printf("Position-Position computation initialized\n");
   }
-
+  if(strcmp(probes,"ggl_cl")==0){
+    like.Ndata=like.Ncl*(tomo.ggl_Npowerspectra+tomo.clustering_Npowerspectra);
+    like.shear_pos=1;
+    like.pos_pos=1;
+    printf("Shear-Position computation initialized\n");
+    printf("Position-Position computation initialized\n");
+  }
   if(strcmp(probes,"all_2pt")==0){
     like.Ndata=like.Ncl*(tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Npowerspectra);
     like.shear_shear=1;
@@ -759,7 +749,7 @@ void init_source_sample_()
   if(strcmp(survey.sourcephotoz,"multihisto")==0) redshift.shear_photoz=4;
   //printf("Source Sample Redshift Errors set to %s: redshift.shear_photoz=%d\n",survey.sourcephotoz,redshift.shear_photoz);
 
-  if (redshift.shear_photoz!=4)  set_equal_tomo_bins(tomo.shear_Nbin);
+  if (redshift.shear_photoz!=4)  set_equal_tomo_bins();
   for (i=0;i<tomo.shear_Nbin; i++)
   {
     //printf("zmean_source=%f\n",zmean_source(i));
@@ -788,35 +778,35 @@ void init_source_sample(char *sourcephotoz)
   printf("Source Sample Redshift Errors set to %s: redshift.shear_photoz=%d\n",sourcephotoz,redshift.shear_photoz);
 
   if (strcmp(survey.name,"DES_SV")==0){
-    set_equal_tomo_bins(3);
+    set_equal_tomo_bins();
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage3();
       set_wlphotoz_priors_stage3();  
     }
   }
   if (strcmp(survey.name,"DES_Y1")==0 || strcmp(survey.name,"DES")==0){
-    set_equal_tomo_bins(5);
+    set_equal_tomo_bins();
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage3();
       set_wlphotoz_priors_stage3();  
     }
   }
   if (strcmp(survey.name,"Euclid")==0){
-    set_equal_tomo_bins(5);
+    set_equal_tomo_bins();
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage4();
       set_wlphotoz_priors_stage4();  
     }
   }
   if (strcmp(survey.name,"HSC")==0 ){
-    set_equal_tomo_bins(5);
+    set_equal_tomo_bins();
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage3();
       set_wlphotoz_priors_stage3();  
     }
   }
   if (strcmp(survey.name,"LSST")==0 || strcmp(survey.name,"WFIRST")==0) {
-    set_equal_tomo_bins(10);
+    set_equal_tomo_bins();
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage4();
       set_wlphotoz_priors_stage4();  
@@ -831,12 +821,13 @@ void init_baryons()
   printf("todo\n");
 }
 
-void set_equal_tomo_bins(int Ntomo)
+void set_equal_tomo_bins()
 {
   int k,j;
   double frac, zi;
-  tomo.shear_Nbin=Ntomo;
-  tomo.shear_Npowerspectra=(int) (Ntomo*(Ntomo+1)/2);
+  
+  tomo.shear_Npowerspectra=(int) (tomo.shear_Nbin*(tomo.shear_Nbin+1)/2);
+  
   zdistr_histo_1(0.1, NULL);
   int zbins =2000;
   double da = (redshift.shear_zdistrpar_zmax-redshift.shear_zdistrpar_zmin)/(1.0*zbins);
@@ -853,7 +844,7 @@ void set_equal_tomo_bins(int Ntomo)
   printf("\n");
   printf("Source Sample - Tomographic Bin limits:\n");
   for(k=0;k<tomo.shear_Nbin-1;k++){
-    frac=(k+1.)/(1.*Ntomo)*sum[zbins-1];
+    frac=(k+1.)/(1.*tomo.shear_Nbin)*sum[zbins-1];
     j = 0;
     while (sum[j]< frac){
       j++;
@@ -1254,7 +1245,7 @@ void set_galaxies_source(void)
 
 
 /*********** set cluster parameters for DES forecasts ********/
-/*void set_clusters_LSST(){
+void set_clusters_LSST(){
   int i,j;
   //N200-M relationship from Rykoff et al. 2012 (http://iopscience.iop.org/0004-637X/746/2/178/pdf/0004-637X_746_2_178.pdf) - Eq. B4 for \Delta = 200 mean version
   nuisance.cluster_Mobs_lgM0 = 1.72+log(1.e+14*0.7); //back to Msun/h instead of Msun/h70 normalization
@@ -1355,7 +1346,7 @@ void set_clusters_DES(){
   //    printf ("Richness bin %d: %e - %e (%e Msun/h - %e Msun/h), N(z = 0.3) = %e, N(z = 0.7)\n", i,Cluster.N_min[i],Cluster.N_max[i],exp(lgM_obs(Cluster.N_min[i], 0.75)),exp(lgM_obs(Cluster.N_max[i], 0.75)),N_N200(0,i),N_N200(2,i));
   //  }
   printf("Clusters set to DES\n");
-}*/
+}
 
 void set_galaxies_benchmark_LSST()
 { 

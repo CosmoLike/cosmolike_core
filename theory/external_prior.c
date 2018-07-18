@@ -15,6 +15,12 @@ double log_L_Planck18_BAO_Riess18_Pantheon_w0wa(); //CH
 double log_L_Planck18_BAO_w0wa(); //CH
 double log_L_Planck18_w0(); //CH
 
+double log_L_SRD_SN_Y1_RENEE();
+double log_L_SRD_SN_Y10_RENEE();
+double log_L_SRD_SL_Y1_TOM();
+double log_L_SRD_SL_Y10_TOM();
+double log_L_SRD_LSST_Y1_LSS();
+
 void set_ia_priors();
 void set_lin_bias_priors();
 void set_HOD_redmagic_priors();
@@ -76,18 +82,40 @@ void set_ia_priors()
 
 void set_clusterMobs_priors()
 {
-  prior.cluster_Mobs_lgM0[0]=1.72+log(1.e+14*0.7);
-  prior.cluster_Mobs_alpha[0]=1.08;
-  prior.cluster_Mobs_beta[0]=0.0;
-  prior.cluster_Mobs_sigma[0]=0.25;
+  if (strcmp(survey.name,"LSST_Y10")==0 || strcmp(survey.name,"LSST_Y1")==0 ){
+    // flat prior
+    prior.cluster_Mobs_lgN0[0]=0.5;
+    prior.cluster_Mobs_lgN0[1]=5.0;
+
+    prior.cluster_Mobs_alpha[0]=0.0;
+    prior.cluster_Mobs_alpha[1]=2.0;
     
-  prior.cluster_Mobs_lgM0[1]=1.0;
-  prior.cluster_Mobs_alpha[1]=0.2;
-  prior.cluster_Mobs_beta[1]=0.5;
-  prior.cluster_Mobs_sigma[1]=0.2;
-  
-  prior.cluster_completeness[0] = 0.9;  
-  prior.cluster_completeness[1] = 0.05;
+    prior.cluster_Mobs_beta[0]=-1.5;
+    prior.cluster_Mobs_beta[1]=1.5;
+    
+    prior.cluster_Mobs_sigma0[0]=0.0;
+    prior.cluster_Mobs_sigma0[1]=1.5;
+    
+    prior.cluster_Mobs_sigma_qm[0] = -1.5;
+    prior.cluster_Mobs_sigma_qm[1] = 1.5;
+
+    prior.cluster_Mobs_sigma_qz[0] = -1.5;
+    prior.cluster_Mobs_sigma_qz[1] = 1.5;
+
+  } else {
+    prior.cluster_Mobs_lgM0[0]=1.72+log(1.e+14*0.7);
+    prior.cluster_Mobs_alpha[0]=1.08;
+    prior.cluster_Mobs_beta[0]=0.0;
+    prior.cluster_Mobs_sigma[0]=0.25;
+    
+    prior.cluster_Mobs_lgM0[1]=1.0;
+    prior.cluster_Mobs_alpha[1]=0.2;
+    prior.cluster_Mobs_beta[1]=0.5;
+    prior.cluster_Mobs_sigma[1]=0.2;
+
+    prior.cluster_completeness[0] = 0.9;
+    prior.cluster_completeness[1] = 0.05;
+  }
   
   like.clusterMobs=1;
 }
@@ -227,6 +255,23 @@ void set_clphotoz_priors_LSST_gold()
   like.clphotoz=1;
 }
 
+void set_clphotoz_priors_LSST_SRD()
+{
+  int i;
+  printf("Setting Gaussian clustering photo-z Priors redmagic\n");
+  for (i=0;i<tomo.clustering_Nbin; i++){
+    // center of Gaussian priors
+    prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
+    prior.sigma_zphot_clustering[i][0]=nuisance.sigma_zphot_clustering[i];
+    //rms width of Gaussian priors
+    prior.bias_zphot_clustering[i][1] = 0.001;
+    prior.sigma_zphot_clustering[i][1]=0.002;
+    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+  }
+  like.clphotoz=1;
+}
+
 void set_clphotoz_priors_benchmark()
 {
   int i;
@@ -300,6 +345,9 @@ double log_L_Planck_BAO_SN() // using the Planck 15 fid values and error bars as
  
  return 0.5*log_L;
  }
+
+
+
 
 //CH
 double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]) 
@@ -705,16 +753,19 @@ double log_L_shear_calib()
 
 double log_L_clusterMobs()
 {
-  int i;
   double log_L = 0.; 
-  log_L -=  pow((nuisance.cluster_Mobs_lgM0 - prior.cluster_Mobs_lgM0[0])/ prior.cluster_Mobs_lgM0[1],2.0);
-  log_L -=  pow((nuisance.cluster_Mobs_alpha - prior.cluster_Mobs_alpha[0])/ prior.cluster_Mobs_alpha[1],2.0);
-  log_L -=  pow((nuisance.cluster_Mobs_beta - prior.cluster_Mobs_beta[0])/ prior.cluster_Mobs_beta[1],2.0);
-  log_L -=  pow((nuisance.cluster_Mobs_sigma - prior.cluster_Mobs_sigma[0])/ prior.cluster_Mobs_sigma[1],2.0);
-  for (i=0;i<4; i++){
-  log_L -=  pow((nuisance.cluster_completeness[i] - prior.cluster_completeness[0])/ prior.cluster_completeness[1],2.0);
-  }  
-  return 0.5*log_L;
+  if (strcmp(Cluster.model, "default")==0){
+    int i;
+    log_L -=  pow((nuisance.cluster_Mobs_lgM0 - prior.cluster_Mobs_lgM0[0])/ prior.cluster_Mobs_lgM0[1],2.0);
+    log_L -=  pow((nuisance.cluster_Mobs_alpha - prior.cluster_Mobs_alpha[0])/ prior.cluster_Mobs_alpha[1],2.0);
+    log_L -=  pow((nuisance.cluster_Mobs_beta - prior.cluster_Mobs_beta[0])/ prior.cluster_Mobs_beta[1],2.0);
+    log_L -=  pow((nuisance.cluster_Mobs_sigma - prior.cluster_Mobs_sigma[0])/ prior.cluster_Mobs_sigma[1],2.0);
+    for (i=0;i<4; i++){
+      log_L -=  pow((nuisance.cluster_completeness[i] - prior.cluster_completeness[0])/ prior.cluster_completeness[1],2.0);
+    }
+    log_L = 0.5*log_L;
+  }
+  return log_L;
 }
 
 

@@ -26,7 +26,7 @@
 #define ns_min_emu 8.500000e-01
 #define w_max_emu -7.000000e-01
 #define w_min_emu -1.300000e+00
-#define wa_max_emu 1.29 //value correspond to -(w_0+w_a)^(1/4)
+#define wa_max_emu 1.29 
 #define wa_min_emu 0.3 //value correspond to -(w_0+w_a)^(1/4)
 #define onuhh_max_emu 0.01
 #define onuhh_min_emu -0.000000001 //slighyl smaller than 0 since problems otherwise if Omega_nu=0.0
@@ -56,6 +56,7 @@ double Pdelta(double k_NL,double a); //k in coverH0 units
 //double int_for_chi(double a,void * args);
 double f_K(double chi);
 double chi(double a);
+double a_chi(double chi1);
 extern void emu(double *xstar, double *ystar, double *kstar);
 
 //c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -619,6 +620,7 @@ double get_class_s8(struct file_content *fc, int *status){
    strcpy(fc->name[parser_length-1],"A_s");
    sprintf(fc->value[parser_length-1],"%e",A_s);
  }
+ cosmology.A_s = A_s;
     //printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
 }
 strcpy(fc->name[1],"non linear");
@@ -740,9 +742,9 @@ double p_lin(double k,double a)
       }
     }
   }
-  if (k/cosmology.coverH0< exp(logkmin) || k/cosmology.coverH0 > exp(logkmax)) return 0.0;
+  if (k/cosmology.coverH0 > exp(logkmax)) return 0.0;
   klog = log(k/cosmology.coverH0);
-  val = interpol2d(table_P_Lz, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_lin, logkmin, logkmax, dk, klog, 1.0, 1.0);
+  val = interpol2d(table_P_Lz, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_lin, logkmin, logkmax, dk, klog, 3.0+cosmology.n_spec, 0.0);
   if(isnan(val) || (k==0)) return 0.0;
   return 2.0*constants.pi_sqr*exp(val)/k/k/k;     
 }
@@ -890,12 +892,6 @@ double Delta_NL_Halofit(double k_NL, double a)
   double klog,val; 
 
   if (recompute_cosmo3D(C)){
-    if (cosmology.sigma_8 < 0.01){
-      printf("called Delta_NL_Halofit with cosmology.sigma_8 = %e\n");
-      printf("Halofit implementation in CosmoLike does not support A_s normalization\n");
-      printf("EXIT\n");
-      exit(1);
-    }
     update_cosmopara(&C);
     if (table_P_NL!=0) free_double_matrix(table_P_NL,0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
     table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);     
@@ -998,22 +994,32 @@ void determine_emu_cosmo_calib(double *COSMO_emu, int *calibflag)
     COSMO_emu[4]=ns_max_emu-0.000001;
     *calibflag=1;   
   }    
-  if(cosmology.w0<= w_min_emu){  
+  if(COSMO_emu[5]<= w_min_emu){  
     COSMO_emu[5]=w_min_emu+0.000001;
     *calibflag=1; 
   }
-  if(cosmology.w0>= w_max_emu){  
+  if(COSMO_emu[5]>= w_max_emu){  
     COSMO_emu[5]=w_max_emu-0.000001;
     *calibflag=1; 
   }   
-  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) <= wa_min_emu){  
-    COSMO_emu[6]=-(pow((wa_min_emu+0.000001),4)+COSMO_emu[5]);
-    *calibflag=1; 
-  }
-  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) >= wa_max_emu){  
-    COSMO_emu[6]=(pow((wa_min_emu-0.000001),4)+COSMO_emu[5]);
+  if(cosmology.wa <= -1.73){  
+    COSMO_emu[6]= -1.730001;
     *calibflag=1; 
   }    
+  if(cosmology.wa >= 1.28){  
+    COSMO_emu[6]= (1.28-0.000001);
+    *calibflag=1; 
+  }    
+  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) <= wa_min_emu){  
+    COSMO_emu[6]=-(pow((wa_min_emu+0.000001),4)+COSMO_emu[5]);
+ //   printf("w_a< wa_min: %e->%e, %e %e\n",cosmology.wa,COSMO_emu[6],COSMO_emu[5],pow(-COSMO_emu[5]-COSMO_emu[6], 0.25));
+    *calibflag=1; 
+  }
+  else if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) >= wa_max_emu){  
+    COSMO_emu[6]=-(pow((wa_max_emu-0.000001),4)+COSMO_emu[5]);
+ //   printf("w_a> wa_max: %e->%e, %e %e\n",cosmology.wa,COSMO_emu[6],COSMO_emu[5],pow(-COSMO_emu[5]-COSMO_emu[6], 0.25));
+    *calibflag=1; 
+  }
   if(COSMO_emu[7]<= onuhh_min_emu){  
     COSMO_emu[7]=onuhh_min_emu+0.000001;
     *calibflag=1; 
@@ -1035,7 +1041,7 @@ double Delta_NL_emu(double k_NL,double a)
   static double **table_P_NL_halofit_calibrate=0;
 
   double aa,klog,val; 
-  double COSMO_orig[9],COSMO_emu[9],ystar[351],kstar[351],p_emu[351],emu_min,emu_max,k_max_emu,k_min_emu;
+  double COSMO_emu[9],COSMO_orig[9],ystar[351],kstar[351],p_emu[351],emu_min,emu_max,k_max_emu,k_min_emu;
   int type=1,calibflag=0;
   int i,j,k;
 
@@ -1051,10 +1057,19 @@ double Delta_NL_emu(double k_NL,double a)
     dk = (logkmax - logkmin)/(Ntable.N_k_nlin-1.);
 
     Delta_halofit(table_P_NL_halofit,logkmin, logkmax, dk, da);
+    COSMO_emu[0] = cosmology.Omega_m*cosmology.h0*cosmology.h0;
+    COSMO_emu[1] = cosmology.omb*cosmology.h0*cosmology.h0;
+    COSMO_emu[2] = cosmology.sigma_8;   
+    COSMO_emu[3] = cosmology.h0;
+    COSMO_emu[4] = cosmology.n_spec;
+    COSMO_emu[5] = cosmology.w0;
+    COSMO_emu[6] = cosmology.wa;
+    COSMO_emu[7] = cosmology.Omega_nu*cosmology.h0*cosmology.h0;
+
     determine_emu_cosmo_calib(COSMO_emu, &calibflag);    
-    printf("Cosmo %le %le %le %le %le %le %le %le\n",COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5],COSMO_emu[6],COSMO_emu[7]);
+    //printf("Cosmo %le %le %le %le %le %le %le %le\n",COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5],COSMO_emu[6],COSMO_emu[7]);
     if(calibflag==0){
-      printf("INSIDE Emulator cosmology\n");
+      //printf("INSIDE Emulator cosmology\n");
       aa = limits.a_min;
       //binning in k and a must be the same as in  Delta_halofit
       for (i=0; i<Ntable.N_a; i++, aa +=da) {
@@ -1066,10 +1081,11 @@ double Delta_NL_emu(double k_NL,double a)
           COSMO_emu[8]=0.01;
         }
         if(aa >= a_min_emu){
+          COSMO_emu[6] = cosmology.wa; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
           emu(COSMO_emu,ystar,kstar);
           for (k=0; k<351; k++){
-            p_emu[k]=ystar[k];
-            //printf("%le %le\n",kstar[k],p_emu[k]);
+            p_emu[k]=ystar[k]*kstar[k]*kstar[k]*kstar[k]/(2.0*constants.pi_sqr);
+           // printf("%le %le %le\n",kstar[k],p_emu[k],Delta_NL_Halofit(kstar[k]/cosmology.h0,aa));
           }
           gsl_spline_init (timspline, kstar, p_emu, 351);
           emu_min=log(p_emu[0]/Delta_NL_Halofit(kstar[0]/cosmology.h0,aa));
@@ -1108,49 +1124,48 @@ double Delta_NL_emu(double k_NL,double a)
     COSMO_orig[5] = cosmology.w0;
     COSMO_orig[6] = cosmology.wa;
     COSMO_orig[7] = cosmology.Omega_nu;
-
+      // set cosmology to compute the Halofit calibration power spectrum 
+    cosmology.Omega_m=COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3];
+    cosmology.Omega_v=1.0-cosmology.Omega_m;
+    cosmology.omb=COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3];
+    cosmology.sigma_8=COSMO_emu[2];
+    cosmology.h0 =COSMO_emu[3];
+    cosmology.n_spec=COSMO_emu[4];
+    cosmology.w0=COSMO_emu[5];
+    cosmology.wa=COSMO_emu[6];
+    cosmology.Omega_nu=COSMO_emu[7];
+    double wa_temp = 1.0*COSMO_emu[6];
+   // printf("\n\n\nCosmo %le %le %le %le %le %le %le\n",COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5],COSMO_emu[6]);
+ 
     if (table_P_NL_halofit_calibrate!=0) free_double_matrix(table_P_NL_halofit_calibrate,0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
         table_P_NL_halofit_calibrate = create_double_matrix(0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
-      // set cosmology to compute the Halofit calibration power spectrum 
-      cosmology.Omega_m=COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3];
-      cosmology.Omega_v=1.0-cosmology.Omega_m;
-      cosmology.omb=COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3];
-      cosmology.sigma_8=COSMO_emu[2];
-      cosmology.h0 =COSMO_emu[3];
-      cosmology.n_spec=COSMO_emu[4];
-      cosmology.w0=COSMO_emu[5];
-      cosmology.wa=COSMO_emu[6];
-      cosmology.Omega_nu=COSMO_emu[7];
 
-      //Delta_halofit(table_P_NL_halofit_calibrate,logkmin, logkmax, dk, da);
+      Delta_halofit(table_P_NL_halofit_calibrate,logkmin, logkmax, dk, da);
 
       aa = limits.a_min;
-      //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
       for (i=0; i<Ntable.N_a; i++, aa +=da) {
         gsl_interp_accel *acc = gsl_interp_accel_alloc ();
         gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, 351);
 	      COSMO_emu[8] = (1.0/aa)-1.0; //emu takes 7 args 6 cosmopara and 7th redshift    
 	      if(fabs(COSMO_emu[8])<1.e-10) {
-          COSMO_emu[8]=0.0;
+          COSMO_emu[8]=0.01;
         }
         if(aa >= a_min_emu){
-	       //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
+          //printf("%e %e\n",wa_temp,COSMO_emu[6]);
+          COSMO_emu[6] = wa_temp; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
           emu(COSMO_emu,ystar,kstar);
           for (k=0; k<351; k++){
-            kstar[k]=ystar[k];
-            p_emu[k]=ystar[k+351]/Delta_NL_Halofit(kstar[k]/cosmology.h0,aa);
-	         //printf("%le %le\n",kstar[k],p_emu[k]);
+            p_emu[k]=ystar[k]*kstar[k]*kstar[k]*kstar[k]/(2.0*constants.pi_sqr)/Delta_NL_Halofit(kstar[k]/cosmology.h0,aa);
+	          //printf("%le %le\n",kstar[k],p_emu[k]);
           }
           gsl_spline_init (timspline, kstar, p_emu, 351);
 
           emu_min=p_emu[0];
           emu_max=p_emu[350];
-	       //printf("%le %le\n",kstar[k-1],p_emu[k-1]);
 	        klog = logkmin; // log k in h/MPC
           for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
             if ((klog >= log(k_min_emu/cosmology.h0)) && (klog <= log(k_max_emu/cosmology.h0))){
               table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc))+table_P_NL_halofit[i][j];
-	           //printf("emu used\n");
             }
             if(klog>log(k_max_emu/cosmology.h0))  table_P_NL[i][j]=log(emu_max)+table_P_NL_halofit[i][j];
             if(klog<log(k_min_emu/cosmology.h0)) table_P_NL[i][j]=log(emu_min)+table_P_NL_halofit[i][j];
@@ -1158,7 +1173,6 @@ double Delta_NL_emu(double k_NL,double a)
           }
         }
         if(aa < a_min_emu){
-	     //printf("non emu %le\n",aa);
           for (j=0; j<Ntable.N_k_nlin; j++) {
             table_P_NL[i][j]=table_P_NL_halofit[i][j]; 
             // emu goes out to to z=2, Halofit and emu difference small since pdelta is more linear -> no need for calibration here
@@ -1178,7 +1192,6 @@ double Delta_NL_emu(double k_NL,double a)
       }      
     }
   }
-  //  printf("%le\n",k_NL);
   klog = log(k_NL);
   //  if(a < a_min_emu || klog>log(k_max_emu/cosmology.h0) || klog<log(k_min_emu/cosmology.h0))printf("Halofit used: exceeded emu a or k range a=%le k=%le\n",a,exp(klog));
 
@@ -1236,7 +1249,7 @@ double Delta_NL_emu_only(double k_NL,double a)
    COSMO_emu[6] = cosmology.wa; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
    emu(COSMO_emu,ystar,kstar);
    for (k=0; k<351; k++){
-    p_emu[k]=ystar[k];
+    p_emu[k]=ystar[k]*kstar[k]*kstar[k]*kstar[k]/(2.0*constants.pi_sqr);
       //printf("%le %le\n",kstar[k],p_emu[k]);
   }
   gsl_spline_init (timspline, kstar, p_emu, 351);
@@ -1391,7 +1404,35 @@ double chi(double a)
   if (res < 0){printf ("interpolation error in chi(%e)\n",a); res=0.01;}
   return res;
 }
-
+//auxilary function to look up a(chi)
+double a_chi(double chi1){
+  static gsl_spline * a_spline = NULL;
+  static gsl_interp_accel * a_accel = NULL;
+  static cosmopara C;
+  static double chi_max =-1.;
+  if (!a_spline){
+    a_spline = gsl_spline_alloc(gsl_interp_cspline, Ntable.N_a);
+    a_accel = gsl_interp_accel_alloc();
+  }
+  if (recompute_cosmo3D(C)){
+    update_cosmopara(&C);
+    double *table_a,*table_chi;
+    table_a  = create_double_vector(0, Ntable.N_a-1);
+    table_chi  = create_double_vector(0, Ntable.N_a-1);
+    for (int i = 0; i < Ntable.N_a; i++){
+      table_a[i] = 1.0 - (1.0 - 0.99*limits.a_min)/(Ntable.N_a-1.)*(double)i;
+      table_chi[i] = int_gsl_integrate_medium_precision(int_for_chi,NULL, table_a[i], 1.,NULL,1000);
+   //   printf("%d %e %e\n",i,table_a[i],table_chi[i]);
+    }
+    chi_max = int_gsl_integrate_medium_precision(int_for_chi,NULL, limits.a_min, 1.,NULL,1000);
+    gsl_spline_init(a_spline, table_chi, table_a, Ntable.N_a);
+    free_double_vector(table_a,0, Ntable.N_a-1);
+    free_double_vector(table_chi,0, Ntable.N_a-1);
+  }
+  if (chi1 <=0.0){return 1.0;}
+  if (chi1 > chi_max){printf("called a_chi(chi) with chi > chi(limits.a_min\nEXIT\n");exit(1);}
+  return gsl_spline_eval(a_spline,chi1,a_accel);
+}
 
 /*===============================calculating the angular diameter distance f_K BS01 2.4, 2.30: f_K is a radial function that, depending on the curvature of the Universe, is a trigonometric, linear, or hyperbolic function of chi  */
 double f_K(double chi)

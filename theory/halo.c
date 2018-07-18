@@ -276,7 +276,7 @@ double B1_normalized (double m,double a){ //divide by bias norm only in matter s
 /******** mass-concentration relation **********/
 double conc(double m, double a)
 {
-	return 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2011, Delta = 200 rho_{mean} (Table 2)
+	return 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2013, Delta = 200 rho_{mean} (Table 2)
   //return 10.14*pow(m/2.e+12,-0.081)*pow(a,1.01); //Duffy et al. 2008 (Delta = 200 mean)
 }
 

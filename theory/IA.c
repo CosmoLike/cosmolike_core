@@ -630,6 +630,7 @@ double int_for_C_shear_shear_IA(double a, void *params)
   
   return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
 }
+
 double int_for_C_shear_shear_IA_Az(double a, void *params)
 {
   double res, ell, fK, k,ws1,ws2,wk1,wk2, norm;

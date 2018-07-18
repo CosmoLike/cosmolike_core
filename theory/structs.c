@@ -10,6 +10,7 @@ typedef struct {
   double *theta;
   double cosmax;
   double Rmin_bias;
+  double Rmin_shear;
   double lmax_shear;
   double lmax_kappacmb;
   int baryons;
@@ -32,6 +33,10 @@ typedef struct {
   int SN;
   int GRS;
   int Aubourg_Planck_BAO_SN;
+  int SRD_SL_Y1;
+  int SRD_SL_Y10;
+  int SRD_SN_Y10;
+  int SRD_SN_Y1;
   char DATA_FILE[500];
   char INV_FILE[500]; 
   char COV_FILE[500]; 
@@ -47,7 +52,7 @@ typedef struct {
    int ks;
   char probes[500];
 }likepara;
-likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0};
+likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0,.SRD_SL_Y1=0,.SRD_SL_Y10=0,.SRD_SN_Y10=0,.SRD_SN_Y1=0};
 
 typedef struct {
      double Omega_m;  /* matter density parameter                       */
@@ -177,8 +182,9 @@ typedef struct{
   int lbin;
   double l_min;
   double l_max;
+  char model[256];
 } clusterpara;
-clusterpara Cluster;
+clusterpara Cluster = {.model = "default"};
 
 typedef struct {
   char runmode[300];
@@ -243,6 +249,10 @@ typedef struct {
   double cluster_Mobs_alpha;
   double cluster_Mobs_beta;
   double cluster_Mobs_N_pivot;
+  double cluster_Mobs_lgN0;
+  double cluster_Mobs_sigma0;
+  double cluster_Mobs_sigma_qm;
+  double cluster_Mobs_sigma_qz;
   double cluster_completeness[10];
   double cluster_centering_f0;
   double cluster_centering_alpha;
@@ -284,6 +294,10 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double cluster_Mobs_alpha[2];
   double cluster_Mobs_beta[2];
   double cluster_Mobs_N_pivot[2];
+  double cluster_Mobs_lgN0[2];
+  double cluster_Mobs_sigma0[2];
+  double cluster_Mobs_sigma_qm[2];
+  double cluster_Mobs_sigma_qz[2];
   double cluster_completeness[2];
   double cluster_centering_f0[2];
   double cluster_centering_alpha[2];
@@ -350,9 +364,8 @@ typedef struct input_nuisance_params {
     double eta_ia;
     double eta_ia_highz;
     double lf[6];
-    double m_lambda[4];
+    double m_lambda[6];
     double cluster_c[4];
-
 } input_nuisance_params;
 
 typedef struct {

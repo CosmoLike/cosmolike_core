@@ -3,7 +3,6 @@
 double lgM_obs(double N200, double a); //mass observable relation
 double lgMmin(double a, int nN); //lower integration boundary for mass integrals over richness bin nN at scale factor a - change to log(limits.M_min) for general scatter distribution
 double lgMmax(double a, int nN); //upper integration boundary for mass integrals over richness bin nN at scale factor a - change to log(limits.M_max) for general scatter distribution
-double Mobs_x(double Nobs, double lgM, double a); // x in the covolution for scaling relation P(x)
 double int_n_Mobs(double lgM, void* params);//number density integrand for cluster halo model calculations
 double n_N200(int nz, int nN); //projected cluster density [1/radian]
 double N_N200(int nz, int nN); // cluster numbercounts in redshift bin nz, richness bin nN
@@ -17,22 +16,13 @@ double C_cgl_tomo_nointerp(double l, int nz, int nN, int zs);//angular cluster l
 
 
 
-/*********** N200-M relation routines ***********/
+/*********** N200-M relation routines***********/
 double lgM_obs(double N200, double a){
   return nuisance.cluster_Mobs_lgM0 + log(N200/nuisance.cluster_Mobs_N_pivot)*nuisance.cluster_Mobs_alpha + log(1./a)*nuisance.cluster_Mobs_beta;
 }
 double scatter_lgM_obs(double N200, double a){
   return nuisance.cluster_Mobs_sigma;
 }
-
-/*********** M->N200 relation routines with the scatter as a function os M and z ***********/
-double lgN200_model(double M, double a){
-  return nuisance.cluster_Mobs_lgN0 + log(M/(3.e+14))*nuisance.cluster_Mobs_alpha + log(1./a)*nuisance.cluster_Mobs_beta;
-}
-double scatter_lgN200_model_mz(double M, double a){
-  return nuisance.cluster_Mobs_sigma0 + log(M/(3.e+14))*nuisance.cluster_Mobs_sigma_qm + log(1./a)*nuisance.cluster_Mobs_sigma_qz;
-}
-
 /********** systematics models *************/ //simple place-holder routines for now, to be 
 double N200_completeness(int nz, int nN){
   return nuisance.cluster_completeness[nz];
@@ -43,59 +33,32 @@ double P_cm_offcentering(double k, double M, double a){
   return fc +(1.-fc)*exp(-0.5*pow(nuisance.cluster_centering_sigma*k/a,2.0));
 }
 /*********** cluster counts *******************/
-double lgMmin(double a,int nN){ // speed up of mass integrals for Gaussian scatter - change to log(limits.M_min) for general scatter distribution
-  if (strcmp(Cluster.model, "default")==0){
-    return fmax(log(limits.M_min),lgM_obs(Cluster.N_min[nN],a)-5.*scatter_lgM_obs(Cluster.N_min[nN],a));
-  } else if(strcmp(Cluster.model, "Murata_etal_2018")==0){ // foward model with mass- and redshift-dependent MOR scatter
-    return log(1.e12);
-  } else {
-    fprintf(stderr, "Error: Cluster.model should be 'default' or 'Rykoff_2012'");
-    exit(1);
-  }
+double lgMmin(double a,int nN){ // speed up of mass integrals for Gaussian scatter - change to log(limits.M_min) for general scatter distribution 
+  return fmax(log(limits.M_min),lgM_obs(Cluster.N_min[nN],a)-5.*scatter_lgM_obs(Cluster.N_min[nN],a));
 }
-double lgMmax(double a,int nN){// speed up of mass integrals for Gaussian scatter - change to log(limits.M_max) for general scatter distribution
-  if (strcmp(Cluster.model, "default")==0){
-    return fmin(log(limits.M_max),lgM_obs(Cluster.N_max[nN],a)+5.*scatter_lgM_obs(Cluster.N_max[nN],a));
-  } else if(strcmp(Cluster.model, "Murata_etal_2018")==0){
-    return log(limits.M_max);
-  } else {
-    fprintf(stderr, "Error: Cluster.model should be 'default' or 'Rykoff_2012'");
-    exit(1);
-  }
+double lgMmax(double a,int nN){// speed up of mass integrals for Gaussian scatter - change to log(limits.M_max) for general scatter distribution 
+  return fmin(log(limits.M_max),lgM_obs(Cluster.N_max[nN],a)+5.*scatter_lgM_obs(Cluster.N_max[nN],a));
+  
 }
-
-double Mobs_x(double Nobs, double lgM, double a){
-  if(strcmp(Cluster.model, "default")==0){ // Eq. B4 in Rykoff et al. (2012) http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1104.2089
-    return (lgM_obs(Nobs,a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Nobs,a));
-  } else if (strcmp(Cluster.model, "Murata_etal_2018")==0){ // Eq. 16 in Murata et al. (2018) http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1707.01907
-    return (log(Nobs)-lgN200_model(exp(lgM),a))/(sqrt(2.0)*scatter_lgN200_model_mz(exp(lgM), a));
-  } else {
-    fprintf(stderr, "Error: Cluster.model should be 'default' or 'Rykoff_2012'");
-    exit(1);
-  }
-}
-
 double int_n_Mobs(double lgM, void* params){
   double *array = (double *) params;
   double x1,x2;
-  x1 = Mobs_x(Cluster.N_min[(int)array[1]], lgM, array[0]);
-  x2 = Mobs_x(Cluster.N_max[(int)array[1]], lgM, array[0]);
+  x1 = (lgM_obs(Cluster.N_min[(int)array[1]],array[0])-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],array[0]));
+  x2 = (lgM_obs(Cluster.N_max[(int)array[1]],array[0])-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],array[0]));
   return exp(lgM)*massfunc(exp(lgM),array[0])*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
 }
-
 double int_b_Mobs(double lgM, void* params){
   double *array = (double *) params;
   double x1,x2;
-  x1 = Mobs_x(Cluster.N_min[(int)array[1]], lgM, array[0]);
-  x2 = Mobs_x(Cluster.N_max[(int)array[1]], lgM, array[0]);
+  x1 = (lgM_obs(Cluster.N_min[(int)array[1]],array[0])-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],array[0]));
+  x2 = (lgM_obs(Cluster.N_max[(int)array[1]],array[0])-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],array[0]));
   return exp(lgM)*massfunc(exp(lgM),array[0])*B1(exp(lgM),array[0])*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
 }
-
 double int_M_Mobs(double lgM, void* params){
   double *array = (double *) params;
   double x1,x2;
-  x1 = Mobs_x(Cluster.N_min[(int)array[1]], lgM, array[0]);
-  x2 = Mobs_x(Cluster.N_max[(int)array[1]], lgM, array[0]);
+  x1 = (lgM_obs(Cluster.N_min[(int)array[1]],array[0])-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],array[0]));
+  x2 = (lgM_obs(Cluster.N_max[(int)array[1]],array[0])-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],array[0]));
   return exp(lgM)*exp(lgM)*massfunc(exp(lgM),array[0])*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
 }
 
@@ -116,7 +79,8 @@ double n_N200 (int nz, int nN){
     for (z = 0; z < tomo.cluster_Nbin; z++){
       for (n = 0; n< Cluster.N200_Nbin; n++){
         array[1] = (double) n;
-	table[z][n] = int_gsl_integrate_medium_precision(int_da_n_Mobs, (void*)array, 1./(tomo.cluster_zmax[z]+1), 1./(tomo.cluster_zmin[z]+1),NULL,1000);
+        table[z][n] = int_gsl_integrate_medium_precision(int_da_n_Mobs, (void*)array, 1./(tomo.cluster_zmax[z]+1), 1./(tomo.cluster_zmin[z]+1),NULL,1000);
+        
       }
     }
     update_cosmopara(&C); update_nuisance(&N);
@@ -188,12 +152,11 @@ double int_P_cm_1h(double lgM, void *params){
   double x1,x2,m,a,u_m;
   double *array = (double *) params;
   m = exp(lgM); a = array[0];
-  x1 = Mobs_x(Cluster.N_min[(int)array[1]], lgM, a);
-  x2 = Mobs_x(Cluster.N_max[(int)array[1]], lgM, a);
-  u_m = m/(cosmology.rho_crit*cosmology.Omega_m)*u_nfw_c(conc(m,a),array[2],m,a); //density profile
+  x1 = (lgM_obs(Cluster.N_min[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],a));
+  x2 = (lgM_obs(Cluster.N_max[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],a));
+  u_m = m/(cosmology.rho_crit*cosmology.Omega_m)*u_nfw_c(conc(m,a),array[0],m,a); //density profile
   return m*massfunc(m,a)*u_m*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1))*P_cm_offcentering(array[2],m,a);
 }
-
 double P_cm_1h(double k, double a,int nz, int nN){ 
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.,amin =0., amax = 0.;
   static int N_a = 20, N_k_nlin = 30;
@@ -221,7 +184,7 @@ double P_cm_1h(double k, double a,int nz, int nN){
       klog  = logkmin;
       for (j=0; j<N_k_nlin; j++, klog += dk) {
         array[2]= exp(klog);
-	table_P_cm[i][j] = log(int_gsl_integrate_medium_precision(int_P_cm_1h, (void*)array, lgMmin(aa,nN), lgMmax(aa,nN),NULL,1000)/int_gsl_integrate_medium_precision(int_n_Mobs, (void*)array, lgMmin(aa,nN), lgMmax(aa,nN),NULL,1000));
+        table_P_cm[i][j] = log(int_gsl_integrate_medium_precision(int_P_cm_1h, (void*)array, lgMmin(aa,nN), lgMmax(aa,nN),NULL,1000)/int_gsl_integrate_medium_precision(int_n_Mobs, (void*)array, lgMmin(aa,nN), lgMmax(aa,nN),NULL,1000));
       }
     }
   }
