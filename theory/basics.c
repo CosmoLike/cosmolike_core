@@ -150,9 +150,9 @@ typedef struct {
 
 
 Ntab Ntable = {
-200, //N_a !!!!!!DO NOT F!@#$ING DECREASE THIS NUMBER UNLESS YOU ARE ELISABETH AND HAVE ASKED TIM BEFORE!!!!
-5000, //N_k_lin
-5000, //N_k_nlin
+100, //N_a !!!!!!DO NOT F!@#$ING DECREASE THIS NUMBER UNLESS YOU ARE ELISABETH AND HAVE ASKED TIM BEFORE!!!!
+500, //N_k_lin
+500, //N_k_nlin
 200, //N_ell
 200, //N_theta
 2048, //N_theta for Hankel

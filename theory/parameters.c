@@ -48,7 +48,7 @@ void set_cov_parameters_to_(char *covparamfile, int output)
     iline++;
     if(line[0] == '#') continue;
 
-    sscanf(line, "%64s : %64s", name, val);
+    sscanf(line, "%128s : %128s", name, val);
     if(strcmp(name, "tmin")==0)
     {
       sscanf(val, "%lf", &covparams.tmin);
