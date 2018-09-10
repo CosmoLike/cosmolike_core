@@ -33,10 +33,7 @@ typedef struct {
   int SN;
   int GRS;
   int Aubourg_Planck_BAO_SN;
-  int SRD_SL_Y1;
-  int SRD_SL_Y10;
-  int SRD_SN_Y10;
-  int SRD_SN_Y1;
+  int SRD;
   char DATA_FILE[500];
   char INV_FILE[500]; 
   char COV_FILE[500]; 
@@ -52,7 +49,7 @@ typedef struct {
    int ks;
   char probes[500];
 }likepara;
-likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0,.SRD_SL_Y1=0,.SRD_SL_Y10=0,.SRD_SN_Y10=0,.SRD_SN_Y1=0};
+likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0,.SRD=0};
 
 typedef struct {
      double Omega_m;  /* matter density parameter                       */
