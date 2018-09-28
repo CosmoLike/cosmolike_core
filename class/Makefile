@@ -144,10 +144,13 @@ PYTHON_FILES = python/classy.pyx python/setup.py python/cclassy.pxd python/test_
 
 
 
-#all: libclass.a
-all: class
+all: libclass.a
+#all: class
 	
-libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
+# libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
+# 	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
+
+libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
 	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
 
 class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
