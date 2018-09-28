@@ -357,7 +357,7 @@ typedef struct input_nuisance_params {
     double lens_z_bias[10];
     double lens_z_s;
     double shear_m[10];
-    double  A_ia;
+    double A_ia;
     double beta_ia;
     double eta_ia;
     double eta_ia_highz;
