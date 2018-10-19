@@ -183,7 +183,7 @@ int recompute_galaxies(galpara G, int i){
 }
 
 int recompute_ggl(cosmopara C, galpara G, nuisancepara N, int i){
-  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_zphot_shear(N) || recompute_galaxies(G,i)){return 1;}
+  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_zphot_shear(N) || recompute_galaxies(G,i) ||recompute_IA(N) ){return 1;}
   else{return 0;}
 }
 
