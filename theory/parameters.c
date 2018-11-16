@@ -775,7 +775,6 @@ void set_survey_parameters_to_DES()
     sprintf(survey.name,"DES");
 }
 
-//check Chang 2013 for details
 void set_survey_parameters_to_LSST()
 {
   survey.area   = 18000.0;
