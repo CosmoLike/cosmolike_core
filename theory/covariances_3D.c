@@ -311,8 +311,8 @@ double tri_multih_cov(double k1, double k2, double a){
 double Delta_LD(double logk,void * params)
 {
   (void)(params);
-  return log(p_2h(exp(logk),1.0));
-//  return log(p_lin(exp(logk),1.0));
+//  return log(p_2h(exp(logk),1.0));
+  return log(Pdelta(exp(logk),0.999));
 }
 
 //linear dilation factor, cf. Eq. 27 in http://arxiv.org/pdf/1401.0385v2.pdf
