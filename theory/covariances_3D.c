@@ -352,7 +352,8 @@ double LD_term(double k)
 // as discussed in Chiang+14 (after Eq 4.32) http://arxiv.org/abs/1403.3411v2
 // the inclusion of the HSV on P2h is ambiguous, requires b2, and only leads to percent differences.
 double delP_SSC(double k, double a){
-  return (68./21.+LD_term(k))*p_2h(k,a)+ I12_SSC(k,a);
+  return (68./21.+LD_term(k))*Pdelta(k,a);
+//  return (68./21.+LD_term(k))*p_2h(k,a)+ I12_SSC(k,a);
 }
 
 
