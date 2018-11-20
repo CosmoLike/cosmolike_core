@@ -23,7 +23,7 @@ double cov_G_cl_shear_tomo(double l, double delta_l, int z1, int z2, int z3, int
 double cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int zl, int zs); //z1,z2 clustering bins; zl,zs g-g lensing bins
 double cov_G_cl_gl_tomo(double l, double delta_l, int z1, int z2, int zl, int zs);
 
-
+int cNG = 1;
 /************** shear x shear routines ***************/
 double inner_project_tri_cov_shear_shear_tomo(double a,void *params)
 {
@@ -34,7 +34,7 @@ double inner_project_tri_cov_shear_shear_tomo(double a,void *params)
   k2 = (ar[1]+0.5)/fK;
   weights = W_kappa(a,fK,ar[2])*W_kappa(a,fK,ar[3])*W_kappa(a,fK,ar[4])*W_kappa(a,fK,ar[5])*dchi_da(a);
   if (weights >0.){
-    res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+    if (cNG) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
     res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,ar[6])*pow(fK,-4.); //SSC
   }
   res *= weights;
@@ -85,7 +85,7 @@ double inner_project_tri_cov_gl_gl_tomo(double a,void *params)
   k2 = (ar[1]+0.5)/fK;
   weights = W_gal(a,ar[2])*W_kappa(a,fK,ar[3])*W_gal(a,ar[4])*W_kappa(a,fK,ar[5])*dchi_da(a);
   if (weights >0.){
-    res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+    if (cNG) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
     res +=(delP_SSC(k1,a)-bgal_a(a,ar[2])*Pdelta(k1,a))*(delP_SSC(k2,a)-bgal_a(a,ar[4])*Pdelta(k2,a))*survey_variance(a,ar[6])*pow(fK,-4.); //SSC
   }
   res *= weights;
@@ -137,7 +137,7 @@ double inner_project_tri_cov_cl_cl_tomo(double a,void *params)
   k2 = (ar[1]+0.5)/fK;
   weights = W_gal(a,ar[2])*W_gal(a,ar[3])*W_gal(a,ar[4])*W_gal(a, ar[5])*dchi_da(a);
   if (weights >0.){
-    res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+    if (cNG) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
     res += (delP_SSC(k1,a)-2.*bgal_a(a,ar[2])*Pdelta(k1,a))*(delP_SSC(k2,a)-2.*bgal_a(a,ar[4])*Pdelta(k2,a))*survey_variance(a,ar[6])*pow(fK,-4.); //SSC
   }
   res *= weights;
@@ -192,7 +192,7 @@ double inner_project_tri_cov_gl_shear_tomo(double a,void *params)
   k2 = (ar[1]+0.5)/fK;
   weights = W_gal(a, ar[2])*W_kappa(a,fK,ar[3])*W_kappa(a,fK,ar[4])*W_kappa(a,fK,ar[5])*dchi_da(a);
   if (weights >0.){
-    res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+    if (cNG) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
     res += (delP_SSC(k1,a)-bgal_a(a,ar[2])*Pdelta(k1,a))*(delP_SSC(k2,a))*survey_variance(a,ar[6])*pow(fK,-4.); //SSC
   }
   res *= weights;
@@ -236,7 +236,7 @@ double inner_project_tri_cov_cl_shear_tomo(double a,void *params)
   k2 = (ar[1]+0.5)/fK;
   weights = W_gal(a,ar[2])*W_gal(a, ar[3])*W_kappa(a,fK,ar[4])*W_kappa(a,fK,ar[5])*dchi_da(a);
   if (weights >0.){
-    res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+    if (cNG) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
     res += (delP_SSC(k1,a)-2.*bgal_a(a,ar[2])*Pdelta(k1,a))*(delP_SSC(k2,a))*survey_variance(a,ar[6])*pow(fK,-4.); //SSC
   }
   res *= weights;
@@ -281,7 +281,7 @@ double inner_project_tri_cov_cl_gl_tomo(double a,void *params)
   k2 = (ar[1]+0.5)/fK;
   weights = W_gal(a,ar[2])*W_gal(a,ar[3])*W_gal(a,ar[4])*W_kappa(a,fK,ar[5])*dchi_da(a);
   if (weights >0.){
-    res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+    if (cNG) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
     res += (delP_SSC(k1,a)-2.*bgal_a(a,ar[2])*Pdelta(k1,a))*(delP_SSC(k2,a)-bgal_a(a,ar[4])*Pdelta(k2,a))*survey_variance(a,ar[6])*pow(fK,-4.); //SSC
   }
   res *= weights;
