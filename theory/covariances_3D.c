@@ -311,8 +311,8 @@ double tri_multih_cov(double k1, double k2, double a){
 double Delta_LD(double logk,void * params)
 {
   (void)(params);
-  return log(p_2h(exp(logk),1.0));
-//  return log(p_lin(exp(logk),1.0));
+//  return log(p_2h(exp(logk),1.0));
+  return log(Pdelta(exp(logk),0.999));
 }
 
 //linear dilation factor, cf. Eq. 27 in http://arxiv.org/pdf/1401.0385v2.pdf
@@ -352,7 +352,8 @@ double LD_term(double k)
 // as discussed in Chiang+14 (after Eq 4.32) http://arxiv.org/abs/1403.3411v2
 // the inclusion of the HSV on P2h is ambiguous, requires b2, and only leads to percent differences.
 double delP_SSC(double k, double a){
-  return (68./21.+LD_term(k))*p_2h(k,a)+ I12_SSC(k,a);
+  return (68./21.+LD_term(k))*Pdelta(k,a);
+//  return (68./21.+LD_term(k))*p_2h(k,a)+ I12_SSC(k,a);
 }
 
 
