@@ -373,6 +373,7 @@ typedef struct {
     int ng;/* ng covariance? */
     char outdir[200]; /* output directory */
     char filename[200]; /* output file name prefix */
+    char C_FOOTPRINT_FILE[200]; /*angular power spectrum of survey footprint, in healpix format */
     char ss[8]; /* Calculate shear-shear components */
     char ls[8]; /* Calculate shear-position components */
     char ll[8]; /* Calculate position-position components */
