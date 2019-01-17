@@ -224,14 +224,14 @@ void set_clphotoz_priors_redmagic()
 void set_clphotoz_priors_source()
 {
   int i;
-  printf("Setting Gaussian clustering photo-z Priors redmagic\n");
+  printf("Setting Gaussian clustering photo-z Priors source sample\n");
   for (i=0;i<tomo.clustering_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
     prior.sigma_zphot_clustering[i][0]=nuisance.sigma_zphot_clustering[i];
     //rms width of Gaussian priors
-    prior.bias_zphot_clustering[i][1] = prior.bias_zphot_shear[i][1];
-    prior.sigma_zphot_clustering[i][1]= prior.sigma_zphot_shear[i][1];
+    prior.bias_zphot_clustering[i][1] = 0.002;
+    prior.sigma_zphot_clustering[i][1]= 0.002;
     printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
     printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }

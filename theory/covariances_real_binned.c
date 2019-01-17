@@ -453,8 +453,7 @@ double cov_G_shear_no_shot_noise_binned (double theta1_min,double theta1_max, do
   while (x2 <= x1){ //find first root of J0/4(l*theta1) with l > 1
     if (pm1==1) x2 = gsl_sf_bessel_zero_J0 (n)/t;
     if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/t;
-    //printf("%le %d\n",x2,n);
-    
+    //printf("%le %d\n",x2,n); 
     n++;
   }
   while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){
