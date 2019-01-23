@@ -255,6 +255,8 @@ typedef struct {
   double cluster_centering_alpha;
   double cluster_centering_sigma;
   double cluster_centering_M_pivot;
+  int N_cluster_MOR;
+  double cluster_MOR[10];
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
@@ -401,4 +403,5 @@ typedef struct{
    double sigma_z; // fractional accuracy
    double sigma_p; // in km/s
 } GRSpara_mt;
+
 
