@@ -11,11 +11,15 @@ double log_like_f_red();
 double do_matrix_mult_invcov(int n_param, double invcov[n_param][n_param], double param_diff[n_param]); //CH
 double log_L_Planck15_BAO_w0wa(); //CH
 double log_L_Planck15_BAO_H070p6_JLA_w0wa(); //CH
+double log_L_Planck18_BAO_Riess18_Pantheon_w0wa(); //CH
+double log_L_Planck18_BAO_w0wa(); //CH
+double log_L_Planck18_w0(); //CH
 
 double log_L_SRD_SN_Y1_RENEE();
 double log_L_SRD_SN_Y10_RENEE();
 double log_L_SRD_SL_Y1_TOM();
 double log_L_SRD_SL_Y10_TOM();
+double log_L_SRD_LSST_Y1_LSS();
 
 void set_ia_priors();
 void set_lin_bias_priors();
@@ -78,18 +82,40 @@ void set_ia_priors()
 
 void set_clusterMobs_priors()
 {
-  prior.cluster_Mobs_lgM0[0]=1.72+log(1.e+14*0.7);
-  prior.cluster_Mobs_alpha[0]=1.08;
-  prior.cluster_Mobs_beta[0]=0.0;
-  prior.cluster_Mobs_sigma[0]=0.25;
-    
-  prior.cluster_Mobs_lgM0[1]=1.0;
-  prior.cluster_Mobs_alpha[1]=0.2;
-  prior.cluster_Mobs_beta[1]=0.5;
-  prior.cluster_Mobs_sigma[1]=0.2;
+  if (strcmp(survey.name,"LSST_Y10")==0 || strcmp(survey.name,"LSST_Y1")==0 ){
+    // flat prior
+    prior.cluster_Mobs_lgN0[0]=0.5;
+    prior.cluster_Mobs_lgN0[1]=5.0;
 
-  prior.cluster_completeness[0] = 0.9;
-  prior.cluster_completeness[1] = 0.05;
+    prior.cluster_Mobs_alpha[0]=0.0;
+    prior.cluster_Mobs_alpha[1]=2.0;
+    
+    prior.cluster_Mobs_beta[0]=-1.5;
+    prior.cluster_Mobs_beta[1]=1.5;
+    
+    prior.cluster_Mobs_sigma0[0]=0.0;
+    prior.cluster_Mobs_sigma0[1]=1.5;
+    
+    prior.cluster_Mobs_sigma_qm[0] = -1.5;
+    prior.cluster_Mobs_sigma_qm[1] = 1.5;
+
+    prior.cluster_Mobs_sigma_qz[0] = -1.5;
+    prior.cluster_Mobs_sigma_qz[1] = 1.5;
+
+  } else {
+    prior.cluster_Mobs_lgM0[0]=1.72+log(1.e+14*0.7);
+    prior.cluster_Mobs_alpha[0]=1.08;
+    prior.cluster_Mobs_beta[0]=0.0;
+    prior.cluster_Mobs_sigma[0]=0.25;
+    
+    prior.cluster_Mobs_lgM0[1]=1.0;
+    prior.cluster_Mobs_alpha[1]=0.2;
+    prior.cluster_Mobs_beta[1]=0.5;
+    prior.cluster_Mobs_sigma[1]=0.2;
+
+    prior.cluster_completeness[0] = 0.9;
+    prior.cluster_completeness[1] = 0.05;
+  }
   
   like.clusterMobs=1;
 }
@@ -198,14 +224,31 @@ void set_clphotoz_priors_redmagic()
 void set_clphotoz_priors_source()
 {
   int i;
+  printf("Setting Gaussian clustering photo-z Priors source sample\n");
+  for (i=0;i<tomo.clustering_Nbin; i++){
+    // center of Gaussian priors
+    prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
+    prior.sigma_zphot_clustering[i][0]=nuisance.sigma_zphot_clustering[i];
+    //rms width of Gaussian priors
+    prior.bias_zphot_clustering[i][1] = 0.002;
+    prior.sigma_zphot_clustering[i][1]= 0.002;
+    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+  }
+  like.clphotoz=1;
+}
+
+void set_clphotoz_priors_LSST_gold()
+{
+  int i;
   printf("Setting Gaussian clustering photo-z Priors redmagic\n");
   for (i=0;i<tomo.clustering_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
     prior.sigma_zphot_clustering[i][0]=nuisance.sigma_zphot_clustering[i];
     //rms width of Gaussian priors
-    prior.bias_zphot_clustering[i][1] = prior.bias_zphot_shear[i][1];
-    prior.sigma_zphot_clustering[i][1]= prior.sigma_zphot_shear[i][1];
+    prior.bias_zphot_clustering[i][1] = 0.001;
+    prior.sigma_zphot_clustering[i][1]=0.002;
     printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
     printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }
@@ -301,72 +344,6 @@ double log_L_Planck_BAO_SN() // using the Planck 15 fid values and error bars as
   log_L-=(cosmology.wa - 0.0)*(cosmology.wa - 0.0)/(0.4*0.4);
  
  return 0.5*log_L;
- }
-
-
-
-double log_L_SRD_SN_Y1_RENEE() // computed from /Users/teifler/Dropbox/cosmolike_store/LSSTawakens/ReneeSNChains/lsst_y1_jan29_nostarts_varyM_oldomb_rand.txt
-{
-  double log_L = 0.;
-  double param_diff[4];
-  double inv[4][4]={{3940.35137279,69.42051156,1544.07371274,244.25923668},{69.42051156,522.32577011,34.54188944,5.84774166},{1544.07371274,34.54188944,780.03679699,97.48269041},{244.25923668, 5.84774166,97.48269041,16.40989848}};
-  
-  param_diff[0] = cosmology.Omega_m-0.3156; 
-  param_diff[1] = cosmology.h0-0.6727; 
-  param_diff[2] = cosmology.w0+1.0;  
-  param_diff[3] = cosmology.wa;
- 
-  log_L = -0.5*do_matrix_mult_invcov(4,inv,param_diff);
-  return log_L;
- }
-
-double log_L_SRD_SN_Y10_RENEE() // computed from /Users/teifler/Dropbox/cosmolike_store/LSSTawakens/ReneeSNChains/lsst_y10_jan29_nostarts_varyM_oldomb_rand.txt
-{
-  double log_L = 0.;
-  double param_diff[4];
-  double inv[4][4]={{6.32813379e+04,-4.25276739e+01,2.02706841e+04,3.16421634e+03},{-4.25276739e+01,7.41310668e+02,3.92967447e+01,-6.23173540e+00},{2.02706841e+04,3.92967447e+01,9.48464577e+03,1.06822586e+03},{3.16421634e+03,-6.23173540e+00,1.06822586e+03,1.70090519e+02}};
-
-  param_diff[0] = cosmology.Omega_m-0.3156; 
-  param_diff[1] = cosmology.h0-0.6727; 
-  param_diff[2] = cosmology.w0+1.0; 
-  param_diff[3] = cosmology.wa; 
-
-  log_L = -0.5*do_matrix_mult_invcov(4,inv, param_diff);
-  return log_L;
- }
-
-
-
-
-double log_L_SRD_SL_Y1_TOM() // computed from /Users/teifler/Dropbox/cosmolike_store/LSSTawakens/TomSLChains/SL_LSSTY1.txt
-{
-  double log_L = 0.;
-  double param_diff[4];
-  double inv[4][4]={{9.57953440e+01,1.90114212e+01,1.13561665e+00,2.33866782e+02},{1.90114212e+01,1.31631828e+01,-1.88534652e-02,1.45671419e+02},{1.13561665e+00,-1.88534652e-02,6.29296427e-01,-6.10433226e+00},{2.33866782e+02,1.45671419e+02,-6.10433226e+00,2.71769694e+03}};
-
-  param_diff[0] = cosmology.Omega_m-0.3156; 
-  param_diff[1] = cosmology.w0+1.0; 
-  param_diff[2] = cosmology.wa; 
-  param_diff[3] = cosmology.h0-0.6727; 
-  
-  log_L = -0.5*do_matrix_mult_invcov(4,inv, param_diff);
-  return log_L;
- }
-
-double log_L_SRD_SL_Y10_TOM() // computed from /Users/teifler/Dropbox/cosmolike_store/LSSTawakens/TomSLChains/SL_LSSTY10.txt
-{
-  double log_L = 0.;
-  double param_diff[4];
-  double inv[4][4]={{2.44407663e+02,1.31525702e+02,1.62494864e+01,1.03889766e+03},{1.31525702e+02,1.90748959e+02,8.03881315e+00,1.99392208e+03},{1.62494864e+01,8.03881315e+00,2.23917868e+00,-6.64709076e+00},{1.03889766e+03,1.99392208e+03,-6.64709076e+00,3.31389425e+04}};
-
-
-  param_diff[0] = cosmology.Omega_m-0.3156; 
-  param_diff[1] = cosmology.w0+1.0; 
-  param_diff[2] = cosmology.wa; 
-  param_diff[3] = cosmology.h0-0.6727; 
-  
-  log_L = -0.5*do_matrix_mult_invcov(4,inv, param_diff);
-  return log_L;
  }
 
 
@@ -472,7 +449,7 @@ double log_L_Planck15_BAO_w0wa()
   return 0.5*log_L;
 }
 
-//CH
+//CH 
 double log_L_Planck15_BAO_H070p6_JLA_w0wa()
 {
   double log_L = 0.;
@@ -530,6 +507,187 @@ double log_L_Planck15_BAO_H070p6_JLA_w0wa()
   param_diff[4] = cosmology.wa-param_fid[4];
   param_diff[5] = cosmology.omb-param_fid[5];
   param_diff[6] = cosmology.h0-param_fid[6];
+  
+  log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
+
+  return log_L;
+}
+
+//CH 2018/07/17
+double log_L_Planck18_BAO_Riess18_Pantheon_w0wa()
+{
+  double log_L = 0.;
+  int n_param = 7;
+  double param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+  int c, r;
+  table[0][0] = 4.30741e+06;
+  table[0][1] = -6.29653e+05;
+  table[0][2] = 2.30239e+05;
+  table[0][3] = 2.40526e+05;
+  table[0][4] = 5.75393e+04;
+  table[0][5] = -1.09309e+07;
+  table[0][6] = 3.63645e+06;
+  table[1][1] = 1.84962e+05;
+  table[1][2] = -4.30980e+04;
+  table[1][3] = 9.10127e+03;
+  table[1][4] = 3.25867e+03;
+  table[1][5] = 1.38575e+06;
+  table[1][6] = -4.94260e+05;
+  table[2][2] = 1.26977e+05;
+  table[2][3] = -7.56824e+03;
+  table[2][4] = -2.11814e+03;
+  table[2][5] = -4.02713e+05;
+  table[2][6] = 1.58351e+05;
+  table[3][3] = 4.14100e+04;
+  table[3][4] = 1.04261e+04;
+  table[3][5] = -9.36525e+05;
+  table[3][6] = 2.14609e+05;
+  table[4][4] = 2.64176e+03;
+  table[4][5] = -2.28031e+05;
+  table[4][6] = 5.15943e+04;
+  table[5][5] = 4.94180e+07;
+  table[5][6] = -7.29198e+06;
+  table[6][6] = 3.34690e+06;
+  param_fid[0] = 2.97717e-01;
+  param_fid[1] = 8.33421e-01;
+  param_fid[2] = 9.64631e-01;
+  param_fid[3] = -9.99383e-01;
+  param_fid[4] = -2.88583e-01;
+  param_fid[5] = 4.64837e-02;
+  param_fid[6] = 6.93855e-01;
+
+  for (c = 0; c < n_param; c++) {
+    for (r = c + 1; r < n_param; r++) {
+      table[r][c] = table[c][r];
+    }
+  }
+
+  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
+  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
+  param_diff[2] = cosmology.n_spec-param_fid[2]; 
+  param_diff[3] = cosmology.w0-param_fid[3]; 
+  param_diff[4] = cosmology.wa-param_fid[4];
+  param_diff[5] = cosmology.omb-param_fid[5];
+  param_diff[6] = cosmology.h0-param_fid[6];
+  
+  log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
+
+  return log_L;
+}
+
+//CH 2018/07/17
+double log_L_Planck18_BAO_w0wa()
+{
+  double log_L = 0.;
+  int n_param = 7;
+  double param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+  int c, r;
+  table[0][0] = 6.78890e+05;
+  table[0][1] = -1.57721e+05;
+  table[0][2] = 5.15938e+04;
+  table[0][3] = 4.25312e+04;
+  table[0][4] = 9.74958e+03;
+  table[0][5] = -3.57564e+06;
+  table[0][6] = 4.44898e+05;
+  table[1][1] = 1.12864e+05;
+  table[1][2] = -1.19553e+04;
+  table[1][3] = 2.29815e+04;
+  table[1][4] = 6.07805e+03;
+  table[1][5] = 6.20572e+05;
+  table[1][6] = -8.00370e+04;
+  table[2][2] = 1.12060e+05;
+  table[2][3] = -1.19553e+04;
+  table[2][4] = -2.96474e+03;
+  table[2][5] = -1.18012e+05;
+  table[2][6] = -1.70556e+03;
+  table[3][3] = 2.30273e+04;
+  table[3][4] = 5.65183e+03;
+  table[3][5] = -4.46117e+05;
+  table[3][6] = 4.30261e+04;
+  table[4][4] = 1.39546e+03;
+  table[4][5] = -1.05193e+05;
+  table[4][6] = 9.95900e+03;
+  table[5][5] = 2.75140e+07;
+  table[5][6] = -1.65229e+06;
+  table[6][6] = 4.48558e+05;
+  param_fid[0] = 3.41667e-01;
+  param_fid[1] = 7.95474e-01;
+  param_fid[2] = 9.64545e-01;
+  param_fid[3] = -5.77797e-01;
+  param_fid[4] = -1.31630e+00;
+  param_fid[5] = 5.33105e-02;
+  param_fid[6] = 6.48927e-01;
+
+  for (c = 0; c < n_param; c++) {
+    for (r = c + 1; r < n_param; r++) {
+      table[r][c] = table[c][r];
+    }
+  }
+
+  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
+  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
+  param_diff[2] = cosmology.n_spec-param_fid[2]; 
+  param_diff[3] = cosmology.w0-param_fid[3]; 
+  param_diff[4] = cosmology.wa-param_fid[4];
+  param_diff[5] = cosmology.omb-param_fid[5];
+  param_diff[6] = cosmology.h0-param_fid[6];
+  
+  log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
+
+  return log_L;
+}
+
+//CH 2018/07/17
+double log_L_Planck18_w0()
+{
+  double log_L = 0.;
+  int n_param = 6;
+  double param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+  int c, r;
+  //var_derived: ['omegam', 'sigma8', 'ns', 'w', 'omegab', 'h0']
+  table[0][0] = 2.96336e+06;
+  table[0][1] = -3.29741e+05;
+  table[0][2] = 1.05809e+05;
+  table[0][3] = 2.71328e+05;
+  table[0][4] = -9.32882e+06;
+  table[0][5] = 2.53296e+06;
+  table[1][1] = 1.70713e+05;
+  table[1][2] = -3.67360e+04;
+  table[1][3] = 4.38186e+04;
+  table[1][4] = 6.95686e+05;
+  table[1][5] = -2.09522e+05;
+  table[2][2] = 1.20693e+05;
+  table[2][3] = -2.22763e+04;
+  table[2][4] = -7.31831e+04;
+  table[2][5] = 4.37545e+04;
+  table[3][3] = 7.39254e+04;
+  table[3][4] = -1.27156e+06;
+  table[3][5] = 2.69293e+05;
+  table[4][4] = 4.79954e+07;
+  table[4][5] = -6.50670e+06;
+  table[5][5] = 2.42902e+06;
+  param_fid[0] = 3.03785e-01;
+  param_fid[1] = 8.22263e-01;
+  param_fid[2] = 9.65449e-01;
+  param_fid[3] = -1.04080e+00;
+  param_fid[4] = 4.75908e-02;
+  param_fid[5] = 6.86273e-01;
+
+  for (c = 0; c < n_param; c++) {
+    for (r = c + 1; r < n_param; r++) {
+      table[r][c] = table[c][r];
+    }
+  }
+
+  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
+  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
+  param_diff[2] = cosmology.n_spec-param_fid[2]; 
+  param_diff[3] = cosmology.w0-param_fid[3]; 
+  param_diff[4] = cosmology.omb-param_fid[4];
+  param_diff[5] = cosmology.h0-param_fid[5];
   
   log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
 
@@ -595,16 +753,19 @@ double log_L_shear_calib()
 
 double log_L_clusterMobs()
 {
-  int i;
   double log_L = 0.; 
-  log_L -=  pow((nuisance.cluster_Mobs_lgM0 - prior.cluster_Mobs_lgM0[0])/ prior.cluster_Mobs_lgM0[1],2.0);
-  log_L -=  pow((nuisance.cluster_Mobs_alpha - prior.cluster_Mobs_alpha[0])/ prior.cluster_Mobs_alpha[1],2.0);
-  log_L -=  pow((nuisance.cluster_Mobs_beta - prior.cluster_Mobs_beta[0])/ prior.cluster_Mobs_beta[1],2.0);
-  log_L -=  pow((nuisance.cluster_Mobs_sigma - prior.cluster_Mobs_sigma[0])/ prior.cluster_Mobs_sigma[1],2.0);
-  for (i=0;i<4; i++){
-  log_L -=  pow((nuisance.cluster_completeness[i] - prior.cluster_completeness[0])/ prior.cluster_completeness[1],2.0);
-  }  
-  return 0.5*log_L;
+  if (strcmp(Cluster.model, "default")==0){
+    int i;
+    log_L -=  pow((nuisance.cluster_Mobs_lgM0 - prior.cluster_Mobs_lgM0[0])/ prior.cluster_Mobs_lgM0[1],2.0);
+    log_L -=  pow((nuisance.cluster_Mobs_alpha - prior.cluster_Mobs_alpha[0])/ prior.cluster_Mobs_alpha[1],2.0);
+    log_L -=  pow((nuisance.cluster_Mobs_beta - prior.cluster_Mobs_beta[0])/ prior.cluster_Mobs_beta[1],2.0);
+    log_L -=  pow((nuisance.cluster_Mobs_sigma - prior.cluster_Mobs_sigma[0])/ prior.cluster_Mobs_sigma[1],2.0);
+    for (i=0;i<4; i++){
+      log_L -=  pow((nuisance.cluster_completeness[i] - prior.cluster_completeness[0])/ prior.cluster_completeness[1],2.0);
+    }
+    log_L = 0.5*log_L;
+  }
+  return log_L;
 }
 
 

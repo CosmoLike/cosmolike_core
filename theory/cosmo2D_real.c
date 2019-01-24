@@ -48,7 +48,7 @@ double w_tomo_exact(int nt, int ni, int nj){
     char Pl_file[200];
     char Pl_file2[200];
     sprintf(Pl_file,"./aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
-    sprintf(Pl_file2,"/home/teifler/Dropbox/cosmolike/top-level/des_mpp/aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
+ //   sprintf(Pl_file2,"/home/teifler/Dropbox/cosmolike/top-level/des_mpp/aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
     FILE *f;
     if ((f = fopen(Pl_file, "r"))){
     	printf("reading Legendre coefficients from file %s\n",Pl_file);
@@ -62,7 +62,7 @@ double w_tomo_exact(int nt, int ni, int nj){
     }
     // quick hack to make this work at JPL clusters
     //TO DO: PROPER PATH HANDLING
-    else if ((f = fopen(Pl_file2, "r"))){
+/*    else if ((f = fopen(Pl_file2, "r"))){
       printf("reading Legendre coefficients from file %s\n",Pl_file2);
       for (i =0; i < NTHETA; i++){
         for (int l = 0; l < LMAX; l++){
@@ -71,7 +71,7 @@ double w_tomo_exact(int nt, int ni, int nj){
         }
       }
       fclose(f);
-    }
+    } */
     else{
     	for (i = 0; i<NTHETA; i ++){
       		printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);

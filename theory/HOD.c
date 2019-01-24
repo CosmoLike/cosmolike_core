@@ -5,6 +5,9 @@ double b1_per_bin_pass_evolv(double z, int ni); //model b1 using one parameter p
 double b1_growth_scaling(double z, int ni); //model b1 assuming b1(z) = b_{1,0}*G(z)
 double bgal_z(double z, int ni); //bias evolution within redshift bin, used by clustering/G-G-lensing routines without HOD modeling
 
+double b2_from_b1(double b1); //fitting function for b_2(b_1)
+double bs2_from_b1(double b1); //theory prediction for b_s2(b_1)
+
 /* HOD model routines */
 double n_c(double mh, double a, int nz); //central galaxy occupation as a function of halo mass (in Msun/h) in bin nz at scale factor a
 double n_s(double mh, double a, int nz); //satellite galaxy occupation function
@@ -27,6 +30,16 @@ void set_HOD(int n); //set HOD parameters
 
 
 /*********************** galaxy bias & HOD routines *********************************/
+//fitting formula from Lazeyras et al. 2016 (Eq. 5.2)
+//https://arxiv.org/abs/1511.01096
+double b2_from_b1(double b1){
+  return -0.407-0.650*b1+0.135*b1*b1+0.133*b1*b1*b1;
+}
+//e.g. https://arxiv.org/pdf/1405.1447v4.pdf
+double bs2_from_b1 (double b1){
+  return -4./7.*(b1-1.0);
+}
+
 double b1_per_bin_evolv(double z, int ni){
   return gbias.b[ni]*pow((1.+z)/(1.+zmean(ni)),1.0);
 }

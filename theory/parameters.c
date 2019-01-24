@@ -48,7 +48,7 @@ void set_cov_parameters_to_(char *covparamfile, int output)
     iline++;
     if(line[0] == '#') continue;
 
-    sscanf(line, "%64s : %64s", name, val);
+    sscanf(line, "%128s : %128s", name, val);
     if(strcmp(name, "tmin")==0)
     {
       sscanf(val, "%lf", &covparams.tmin);
@@ -93,6 +93,24 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       if(output==1)
       {
         printf("outdir %s \n",covparams.outdir);
+      }
+      continue;
+    }
+    else if(strcmp(name, "C_FOOTPRINT_FILE")==0)
+    {
+      sprintf(covparams.C_FOOTPRINT_FILE,"%s",val);
+      if(output==1)
+      {
+        printf("C_FOOTPRINT_FILE %s \n",covparams.C_FOOTPRINT_FILE);
+      }
+      continue;
+    }
+    else if(strcmp(name, "c_footprint_file")==0)
+    {
+      sprintf(covparams.C_FOOTPRINT_FILE,"%s",val);
+      if(output==1)
+      {
+        printf("C_FOOTPRINT_FILE %s \n",covparams.C_FOOTPRINT_FILE);
       }
       continue;
     }
@@ -775,7 +793,6 @@ void set_survey_parameters_to_DES()
     sprintf(survey.name,"DES");
 }
 
-//check Chang 2013 for details
 void set_survey_parameters_to_LSST()
 {
   survey.area   = 18000.0;
@@ -783,7 +800,7 @@ void set_survey_parameters_to_LSST()
   survey.sigma_e   = 0.37;  
   survey.area_conversion_factor = 60.0*60.0*constants.arcmin*constants.arcmin;
   survey.n_gal_conversion_factor=1.0/constants.arcmin/constants.arcmin;
-  survey.m_lim=27.0;
+  survey.m_lim=24.5;
   sprintf(survey.name,"LSST");
 }
 
@@ -796,7 +813,7 @@ void set_survey_parameters_to_HSC()
   survey.sigma_e = 0.22*sqrt(2.0); // "0.22 is RMS shear per component"
   survey.area_conversion_factor = 60.0*60.0*constants.arcmin*constants.arcmin;
   survey.n_gal_conversion_factor = 1.0/constants.arcmin/constants.arcmin;
-  survey.m_lim = 25.0;  // the photo-z errors depend on the choice for this number
+  survey.m_lim = 24.5;  // the photo-z errors depend on the choice for this number
   sprintf(survey.name,"HSC");
 }
 

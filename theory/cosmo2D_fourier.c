@@ -247,8 +247,8 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
         l2 = j*tomo.clustering_Nbin + k;
         llog = logsmin;
         for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
-          res = C_cl_tomo_nointerp(exp(llog),k,j);
-        //  if (res < 0){printf("negative clustering power spectrum C_cl(%e,%d)- error\n", exp(llog),k); res =0.;}
+          //res = C_cl_tomo_nointerp(exp(llog),k,j);
+          //if (res < 0){printf("negative clustering power spectrum C_cl(%e,%d)- error\n", exp(llog),k); res =0.;}
           table[l1][i]= log(C_cl_tomo_nointerp(exp(llog),k,j));
           table[l2][i]=table[l1][i];
         }

@@ -27,8 +27,10 @@ double int_I04_mmcm (double lgM, void *para){
   double u,x1,x2, c, m = exp(lgM), a= array[0];
   c = conc(m,a);
   u = pow(u_nfw_c(c,array[3],m,a),2.0)*u_nfw_c(c,array[4],m,a);
-  x1 = (lgM_obs(Cluster.N_min[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],a));
-  x2 = (lgM_obs(Cluster.N_max[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],a));
+  // x1 = (lgM_obs(Cluster.N_min[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],a));
+  // x2 = (lgM_obs(Cluster.N_max[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],a));
+  x1 = Mobs_x(Cluster.N_min[(int)array[1]], lgM, a);
+  x2 = Mobs_x(Cluster.N_max[(int)array[1]], lgM, a);
   return massfunc(m,a)*m*pow(m/(cosmology.rho_crit*cosmology.Omega_m),3.0)*u*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
 }
 
@@ -37,8 +39,10 @@ double int_I04_cmcm (double lgM, void *para){
   double u,x1,x2, c, m = exp(lgM), a= array[0];
   c = conc(m,a);
   u = u_nfw_c(c,array[3],m,a)*u_nfw_c(c,array[4],m,a);
-  x1 = (lgM_obs(Cluster.N_min[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],a));
-  x2 = (lgM_obs(Cluster.N_max[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],a));
+  // x1 = (lgM_obs(Cluster.N_min[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],a));
+  // x2 = (lgM_obs(Cluster.N_max[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],a));
+  x1 = Mobs_x(Cluster.N_min[(int)array[1]], lgM, a);
+  x2 = Mobs_x(Cluster.N_max[(int)array[1]], lgM, a);
   return massfunc(m,a)*m*pow(m/(cosmology.rho_crit*cosmology.Omega_m),2.0)*u*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
 }
 double tri_1h_cmcm (double k1, double k2, double a,int nzc,int nN1, int nN2){//cmcm 1-halo term
@@ -66,8 +70,10 @@ double int_I12_cm (double lgM, void *para){
   double x1,x2,m,a,u_m;
   double *array = (double *) para;
   m = exp(lgM); a = array[0];
-  x1 = (lgM_obs(Cluster.N_min[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],a));
-  x2 = (lgM_obs(Cluster.N_max[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],a));
+  // x1 = (lgM_obs(Cluster.N_min[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_min[(int)array[1]],a));
+  // x2 = (lgM_obs(Cluster.N_max[(int)array[1]],a)-lgM)/(sqrt(2.0)*scatter_lgM_obs(Cluster.N_max[(int)array[1]],a));
+  x1 = Mobs_x(Cluster.N_min[(int)array[1]], lgM, a);
+  x2 = Mobs_x(Cluster.N_max[(int)array[1]], lgM, a);
   u_m = m/(cosmology.rho_crit*cosmology.Omega_m)*u_nfw_c(conc(m,a),array[2],m,a); //density profile
   return m*massfunc(m,a)*B1(m,a)*u_m*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1))*P_cm_offcentering(array[2],m,a);
 }

@@ -21,19 +21,19 @@ typedef struct {
   int shearcalib;
   int clusterMobs;
   int Planck;
-  int Planck15_BAO_w0wa; //CH
-  int Planck15_BAO_H070p6_JLA_w0wa;
   int Planck15;
+  int Planck15_BAO_w0wa; //CH
+  int Planck15_BAO_H070p6_JLA_w0wa; //CH
+  int Planck18_BAO_Riess18_Pantheon_w0wa; //CH
+  int Planck18_BAO_w0wa; //CH
+  int Planck18_w0; //CH
   int BOSS_Chuang;
   int H0_Efstathiou14;
   int BAO;
   int SN;
   int GRS;
   int Aubourg_Planck_BAO_SN;
-  int SRD_SL_Y1;
-  int SRD_SL_Y10;
-  int SRD_SN_Y10;
-  int SRD_SN_Y1;
+  int SRD;
   char DATA_FILE[500];
   char INV_FILE[500]; 
   char COV_FILE[500]; 
@@ -49,7 +49,7 @@ typedef struct {
    int ks;
   char probes[500];
 }likepara;
-likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0,.SRD_SL_Y1=0,.SRD_SL_Y10=0,.SRD_SN_Y10=0,.SRD_SN_Y1=0};
+likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0,.SRD=0};
 
 typedef struct {
      double Omega_m;  /* matter density parameter                       */
@@ -255,6 +255,8 @@ typedef struct {
   double cluster_centering_alpha;
   double cluster_centering_sigma;
   double cluster_centering_M_pivot;
+  int N_cluster_MOR;
+  double cluster_MOR[10];
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
@@ -357,7 +359,7 @@ typedef struct input_nuisance_params {
     double lens_z_bias[10];
     double lens_z_s;
     double shear_m[10];
-    double  A_ia;
+    double A_ia;
     double beta_ia;
     double eta_ia;
     double eta_ia_highz;
@@ -373,6 +375,7 @@ typedef struct {
     int ng;/* ng covariance? */
     char outdir[200]; /* output directory */
     char filename[200]; /* output file name prefix */
+    char C_FOOTPRINT_FILE[200]; /*angular power spectrum of survey footprint, in healpix format */
     char ss[8]; /* Calculate shear-shear components */
     char ls[8]; /* Calculate shear-position components */
     char ll[8]; /* Calculate position-position components */

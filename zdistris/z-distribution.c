@@ -639,7 +639,7 @@ void multi_zdistricalc()
   char filename[200];
   
   double z0[4]={0.28,0.26,0.13,0.11};
-  alpha=1.;
+  alpha=2.;
   double beta[4]={0.9,0.94,0.78,0.68};
   redshiftclustering.histogram_zbins=0;
   
@@ -656,7 +656,7 @@ void multi_zdistricalc()
     
     for(i=0;i<Nstep;i++){
       z=0.0+(i+0.5)*dz;
-      res=pf_LSST(z);
+      res=pf(z);
       fprintf(F,"%le %le %le %le\n",0.0+i*dz,z,0.0+(i+1)*dz,res);   
     }
     fclose(F);
