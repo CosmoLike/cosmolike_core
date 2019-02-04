@@ -683,6 +683,9 @@ double cov_G_cl_cl_real_binned(double thetamin_i, double thetamax_i,double theta
   if (z1 ==z3 && z2 ==z4 && fabs(thetamin_i-thetamin_j)<1.e-7){
     N = 1./(M_PI*(pow(thetamax_i,2.)-pow(thetamin_i,2.0))*nlens(z1)*nlens(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor); //(number of galaxy pairs in the survey contributing to annulus of width Dtheta centered at theta1)^-1
   }
+  if (z1 ==z4 && z2 ==z3 && fabs(thetamin_i-thetamin_j)<1.e-7){
+    N += 1./(M_PI*(pow(thetamax_i,2.)-pow(thetamin_i,2.0))*nlens(z1)*nlens(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor); //(number of galaxy pairs in the survey contributing to annulus of width Dtheta centered at theta1)^-1
+  }
   if (N){
     N /= w_mask(thetamin_i);
   }
