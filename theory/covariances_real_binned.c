@@ -66,6 +66,7 @@ double w_mask(double theta_min){
   }
   if (w_vec ==0){
     w_vec = create_double_vector(0,like.Ntheta-1);
+    NTHETA = like.Ntheta;
     FILE *F1;
     F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
     if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
@@ -82,14 +83,12 @@ double w_mask(double theta_min){
       }
       fclose(F1);
 
-      NTHETA = like.Ntheta;
       printf("\nTabulating w_mask(theta) from mask power spectrum %s\n",covparams.C_FOOTPRINT_FILE);
       for (i = 0; i < NTHETA; i++){
         w_vec[i] =0.;
         for (l = 0; l < lbins; l++){
           w_vec[i]+=Cl[l]*(2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
         }
-        printf("w_mask[%d] = %e\n",i, w_vec[i]);
       }
       free_double_vector(Cl,0,lbins-1);
     }
@@ -97,6 +96,7 @@ double w_mask(double theta_min){
       printf("covparams.C_FOOTPRINT_FILE = %s not found\nNo boundary effect correction applied\n",covparams.C_FOOTPRINT_FILE);
       for (i = 0; i<NTHETA; i ++){
         w_vec[i] = 1.0;
+        printf("w_mask[%d] = %e\n",i, w_vec[i]);
       }      
     }
   }
