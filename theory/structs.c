@@ -374,6 +374,9 @@ typedef struct {
     double tmin; /* Theta min (arcmin) */
     double tmax; /* Theta max (arcmin) */
     int ntheta;/* number of theta bins */
+    double lmin; /* ell min  */
+    double lmax; /* ell max  */
+    int ncl;/* number of ell bins */
     int ng;/* ng covariance? */
     char outdir[200]; /* output directory */
     char filename[200]; /* output file name prefix */
