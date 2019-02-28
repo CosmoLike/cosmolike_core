@@ -87,6 +87,7 @@ typedef struct {
   int cluster_Nbin; // number of cluster redshift bins
   double cluster_zmax[10];
   double cluster_zmin[10];
+  int cluster_cg_Npowerspectra;// number of cluster-lensing tomography combinations
   int cgl_Npowerspectra;// number of cluster-lensing tomography combinations
   int ggl_Npowerspectra;// number of ggl tomography combinations
   int magnification_Nbin; // number of tomography bins

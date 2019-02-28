@@ -93,13 +93,18 @@ double n_s(double mh, double a, int nz){
 	if (ns >0){return ns;}
 	else {return 1.e-15;}
 }
-
+double f_c(int nz){
+  if (gbias.hod[nz][5]){
+    return gbias.hod[nz][5];
+  }
+  return 1.0;
+}
 /****  derived HOD quantities *****/
 
 double int_bgal (double m, void *params){
 	double *array  = (double*) params;
 	double a= array[0];
-	return massfunc(exp(m),a)*B1(exp(m),a)*(n_c(exp(m), a, (int) array[1])+n_s(exp(m),a, (int) array[1]))*exp(m);
+	return massfunc(exp(m),a)*B1(exp(m),a)*(f_c((int) array[1])*n_c(exp(m), a, (int) array[1])+n_s(exp(m),a, (int) array[1]))*exp(m);
 }
 double int_fsat (double m, void *params){
 	double *array  = (double*) params;
@@ -109,12 +114,12 @@ double int_fsat (double m, void *params){
 double int_ngal (double m, void *params){
 	double *array  = (double*) params;
 	double a= array[0];
-	return massfunc(exp(m),a)*(n_c(exp(m),a, (int) array[1])+n_s(exp(m), a,(int) array[1]))*exp(m);
+	return massfunc(exp(m),a)*(f_c((int) array[1])*n_c(exp(m),a, (int) array[1])+n_s(exp(m), a,(int) array[1]))*exp(m);
 }
 double int_mmean (double m, void *params){
 	double *array  = (double*) params;
 	double a= array[0];
-	return massfunc(exp(m),a)*(n_c(exp(m),a, (int) array[1])+n_s(exp(m),a, (int) array[1]))*exp(m)*exp(m);
+	return massfunc(exp(m),a)*(f_c((int) array[1])*n_c(exp(m),a, (int) array[1])+n_s(exp(m),a, (int) array[1]))*exp(m)*exp(m);
 }
 double ngal(int nz,double a){
   static cosmopara C;
@@ -214,7 +219,7 @@ double int_for_G02 (double logm, void *para){
 	int nz = (int) array[2];
 	u = u_g(k,m,a,nz);
 	ns = n_s(m,a,nz);
-	return massfunc(m,a)*m*(u*u*ns*ns+2.*u*ns*n_c(m,a,nz));
+	return massfunc(m,a)*m*(u*u*ns*ns+2.*u*ns*n_c(m,a,nz)*f_c(nz));
 }
 
 double G02 (double k, double a, int nz){//needs to be devided by ngal(nz, a)^2
@@ -227,7 +232,7 @@ double int_GM02 (double logm, void *para){
 	double m = exp(logm);
 	double k = array[0],a = array[1];
 	int nz = (int) array[2];
-	return massfunc(m,a)*m*m/(cosmology.rho_crit*cosmology.Omega_m)*u_nfw_c(conc(m,a),k,m,a)*(u_g(k,m,a,nz)*n_s(m,a,nz)+n_c(m,a,nz));//u_nfw_c(conc(m,a),k,m,a)
+	return massfunc(m,a)*m*m/(cosmology.rho_crit*cosmology.Omega_m)*u_nfw_c(conc(m,a),k,m,a)*(u_g(k,m,a,nz)*n_s(m,a,nz)+n_c(m,a,nz)*f_c(nz));//u_nfw_c(conc(m,a),k,m,a)
 }
 
 double GM02 (double k, double a, int nz){//needs to be devided by ngal(nz, a)
@@ -240,7 +245,7 @@ double int_G11 (double logm, void *para){
 	double u, m = exp(logm),k = array[0],a = array[1];
   int nz = (int) array[2];
 	u = u_g(k,m,a,nz);
-	return m*massfunc(m,a)*(u*n_s(m,a,nz)+n_c(m,a,nz))*B1(m,a);
+	return m*massfunc(m,a)*(u*n_s(m,a,nz)+n_c(m,a,nz)*f_c(nz))*B1(m,a);
 }
 double G11 (double k, double a, int nz){ //needs to be devided by ngal(nz, a)
 	double array[3]  ={k,a, (double) nz};
@@ -260,7 +265,8 @@ void set_HOD(int n){ //n >=0: set HOD parameters in redshift bin n; n = -1: unse
   double z = zmean(n);
   /*set HOD parameters, parameterization of Zehavi et al. */
   /*these example values from Coupon et al. 2012 for red galaxies with M_r < -21.8 (Table B.2)
-   hod[zi][] ={lg(M_min), sigma_{lg M}, lg M_1, lg M_0, alpha, f_g} (shift of concentration parameter: c_g(M) = f_g c(M))*/
+   hod[zi][] ={lg(M_min), sigma_{lg M}, lg M_1, lg M_0, alpha, f_c}
+   gbias.cg[] ={f_g} (shift of concentration parameter: c_g(M) = f_g c(M))*/
   switch (n)
   {
     case -1:
