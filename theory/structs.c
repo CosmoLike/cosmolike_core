@@ -354,6 +354,16 @@ typedef struct input_nuisance_params_mpp {
     double  MOR[10];
 } input_nuisance_params_mpp;
 
+typedef struct input_HOD_params {
+    double lgMmin[10];
+    double sigma_lgMin;
+    double lgM1;
+    double lgM0;
+    double alpha;
+    double f_c;
+    double c_g;
+} input_HOD_params;
+
 typedef struct input_nuisance_params {
     double bias[10];
     double source_z_bias[10];

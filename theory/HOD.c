@@ -136,14 +136,14 @@ double ngal(int nz,double a){
   if (recompute_cosmo3D(C) || recompute_galaxies(G,nz))
     {
     if (table==0) {
-      table   = create_double_matrix(0, tomo.clustering_Nbin-1, 0, Ntable.N_a-1);
-      da = (1./(redshift.clustering_zdistrpar_zmin+1.)-1./(redshift.clustering_zdistrpar_zmax+1.))/(Ntable.N_a-1);
+      table   = create_double_matrix(0, tomo.clustering_Nbin-1, 0, Ntable.N_a_halo-1);
+      da = (1./(redshift.clustering_zdistrpar_zmin+1.)-1./(redshift.clustering_zdistrpar_zmax+1.))/(Ntable.N_a_halo-1);
     }
     
     for (j=0;j<=tomo.clustering_Nbin-1;j++) {
       array[1]=(double) j;
       aa = 1./(redshift.clustering_zdistrpar_zmax+1.);
-      for (i=0;i<Ntable.N_a;i++,aa+=da) {
+      for (i=0;i<Ntable.N_a_halo;i++,aa+=da) {
         if (aa >= 1./(1+tomo.clustering_zmax[j])-da && aa <=1./(1+tomo.clustering_zmin[j])+da){
           array[0] = aa;
           table[j][i] = int_gsl_integrate_medium_precision(int_ngal, (void*)array, log(10.)*(gbias.hod[nz][0]-2.),log(limits.M_max),NULL, 5000);
@@ -153,7 +153,7 @@ double ngal(int nz,double a){
     update_cosmopara(&C); update_galpara(&G);
     }
   if (a<1./(redshift.clustering_zdistrpar_zmax+1.) || nz >= tomo.clustering_Nbin) return 0.0;
-  return interpol(table[nz], Ntable.N_a, 1./(redshift.clustering_zdistrpar_zmax+1.), 1./(redshift.clustering_zdistrpar_zmin+1.), da, a, 1.0, 1.0);
+  return interpol(table[nz], Ntable.N_a_halo, 1./(redshift.clustering_zdistrpar_zmax+1.), 1./(redshift.clustering_zdistrpar_zmin+1.), da, a, 1.0, 1.0);
 }
 double bgal(int nz,double a){
   static cosmopara C;
@@ -170,24 +170,24 @@ double bgal(int nz,double a){
   if (recompute_cosmo3D(C) || recompute_galaxies(G,nz))
     {
     if (table==0) {
-      table   = create_double_matrix(0, tomo.clustering_Nbin-1, 0, Ntable.N_a-1);
-      da = (1./(redshift.clustering_zdistrpar_zmin+1.)-1./(redshift.clustering_zdistrpar_zmax+1.))/(Ntable.N_a-1);
+      table   = create_double_matrix(0, tomo.clustering_Nbin-1, 0, Ntable.N_a_halo-1);
+      da = (1./(redshift.clustering_zdistrpar_zmin+1.)-1./(redshift.clustering_zdistrpar_zmax+1.))/(Ntable.N_a_halo-1);
     }
     
     for (j=0;j<=tomo.clustering_Nbin-1;j++) {
       array[1]=(double) j;
       aa = 1./(redshift.clustering_zdistrpar_zmax+1.);
-      for (i=0;i<Ntable.N_a;i++,aa+=da) {
-//        if (aa >= 1./(1+tomo.clustering_zmax[j])-2.*da && aa <=1./(1+tomo.clustering_zmin[j])+2.*da){
+      for (i=0;i<Ntable.N_a_halo;i++,aa+=da) {
+        if (aa >= 1./(1+tomo.clustering_zmax[j])-2.*da && aa <=1./(1+tomo.clustering_zmin[j])+2.*da){
           array[0] = aa;
           table[j][i] = int_gsl_integrate_medium_precision(int_bgal, (void*)array, log(10.)*(gbias.hod[nz][0]-2.),log(limits.M_max),NULL, 5000)/int_gsl_integrate_medium_precision(int_ngal, (void*)array, log(10.)*(gbias.hod[nz][0]-2.),log(limits.M_max),NULL, 5000);
- //       }
+        }
       }
     }
     update_cosmopara(&C); update_galpara(&G);
     }
   if (a<1./(redshift.clustering_zdistrpar_zmax+1.) || nz >= tomo.clustering_Nbin) return 0.0;
-  return interpol(table[nz], Ntable.N_a, 1./(redshift.clustering_zdistrpar_zmax+1.), 1./(redshift.clustering_zdistrpar_zmin+1.), da, a, 1.0, 1.0);
+  return interpol(table[nz], Ntable.N_a_halo, 1./(redshift.clustering_zdistrpar_zmax+1.), 1./(redshift.clustering_zdistrpar_zmin+1.), da, a, 1.0, 1.0);
 }
 double mmean(int nz,double a){
 	double array[2]  ={a, (double) nz};
@@ -253,11 +253,89 @@ double G11 (double k, double a, int nz){ //needs to be devided by ngal(nz, a)
 }
 /**** power spectra ****/
 double P_gg (double k, double a,int nz){ //galaxy-galaxy power spectrum based on HOD model in bin nz
-	return (G02(k,a,nz) +  p_lin(k,a)*pow(G11(k,a,nz),2.0))/pow(ngal(nz,a),2.0);
+
+  static double logkmin = 0., logkmax = 0., dk = 0., da = 0.,amin =0., amax = 0.;
+  static int N_a = 15, N_k_nlin = 50, NZ = -1;
+  static double M0 = 0.0;
+  static cosmopara C;
+  
+  static double **table_P_gg=0;
+  
+  double klog,val,aa,kk;
+  int i,j;
+  
+  if (NZ != nz || M0 != gbias.hod[nz][0]|| recompute_cosmo3D(C)){ //extend this by halo model parameters if these are sampled independently of cosmology parameters
+    M0 = gbias.hod[nz][0];
+    NZ = nz;
+    update_cosmopara(&C);
+    if (table_P_gg == 0){
+      table_P_gg = create_double_matrix(0, N_a-1, 0, N_k_nlin-1);
+    }
+    amax = amax_lens(nz);
+    amin = amin_lens(nz);
+    da = (amax - amin)/(N_a-1.);
+    logkmin = log(limits.k_min_cH0);
+    logkmax = log(limits.k_max_cH0/10.);
+//    printf("tabulating P_gg %d, %e %e, %e %e\n", NZ,exp(logkmin),exp(logkmax), amin,amax);
+    dk = (logkmax - logkmin)/(N_k_nlin-1.);
+    aa= amin;
+    for (i=0; i<N_a; i++, aa +=da) {
+      klog  = logkmin;
+      for (j=0; j<N_k_nlin; j++, klog += dk) {
+        kk = exp(klog);
+        table_P_gg[i][j] = log(Pdelta(kk,aa)*pow(bgal(nz,aa),2.0)+G02(kk,aa,nz)/pow(ngal(nz,aa),2.0));
+      }
+    }
+  }
+  klog = log(k);
+  if (klog <= logkmin || klog >logkmax-dk){return 0.;}
+  if (a < amin || a > amax){return 0.;}
+  val = interpol2d(table_P_gg, N_a, amin, amax, da, a, N_k_nlin, logkmin, logkmax, dk, klog, 0.0, 0.0);
+  return exp(val);
 }
+//	return (G02(k,a,nz) +  Pdelta(k,a)*pow(G11(k,a,nz),2.0))/pow(ngal(nz,a),2.0);
+
 double P_gm (double k, double a,int nz){//galaxy-matter power spectrum based on HOD model in bin nz
-	return (GM02(k,a,nz) +  p_lin(k,a)*G11(k,a,nz)*I1j(1,k,0,0,a))/ngal(nz,a);
-}
+  static double logkmin = 0., logkmax = 0., dk = 0., da = 0.,amin =0., amax = 0.;
+  static int N_a = 15, N_k_nlin = 50, NZ = -1;
+  static double M0 = 0.0;
+  static cosmopara C;
+  
+  static double **table_P_gg=0;
+  
+  double klog,val,aa,kk;
+  int i,j;
+  
+  if (NZ != nz || M0 != gbias.hod[nz][0]|| recompute_cosmo3D(C)){ //extend this by halo model parameters if these are sampled independently of cosmology parameters
+    M0 = gbias.hod[nz][0];
+    NZ = nz;
+    update_cosmopara(&C);
+    if (table_P_gg == 0){
+      table_P_gg = create_double_matrix(0, N_a-1, 0, N_k_nlin-1);
+    }
+    amax = amax_lens(nz);
+    amin = amin_lens(nz);
+    da = (amax - amin)/(N_a-1.);
+    logkmin = log(limits.k_min_cH0);
+    logkmax = log(limits.k_max_cH0/10.);
+//    printf("tabulating P_gg %d, %e %e, %e %e\n", NZ,exp(logkmin),exp(logkmax), amin,amax);
+    dk = (logkmax - logkmin)/(N_k_nlin-1.);
+    aa= amin;
+    for (i=0; i<N_a; i++, aa +=da) {
+      klog  = logkmin;
+      for (j=0; j<N_k_nlin; j++, klog += dk) {
+        kk = exp(klog);
+        table_P_gg[i][j] = log(Pdelta(kk,aa)*bgal(nz,aa)+GM02(kk,aa,nz)/ngal(nz,aa));
+      }
+    }
+  }
+  klog = log(k);
+  if (klog <= logkmin || klog >logkmax-dk){return 0.;}
+  if (a < amin || a > amax){return 0.;}
+  val = interpol2d(table_P_gg, N_a, amin, amax, da, a, N_k_nlin, logkmin, logkmax, dk, klog, 0.0, 0.0);
+  return exp(val);
+} //	return (GM02(k,a,nz) +  Pdelta(k,a)*G11(k,a,nz)*I1j(1,k,0,0,a))/ngal(nz,a);
+
 
 
 void set_HOD(int n){ //n >=0: set HOD parameters in redshift bin n; n = -1: unset HOD parameters (code then uses linear bias + non-linear matter power spectrum instead of halo model)
