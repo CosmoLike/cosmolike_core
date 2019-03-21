@@ -157,6 +157,7 @@ typedef struct{
   double rcorr[10];
   double hod[10][6]; /*HOD[i] contains HOD parameters of galaxies in clustering bin i, following 5 parameter model of Zehavi et al. 2011 + modification of concentration parameter*/
   double cg[10];
+  double n_hod[10];
   B1_model b1_function;
 }galpara;
 galpara gbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.b1_function = &bgal_z}; //default: point to old bgal_z routin

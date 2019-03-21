@@ -135,11 +135,11 @@ void set_shear_priors_stage3()
 void set_shear_priors_stage4()
 {
   int i;
-  printf("Setting Gaussian shear calibration Priors stage 4\n");
+  printf("Setting Gaussian shear calibration Priors stage 4; see external_prior.c:set_shear_priors_stage4() for details\n");
   for (i=0;i<tomo.shear_Nbin; i++){
     prior.shear_calibration_m[i][0] = 0.0;
     prior.shear_calibration_m[i][1] = 0.004;
-    printf("Mean=%le, Sigma=%le\n",prior.shear_calibration_m[i][0],prior.shear_calibration_m[i][1]);
+ //   printf("Mean=%le, Sigma=%le\n",prior.shear_calibration_m[i][0],prior.shear_calibration_m[i][1]);
   }
   like.shearcalib=1;
 }
@@ -190,7 +190,7 @@ void set_wlphotoz_priors_SV()
 void set_wlphotoz_priors_stage4()
 {
   int i;  
-  printf("Setting Gaussian shear photo-z Priors stage 4\n");
+  printf("Setting Gaussian shear photo-z Priors stage 4; see external_prior.c:set_wlphotoz_priors_stage4 for details\n");
   for (i=0;i<tomo.shear_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_shear[i][0]=nuisance.bias_zphot_shear[i];
@@ -198,8 +198,8 @@ void set_wlphotoz_priors_stage4()
     // rms width of Gaussian priors
     prior.bias_zphot_shear[i][1] = 0.002;
     prior.sigma_zphot_shear[i][1]=0.002; // http://lsst.org/files/docs/Phot-z-plan.pdf
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_shear[i][0],prior.bias_zphot_shear[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_shear[i][0],prior.sigma_zphot_shear[i][1]);
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_shear[i][0],prior.bias_zphot_shear[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_shear[i][0],prior.sigma_zphot_shear[i][1]);
   }
   like.wlphotoz=1;
 }
@@ -215,8 +215,8 @@ void set_clphotoz_priors_redmagic()
     //rms width of Gaussian priors
     prior.bias_zphot_clustering[i][1] = 0.0004;
     prior.sigma_zphot_clustering[i][1]=0.0006;
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }
   like.clphotoz=1;
 }
@@ -224,7 +224,7 @@ void set_clphotoz_priors_redmagic()
 void set_clphotoz_priors_source()
 {
   int i;
-  printf("Setting Gaussian clustering photo-z Priors source sample\n");
+  printf("Setting Gaussian clustering photo-z Priors source sample; see external_prior.c:set_clphotoz_priors_source() for details\n");
   for (i=0;i<tomo.clustering_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
@@ -232,8 +232,8 @@ void set_clphotoz_priors_source()
     //rms width of Gaussian priors
     prior.bias_zphot_clustering[i][1] = 0.002;
     prior.sigma_zphot_clustering[i][1]= 0.002;
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }
   like.clphotoz=1;
 }
@@ -241,7 +241,7 @@ void set_clphotoz_priors_source()
 void set_clphotoz_priors_LSST_gold()
 {
   int i;
-  printf("Setting Gaussian clustering photo-z Priors redmagic\n");
+  printf("Setting Gaussian clustering photo-z Priors redmagic; ; see external_prior.c:set_clphotoz_priors_LSST_gold() for details\n");
   for (i=0;i<tomo.clustering_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
@@ -249,8 +249,8 @@ void set_clphotoz_priors_LSST_gold()
     //rms width of Gaussian priors
     prior.bias_zphot_clustering[i][1] = 0.001;
     prior.sigma_zphot_clustering[i][1]=0.002;
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }
   like.clphotoz=1;
 }
@@ -258,7 +258,7 @@ void set_clphotoz_priors_LSST_gold()
 void set_clphotoz_priors_LSST_SRD()
 {
   int i;
-  printf("Setting Gaussian clustering photo-z Priors redmagic\n");
+  printf("Setting Gaussian clustering photo-z Priors LSST SRD; see external_prior.c:set_clphotoz_priors_LSST_SRD() for details\n");
   for (i=0;i<tomo.clustering_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
@@ -266,8 +266,8 @@ void set_clphotoz_priors_LSST_SRD()
     //rms width of Gaussian priors
     prior.bias_zphot_clustering[i][1] = 0.001;
     prior.sigma_zphot_clustering[i][1]=0.002;
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }
   like.clphotoz=1;
 }

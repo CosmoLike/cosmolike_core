@@ -87,7 +87,7 @@ double bgal_z(double z, int ni){ //bias evolution within redshift bin, used by c
 
 double n_c(double mh, double a, int nz){
   if (gbias.hod[nz][0] < 10 || gbias.hod[nz][0] >16){
-    printf("HOD parameters in redshift bin %d not set\n",nz);
+    printf("HOD.c:n_c(): HOD parameters in redshift bin %d not set\n",nz);
     exit(EXIT_FAILURE);
   }
 	return 0.5*(1.0+gsl_sf_erf((log10(mh)-gbias.hod[nz][0])/gbias.hod[nz][1]));
