@@ -13,6 +13,7 @@ void init_bary(char *scenario){
 	if(strcmp(scenario,"illustris")==0) set_bary_parameters_to_illustris();
 	if(strcmp(scenario,"eagle")==0) set_bary_parameters_to_eagle();
 	if(strcmp(scenario,"HzAGN")==0) set_bary_parameters_to_HzAGN();
+	if(strcmp(scenario,"TNG100")==0) set_bary_parameters_to_TNG100();
 	
 	if(strcmp(scenario,"owls_AGN")==0) set_bary_parameters_to_owls_AGN();
 	if(strcmp(scenario,"owls_DBLIMFV1618")==0) set_bary_parameters_to_owls_DBLIMFV1618();

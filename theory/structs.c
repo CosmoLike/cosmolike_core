@@ -70,7 +70,7 @@ typedef struct {
      double MGSigma;
      double MGmu;
 }cosmopara;
-cosmopara cosmology = {.A_s = 0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0};
+cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0};
 
 typedef struct {
   int shear_Nbin; // number of tomography bins
@@ -403,7 +403,7 @@ typedef struct{
 
 typedef struct {
   char FILE_logPkR[500];
-  char scenario[100];  //available options: mb2, illustris, eagle, HzAGN, owls_AGN, owls_DBLIMFV1618, owls_NOSN, owls_NOSN_NOZCOOL, owls_NOZCOOL, owls_REF, owls_WDENS, owls_WML1V848, owls_WML4
+  char scenario[100];  //available options: mb2, illustris, eagle, HzAGN, TNG100, owls_AGN, owls_DBLIMFV1618, owls_NOSN, owls_NOSN_NOZCOOL, owls_NOZCOOL, owls_REF, owls_WDENS, owls_WML1V848, owls_WML4
   int Nabins;
   int Nkbins;
   double z_bins[50];

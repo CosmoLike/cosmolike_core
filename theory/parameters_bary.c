@@ -13,6 +13,18 @@ void set_bary_parameters_to_owls_WDENS();
 void set_bary_parameters_to_owls_WML1V848();
 void set_bary_parameters_to_owls_WML4();
 
+void set_bary_parameters_to_TNG100()
+{
+	sprintf(bary.FILE_logPkR,"../cosmolike_core/logPkRatio/logPkRatio_TNG100.dat");
+	sprintf(bary.scenario,"TNG100");
+	bary.isPkbary = 1 ;
+	bary.Nkbins = line_count(bary.FILE_logPkR)-1 ;
+	bary.Nabins = 13;		
+	double z[13] = {3.71,3.49,3.28,2.90,2.44,2.1,1.74,1.41,1.04,0.7,0.35,0.18,0.0};
+	
+	for (int i=0;i < bary.Nabins;i++) bary.z_bins[i]=z[i];
+}
+
 
 void set_bary_parameters_to_HzAGN()
 {

@@ -608,7 +608,7 @@ double get_class_s8(struct file_content *fc, int *status){
   }
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
   if (cosmology.A_s){
-//     printf("passing A_s=%e directly\n",cosmology.A_s);
+//  printf("passing A_s=%e directly\n",cosmology.A_s);
    strcpy(fc->name[parser_length-1],"A_s");
    sprintf(fc->value[parser_length-1],"%e",cosmology.A_s);
  }
@@ -620,9 +620,9 @@ double get_class_s8(struct file_content *fc, int *status){
    A_s *=pow(cosmology.sigma_8/get_class_s8(fc,&status),2.0);
    strcpy(fc->name[parser_length-1],"A_s");
    sprintf(fc->value[parser_length-1],"%e",A_s);
- }
+   }
  cosmology.A_s = A_s;
-    //printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
+ //printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
 }
 strcpy(fc->name[1],"non linear");
   strcpy(fc->value[1],"Halofit"); //to use Halofit within CLASS
@@ -636,6 +636,7 @@ double p_class(double k_coverh0,double a, int NL, int *status){
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   static int class_status = 0;
   double val,klog;
+
   if (recompute_cosmo3D(C)){
     update_cosmopara(&C);
     if (table_P_L ==0){
@@ -658,7 +659,7 @@ double p_class(double k_coverh0,double a, int NL, int *status){
     struct output op;
 
   	ErrorMsg errmsg; // for error messages 
-
+	
   	struct file_content fc;
   	int parser_length = 30;
   	if (parser_init(&fc,parser_length,"none",errmsg) == _FAILURE_){
@@ -672,6 +673,7 @@ double p_class(double k_coverh0,double a, int NL, int *status){
    }
 
    *status = fill_class_parameters(&fc,parser_length);
+   
    if(*status>0) return 1; 
    *status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
    parser_free(&fc);
