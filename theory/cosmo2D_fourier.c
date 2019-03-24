@@ -242,26 +242,18 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
       logsmax = log(limits.P_2_s_max);
       ds = (logsmax - logsmin)/(Ntable.N_ell);
     }
-  
-    double llog,res;
-    int i,j,l1,l2,k;
-
-    for (k=0; k<tomo.clustering_Nbin; k++) {
-      for (j=k; j<tomo.clustering_Nbin; j++) {
-        l1 = k*tomo.clustering_Nbin + j;
-        l2 = j*tomo.clustering_Nbin + k;
-        llog = logsmin;
-        for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
-          //res = C_cl_tomo_nointerp(exp(llog),k,j);
-          //if (res < 0){printf("negative clustering power spectrum C_cl(%e,%d)- error\n", exp(llog),k); res =0.;}
-          table[l1][i]= log(C_cl_tomo_nointerp(exp(llog),k,j));
-          table[l2][i]=table[l1][i];
-        }
-      }
-    }
+    for (int i = 0; i < tomo.clustering_Nbin*tomo.clustering_Nbin; i++){table[i][0] = 123456789.0;}
     update_cosmopara(&C); update_nuisance(&N); update_galpara(&G);
   }
-  double f1 = exp(interpol_fitslope(table[ni*tomo.clustering_Nbin + nj], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
+  int j = ni*tomo.clustering_Nbin+nj;
+  if(table[j][0] > 123456780.0){ //still need to recompute this tomography bin combination
+    double llog = logsmin;
+    for (int i=0; i<Ntable.N_ell; i++, llog+=ds) {
+      table[j][i]= log(C_cl_tomo_nointerp(exp(llog),ni,nj));
+      table[nj*tomo.clustering_Nbin+ni][i]=table[j][i];
+    }
+  }
+  double f1 = exp(interpol_fitslope(table[j], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
   if (isnan(f1)){f1 = 0.;}
   return f1;
 }
