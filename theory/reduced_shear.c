@@ -1,3 +1,5 @@
+double Delta_C_kappa_reduced_shear(double l, int ni, int nj);
+
 double bi_tree_nl (double k1x, double k1y, double k2x, double k2y, double a)
 {
 	double k1,k2,k3,k3x,k3y;
@@ -40,7 +42,7 @@ double Delta_P_reduced_shear(double k1, double a){
 	return 2.*int_gsl_integrate_medium_precision(int_Delta_P_reduced_shear_dk2, (void*)array,log(limits.k_min_cH0),log(limits.k_max_cH0), NULL, 1000)(2.*M_PI);
 }
 
-double int_for_Delta_Ckappa_reduced_shear(double a, void *params){
+double int_for_Delta_C_kappa_reduced_shear(double a, void *params){
   double *ar = (double *) params;
   double res,ell, fK, k,w1,w2;
   if (a >= 1.0) error("a>=1 in int_for_C_shear_tomo");
@@ -54,10 +56,10 @@ double int_for_Delta_Ckappa_reduced_shear(double a, void *params){
   return res;
 }
 
-double Delta_Ckappa_reduced_shear(double l, int ni, int nj){
+double Delta_C_kappa_reduced_shear(double l, int ni, int nj){
   double array[3] = {(double) ni, (double) nj,l};
   int j,k;
   if (ni <= nj){j =nj; k = ni;}
   else{j = ni; k = nj;}
-  return int_gsl_integrate_medium_precision(int_for_Delta_Ckappa_reduced_shear,(void*)array,amin_source(j),amax_source(k),NULL,1000);
+  return int_gsl_integrate_medium_precision(int_for_Delta_C_kappa_reduced_shear,(void*)array,amin_source(j),amax_source(k),NULL,1000);
 }
