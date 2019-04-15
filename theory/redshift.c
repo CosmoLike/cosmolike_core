@@ -422,8 +422,8 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
           for (k = 0,zi = zhisto_min;k<zbins; k++,zi+=da){
             x1 =(array[0] -zi + bias_zphot_shear(zi,i))/(sqrt(2.)*sigma_zphot_shear(zi,i));
             x2 = (array[1]-zi + bias_zphot_shear(zi,i))/(sqrt(2.)*sigma_zphot_shear(zi,i));
-      table[i+1][k] = zdistr_histo_1(zi,(void*)array)*(eta*0.3183*(atan(x2)-atan(x1)) + ((1.0-eta)*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1))));
-      // this creates a pseudo Voigt profile by adding a Gaussian and Lorentian (convolved with a tophat) with the correct weights. See, eg, the Wikipedia article on Voigt profiles for an explanation of where the numbers come from.
+            table[i+1][k] = zdistr_histo_1(zi,(void*)array)*(eta*0.3183*(atan(x2)-atan(x1)) + ((1.0-eta)*0.5*(gsl_sf_erf(x2)-gsl_sf_erf(x1))));
+            // this creates a pseudo Voigt profile by adding a Gaussian and Lorentian (convolved with a tophat) with the correct weights. See, eg, the Wikipedia article on Voigt profiles for an explanation of where the numbers come from.
             norm += table[i+1][k]*da;
           }
           for (k = 0;k<zbins; k++){table[i+1][k]/= norm;}

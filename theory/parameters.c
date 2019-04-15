@@ -97,6 +97,24 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       }
       continue;
     }
+    else if(strcmp(name, "C_FOOTPRINT_FILE")==0)
+    {
+      sprintf(covparams.C_FOOTPRINT_FILE,"%s",val);
+      if(output==1)
+      {
+        printf("C_FOOTPRINT_FILE %s \n",covparams.C_FOOTPRINT_FILE);
+      }
+      continue;
+    }
+    else if(strcmp(name, "c_footprint_file")==0)
+    {
+      sprintf(covparams.C_FOOTPRINT_FILE,"%s",val);
+      if(output==1)
+      {
+        printf("C_FOOTPRINT_FILE %s \n",covparams.C_FOOTPRINT_FILE);
+      }
+      continue;
+    }
     else if(strcmp(name, "filename")==0)
     {
       sprintf(covparams.filename,"%s",val);
@@ -776,7 +794,6 @@ void set_survey_parameters_to_DES()
     sprintf(survey.name,"DES");
 }
 
-//check Chang 2013 for details
 void set_survey_parameters_to_LSST()
 {
   survey.area   = 18000.0;

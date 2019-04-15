@@ -1,5 +1,13 @@
 #ifndef FASTPTMODE
 #include "pt.h"
+double PT_d1d3(double k_coverH0);
+/*double PT_d1d2(double k_coverH0);
+double PT_d2d2(double k_coverH0);
+double PT_d1s2(double k_coverH0);
+double PT_d2s2(double k_coverH0);
+double PT_s2s2(double k_coverH0);
+double PT_sigma4(double k_coverH0);*/
+
 double K_CH0(double k_mpch){
   return k_mpch*cosmology.coverH0;
 }
@@ -61,6 +69,10 @@ double PT_d1s2(double k_coverH0){ //interpolate PT_AB[2]
   return interpol(PT_AB[2], N, logkmin, logkmax, dlgk,lgk, 0.,0.)*pow(cosmology.sigma_8/0.80,4.0);
 }
 
+double PT_d1d3(double k_coverH0){ //interpolate PT_AB[5]
+  return 0.;
+}
+
 double PT_d2s2(double k_coverH0){ //interpolate PT_AB[3]
   static double logkmin = 0.,logkmax = 0.,dlgk = 0.; 
   static int N = 0;
@@ -105,7 +117,7 @@ double PT_sigma4(double k_coverH0){
     printf("Compile cosmolike with -DFASTMODE for full calculation.\n\n");
     N = 70;
   }
-  return PT_AB[5][0]*pow(cosmology.sigma_8/0.80,4.0);
+  return PT_AB[6][0]*pow(cosmology.sigma_8/0.80,4.0);
 }
 
 #else
@@ -121,6 +133,7 @@ void get_FPT_bias(void);
 void get_FPT_bias_command_line(void);
 void FPT_bias_interface(void);
 double PT_d1d2(double k_coverH0);
+double PT_d1d3(double k_coverH0);
 double PT_d2d2(double k_coverH0);
 double PT_d1s2(double k_coverH0);
 double PT_d2s2(double k_coverH0);
@@ -184,7 +197,7 @@ void get_FPT_bias_command_line(void){
     //write input power spectrum for current cosmology
     write_plin("P_lin");
     //now do FASTPT calculation
-    sprintf(command,"python bias_ek.py %s -o",FPT.Plin_FILE);
+    sprintf(command,"python bias_ek_b3nl.py %s -o",FPT.Plin_FILE);
    // printf("%s\n",command);
     int ret = system(command);
     if (ret){
@@ -200,15 +213,16 @@ void get_FPT_bias_command_line(void){
     // read in line by line, copy A, B values into FPT.tab_AB
     double Pk_unit_conversion = pow(cosmology.coverH0,3.0);
     for (i =0; i < FPT.N; i++){
-      double k,P,A,B,C,D,E,G;
-      ret = fscanf(F,"%le %le %le %le %le %le %le %le",&k,&P,&A,&B,&C,&D,&E,&G);
-      if (ret != 8){printf("like_fourier.c:get_FPT_bias_AB: formatting error in column %d of %s\nEXIT\n", i,FPT.Plin_FILE);}
-      FPT.tab_AB[0][i] = A/Pk_unit_conversion;
-      FPT.tab_AB[1][i] = B/Pk_unit_conversion;
-      FPT.tab_AB[2][i] = C/Pk_unit_conversion;
-      FPT.tab_AB[3][i] = D/Pk_unit_conversion;
-      FPT.tab_AB[4][i] = E/Pk_unit_conversion;
-      FPT.tab_AB[5][i] = G/Pk_unit_conversion;
+      double k,P,A,B,C,D,E,G,H;
+      ret = fscanf(F,"%le %le %le %le %le %le %le %le %le",&k,&P,&A,&B,&C,&D,&E,&H,&G);
+      if (ret != 9){printf("like_fourier.c:get_FPT_bias_AB: formatting error in column %d of %s\nEXIT\n", i,FPT.Plin_FILE);}
+      FPT.tab_AB[0][i] = A/Pk_unit_conversion; //Pd1d2, column 2
+      FPT.tab_AB[1][i] = B/Pk_unit_conversion; //Pd2d2, column 3
+      FPT.tab_AB[2][i] = C/Pk_unit_conversion; //Pd1s2, column 4
+      FPT.tab_AB[3][i] = D/Pk_unit_conversion; //Pd2s2, column 5
+      FPT.tab_AB[4][i] = E/Pk_unit_conversion; //Ps2s2, column 6
+      FPT.tab_AB[6][i] = H/Pk_unit_conversion; //Pd1d3, column 7
+      FPT.tab_AB[5][i] = G/Pk_unit_conversion; //sigma, column 8
     }
     fclose(F);
     remove(FPT.Plin_FILE);
@@ -351,6 +365,23 @@ double PT_d1d2(double k_coverH0){ //interpolate FPT.tab_AB[0] - Pd1d2
   double lgk = log(K_MPCH(k_coverH0));
   if (lgk < logkmin || lgk >= logkmax){return 0.;}
   return interpol(FPT.tab_AB[0], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
+}
+
+double PT_d1d3(double k_coverH0){ //interpolate FPT.tab_AB[0] - Pd1d3
+  static cosmopara C;
+  static double logkmin = 0.,logkmax = 0.,dlgk = 0.; 
+  // only call FASTPT if cosmology changed since last call
+  if (recompute_cosmo3D(C)){
+    get_FPT_bias();
+    update_cosmopara(&C); 
+    logkmin =log(FPT.k_min);
+    logkmax = log(FPT.k_max);
+    dlgk = log(10.)/(double) FPT.N_per_dec;
+  }
+  // convert k from coverH0 (used in cosmolike) to h/Mpc units (used in FASTPT)
+  double lgk = log(K_MPCH(k_coverH0));
+  if (lgk < logkmin || lgk >= logkmax){return 0.;}
+  return interpol(FPT.tab_AB[6], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 }
 
 double PT_d2d2(double k_coverH0){ //interpolate FPT.tab_AB[1]

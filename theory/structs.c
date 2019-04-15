@@ -21,19 +21,19 @@ typedef struct {
   int shearcalib;
   int clusterMobs;
   int Planck;
-  int Planck15_BAO_w0wa; //CH
-  int Planck15_BAO_H070p6_JLA_w0wa;
   int Planck15;
+  int Planck15_BAO_w0wa; //CH
+  int Planck15_BAO_H070p6_JLA_w0wa; //CH
+  int Planck18_BAO_Riess18_Pantheon_w0wa; //CH
+  int Planck18_BAO_w0wa; //CH
+  int Planck18_w0; //CH
   int BOSS_Chuang;
   int H0_Efstathiou14;
   int BAO;
   int SN;
   int GRS;
   int Aubourg_Planck_BAO_SN;
-  int SRD_SL_Y1;
-  int SRD_SL_Y10;
-  int SRD_SN_Y10;
-  int SRD_SN_Y1;
+  int SRD;
   char DATA_FILE[500];
   char INV_FILE[500]; 
   char COV_FILE[500]; 
@@ -43,13 +43,14 @@ typedef struct {
   int pos_pos;
   int clusterN;
   int clusterWL;
+  int clusterCG;
  // MANUWARNING: added "int gk, kk, ks;"
    int gk;
    int kk;
    int ks;
   char probes[500];
 }likepara;
-likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0,.SRD_SL_Y1=0,.SRD_SL_Y10=0,.SRD_SN_Y10=0,.SRD_SN_Y1=0};
+likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0,.SRD=0};
 
 typedef struct {
      double Omega_m;  /* matter density parameter                       */
@@ -86,6 +87,7 @@ typedef struct {
   int cluster_Nbin; // number of cluster redshift bins
   double cluster_zmax[10];
   double cluster_zmin[10];
+  int cluster_cg_Npowerspectra;// number of cluster-lensing tomography combinations
   int cgl_Npowerspectra;// number of cluster-lensing tomography combinations
   int ggl_Npowerspectra;// number of ggl tomography combinations
   int magnification_Nbin; // number of tomography bins
@@ -155,6 +157,7 @@ typedef struct{
   double rcorr[10];
   double hod[10][6]; /*HOD[i] contains HOD parameters of galaxies in clustering bin i, following 5 parameter model of Zehavi et al. 2011 + modification of concentration parameter*/
   double cg[10];
+  double n_hod[10];
   B1_model b1_function;
 }galpara;
 galpara gbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.b1_function = &bgal_z}; //default: point to old bgal_z routin
@@ -216,7 +219,7 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   char path[200];
   cosmopara C;
 }FPTpara;
-FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 6};
+FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7};
 typedef struct {
   double A_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3)
   double A_ia; //A IA see Joachimi2012
@@ -255,6 +258,8 @@ typedef struct {
   double cluster_centering_alpha;
   double cluster_centering_sigma;
   double cluster_centering_M_pivot;
+  int N_cluster_MOR;
+  double cluster_MOR[10];
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
@@ -347,7 +352,18 @@ typedef struct input_nuisance_params_mpp {
     double source_z_bias[10];
     double shear_m[10];
     double  A_z[10];
+    double  MOR[10];
 } input_nuisance_params_mpp;
+
+typedef struct input_HOD_params {
+    double lgMmin[10];
+    double sigma_lgMin;
+    double lgM1;
+    double lgM0;
+    double alpha;
+    double f_c;
+    double c_g;
+} input_HOD_params;
 
 typedef struct input_nuisance_params {
     double bias[10];
@@ -356,7 +372,7 @@ typedef struct input_nuisance_params {
     double lens_z_bias[10];
     double lens_z_s;
     double shear_m[10];
-    double  A_ia;
+    double A_ia;
     double beta_ia;
     double eta_ia;
     double eta_ia_highz;
@@ -369,9 +385,13 @@ typedef struct {
     double tmin; /* Theta min (arcmin) */
     double tmax; /* Theta max (arcmin) */
     int ntheta;/* number of theta bins */
+    double lmin; /* ell min  */
+    double lmax; /* ell max  */
+    int ncl;/* number of ell bins */
     int ng;/* ng covariance? */
     char outdir[200]; /* output directory */
     char filename[200]; /* output file name prefix */
+    char C_FOOTPRINT_FILE[200]; /*angular power spectrum of survey footprint, in healpix format */
     char ss[8]; /* Calculate shear-shear components */
     char ls[8]; /* Calculate shear-position components */
     char ll[8]; /* Calculate position-position components */

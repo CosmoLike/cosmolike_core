@@ -367,6 +367,10 @@ double log_multi_like(double OMM, double S8, double NS, double W0,double WA, dou
   if(like.BAO==1) log_L_prior+=log_L_BAO();
   if(like.Planck==1) log_L_prior+=log_L_Planck();
   if(like.Planck15_BAO_w0wa==1) log_L_prior+=log_L_Planck15_BAO_w0wa(); //CH
+  if(like.Planck15_BAO_H070p6_JLA_w0wa==1) log_L_prior+=log_L_Planck15_BAO_H070p6_JLA_w0wa(); //CH
+  if(like.Planck18_BAO_Riess18_Pantheon_w0wa==1) log_L_prior+=log_L_Planck18_BAO_Riess18_Pantheon_w0wa(); //CH
+  if(like.Planck18_BAO_w0wa==1) log_L_prior+=log_L_Planck18_BAO_w0wa(); //CH
+  if(like.Planck18_w0==1) log_L_prior+=log_L_Planck18_w0(); //CH
   if(like.IA!=0) log_L_prior+=log_L_ia();
   if(like.IA!=0) log_L_prior+=log_like_f_red();
   if(like.wlphotoz!=0) log_L_prior+=log_L_wlphotoz();

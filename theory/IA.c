@@ -1,4 +1,5 @@
 #include "IA.h"
+
 void set_LF_GAMA(void);
 void set_LF_DEEP2(void);
 int check_LF (void);
@@ -592,7 +593,7 @@ double int_for_C_ggl_IA_mpp_b2(double a, void *params)
   k      = ell/fK;
   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
   res= W_HOD(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
-  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)))*dchi_da(a)/fK/fK;
+  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)))*dchi_da(a)/fK/fK;
 }
 
 double int_for_C_ggl_IA_Az_b2(double a, void *params)
@@ -610,7 +611,7 @@ double int_for_C_ggl_IA_Az_b2(double a, void *params)
   norm = nuisance.A_z[(int)ar[1]]*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a);
   res= W_HOD(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
   
-  return res*(b1*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)))*dchi_da(a)/fK/fK;
+  return res*(b1*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)))*dchi_da(a)/fK/fK;
 }
 
 double int_for_C_shear_shear_IA(double a, void *params)
@@ -690,8 +691,8 @@ double C_ggl_IA(double s, int nl, int ns)
     case 1: return int_gsl_integrate_medium_precision(int_for_C_ggl_IA,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
     case 3: if (gbias.b2[nl]) return int_gsl_integrate_low_precision(int_for_C_ggl_IA_Az_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
             return int_gsl_integrate_low_precision(int_for_C_ggl_IA_Az,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
-    case 4: if (gbias.b2[nl]) return int_gsl_integrate_low_precision(int_for_C_ggl_IA_mpp_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
-            return int_gsl_integrate_low_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+    case 4: if (gbias.b2[nl]) return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+            return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
     default: printf("IA.c: C_ggl_IA does not support like.IA = %d\nEXIT\n", like.IA); exit(1);
   }
 }

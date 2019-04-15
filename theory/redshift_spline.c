@@ -550,9 +550,11 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
     dz = (z_v[i-1]-z_v[0])/(1.*i-1.);
     zhisto_max=z_v[i-1]+dz;
     zhisto_min=z_v[0];
+    redshift.clustering_zdistrpar_zmin = zhisto_min;
+    redshift.clustering_zdistrpar_zmax = zhisto_max;
     free_double_vector(z_v,0,zbins-1);
     if (zhisto_max < tomo.clustering_zmax[tomo.clustering_Nbin-1] || zhisto_min > tomo.clustering_zmin[0]){
-      printf("Error in redshift.c:pf_histo.c: %s parameters incompatible with tomo.clustering bin choice\nEXIT!\n",redshift.clustering_REDSHIFT_FILE);
+      printf("Error in redshift_spline.c:pf_histo.c: %s parameters incompatible with tomo.clustering bin choice\nEXIT!\n",redshift.clustering_REDSHIFT_FILE);
       exit(1);
     }
   }
@@ -633,7 +635,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     update_nuisance(&N);
     if (table == 0){
       zbins = line_count(redshift.clustering_REDSHIFT_FILE);
-      if (redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){zbins*=20;}//upsample if convolving with analytic photo-z model
+      if (redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model
       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
       for (int i = 0; i < tomo.clustering_Nbin+1; i++){
@@ -859,6 +861,10 @@ double int_for_zmean(double z, void *params){
   return z*pf_photoz(z,(int)array[0]);
 }
 
+double norm_for_zmean(double z, void *params){
+  double *array = (double*)params;
+  return pf_photoz(z,(int)array[0]);
+}
 double zmean(int j){ //mean true redshift of galaxies in tomography bin j
   static double **table = 0;
   if (table ==0){
@@ -867,7 +873,7 @@ double zmean(int j){ //mean true redshift of galaxies in tomography bin j
     table   = create_double_matrix(0, tomo.clustering_Nbin, 0, 1);
     for (int i = 0; i< tomo.clustering_Nbin; i++){
      array[0]  = 1.0*i;
-     table[i][0] = int_gsl_integrate_low_precision(int_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024); 
+     table[i][0] = int_gsl_integrate_low_precision(int_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024)/int_gsl_integrate_low_precision(norm_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024); 
     }
   }
   return table[j][0];

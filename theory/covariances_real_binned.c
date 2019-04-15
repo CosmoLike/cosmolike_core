@@ -2,6 +2,7 @@
 // Note the look-up tables for power spectrum covariances are recomputed if one the redshift bins changes
 //      Loop over theta1, theta2 first, before computing the next combination of redshift bins
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+double w_mask(double theta_min);// angular correlation funtion of survey mask, computed as sum P_l(cos(like.theta[nt])*C_mask(l)
 double cov_G_shear_binned(double theta1_min, double theta1_max,double theta2_min, double theta2_max, int z1,int z2,int z3,int z4,int pm1,int pm2); //Version of Gaussian cov calculation for wide bins
 double cov_NG_shear_binned(double theta1_min, double theta1_max,double theta2_min, double theta2_max, int z1,int z2,int z3,int z4,int pm1,int pm2);
 
@@ -53,6 +54,57 @@ double J4_binned(double l, double tmin, double tmax){
   double j1_min = gsl_sf_bessel_J1(l*tmin);
 
   return 2./(l*l*l*(tmax*tmax-tmin*tmin))*(((8.-l*l*tmin*tmin)*j1_min/tmin+(l*l*tmax*tmax-8.)*j1_max/tmax)-8.*l*(gsl_sf_bessel_Jn(2,l*tmax)-gsl_sf_bessel_Jn(2,l*tmin)));
+}
+
+double w_mask(double theta_min){
+  static int NTHETA = 0;
+  static double *w_vec =0;
+  int i,l;
+  if (like.theta ==NULL || like.Ntheta < 1){
+    printf("covariances_real_binned.c:w_mask: like.theta or like.Ntheta not initialized\nEXIT\n");
+    exit(1);
+  }
+  if (w_vec ==0){
+    w_vec = create_double_vector(0,like.Ntheta-1);
+    NTHETA = like.Ntheta;
+    FILE *F1;
+    F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
+    if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
+      fclose(F1);
+      int lbins = line_count(covparams.C_FOOTPRINT_FILE);
+      double *Cl;
+      Cl = create_double_vector(0,lbins-1);
+      F1=fopen(covparams.C_FOOTPRINT_FILE,"r");
+      for (int i = 0; i < lbins; i++){
+        int tmp;
+        double tmp2;
+        fscanf(F1,"%d %le\n",&tmp, &tmp2);
+        Cl[i] = tmp2;
+      }
+      fclose(F1);
+
+      printf("\nTabulating w_mask(theta) from mask power spectrum %s\n",covparams.C_FOOTPRINT_FILE);
+      for (i = 0; i < NTHETA; i++){
+        w_vec[i] =0.;
+        for (l = 0; l < lbins; l++){
+          w_vec[i]+=Cl[l]*(2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
+        }
+      }
+      free_double_vector(Cl,0,lbins-1);
+    }
+    else{ //covparams.C_FOOTPRINT_FILE does not exit, ignore boundary effects
+      printf("covparams.C_FOOTPRINT_FILE = %s not found\nNo boundary effect correction applied\n",covparams.C_FOOTPRINT_FILE);
+      for (i = 0; i<NTHETA; i ++){
+        w_vec[i] = 1.0;
+        printf("w_mask[%d] = %e\n",i, w_vec[i]);
+      }      
+    }
+  }
+  i = 0;
+  while(like.theta[i]< theta_min){
+    i ++;
+  }
+  return w_vec[i];  
 }
 
 double C_gl_tomo_all(double l, int ni, int nj)  //slower version of G-G lensing power spectrum, lens bin ni, source bin nj - tabulated for all lens-source combinations without overlap criterion
@@ -401,8 +453,7 @@ double cov_G_shear_no_shot_noise_binned (double theta1_min,double theta1_max, do
   while (x2 <= x1){ //find first root of J0/4(l*theta1) with l > 1
     if (pm1==1) x2 = gsl_sf_bessel_zero_J0 (n)/t;
     if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/t;
-    //printf("%le %d\n",x2,n);
-    
+    //printf("%le %d\n",x2,n); 
     n++;
   }
   while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){
@@ -425,7 +476,9 @@ double cov_G_shear_binned(double thetamin_i, double thetamax_i,double thetamin_j
   if (z1 ==z4 && z2 ==z3 && fabs(thetamax_i-thetamax_j)< 0.1*(thetamax_j-thetamin_j) && pm1 == pm2){ //&& pm1 == pm2 required as C+- doesn't have the diagonal shot noise term
     N += pow(survey.sigma_e,4.0)/(M_PI*(pow(thetamax_i,2.)-pow(thetamin_i,2.0))*4.*nsource(z1)*nsource(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
   }
-  
+  if (N){
+    N /= w_mask(thetamin_i);
+  }
   return cov_G_shear_no_shot_noise_binned(thetamin_i,thetamax_i, thetamin_j,thetamax_j,z1,z2,z3,z4,pm1,pm2)+ 2.*N;
 }
 
@@ -524,6 +577,9 @@ double cov_G_gl_gl_real_binned(double thetamin_i, double thetamax_i,double theta
   double N= 0.;
   if (z1 == z3 && z2 ==z4 && fabs(thetamin_i-thetamin_j)<1.e-7){
     N = pow(survey.sigma_e,2.0)/(2.0*M_PI*(thetamax_i*thetamax_i-thetamin_i*thetamin_i)*nlens(z1)*nsource(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
+  }
+  if (N){
+    N /= w_mask(thetamin_i);
   }
   return cov_G_gl_no_shot_noise_binned(thetamin_i,thetamax_i, thetamin_j,thetamax_j,z1,z2,z3,z4)+ N;
 }
@@ -626,6 +682,12 @@ double cov_G_cl_cl_real_binned(double thetamin_i, double thetamax_i,double theta
   double N= 0.;
   if (z1 ==z3 && z2 ==z4 && fabs(thetamin_i-thetamin_j)<1.e-7){
     N = 1./(M_PI*(pow(thetamax_i,2.)-pow(thetamin_i,2.0))*nlens(z1)*nlens(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor); //(number of galaxy pairs in the survey contributing to annulus of width Dtheta centered at theta1)^-1
+  }
+  if (z1 ==z4 && z2 ==z3 && fabs(thetamin_i-thetamin_j)<1.e-7){
+    N += 1./(M_PI*(pow(thetamax_i,2.)-pow(thetamin_i,2.0))*nlens(z1)*nlens(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor); //(number of galaxy pairs in the survey contributing to annulus of width Dtheta centered at theta1)^-1
+  }
+  if (N){
+    N /= w_mask(thetamin_i);
   }
   return cov_G_cl_no_shot_noise_binned(thetamin_i,thetamax_i, thetamin_j,thetamax_j,z1,z2,z3,z4)+ N;
 }
