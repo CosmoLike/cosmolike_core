@@ -550,8 +550,8 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
     dz = (z_v[i-1]-z_v[0])/(1.*i-1.);
     zhisto_max=z_v[i-1]+dz;
     zhisto_min=z_v[0];
-    redshift.clustering_zdistrpar_zmin = zhisto_min;
-    redshift.clustering_zdistrpar_zmax = zhisto_max;
+    // redshift.clustering_zdistrpar_zmin = zhisto_min;
+    // redshift.clustering_zdistrpar_zmax = zhisto_max;
     free_double_vector(z_v,0,zbins-1);
     if (zhisto_max < tomo.clustering_zmax[tomo.clustering_Nbin-1] || zhisto_min > tomo.clustering_zmin[0]){
       printf("Error in redshift_spline.c:pf_histo.c: %s parameters incompatible with tomo.clustering bin choice\nEXIT!\n",redshift.clustering_REDSHIFT_FILE);
