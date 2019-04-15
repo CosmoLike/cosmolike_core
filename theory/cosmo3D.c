@@ -532,10 +532,16 @@ double get_class_s8(struct file_content *fc, int *status){
       sprintf(fc->value[position_kmax],"%e",10.);  
     }
     A_s_guess = 2.43e-9*pow(sigma8/0.87659,2.0);
+    printf("A_s_guess=%e\n",A_s_guess);
     sprintf(fc->value[position_As],"%e",A_s_guess);
 
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
     A_s_guess*=pow(sigma8/sp.sigma8,2.);
+    printf("A_s_guess=%e\n",A_s_guess);
+    sprintf(fc->value[position_As],"%e",A_s_guess);
+    *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+    A_s_guess*=pow(sigma8/sp.sigma8,2.);
+    printf("A_s_guess=%e\n",A_s_guess);
     if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
 
     if (k_max_old >0){
@@ -622,7 +628,7 @@ double get_class_s8(struct file_content *fc, int *status){
    sprintf(fc->value[parser_length-1],"%e",A_s);
  }
  cosmology.A_s = A_s;
-    //printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
+    printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
 }
 strcpy(fc->name[1],"non linear");
   strcpy(fc->value[1],"Halofit"); //to use Halofit within CLASS

@@ -1,6 +1,8 @@
 double C_cl_non_Limber(int l, int ni, int nj); //includes RSD
 double C_cl_RSD(int l, int ni, int nj); //C_cl_Limber + non-Limber RSD terms only
 double w_tomo_nonLimber(int nt, int ni, int nj); //w(theta) including non-Limber+RSD
+
+
 double f_growth(double z){
 	double aa = 1./(1+z);
 	double gamma = 0.55;
@@ -138,7 +140,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
     w_vec = create_double_vector(0,tomo.clustering_Nbin*like.Ntheta-1);
     NTHETA = like.Ntheta;
     char Pl_file[200];
-    sprintf(Pl_file,"./aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
+    sprintf(Pl_file,"./aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d_binned",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
     FILE *f;
     if ((f = fopen(Pl_file, "r"))){
       printf("reading Legendre coefficients from file %s\n",Pl_file);
@@ -151,12 +153,23 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
       fclose(f);
     }
     else{
-      for (i = 0; i<NTHETA; i ++){
-          printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
-          for (int l = 0; l < LMAX; l ++){
-            Pl[i][l] = (2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
+          double *xmin, *xmax;
+          xmin= create_double_vector(0, like.Ntheta-1);
+          xmax= create_double_vector(0, like.Ntheta-1);
+          double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+          for(i=0; i<like.Ntheta ; i++){
+            xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+            xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
           }
-      }
+
+          for (i = 0; i<NTHETA; i ++){
+            printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
+            for (int l = 1; l < LMAX; l ++){
+              Pl[i][l] = 1./(4.*M_PI)*(gsl_sf_legendre_Pl(l+1,xmin[i])-gsl_sf_legendre_Pl(l+1,xmax[i])-gsl_sf_legendre_Pl(l-1,xmin[i])+gsl_sf_legendre_Pl(l-1,xmax[i]))/(xmin[i]-xmax[i]);
+            }
+          }
+          free_double_vector(xmin,0,like.Ntheta-1);
+          free_double_vector(xmax,0,like.Ntheta-1);
       printf("Legendre coefficients tabulated\nWrite to file %s\n",Pl_file);
       if ((f = fopen(Pl_file,"w"))){
         for (i =0; i < NTHETA; i++){
@@ -167,7 +180,8 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
         fclose(f);
       }
     }
-  }  if (recompute_clustering(C,G,N,ni,nj)){
+  }
+    if (recompute_clustering(C,G,N,ni,nj)){
     //required fractional accuracy in C(l)
     double tolerance= 0.01;
     //dev will be the actual difference between exact and Limber calcuation

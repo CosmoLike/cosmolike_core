@@ -1,5 +1,6 @@
 
 /*bispectrum & trispectrum routines for arbitrary configurations*/
+double fs_2(double k1x, double k1y, double k2x, double k2y);
 double b_lin (double k1x, double k1y, double k2x, double k2y, double a);
 double t_lin(double k1x, double k1y, double k2x, double k2y, double k3x, double k3y, double a);
 double b_lin_cov (double k1,double k2, double a);
@@ -229,12 +230,47 @@ double tri_3h_cov(double k1, double k2, double a){
   return 4.0*I1j(2,k1,k2,0,a)*I1j(1,k1,0,0,a)*I1j(1,k2,0,0,a)*b_lin_cov(k1,k2,a);
 }
 /********** survey variance ***************/
-
+double C_survey_window(int l){
+  static double *Cl = 0;
+  if (Cl ==0){
+    FILE *F1;
+    F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
+    if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
+      fclose(F1);
+      int lbins = line_count(covparams.C_FOOTPRINT_FILE);
+      Cl = create_double_vector(0,lbins-1);
+      F1=fopen(covparams.C_FOOTPRINT_FILE,"r");
+      for (int i = 0; i < lbins; i++){
+        int tmp;
+        double tmp2;
+        fscanf(F1,"%d %le\n",&tmp, &tmp2);
+        Cl[i] = tmp2;
+        Cl[i] /= Cl[0];
+      }
+      fclose(F1);
+    }
+    else{
+      printf("covariances_3D.c:C_survey_window: covparams.C_FOOTPRINT_FILE =%s not found\nEXIT\n",covparams.C_FOOTPRINT_FILE);
+      exit(1);
+    }
+  }
+  return Cl[l];
+}
 double int_for_variance (double logk, void *params){
   double *ar = (double *) params;
   double k = exp(logk);
   double x = pow(4.0*ar[1],0.5)*k*chi(ar[0]); //theta_s*k*chi(a)
   return k*k/constants.twopi*p_lin(k,ar[0])*pow(2.*gsl_sf_bessel_J1(x)/x,2.0);
+}
+
+//curved sky, healpix window function
+double sum_variance_healpix(double a){
+  double res = 0.;
+  double r = f_K(chi(a));
+  for (int l = 0; l < 1000; l++){
+    res+= (2.*l+1.)/(r*r)*C_survey_window(l)*p_lin((l+0.5)/r,a)/(4.*M_PI);
+  }
+  return res;
 }
 
 double survey_variance (double a, double fsky){
@@ -255,13 +291,20 @@ double survey_variance (double a, double fsky){
     }
     aa= amin;
     array[1] = fsky;
-    
-    for (i=0; i<Ntable.N_a; i++, aa += da) {
-      array[0] = aa;
-      //printf("SV%e\n",aa);
-      result = int_gsl_integrate_high_precision(int_for_variance,(void*)array,log(1.e-6),log(1.e+6),NULL,2000);
-      //printf("SV %e %e\n",aa,result);
-      table_SV[i]=result;
+    FILE *F1;
+    F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
+    if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
+      fclose(F1);
+      for (i=0; i<Ntable.N_a; i++, aa += da) {
+         table_SV[i]=sum_variance_healpix(aa);
+      }
+    }
+    else{ //covparams.C_FOOTPRINT_FILE doesn't exist, use analytic window
+      for (i=0; i<Ntable.N_a; i++, aa += da) {
+        array[0] = aa;
+        result = int_gsl_integrate_high_precision(int_for_variance,(void*)array,log(1.e-6),log(1.e+6),NULL,2000);
+        table_SV[i]=result;
+      }
     }
   }
   return interpol(table_SV, Ntable.N_a, amin, amax, da,a, 1.0,1.0 );
@@ -311,8 +354,8 @@ double tri_multih_cov(double k1, double k2, double a){
 double Delta_LD(double logk,void * params)
 {
   (void)(params);
-  return log(p_2h(exp(logk),1.0));
-//  return log(p_lin(exp(logk),1.0));
+//  return log(p_2h(exp(logk),1.0));
+  return log(Pdelta(exp(logk),0.999));
 }
 
 //linear dilation factor, cf. Eq. 27 in http://arxiv.org/pdf/1401.0385v2.pdf
@@ -352,7 +395,8 @@ double LD_term(double k)
 // as discussed in Chiang+14 (after Eq 4.32) http://arxiv.org/abs/1403.3411v2
 // the inclusion of the HSV on P2h is ambiguous, requires b2, and only leads to percent differences.
 double delP_SSC(double k, double a){
-  return (68./21.+LD_term(k))*p_2h(k,a)+ I12_SSC(k,a);
+  return (68./21.+LD_term(k))*Pdelta(k,a);
+//  return (68./21.+LD_term(k))*p_2h(k,a)+ I12_SSC(k,a);
 }
 
 

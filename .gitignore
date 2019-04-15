@@ -5,3 +5,7 @@
 *.a
 *._
 .DS_Store
+
+class/libclass\.a
+
+class/build/
