@@ -3,7 +3,8 @@
 *.so
 *.pyc
 *.a
-*._
+._*
+*~
 .DS_Store
 
 class/libclass\.a
