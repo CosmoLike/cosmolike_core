@@ -2,7 +2,10 @@ double C_cl_non_Limber(int l, int ni, int nj); //includes RSD
 double C_cl_RSD(int l, int ni, int nj); //C_cl_Limber + non-Limber RSD terms only
 double w_tomo_nonLimber(int nt, int ni, int nj); //w(theta) including non-Limber+RSD
 
-
+double G_taper(double k){
+  double s_bao = 5.5/cosmology.coverH0;
+  return exp(-k*k*s_bao*s_bao);
+}
 double f_growth(double z){
 	double aa = 1./(1+z);
 	double gamma = 0.55;
@@ -63,17 +66,38 @@ double Psi_RSD(double k, int l,int ni){
 double int_for_C_cl_nonLimber (double lk, void *params){
   double k = exp(lk);
   int *ar = (int *) params;
-  return k*k*k*pow(Psi_cl(k,ar[0],ar[1]),2.)*p_lin(k,1.0);
+  return k*k*k*pow(Psi_cl(k,ar[0],ar[1]),2.)*p_lin(k,1.0)*G_taper(k);
 }
 double int_for_C_cl_RSD (double klog, void *params){
   int *ar = (int *) params;
   double k = exp(klog);
-  return k*k*k*pow(Psi_RSD(k,ar[0],ar[1]),2.)*p_lin(k,1.0);
+  return k*k*k*pow(Psi_RSD(k,ar[0],ar[1]),2.)*p_lin(k,1.0)*G_taper(k);
 }
 double int_for_C_cl_nonLimber_tomo (double k, void *params){
   int *ar = (int *) params;
-  return k*k*Psi_cl(k,ar[0],ar[1])*Psi_cl(k,ar[0],ar[2])*p_lin(k,1.0);
+  return k*k*Psi_cl(k,ar[0],ar[1])*Psi_cl(k,ar[0],ar[2])*p_lin(k,1.0)*G_taper(k);
 }
+
+double int_for_C_cl_lin(double a, void *params)
+{
+  double res,ell, fK, k;
+  double *ar = (double *) params;
+  ell       = ar[2]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+  
+  res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
+  res= res*p_lin(k,a)*G_taper(k);
+  return res;
+}
+
+
+double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
+{
+  double array[3] = {1.0*ni,1.0*nj,l};
+  return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
+}
+
 
 double C_cl_non_Limber(int l, int ni, int nj){ //includes RSD too!
   int ar[3] ={l,ni,nj};
@@ -85,7 +109,7 @@ double C_cl_non_Limber(int l, int ni, int nj){ //includes RSD too!
   //gsl_set_error_handler_off ();
   if (ni == nj){
     //checked that these boundaries give better than 1% accuracy for l > 2
-    double kmin = fmax(limits.k_min_cH0, 0.5*l/f_K(chi(1./(1.+tomo.clustering_zmax[ni]))));
+    double kmin = fmax(limits.k_min_cH0, 0.25*l/f_K(chi(1./(1.+tomo.clustering_zmax[ni]))));
     double kmax = fmin(limits.k_max_cH0, 20.*l/f_K(chi(1./(1.+tomo.clustering_zmin[ni]))));
     res = 2.*int_gsl_integrate_low_precision(int_for_C_cl_nonLimber,(void*)ar,log(kmin),log(kmax),NULL,100)/M_PI;
   }
@@ -106,12 +130,14 @@ double C_cl_RSD(int l, int ni, int nj){
   }
   gsl_set_error_handler_off ();
   if (ni == nj){
-    res = 2.*int_gsl_integrate_low_precision(int_for_C_cl_RSD,(void*)ar,log(limits.k_min_cH0),log(limits.k_max_cH0),NULL,1000)/M_PI;
+    double kmin = fmax(limits.k_min_cH0, 0.25*l/f_K(chi(1./(1.+tomo.clustering_zmax[ni]))));
+    double kmax = fmin(limits.k_max_cH0, 20.*l/f_K(chi(1./(1.+tomo.clustering_zmin[ni]))));
+    res = 2.*int_gsl_integrate_low_precision(int_for_C_cl_RSD,(void*)ar,log(kmin),log(kmax),NULL,1000)/M_PI;
   }
   else res = 0.;
   gsl_set_error_handler (NULL);
   //add regular galaxy power spectrum contributions in Limber approximation
-  res = res + C_cl_tomo_nointerp(1.*l,ni,nj);
+  res = res + C_cl_tomo_nointerp(1.*l,ni,nj) - C_cl_lin_nointerp(1.*l,ni,nj);
   return res;
 }
 
@@ -126,61 +152,42 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
   static nuisancepara N;
   static galpara G;
   int i,l,nz;
-  if (like.theta ==NULL){
-    printf("cosmo2D_real.c:w_tomo_exact: like.theta not initialized\nEXIT\n");
-    exit(1);
+  if (like.Ntheta ==0){
+    printf("cosmo2D_real.c:w_tomo_exact: like.Ntheta not initialized\nEXIT\n"); exit(1);
   }
   if (ni != nj){
-    printf("cosmo2D_real.c:w_tomo_exact: ni != nj tomography not supported\nEXIT\n");
-    exit(1);    
+    printf("cosmo2D_real.c:w_tomo_exact: ni != nj tomography not supported\nEXIT\n"); exit(1);    
   }
   if (Pl ==0){
     Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
     Cl = create_double_vector(0,LMAX-1);
     w_vec = create_double_vector(0,tomo.clustering_Nbin*like.Ntheta-1);
     NTHETA = like.Ntheta;
-    char Pl_file[200];
-    sprintf(Pl_file,"./aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d_binned",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
-    FILE *f;
-    if ((f = fopen(Pl_file, "r"))){
-      printf("reading Legendre coefficients from file %s\n",Pl_file);
-      for (i =0; i < NTHETA; i++){
-        for (int l = 0; l < LMAX; l++){
-          int j;
-          fscanf(f,"%d %d %le",&j,&j,&Pl[i][l]);
-        }
-      }
-      fclose(f);
+    double *xmin, *xmax, *Pmin, *Pmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
     }
-    else{
-          double *xmin, *xmax;
-          xmin= create_double_vector(0, like.Ntheta-1);
-          xmax= create_double_vector(0, like.Ntheta-1);
-          double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
-          for(i=0; i<like.Ntheta ; i++){
-            xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
-            xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
-          }
 
-          for (i = 0; i<NTHETA; i ++){
-            printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
-            for (int l = 1; l < LMAX; l ++){
-              Pl[i][l] = 1./(4.*M_PI)*(gsl_sf_legendre_Pl(l+1,xmin[i])-gsl_sf_legendre_Pl(l+1,xmax[i])-gsl_sf_legendre_Pl(l-1,xmin[i])+gsl_sf_legendre_Pl(l-1,xmax[i]))/(xmin[i]-xmax[i]);
-            }
-          }
-          free_double_vector(xmin,0,like.Ntheta-1);
-          free_double_vector(xmax,0,like.Ntheta-1);
-      printf("Legendre coefficients tabulated\nWrite to file %s\n",Pl_file);
-      if ((f = fopen(Pl_file,"w"))){
-        for (i =0; i < NTHETA; i++){
-          for (int l = 0; l < LMAX; l++){
-            fprintf(f,"%d %d %le\n",i,l,Pl[i][l]);
-          } 
-        }
-        fclose(f);
+    for (i = 0; i<NTHETA; i ++){
+      printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
+      gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
+      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+      for (int l = 1; l < LMAX; l ++){
+        Pl[i][l] = (2*l+1.)/(4.*M_PI)*Pmin[l];
+        //Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
       }
     }
-  }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    }
     if (recompute_clustering(C,G,N,ni,nj)){
     //required fractional accuracy in C(l)
     double tolerance= 0.01;
@@ -192,6 +199,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
       // initialize to large value in order to start while loop
       dev=10.*tolerance;
       while (fabs(dev) > tolerance){
+        //Cl[L] = C_cl_RSD(L,nz,nz);
         Cl[L] = C_cl_non_Limber(L,nz,nz);
         dev = Cl[L]/C_cl_tomo_nointerp((double)L,nz,nz)-1.;
     //    printf("nL, nz=%d %d %e %e\n",nz,L,Cl[L],dev);
