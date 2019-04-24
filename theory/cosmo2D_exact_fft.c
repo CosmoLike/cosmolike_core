@@ -183,12 +183,17 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 	i_block = 0;
 	double cl_temp;
+	
+	config my_config;
+	my_config.nu = 1.;
+	my_config.c_window_width = 0.25;
+
 	while (fabs(dev) > tolerance){
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
 
-		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, config, ell_ar, Nell_block, k1_ar, Fk1_ar);
-		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_ar, Nchi, config, ell_ar, Nell_block, k2_ar, Fk2_ar);}
+		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);
+		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_ar, Nchi, my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);}
 
 		for(i=0;i<Nell_block;i++) {
 			cl_temp = 0.;
