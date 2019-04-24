@@ -200,7 +200,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_ar[j]*k1_ar[j]*k1_ar[j] *p_lin(k1_ar[j],1.0)*G_taper(k1_ar[j]);
 				}
 			}
-			Cl[ell_ar[i]] = cl_temp * dlnk * M_PI/2. + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
+			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
 		}
 		i_block++;
 		L = i_block*Nell_block -1 ;
