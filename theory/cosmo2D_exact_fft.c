@@ -1,6 +1,8 @@
 double C_cl_non_Limber(int l, int ni, int nj); //includes RSD
 double C_cl_RSD(int l, int ni, int nj); //C_cl_Limber + non-Limber RSD terms only
 double w_tomo_nonLimber(int nt, int ni, int nj); //w(theta) including non-Limber+RSD
+void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance);
+double f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni);
 
 double G_taper(double k){
 	double s_bao = 5.5/cosmology.coverH0;
@@ -198,7 +200,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_ar[j]*k1_ar[j]*k1_ar[j] *p_lin(k1_ar[j],1.0)*G_taper(k1_ar[j]);
 				}
 			}
-			Cl[ell_ar[i]] = cl_temp * dlnk;
+			Cl[ell_ar[i]] = cl_temp * dlnk * M_PI/2.;
 		}
 		i_block++;
 		L = i_block*Nell_block -1 ;
