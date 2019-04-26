@@ -190,7 +190,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	}
 
 	double chi_ar[Nchi], f1_chi_ar[Nchi], f2_chi_ar[Nchi];
-	double chi_min = 30., chi_max = 3000.;
+	double chi_min = 60., chi_max = 6000.;
 	double dlnchi = log(chi_max/chi_min) / (Nchi - 1.);
 	double dlnk = dlnchi;
 
@@ -201,7 +201,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	f_chi_for_Psi_cl(chi_ar, Nchi, f1_chi_ar, ni);
 	if(ni != nj) {f_chi_for_Psi_cl(chi_ar, Nchi, f2_chi_ar, nj);}
 
-	// char outfilename[] = "f1_chi.txt";
+	// char outfilename[] = "f1_chi4.txt";
 	// FILE *OUT = fopen(outfilename, "w");
 	
 	// for(i=0; i<Nchi; i++) {
@@ -212,8 +212,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	// 	printf("f_chi_ar: %d, %lf\n", i, f1_chi_ar[i]);
 	// }
 	// exit(0);
-	char outfilename[] = "c_cl.txt";
-	FILE *OUT = fopen(outfilename, "w");
+	// char outfilename[] = "c_cl4.txt";
+	// FILE *OUT = fopen(outfilename, "w");
 
 
 	i_block = 0;
@@ -249,8 +249,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
 			// printf("cl_t/emp: %d, %lg\n", i, cl_temp);
-			fprintf(OUT, "%d %lg %lg %lg", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
-			fprintf(OUT, "\n");
+			// fprintf(OUT, "%d %lg %lg %lg", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
+			// fprintf(OUT, "\n");
 		}
 		// if(i_block==9) {exit(0);}
 
@@ -266,8 +266,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	for (l = L; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 	}
-	fclose(OUT);
-	exit(0);
+	// fclose(OUT);
+	// exit(0);
 }
 
 double w_tomo_nonLimber(int nt, int ni, int nj){
