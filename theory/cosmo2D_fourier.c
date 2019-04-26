@@ -5,7 +5,6 @@ double W_gal(double a, double nz); //complete weight for galaxy statistics
 double W_HOD(double a, double nz); //galaxy weigth without bias factor (for projecting P_gg instead of P_nl)
 
 double C_cl_tomo(double l, int ni, int nj);  //galaxy clustering power spectrum of galaxies in bins ni, nj
-double C_cl_lin_nointerp(double l, int ni, int nj);// galaxy clustering linear power spectrum of galaxies in bins ni
 double C_cl_tomo_nointerp(double l, int ni, int nj);
 double C_cl_HOD(double l, int ni);  //galaxy clustering power spectrum of galaxies in bin ni, using HOD model
 
@@ -41,6 +40,16 @@ double W_kappa(double a, double fK, double nz){
 double W_gal(double a, double nz){
   return gbias.b1_function(1./a-1.,(int)nz)*pf_photoz(1./a-1.,(int)nz)*hoverh0(a);
 }
+double f_rsd (double aa){
+  double gamma = 0.55;
+  return pow(cosmology.Omega_m /(cosmology.Omega_m +omv_vareos(aa) *aa*aa*aa),gamma);
+}
+double W_RSD(double l, double a0, double a1, double nz){
+  double w = (1+8.*l)/((2*l+1)*(2*l+1))*pf_photoz(1./a0-1.,(int)nz)*hoverh0(a0)*f_rsd(a0);
+  w -= 4./(2*l+3)*sqrt((2*l+1.)/(2*l+3.))*pf_photoz(1./a1-1.,(int)nz)*hoverh0(a1)*f_rsd(a1);
+  return w;
+}
+
 double W_HOD(double a, double nz){
   return pf_photoz(1./a-1.,(int)nz)*hoverh0(a);
 }
@@ -83,20 +92,25 @@ double int_for_C_cl_tomo(double a, void *params)
   res= res*Pdelta(k,a);
   return res;
 }
-double int_for_C_cl_lin(double a, void *params)
+
+double int_for_C_cl_tomo_RSD(double k, void *params)
 {
-  double res,ell, fK, k;
+  double res,ell, chi_0, chi_1, a_0, a_1;
+//  k = exp(lgk);
   double *ar = (double *) params;
-  if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");
-  
   ell       = ar[2]+0.5;
-  fK     = f_K(chi(a));
-  k      = ell/fK;
-  
-  res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
-  res= res*p_lin(k,a);
+  chi_0 = f_K(ell/k);
+  chi_1 = f_K((ell+1.)/k);
+  if (chi_1 > chi(limits.a_min)){
+    return 0;}
+  a_0 = a_chi(chi_0);
+  a_1 = a_chi(chi_1);
+//  res=(W_gal(a_0,ar[0]))*(W_gal(a_0,ar[1]));
+  res=(W_gal(a_0,ar[0])+W_RSD(ell,a_0,a_1,ar[0]))*(W_gal(a_0,ar[1])+W_RSD(ell,a_0,a_1,ar[1]));
+  res= res*Pdelta(k,a_0);
   return res;
 }
+
 double int_for_C_cl_HOD(double a, void *params)
 {
   double res,ell, fK, k;
@@ -172,6 +186,21 @@ double int_for_C_shear_tomo(double a, void *params)
 }
 
 /*********** angular power spectra - without look-up tables ******************/
+double C_cl_RSD_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
+{ 
+  double array[3] = {1.0*ni,1.0*nj,l};
+  if (gbias.b2[ni] || gbias.b2[nj]){
+          printf("\nCalled C_cl_RSD_nointerp(l,z1=%d,z2=%d) with non-linear bias parameters set.\n",ni,nj);
+          printf("RSD beyond linear bias not yet supported.\n");
+          printf("Use linear bias only for clustering + RSD\n\n");
+          exit(1);
+  }
+  double chi_max = chi(fmax(amin_lens(ni),amin_lens(nj)));
+  double chi_min = chi(fmin(amax_lens(ni),amax_lens(nj)));
+  double k_min = (l+0.5)/f_K(chi_max);
+  double k_max = (l+0.5)/f_K(chi_min);
+  return int_gsl_integrate_medium_precision(int_for_C_cl_tomo_RSD,(void*)array,k_min,k_max,NULL,1000)*2./(2*l+1.);
+}
 
 double C_cl_tomo_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
 { static int init =-1;
@@ -194,11 +223,6 @@ double C_cl_tomo_nointerp(double l, int ni, int nj)  //galaxy clustering power s
   return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
 }
 
-double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
-{
-  double array[3] = {1.0*ni,1.0*nj,l};
-  return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
-}
 
 double C_gl_tomo_nointerp(double l, int ni, int nj)  //G-G lensing power spectrum, lens bin ni, source bin nj
 {
@@ -249,6 +273,8 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
   if(table[j][0] > 123456780.0){ //still need to recompute this tomography bin combination
     double llog = logsmin;
     for (int i=0; i<Ntable.N_ell; i++, llog+=ds) {
+
+//      table[j][i]= log(C_cl_RSD_nointerp(exp(llog),ni,nj));
       table[j][i]= log(C_cl_tomo_nointerp(exp(llog),ni,nj));
       table[nj*tomo.clustering_Nbin+ni][i]=table[j][i];
     }

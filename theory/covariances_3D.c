@@ -1,5 +1,6 @@
 
 /*bispectrum & trispectrum routines for arbitrary configurations*/
+double fs_2(double k1x, double k1y, double k2x, double k2y);
 double b_lin (double k1x, double k1y, double k2x, double k2y, double a);
 double t_lin(double k1x, double k1y, double k2x, double k2y, double k3x, double k3y, double a);
 double b_lin_cov (double k1,double k2, double a);
