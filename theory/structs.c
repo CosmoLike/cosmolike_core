@@ -273,6 +273,21 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
 
 
 typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0]) + width of Gaussian (prior.*[1])
+  double Omega_m;  /* matter density parameter                       */
+  double Omega_v;  /* cosmogical constant parameter                  */
+  double sigma_8;  /* power spectrum normalization                   */
+  double A_s;
+  double n_spec;   /* spectral index of initial power spectrum       */
+  double alpha_s;   /* running of spectral index of initial power spectrum       */
+  double w0; //time dependent Dark energy parametrization zero order
+  double wa; //time dependent Dark energy parametrization first order
+  double omb; //Omega baryon
+  double h0; //Hubble constant
+  double M_nu;
+  double Omega_nu; //density parameter of massive neutrinos; Omega_m = Omega_cdm+ Omega_nu + omb
+  double f_NL; 
+  double MGSigma;
+  double MGmu;
   double A_ia[2]; //A IA see Joachimi2012
   double A2_ia[2];
   double beta_ia[2]; //beta IA see Joachimi2012
