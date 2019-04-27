@@ -3,6 +3,7 @@ void init_BAO_DES();
 void init_BAO_LSST();
 void init_BAO_WFIRST();
 void init_BAO_BOSS();
+void init_BAO_WFIRST_spectro();
 double dist_BAO(double z);
 
 

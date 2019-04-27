@@ -3,6 +3,7 @@ double Tsqr_EH_no_wiggle(double khoverMPC);
 double P_DW(double k, double mu, double a);
 double P_obs(double k_ref, double mu_ref, int nz);
 double P_obs_mt(double k_ref, double mu_ref, int nz, GRSpara_mt  G, int i, int j);
+
 typedef struct{
    int N_z;
    int N_k;
@@ -22,11 +23,15 @@ typedef struct{
 } GRSpara;
 GRSpara GRS;
 
+
 typedef struct{
   double n_g[10]; // in (h/Mpc)^3
 	double b_g[10];
+  double b_g_fid[10]; // fiducial input values=center for prior calculation
 	double sigma_z[10]; // fractional accuracy
 	double sigma_p[10]; // in km/s
+  double sigma_p_fid[10]; // in km/s, fiducial input values=center for prior calculation
+  double sigma_p_fid_sigma; // in km/s, sigma for prior calculation
 	double P_shot[10]; // in (Mpc/h)^3
 } GRS_galaxy_para;
 GRS_galaxy_para GRS_gal;
