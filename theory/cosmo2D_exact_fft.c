@@ -186,8 +186,8 @@ void f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni
 
 // Mixture of non-Limber and Limber
 void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance) {
-	// ni = 4;
-	// nj = 4;
+	ni = 4;
+	nj = 4;
 	int i,j,i_block;
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
@@ -241,8 +241,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	// 	printf("f_chi_ar: %d, %lf\n", i, f1_chi_ar[i]);
 	// }
 	// exit(0);
-	// char outfilename[] = "c_cl4_rsd.txt";
-	// FILE *OUT = fopen(outfilename, "w");
+	char outfilename[] = "c_cl4_rsd.txt";
+	FILE *OUT = fopen(outfilename, "w");
 
 
 	i_block = 0;
@@ -252,9 +252,11 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	my_config.nu = 1.;
 	my_config.c_window_width = 0.25;
 	my_config.derivative = 0;
+	my_config.N_pad = 200;
 	my_config_RSD.nu = 1.1;
 	my_config_RSD.c_window_width = 0.25;
 	my_config_RSD.derivative = 2;
+	my_config_RSD.N_pad = 200;
 
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
 	double k1_cH0;
@@ -286,8 +288,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
 			// printf("cl_t/emp: %d, %lg\n", i, cl_temp);
-			// fprintf(OUT, "%d %lg %lg %lg", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
-			// fprintf(OUT, "\n");
+			fprintf(OUT, "%d %lg %lg %lg", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
+			fprintf(OUT, "\n");
 		}
 		// if(i_block==9) {exit(0);}
 
@@ -303,8 +305,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	for (l = L; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 	}
-	// fclose(OUT);
-	// exit(0);
+	fclose(OUT);
+	exit(0);
 }
 
 double w_tomo_nonLimber(int nt, int ni, int nj){
