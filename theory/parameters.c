@@ -87,6 +87,15 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       }
       continue;
     }
+    else if(strcmp(name, "cng")==0)
+    {
+      sscanf(val, "%d", &covparams.cng);
+      if(output==1)
+      {
+        printf("cng %d \n",covparams.cng);
+      }
+      continue;
+    }
     else if(strcmp(name, "outdir")==0)
     {
       sprintf(covparams.outdir,"%s",val);
