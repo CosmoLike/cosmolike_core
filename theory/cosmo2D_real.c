@@ -48,6 +48,8 @@ double w_tomo_exact(int nt, int ni, int nj){
     char Pl_file[200];
     char Pl_file2[200];
     sprintf(Pl_file,"./aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d_binned",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
+    //sprintf(Pl_file,"./aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
+	
     FILE *f;
     if ((f = fopen(Pl_file, "r"))){
     	printf("reading Legendre coefficients from file %s\n",Pl_file);
