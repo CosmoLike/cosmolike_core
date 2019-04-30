@@ -70,8 +70,13 @@ typedef struct {
      double f_NL; 
      double MGSigma;
      double MGmu;
+     //Horndeski params
+     double MGalpha_K;
+     double MGalpha_B;
+     double MGalpha_T;
+     double MGalpha_M;
 }cosmopara;
-cosmopara cosmology = {.A_s = 0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0};
+cosmopara cosmology = {.A_s = 0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.MGalpha_K=0.0,.MGalpha_B=0.0,.MGalpha_T=0.0,.MGalpha_M=0.0};
 
 typedef struct {
   int shear_Nbin; // number of tomography bins
@@ -346,6 +351,10 @@ typedef struct input_cosmo_params_mpp {
     double h0;
     double MGSigma;
     double MGmu;
+    double MGalpha_K;
+    double MGalpha_B;
+    double MGalpha_T;
+    double MGalpha_M;
 } input_cosmo_params_mpp;
 
 typedef struct input_cosmo_params {
@@ -358,6 +367,10 @@ typedef struct input_cosmo_params {
     double h0;
     double MGSigma;
     double MGmu;
+    double MGalpha_K;
+    double MGalpha_B;
+    double MGalpha_T;
+    double MGalpha_M;
 } input_cosmo_params;
 
 typedef struct input_nuisance_params_mpp {
