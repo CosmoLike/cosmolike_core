@@ -36,7 +36,7 @@ double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power sp
 	return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
 }
 
-///////
+/////// Integrand for galaxy density
 void f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni){
 	double g0 =1./growfac(1.);
 	double a, z;
@@ -51,6 +51,7 @@ void f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni){
 	}
 }
 
+// Integrand for galaxy density RSD
 void f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni){
 	double g0 =1./growfac(1.);
 	double a, z;
@@ -76,21 +77,20 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	int Nell_block = 100, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
-	double **Fk1_RSD_ar, **Fk2_RSD_ar;
 	// ell_ar = malloc(Nell_block * sizeof(int));
 	k1_ar = malloc(Nell_block * sizeof(double *));
 	k2_ar = malloc(Nell_block * sizeof(double *));
 	Fk1_ar = malloc(Nell_block * sizeof(double *));
 	Fk2_ar = malloc(Nell_block * sizeof(double *));
-	Fk1_RSD_ar = malloc(Nell_block * sizeof(double *));
-	Fk2_RSD_ar = malloc(Nell_block * sizeof(double *));
 	for(i=0;i<Nell_block;i++) {
 		k1_ar[i] = malloc(Nchi * sizeof(double));
 		k2_ar[i] = malloc(Nchi * sizeof(double));
 		Fk1_ar[i] = malloc(Nchi * sizeof(double));
 		Fk2_ar[i] = malloc(Nchi * sizeof(double));
-		Fk1_RSD_ar[i] = malloc(Nchi * sizeof(double));
-		Fk2_RSD_ar[i] = malloc(Nchi * sizeof(double));
+		for(j=0;j<Nchi;j++) {
+			Fk1_ar[i][j] = 0.;
+			Fk2_ar[i][j] = 0.;
+		}
 	}
 
 	double chi_ar[Nchi], f1_chi_ar[Nchi], f2_chi_ar[Nchi];
@@ -134,7 +134,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	my_config.c_window_width = 0.25;
 	my_config.derivative = 0;
 	my_config.N_pad = 200;
-	my_config_RSD.nu = 1.1;
+	my_config_RSD.nu = 1.01;
 	my_config_RSD.c_window_width = 0.25;
 	my_config_RSD.derivative = 2;
 	my_config_RSD.N_pad = 200;
@@ -146,11 +146,11 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
 
-		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);
-		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);}
+		cfftlog_ells_increment(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);
+		if(ni != nj) {cfftlog_ells_increment(chi_ar, f2_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);}
 
-		cfftlog_ells(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_RSD_ar);
-		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_RSD_ar);}
+		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_ar);
+		if(ni != nj) {cfftlog_ells_increment(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_ar);}
 
 		for(i=0;i<Nell_block;i++) {
 			cl_temp = 0.;
@@ -158,13 +158,11 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
 				if(ni == nj) {
-					// cl_temp += (Fk1_ar[i][j])*(Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
-					cl_temp += (Fk1_ar[i][j]+Fk1_RSD_ar[i][j]) * (Fk1_ar[i][j]+Fk1_RSD_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
+					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
 					// printf("plin,%lg, %lg\n", k1_ar[i][j],p_lin(k1_cH0,1.0));
 				}
 				else {
-					// cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
-					cl_temp += (Fk1_ar[i][j]+Fk1_RSD_ar[i][j]) * (Fk2_ar[i][j]+Fk2_RSD_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
+					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
 				}
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
