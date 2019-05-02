@@ -77,7 +77,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	int Nell_block = 100, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
-	// ell_ar = malloc(Nell_block * sizeof(int));
+
 	k1_ar = malloc(Nell_block * sizeof(double *));
 	k2_ar = malloc(Nell_block * sizeof(double *));
 	Fk1_ar = malloc(Nell_block * sizeof(double *));
@@ -176,13 +176,16 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
 	   // printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
 		// printf("i_block: %d\n", i_block);
-
 	}
 	L++;
 	printf("switching to Limber calculation at l = %d\n",L);
 	for (l = L; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 	}
+	free(k1_ar);
+	free(k2_ar);
+	free(Fk1_ar);
+	free(Fk2_ar);
 	// fclose(OUT);
 	// exit(0);
 }
