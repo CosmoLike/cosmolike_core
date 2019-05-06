@@ -110,6 +110,11 @@ static inline double hoverh0(double a){
   return sqrt(cosmology.Omega_m /(a*a*a) + (1.-cosmology.Omega_m -cosmology.Omega_v )/(a*a) + omv_vareos(a) );
 }
 
+double growfac_from_class(double a){
+	double k_small = limits.k_min_mpc*cosmology.coverH0*10.;
+	return sqrt(Pdelta(k_small,a)/Pdelta(k_small,1.0));
+}
+
 double growfac(double a)
 {
   const double MINA=1.e-8;
@@ -130,31 +135,46 @@ double growfac(double a)
     table=create_double_vector(0, Ntable.N_a-1);
     
     int i;
-    const gsl_odeiv_step_type *T=gsl_odeiv_step_rkf45;
-    gsl_odeiv_step *s=gsl_odeiv_step_alloc(T,2);
-    gsl_odeiv_control *c=gsl_odeiv_control_y_new(1.e-6,0.0);
-    gsl_odeiv_evolve *e=gsl_odeiv_evolve_alloc(2);
-    
-    double t=MINA;            //start a
-    double t1=1.1;                //final a
-    double h=1.e-6;              //initial step size
-    double y[2]={MINA,MINA};   //initial conditions
-    double norm;
-    double par[0]={};
-    gsl_odeiv_system sys={func_for_growfac,NULL,2,&par};
-    
-    for (i=1;i<=Ntable.N_a;i++) {
-      ai[i-1]=i*t1/(1.*Ntable.N_a);
-      while(t<ai[i-1]) 
-        gsl_odeiv_evolve_apply(e,c,s,&sys,&t,ai[i-1],&h,y);
-      if (i==1) norm=y[0]/ai[i-1];
-      table[i-1]=y[0]/norm;
+    //if using CLASS, calculate growth factor from low-k ratio of power spectrum at different redshifts
+    if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){
+    	double da = (1. - limits.a_min)/(Ntable.N_a-1.);
+
+    	for (i=0;i< Ntable.N_a-1;i++) {
+    		ai[i]=limits.a_min+i*da;
+    		table[i] = growfac_from_class(ai[i]);
+    		//printf("growfac_class(%.3f)=%.3f\n",ai[i],table[i]);
+    	}
+    	ai[Ntable.N_a-1] = 1.0;
+    	table[Ntable.N_a-1] = 1.0;
+	    update_cosmopara(&C);
     }
-    
-    gsl_odeiv_evolve_free(e);
-    gsl_odeiv_control_free(c);
-    gsl_odeiv_step_free(s);
-    update_cosmopara(&C);
+    else{
+	    const gsl_odeiv_step_type *T=gsl_odeiv_step_rkf45;
+	    gsl_odeiv_step *s=gsl_odeiv_step_alloc(T,2);
+	    gsl_odeiv_control *c=gsl_odeiv_control_y_new(1.e-6,0.0);
+	    gsl_odeiv_evolve *e=gsl_odeiv_evolve_alloc(2);
+	    
+	    double t=MINA;            //start a
+	    double t1=1.1;                //final a
+	    double h=1.e-6;              //initial step size
+	    double y[2]={MINA,MINA};   //initial conditions
+	    double norm;
+	    double par[0]={};
+	    gsl_odeiv_system sys={func_for_growfac,NULL,2,&par};
+	    
+	    for (i=1;i<=Ntable.N_a;i++) {
+	      ai[i-1]=i*t1/(1.*Ntable.N_a);
+	      while(t<ai[i-1]) 
+	        gsl_odeiv_evolve_apply(e,c,s,&sys,&t,ai[i-1],&h,y);
+	      if (i==1) norm=y[0]/ai[i-1];
+	      table[i-1]=y[0]/norm;
+	    }
+	    
+	    gsl_odeiv_evolve_free(e);
+	    gsl_odeiv_control_free(c);
+	    gsl_odeiv_step_free(s);
+	    update_cosmopara(&C);
+	  }
   }
   gsl_interp_init(intf,ai,table,Ntable.N_a);
   res=gsl_interp_eval(intf,ai,table,a,acc);
