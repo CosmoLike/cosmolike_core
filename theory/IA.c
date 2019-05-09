@@ -713,7 +713,7 @@ double C_ggl_IA_tab(double l, int ni, int nj)  //G-G lensing power spectrum, len
   }
   
   if (recompute_ggl(C,G,N,ni)){
-  //  printf("calculating C_ggl_IA  %e %e %e %e %e\n", nuisance.A_z[0], nuisance.A_z[1], nuisance.A_z[2], nuisance.A_z[3], nuisance.A_z[4]);
+	    //printf("calculating C_ggl_IA_tab  %e %e %e %e %e\n", nuisance.A_z[0], nuisance.A_z[1], nuisance.A_z[2], nuisance.A_z[3], nuisance.A_z[4]);
     if (table==0){
       table   = create_double_matrix(0, tomo.ggl_Npowerspectra-1, 0, Ntable.N_ell-1);
       sig = create_double_vector(0,tomo.ggl_Npowerspectra-1);
@@ -768,6 +768,7 @@ double C_shear_shear_IA_tab(double l, int ni, int nj)  //shear power spectrum of
   }
   
   if (recompute_shear(C,N)){
+    //printf("calculating C_shear_shear_IA_tab  %e %e %e %e %e\n", nuisance.A_z[0], nuisance.A_z[1], nuisance.A_z[2], nuisance.A_z[3], nuisance.A_z[4]);
     if (table==0) {
       table   = create_double_matrix(0, tomo.shear_Npowerspectra-1, 0, Ntable.N_ell-1);
       logsmin = log(limits.P_2_s_min);

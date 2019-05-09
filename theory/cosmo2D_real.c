@@ -48,6 +48,8 @@ double w_tomo_exact(int nt, int ni, int nj){
     char Pl_file[200];
     char Pl_file2[200];
     sprintf(Pl_file,"./aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d_binned",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
+    //sprintf(Pl_file,"./aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
+	
     FILE *f;
     if ((f = fopen(Pl_file, "r"))){
     	printf("reading Legendre coefficients from file %s\n",Pl_file);
@@ -103,6 +105,7 @@ double w_tomo_exact(int nt, int ni, int nj){
   if (recompute_clustering(C,G,N,ni,nj)){
     for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
       for (l = 1; l < LMAX; l++){
+  		//h printf("in recompute_clustering nz,l: %d %d \n",nz,l);
         if (l < 20){Cl[l]=C_cl_tomo_nointerp(l,nz,nz);}
         else Cl[l]=C_cl_tomo(1.0*l,nz,nz);
       }
