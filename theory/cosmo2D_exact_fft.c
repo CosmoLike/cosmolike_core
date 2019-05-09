@@ -66,6 +66,22 @@ void f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni
 	}
 }
 
+// Integrand for lensing magnification of galaxy density
+void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni){
+	double g0 =1./growfac(1.);
+	double a, z;
+	int i;
+	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
+	double window_M;
+	for(i=0;i<Nchi;i++) {
+		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0
+		z = 1./a - 1.;
+		window_M = -gbias.b_mag[ni]*g_lens(a, ni) /2.; // in CCL notation
+		// pf = (pf_photoz(z,ni)<0.)? 0:pf_photoz(z,ni); // get rid of unphysical negatives
+		f_chi_Mag_ar[i] = chi_ar[i]/a * window_M*growfac(a)*g0* 3./(real_coverH0*real_coverH0) * cosmology.Omega_m;
+	}
+}
+
 // Mixture of non-Limber and Limber
 void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance) {
 	// ni = 4;
@@ -77,24 +93,34 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	int Nell_block = 100, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
+	double **Fk1_Mag_ar, **Fk2_Mag_ar;
 
 	k1_ar = malloc(Nell_block * sizeof(double *));
 	k2_ar = malloc(Nell_block * sizeof(double *));
 	Fk1_ar = malloc(Nell_block * sizeof(double *));
 	Fk2_ar = malloc(Nell_block * sizeof(double *));
+
+	Fk1_Mag_ar = malloc(Nell_block * sizeof(double *));
+	Fk2_Mag_ar = malloc(Nell_block * sizeof(double *));
 	for(i=0;i<Nell_block;i++) {
 		k1_ar[i] = malloc(Nchi * sizeof(double));
 		k2_ar[i] = malloc(Nchi * sizeof(double));
 		Fk1_ar[i] = malloc(Nchi * sizeof(double));
 		Fk2_ar[i] = malloc(Nchi * sizeof(double));
+		Fk1_Mag_ar[i] = malloc(Nchi * sizeof(double));
+		Fk2_Mag_ar[i] = malloc(Nchi * sizeof(double));
 		for(j=0;j<Nchi;j++) {
 			Fk1_ar[i][j] = 0.;
 			Fk2_ar[i][j] = 0.;
+			Fk1_Mag_ar[i][j] = 0.;
+			Fk2_Mag_ar[i][j] = 0.;
 		}
 	}
 
 	double chi_ar[Nchi], f1_chi_ar[Nchi], f2_chi_ar[Nchi];
 	double f1_chi_RSD_ar[Nchi], f2_chi_RSD_ar[Nchi];
+	double f1_chi_Mag_ar[Nchi], f2_chi_Mag_ar[Nchi];
+
 	double chi_min = 60., chi_max = 6000.;
 	double dlnchi = log(chi_max/chi_min) / (Nchi - 1.);
 	double dlnk = dlnchi;
@@ -108,6 +134,9 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 	f_chi_for_Psi_cl_RSD(chi_ar, Nchi, f1_chi_RSD_ar, ni);
 	if(ni != nj) {f_chi_for_Psi_cl_RSD(chi_ar, Nchi, f2_chi_RSD_ar, nj);}
+
+	f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, ni);
+	if(ni != nj) {f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f2_chi_Mag_ar, nj);}
 
 	// char outfilename[] = "f1_chi4.txt";
 	// char outfilename[] = "f1_chi4_rsd.txt";
@@ -129,7 +158,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	i_block = 0;
 	double cl_temp;
 
-	config my_config, my_config_RSD;
+	config my_config, my_config_RSD, my_config_Mag;
 	my_config.nu = 1.;
 	my_config.c_window_width = 0.25;
 	my_config.derivative = 0;
@@ -138,6 +167,12 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	my_config_RSD.c_window_width = 0.25;
 	my_config_RSD.derivative = 2;
 	my_config_RSD.N_pad = 200;
+
+	my_config_Mag.nu = 1.;
+	my_config_Mag.c_window_width = 0.25;
+	my_config_Mag.derivative = 0;
+	my_config_Mag.N_pad = 200;
+	double ell_prefactor;
 
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
 	double k1_cH0;
@@ -151,6 +186,17 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_ar);
 		if(ni != nj) {cfftlog_ells_increment(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_ar);}
+
+		// Add in lensing magnification contribution
+		cfftlog_ells(chi_ar, f1_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k1_ar, Fk1_Mag_ar);
+		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k2_ar, Fk2_Mag_ar);}
+		for(i=0;i<Nell_block;i++) {
+			ell_prefactor = ell_ar[i]*(ell_ar[i]+1);
+			for(j=0;j<Nchi;j++) {
+				Fk1_ar[i][j]+= ell_prefactor / (k1_ar[i][j]*k1_ar[i][j])* Fk1_Mag_ar[i][j];
+				if(ni != nj) {Fk2_ar[i][j]+= ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* Fk2_Mag_ar[i][j];}
+			}
+		}
 
 		for(i=0;i<Nell_block;i++) {
 			cl_temp = 0.;
