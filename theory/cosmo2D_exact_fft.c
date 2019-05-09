@@ -69,14 +69,15 @@ void f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni
 // Integrand for lensing magnification of galaxy density
 void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni){
 	double g0 =1./growfac(1.);
-	double a, z;
+	double a, z, fK;
 	int i;
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
 	double window_M;
 	for(i=0;i<Nchi;i++) {
 		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0
 		z = 1./a - 1.;
-		window_M = gbias.b_mag[ni]*W_kappa(a, f_K(chi_ar[i]/real_coverH0), ni)/ f_K(chi_ar[i] / real_coverH0) / (real_coverH0*real_coverH0);
+		fK = f_K(chi_ar[i]/real_coverH0);
+		window_M = gbias.b_mag[ni]*W_kappa(a, fK, ni)/ fK / (real_coverH0*real_coverH0); // at end convert back to Mpc^{-2}
 		// printf("bmag, glens, f_K, %lg %lg %lg\n", bias);
 		// pf = (pf_photoz(z,ni)<0.)? 0:pf_photoz(z,ni); // get rid of unphysical negatives
 		// f_chi_Mag_ar[i] = chi_ar[i]/a * window_M*growfac(a)*g0;
