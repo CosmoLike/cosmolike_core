@@ -76,9 +76,10 @@ void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni
 	for(i=0;i<Nchi;i++) {
 		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0
 		z = 1./a - 1.;
-		window_M = -gbias.b_mag[ni]*g_lens(a, ni) /2.; // in CCL notation
+		window_M = -gbias.b_mag[ni]*g_lens(a, ni)/ f_K(chi_ar[i] / real_coverH0) / (real_coverH0*real_coverH0);
 		// pf = (pf_photoz(z,ni)<0.)? 0:pf_photoz(z,ni); // get rid of unphysical negatives
-		f_chi_Mag_ar[i] = chi_ar[i]/a * window_M*growfac(a)*g0* 3./(real_coverH0*real_coverH0) * cosmology.Omega_m;
+		// f_chi_Mag_ar[i] = chi_ar[i]/a * window_M*growfac(a)*g0;
+		f_chi_Mag_ar[i] = window_M*growfac(a)*g0;
 	}
 }
 
