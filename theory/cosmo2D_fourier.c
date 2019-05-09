@@ -38,7 +38,12 @@ double W_kappa(double a, double fK, double nz){
   return wkappa;
 }
 double W_gal(double a, double nz){
-  return gbias.b1_function(1./a-1.,(int)nz)*pf_photoz(1./a-1.,(int)nz)*hoverh0(a);
+  double wgal = gbias.b1_function(1./a-1.,(int)nz)*pf_photoz(1./a-1.,(int)nz)*hoverh0(a);
+  double wmag = gbias.b_mag[(int)nz]*1.5*cosmology.Omega_m*f_K(chi(a))/a*g_lens(a,(int)nz);
+  if(cosmology.MGSigma != 0.){
+    wmag *= (1.+MG_Sigma(a));
+  }
+  return wgal + wmag;
 }
 double f_rsd (double aa){
   double gamma = 0.55;

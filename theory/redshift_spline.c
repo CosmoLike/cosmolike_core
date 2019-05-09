@@ -1006,7 +1006,7 @@ double g_lens(double a, int zbin) // for *lens* tomography bin zbin
       aa = 1./(redshift.clustering_zdistrpar_zmax+1.);
       for (i=0;i<Ntable.N_a;i++,aa+=da) {
         array[1] = aa;
-        table[j+1][i] = int_gsl_integrate_medium_precision(int_for_g_tomo,(void*)array,1./(redshift.shear_zdistrpar_zmax+1.),aa,NULL,4000); 
+        table[j+1][i] = int_gsl_integrate_medium_precision(int_for_g_lens,(void*)array,1./(redshift.shear_zdistrpar_zmax+1.),aa,NULL,4000); 
       }      
     }  
     update_nuisance(&N);
