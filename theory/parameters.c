@@ -31,6 +31,7 @@ void set_survey_parameters_to_DES_COV_BCC();
 
 void set_HOD_redmagic();
 
+#include "parameters_bary.c"
 
 // covariance parameters
 

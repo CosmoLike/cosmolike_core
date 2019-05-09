@@ -52,6 +52,7 @@ double p_lin(double k,double a);
 //double Delta_NL_emu(double k_NL,double a); //k in h/Mpc
 //double Delta_NL_emu_only(double k_NL,double a); //k in h/Mpc
 double Pdelta(double k_NL,double a); //k in coverH0 units
+double PkRatio_baryons(double kintern,double a); //k in h/Mpc 
 
 //double int_for_chi(double a,void * args);
 double f_K(double chi);
@@ -633,7 +634,7 @@ double get_class_s8(struct file_content *fc, int *status){
   }
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
   if (cosmology.A_s){
-//     printf("passing A_s=%e directly\n",cosmology.A_s);
+//  printf("passing A_s=%e directly\n",cosmology.A_s);
    strcpy(fc->name[parser_length-1],"A_s");
    sprintf(fc->value[parser_length-1],"%e",cosmology.A_s);
  }
@@ -645,7 +646,7 @@ double get_class_s8(struct file_content *fc, int *status){
    A_s *=pow(cosmology.sigma_8/get_class_s8(fc,&status),2.0);
    strcpy(fc->name[parser_length-1],"A_s");
    sprintf(fc->value[parser_length-1],"%e",A_s);
- }
+   }
  cosmology.A_s = A_s;
     printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
 }
@@ -661,6 +662,7 @@ double p_class(double k_coverh0,double a, int NL, int *status){
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   static int class_status = 0;
   double val,klog;
+
   if (recompute_cosmo3D(C)){
     update_cosmopara(&C);
     if (table_P_L ==0){
@@ -683,7 +685,7 @@ double p_class(double k_coverh0,double a, int NL, int *status){
     struct output op;
 
   	ErrorMsg errmsg; // for error messages 
-
+	
   	struct file_content fc;
   	int parser_length = 30;
   	if (parser_init(&fc,parser_length,"none",errmsg) == _FAILURE_){
@@ -697,6 +699,7 @@ double p_class(double k_coverh0,double a, int NL, int *status){
    }
 
    *status = fill_class_parameters(&fc,parser_length);
+   
    if(*status>0) return 1; 
    *status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
    parser_free(&fc);
@@ -1312,38 +1315,88 @@ return exp(val);
 }
 
 
+double PkRatio_baryons(double kintern,double a){
+	// return P(k)_bary/P(k)_DMO from hydro sims ; kintern in unit [h/Mpc]
+	
+	FILE *infile ;
+	static barypara B;
+	double logkin = log10(kintern);
+	double res;
+	
+	static double *logk_bins=0;
+	static double *a_bins = 0 ;
+	static double **TblogPkR =0 ;
+	
+	const gsl_interp2d_type *T = gsl_interp2d_bilinear;
+	gsl_interp2d *interp2d = gsl_interp2d_alloc (T, bary.Nkbins, bary.Nabins);
+	double *GSLPKR = malloc(bary.Nkbins * bary.Nabins * sizeof(double));
+		
+	if (bary.isPkbary == 0) return 1. ;
+	
+	if (recompute_PkRatio(B)){
+		update_PkRatio(&B);
+		
+		printf("in recompute PkRatio \n");
+		
+		if (TblogPkR!=0) free_double_matrix(TblogPkR,0,bary.Nkbins-1, 0, bary.Nabins-1);
+		TblogPkR = create_double_matrix(0,bary.Nkbins-1, 0, bary.Nabins-1);
+		
+		if (logk_bins!=0) free_double_vector(logk_bins, 0, bary.Nkbins-1);
+		logk_bins = create_double_vector(0, bary.Nkbins-1);
+		
+		if (a_bins!=0) free_double_vector(logk_bins, 0, bary.Nabins-1);
+		a_bins = create_double_vector(0, bary.Nabins-1);
+		
+		for (int i=0;i<bary.Nabins;i++){
+			a_bins[i]=1./(1+bary.z_bins[i]);   //printf("a: %le,z: %le\n",a[i],z[i]);
+		}
+		
+		infile=fopen(bary.FILE_logPkR, "r");
+		if(infile==NULL){
+		    printf("Error opening logPkRatio file\n");
+		    exit(1);
+		}
+		
+		fscanf(infile, "%*[^\n]");  // Read and discard the 1st line
+		
+		for (int i=0;i<bary.Nkbins;i++){
+			fscanf(infile,"%le ",&logk_bins[i]);
+			for (int j=0;j<bary.Nabins;j++){
+				fscanf(infile,"%le ",&TblogPkR[i][j]);
+			}
+		}
+		fclose(infile);		
+	}
+	
+	for (int i=0;i<bary.Nkbins;i++){
+		for (int j=0;j<bary.Nabins;j++){
+			gsl_interp2d_set(interp2d, GSLPKR, i, j, TblogPkR[i][j]);
+		}
+	}
+	
+	gsl_interp2d_init(interp2d, logk_bins, a_bins, GSLPKR, bary.Nkbins, bary.Nabins);
+		
+/*	
+	if (a < a_bins[0]){
+		printf("warning doing extrapolation (a too small/z_in too high)\n");
+	}
+	
+	if (a > a_bins[bary.Nabins-1]){
+		printf("warning doing extrapolation (a too large/z_in too small)\n");
+	}
+*/		
+	//if (logkin < logk_bins[0])          return 1.0;	 // logkin = logk_bins[0];  
+	//if (logkin > logk_bins[Nkbins-1])   logkin = logk_bins[Nkbins-1];
+	
+	//res = gsl_interp2d_eval(interp2d, logk_bins, a_bins, GSLPKR, logkin, a, NULL, NULL);   // log(Pk_ratio)
+	res = gsl_interp2d_eval_extrap(interp2d, logk_bins, a_bins, GSLPKR, logkin, a, NULL, NULL);    // allow extrapolation beyond k>1500 
+	res = pow(10, res)	;  // Pk_ratio
+			
+	gsl_interp2d_free(interp2d);
+	free(GSLPKR);
+	return res;
+}
 
-// double fraction_baryons(double k,double a)
-// {
-//   static int READ_TABLE=0;
-//   static double **table=0;
-//   int i;
-//   double val;
-//   double z=1./a-1.;
-//   int baryon_zbin=11;
-//   int baryon_kbin=100;
-//   static double dz=(2.0)/(10.0); //2,0 was the max zdistribution when binning the DES baryonic power spectra
-//   static double dk=(10.0-.3)/(99.);
-//   if (READ_TABLE==0){
-//     table=create_double_matrix(0, baryon_kbin-1, 0, baryon_zbin-1);
-//     for(i=0;i<baryon_kbin;i++){
-//       table[i][0]=AGN_DESdepth[i][0];
-//       table[i][1]=AGN_DESdepth[i][1];
-//       table[i][2]=AGN_DESdepth[i][2];
-//       table[i][3]=AGN_DESdepth[i][3];
-//       table[i][4]=AGN_DESdepth[i][4];
-//       table[i][5]=AGN_DESdepth[i][5];
-//       table[i][6]=AGN_DESdepth[i][6];
-//       table[i][7]=AGN_DESdepth[i][7];
-//       table[i][8]=AGN_DESdepth[i][8];
-//       table[i][9]=AGN_DESdepth[i][9];
-//       table[i][10]=AGN_DESdepth[i][10];
-//     }
-//     READ_TABLE=1;
-//   }
-//   val = interpol2d(table, baryon_kbin, 0.3, 10.0, dk, k, baryon_zbin, 0.0, 2.0, dz, z, 0.0, 0.0);
-//   return val; 
-// }
 
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -1385,10 +1438,13 @@ double Pdelta(double k_NL,double a)
     pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
     break;
   }
-    // if(((1./a-1.)<2.0) && (kintern >0.3) && (kintern <10.)) { 
-    //   res=sqrt(pdelta*fraction_baryons(kintern, a)*pdelta);
-    // }
-    // else res=pdelta;
+
+//      double z = 1./a -1 ; 
+//	  if (z > 4.) { 
+//		 printf("	z:%lf    a:%lf   	k_Mpc:%lf    PkRatio:%lf \n",z,a,kintern,PkRatio_baryons(kintern, a));
+//	  }
+  
+  if (bary.isPkbary==1) pdelta = pdelta*PkRatio_baryons(kintern, a);
   return pdelta;  
 }    
 

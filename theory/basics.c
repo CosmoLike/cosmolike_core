@@ -1,3 +1,18 @@
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+
+#include <fftw3.h>
+
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_spline.h>
+#include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_sf_legendre.h>
+#include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_sf_trig.h>
+#include <gsl/gsl_sf_erf.h>
 #define NR_END 1
 #define FREE_ARG char*
 
