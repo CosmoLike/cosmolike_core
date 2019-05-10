@@ -41,7 +41,7 @@ void f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni){
 	double g0 =1./growfac(1.);
 	double a, z;
 	int i;
-	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
+	double real_coverH0 = cosmology.coverH0 / cosmology.h0; // unit Mpc
 	double pf;
 	for(i=0;i<Nchi;i++) {
 		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0
@@ -72,13 +72,15 @@ void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni
 	double a, z, fK;
 	int i;
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
-	double window_M;
+	double window_M, wmag;
 	for(i=0;i<Nchi;i++) {
 		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0
 		z = 1./a - 1.;
 		fK = f_K(chi_ar[i]/real_coverH0);
-		window_M = gbias.b_mag[ni]*W_kappa(a, fK, ni)/ fK / (real_coverH0*real_coverH0); // at end convert back to Mpc^{-2}
-		// printf("bmag, glens, f_K, %lg %lg %lg\n", bias);
+		// printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);
+		wmag = W_mag(a, fK, (double)ni);
+		window_M = gbias.b_mag[ni] * wmag/ fK / (real_coverH0*real_coverH0);
+		// printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);
 		// pf = (pf_photoz(z,ni)<0.)? 0:pf_photoz(z,ni); // get rid of unphysical negatives
 		// f_chi_Mag_ar[i] = chi_ar[i]/a * window_M*growfac(a)*g0;
 		f_chi_Mag_ar[i] = window_M*growfac(a)*g0;
@@ -196,8 +198,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		for(i=0;i<Nell_block;i++) {
 			ell_prefactor = ell_ar[i]*(ell_ar[i]+1);
 			for(j=0;j<Nchi;j++) {
-				Fk1_ar[i][j]+= ell_prefactor / (k1_ar[i][j]*k1_ar[i][j])* Fk1_Mag_ar[i][j];
-				if(ni != nj) {Fk2_ar[i][j]+= ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* Fk2_Mag_ar[i][j];}
+				Fk1_ar[i][j]+= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j])* Fk1_Mag_ar[i][j]);
+				if(ni != nj) {Fk2_ar[i][j]+= (ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* Fk2_Mag_ar[i][j]);}
 			}
 		}
 
@@ -231,10 +233,10 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	for (l = L; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 	}
-	free(k1_ar);
-	free(k2_ar);
-	free(Fk1_ar);
-	free(Fk2_ar);
+	printf("finished bin %d\n", ni);
+	free(k1_ar);free(k2_ar);
+	free(Fk1_ar);free(Fk2_ar);
+	free(Fk1_Mag_ar);free(Fk2_Mag_ar);
 	// fclose(OUT);
 	// exit(0);
 }
