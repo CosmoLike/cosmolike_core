@@ -15,6 +15,13 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sf_expint.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_interp2d.h>
+#include <gsl/gsl_spline2d.h>
+
 
 #include "../../theory/basics.c"
 #include "../../emu13/emu.c"
@@ -22,20 +29,70 @@
 #include "../../theory/cosmo3D.c"
 #include "../../theory/redshift.c"
 
+typedef struct {
+  const gsl_interp2d_type *T = gsl_interp2d_bilinear;
+  gsl_spline2d *spline;
+  gsl_interp_accel *xacc;
+  gsl_interp_accel *yacc;
+  double *grid_values;
+} spline_interpolator;
+spline_interpolator global_baryon_spline;
+
+
+void init_baryon_spline_interpolation_to_TNG100(){
+  
+  const size_t N = 100;             /* number of points to interpolate */
+  const double lnk_values[] = { 0.0, 1.0 };
+  const double z_values[] = { 3.71, 3.49, 3.28, 2.90, 2.44, 2.10, 1.74, 1.41, 1.04, 0.7, 0.35, 0.18, 0.0 }; /* define unit square */
+  const size_t nk = sizeof(lnk_values) / sizeof(double); /* y grid points */
+  const size_t nz = sizeof(z_values) / sizeof(double); /* x grid points */
+  global_baryon_spline.grid_values = malloc(nk * nz * sizeof(double));
+  global_baryon_spline.spline = gsl_spline2d_alloc(global_baryon_spline.T, nk, nz);
+  global_baryon_spline.xacc = gsl_interp_accel_alloc();
+  global_baryon_spline.yacc = gsl_interp_accel_alloc();
+  size_t i, j;
+  
+  for(int i = 0; i < nk; i++){
+    for(int j = 0; j < nz; j++){
+      gsl_spline2d_set(spline, global_baryon_spline.grid_values, i, j, TNG100[i][j]);
+    }
+  }
+
+  /* initialize interpolation */
+  gsl_spline2d_init(global_baryon_spline.spline, lnk_values, z_values, Pk_ratio, nk, nz);
+  
+
+}
+
+
+void free_baryon_spline_interpolation_to_TNG100(){
+  gsl_spline2d_free(global_baryon_spline.spline);
+  gsl_interp_accel_free(global_baryon_spline.xacc);
+  gsl_interp_accel_free(global_baryon_spline.yacc);
+  free(global_baryon_spline.grid_values);
+}
 
 
 double fraction_Pdelta_baryon_from_sims_DES(double k,double z)
 {
+  return gsl_spline2d_eval(global_baryon_spline.spline, k, z, global_baryon_spline.xacc, global_baryon_spline.yacc);
+}
+
+
+double fraction_Pdelta_baryon_from_spline_DES(double k,double z)
+{
   int i;
-  double val,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,kintern;
+  double val;
   static int READ_TABLE=0;
   static double **table;
   FILE *F;
-  int baryon_zbin=11;
-  int baryon_kbin=100;
+  int baryon_zbin=13;
+  int baryon_kbin=325;
+  double logk_min = -3.3010299956639813;
+  double logk_max = 3.1760912590556813;
   double dz=(redshift.shear_zdistrpar_zmax)/(10.0);
-  static double dk=(10.0-.3)/(99.);
-  val = interpol2d(AGN_DESdepth, baryon_kbin, 0.3, 10.0, dk, kintern, baryon_zbin, 0.0, 2.0, dz, z, 0.0, 0.0);
+  static double dlogk=(logk_max-logk_min)/(double(baryon_kbin-1));
+  val = interpol2d(AGN_DESdepth, baryon_kbin, logk_min, logk_max, dk, log(k), baryon_zbin, 0.0, 2.0, dz, z, 0.0, 0.0);
   return val; 
 }
 
@@ -124,8 +181,6 @@ double fraction_Pdelta_baryon_from_sims_DES(double k,double z)
 //  val = interpol2d(table, OWLS_kbin, 0.3, 10.0, dk, kintern,OWLS_zbin, 0.0, 2.0, dz, z, 0.0, 0.0);
 //  return val; 
 // }
-
-
 
 
 

@@ -1,3 +1,11 @@
+*.o
+*.out
+*.so
+*.pyc
+*.a
+._*
+*~
+.DS_Store
 
 class/libclass\.a
 

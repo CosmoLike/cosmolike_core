@@ -38,8 +38,18 @@ void set_clphotoz_priors_cmass();
 void set_clphotoz_priors_source();
 
 void set_clusterMobs_priors();
+void set_prior_cosmology();
 
-
+void set_prior_cosmology()
+{
+  prior.Omega_m=cosmology.Omega_m;
+  prior.sigma_8=cosmology.sigma_8;
+  prior.n_spec=cosmology.n_spec;
+  prior.w0=cosmology.w0;
+  prior.wa=cosmology.wa;
+  prior.omb=cosmology.omb;
+  prior.h0=cosmology.h0;
+}
 
 void set_HOD_redmagic_priors()
 {
@@ -135,11 +145,11 @@ void set_shear_priors_stage3()
 void set_shear_priors_stage4()
 {
   int i;
-  printf("Setting Gaussian shear calibration Priors stage 4\n");
+  printf("Setting Gaussian shear calibration Priors stage 4; see external_prior.c:set_shear_priors_stage4() for details\n");
   for (i=0;i<tomo.shear_Nbin; i++){
     prior.shear_calibration_m[i][0] = 0.0;
     prior.shear_calibration_m[i][1] = 0.004;
-    printf("Mean=%le, Sigma=%le\n",prior.shear_calibration_m[i][0],prior.shear_calibration_m[i][1]);
+ //   printf("Mean=%le, Sigma=%le\n",prior.shear_calibration_m[i][0],prior.shear_calibration_m[i][1]);
   }
   like.shearcalib=1;
 }
@@ -190,7 +200,7 @@ void set_wlphotoz_priors_SV()
 void set_wlphotoz_priors_stage4()
 {
   int i;  
-  printf("Setting Gaussian shear photo-z Priors stage 4\n");
+  printf("Setting Gaussian shear photo-z Priors stage 4; see external_prior.c:set_wlphotoz_priors_stage4 for details\n");
   for (i=0;i<tomo.shear_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_shear[i][0]=nuisance.bias_zphot_shear[i];
@@ -198,8 +208,8 @@ void set_wlphotoz_priors_stage4()
     // rms width of Gaussian priors
     prior.bias_zphot_shear[i][1] = 0.002;
     prior.sigma_zphot_shear[i][1]=0.002; // http://lsst.org/files/docs/Phot-z-plan.pdf
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_shear[i][0],prior.bias_zphot_shear[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_shear[i][0],prior.sigma_zphot_shear[i][1]);
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_shear[i][0],prior.bias_zphot_shear[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_shear[i][0],prior.sigma_zphot_shear[i][1]);
   }
   like.wlphotoz=1;
 }
@@ -215,8 +225,8 @@ void set_clphotoz_priors_redmagic()
     //rms width of Gaussian priors
     prior.bias_zphot_clustering[i][1] = 0.0004;
     prior.sigma_zphot_clustering[i][1]=0.0006;
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }
   like.clphotoz=1;
 }
@@ -224,7 +234,7 @@ void set_clphotoz_priors_redmagic()
 void set_clphotoz_priors_source()
 {
   int i;
-  printf("Setting Gaussian clustering photo-z Priors source sample\n");
+  printf("Setting Gaussian clustering photo-z Priors source sample; see external_prior.c:set_clphotoz_priors_source() for details\n");
   for (i=0;i<tomo.clustering_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
@@ -232,8 +242,8 @@ void set_clphotoz_priors_source()
     //rms width of Gaussian priors
     prior.bias_zphot_clustering[i][1] = 0.002;
     prior.sigma_zphot_clustering[i][1]= 0.002;
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }
   like.clphotoz=1;
 }
@@ -241,7 +251,7 @@ void set_clphotoz_priors_source()
 void set_clphotoz_priors_LSST_gold()
 {
   int i;
-  printf("Setting Gaussian clustering photo-z Priors redmagic\n");
+  printf("Setting Gaussian clustering photo-z Priors redmagic; ; see external_prior.c:set_clphotoz_priors_LSST_gold() for details\n");
   for (i=0;i<tomo.clustering_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
@@ -249,8 +259,8 @@ void set_clphotoz_priors_LSST_gold()
     //rms width of Gaussian priors
     prior.bias_zphot_clustering[i][1] = 0.001;
     prior.sigma_zphot_clustering[i][1]=0.002;
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }
   like.clphotoz=1;
 }
@@ -258,7 +268,7 @@ void set_clphotoz_priors_LSST_gold()
 void set_clphotoz_priors_LSST_SRD()
 {
   int i;
-  printf("Setting Gaussian clustering photo-z Priors redmagic\n");
+  printf("Setting Gaussian clustering photo-z Priors LSST SRD; see external_prior.c:set_clphotoz_priors_LSST_SRD() for details\n");
   for (i=0;i<tomo.clustering_Nbin; i++){
     // center of Gaussian priors
     prior.bias_zphot_clustering[i][0]=nuisance.bias_zphot_clustering[i];
@@ -266,8 +276,8 @@ void set_clphotoz_priors_LSST_SRD()
     //rms width of Gaussian priors
     prior.bias_zphot_clustering[i][1] = 0.001;
     prior.sigma_zphot_clustering[i][1]=0.002;
-    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
-    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
+//    printf("Mean (of mean)=%le, Sigma (of mean)=%le\n",prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+//    printf("Mean (of sigma)=%le, Sigma (of sigma)=%le\n",prior.sigma_zphot_clustering[i][0],prior.sigma_zphot_clustering[i][1]); 
   }
   like.clphotoz=1;
 }
@@ -308,44 +318,6 @@ double log_L_BAO()
   }
   return 0.5*log_L;
 }
-
-double log_L_Planck()
-{
-  double log_L = 0.;
-  log_L-=(cosmology.Omega_m - 0.3156)*(cosmology.Omega_m - 0.3156)/(0.0091*0.0091);
-  log_L-=(cosmology.sigma_8 - 0.831)*(cosmology.sigma_8 - 0.831)/(0.013*0.013);
-  log_L-=(cosmology.omb - 0.0491685)*(cosmology.omb - 0.0491685)/(0.00035106195*0.00035106195);
-  log_L-=(cosmology.n_spec - 0.9645)*(cosmology.n_spec - 0.9645)/(0.0049*0.0049);
-  log_L-=(cosmology.h0 - 0.6727)*(cosmology.h0 - 0.6727)/(0.0066*0.0066);
-  return 0.5*log_L;
-}
-
-double log_L_SN()
-{
-  double log_L = 0.;
-  log_L-=(cosmology.Omega_m - 0.3156)*(cosmology.Omega_m - 0.3156)/(0.08856208*0.08856208);
-  log_L-=(cosmology.h0 - 0.6727)*(cosmology.h0 - 0.6727)/(0.2492126*0.2492126);
-  log_L-=(cosmology.w0+1.0)*(cosmology.w0+1.0)/(0.12428845*0.12428845);
-  log_L-=(cosmology.wa - 0.0)*(cosmology.wa - 0.0)/(0.979977*0.979977);
-  return 0.5*log_L;
-}
-
-double log_L_Planck_BAO_SN() // using the Planck 15 fid values and error bars as described in Aubourg et al 2014
-{
-  double log_L = 0.;
-  double omegab=cosmology.omb*cosmology.h0*cosmology.h0;
-  double omegab_fid=0.0491685*0.6727*0.6727;
-  double w_pivot=cosmology.w0+(1.0-(1.0/(1.0+0.266)))*cosmology.wa; // see table 4 in aubourg et al 2014
-
-  log_L-=(cosmology.Omega_m - 0.3156)*(cosmology.Omega_m - 0.3156)/(0.011*0.011);
-  log_L-=(cosmology.h0 - 0.6727)*(cosmology.h0 - 0.6727)/(0.011*0.011);
-  log_L-=(omegab - omegab_fid)*(omegab - omegab_fid)/(0.0003*0.0003);
-  log_L-=(w_pivot +1.0)*(w_pivot +1.0)/(0.11*0.11);
-  log_L-=(cosmology.wa - 0.0)*(cosmology.wa - 0.0)/(0.4*0.4);
- 
- return 0.5*log_L;
- }
-
 
 
 
@@ -415,21 +387,13 @@ double log_L_Planck15_BAO_w0wa()
     }
   }
 
-  param_fid[0] = 3.5098925e-01;
-  param_fid[1] = 8.0467525e-01;
-  param_fid[2] = 9.6406051e-01;
-  param_fid[3] = -5.0551771e-01;
-  param_fid[4] = -1.46884482e+00;
-  param_fid[5] = 5.462452e-02;
-  param_fid[6] = 6.3983876e-01;
-
-  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
-  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
-  param_diff[2] = cosmology.n_spec-param_fid[2]; 
-  param_diff[3] = cosmology.w0-param_fid[3]; 
-  param_diff[4] = cosmology.wa-param_fid[4];
-  param_diff[5] = cosmology.omb-param_fid[5];
-  param_diff[6] = cosmology.h0-param_fid[6];
+  param_diff[0] = cosmology.Omega_m-prior.Omega_m; 
+  param_diff[1] = cosmology.sigma_8-prior.sigma_8; 
+  param_diff[2] = cosmology.n_spec-prior.n_spec; 
+  param_diff[3] = cosmology.w0-prior.w0;
+  param_diff[4] = cosmology.wa-prior.wa;
+  param_diff[5] = cosmology.omb-prior.omb;
+  param_diff[6] = cosmology.h0-prior.h0;
   
   log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
 
@@ -491,22 +455,14 @@ double log_L_Planck15_BAO_H070p6_JLA_w0wa()
       table[r][c] = table[c][r];
     }
   }
-
-  param_fid[0] = 3.08672e-01;
-  param_fid[1] = 8.41330e-01;
-  param_fid[2] = 9.63707e-01;
-  param_fid[3] = -9.35997e-01;
-  param_fid[4] = -3.82183e-01;
-  param_fid[5] = 4.79953e-02;
-  param_fid[6] = 6.80887e-01;
     
-  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
-  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
-  param_diff[2] = cosmology.n_spec-param_fid[2]; 
-  param_diff[3] = cosmology.w0-param_fid[3]; 
-  param_diff[4] = cosmology.wa-param_fid[4];
-  param_diff[5] = cosmology.omb-param_fid[5];
-  param_diff[6] = cosmology.h0-param_fid[6];
+  param_diff[0] = cosmology.Omega_m-prior.Omega_m; 
+  param_diff[1] = cosmology.sigma_8-prior.sigma_8; 
+  param_diff[2] = cosmology.n_spec-prior.n_spec; 
+  param_diff[3] = cosmology.w0-prior.w0;
+  param_diff[4] = cosmology.wa-prior.wa;
+  param_diff[5] = cosmology.omb-prior.omb;
+  param_diff[6] = cosmology.h0-prior.h0;
   
   log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
 
@@ -549,13 +505,6 @@ double log_L_Planck18_BAO_Riess18_Pantheon_w0wa()
   table[5][5] = 4.94180e+07;
   table[5][6] = -7.29198e+06;
   table[6][6] = 3.34690e+06;
-  param_fid[0] = 2.97717e-01;
-  param_fid[1] = 8.33421e-01;
-  param_fid[2] = 9.64631e-01;
-  param_fid[3] = -9.99383e-01;
-  param_fid[4] = -2.88583e-01;
-  param_fid[5] = 4.64837e-02;
-  param_fid[6] = 6.93855e-01;
 
   for (c = 0; c < n_param; c++) {
     for (r = c + 1; r < n_param; r++) {
@@ -563,13 +512,13 @@ double log_L_Planck18_BAO_Riess18_Pantheon_w0wa()
     }
   }
 
-  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
-  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
-  param_diff[2] = cosmology.n_spec-param_fid[2]; 
-  param_diff[3] = cosmology.w0-param_fid[3]; 
-  param_diff[4] = cosmology.wa-param_fid[4];
-  param_diff[5] = cosmology.omb-param_fid[5];
-  param_diff[6] = cosmology.h0-param_fid[6];
+  param_diff[0] = cosmology.Omega_m-prior.Omega_m; 
+  param_diff[1] = cosmology.sigma_8-prior.sigma_8; 
+  param_diff[2] = cosmology.n_spec-prior.n_spec; 
+  param_diff[3] = cosmology.w0-prior.w0;
+  param_diff[4] = cosmology.wa-prior.wa;
+  param_diff[5] = cosmology.omb-prior.omb;
+  param_diff[6] = cosmology.h0-prior.h0;
   
   log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
 
@@ -612,13 +561,6 @@ double log_L_Planck18_BAO_w0wa()
   table[5][5] = 2.75140e+07;
   table[5][6] = -1.65229e+06;
   table[6][6] = 4.48558e+05;
-  param_fid[0] = 3.41667e-01;
-  param_fid[1] = 7.95474e-01;
-  param_fid[2] = 9.64545e-01;
-  param_fid[3] = -5.77797e-01;
-  param_fid[4] = -1.31630e+00;
-  param_fid[5] = 5.33105e-02;
-  param_fid[6] = 6.48927e-01;
 
   for (c = 0; c < n_param; c++) {
     for (r = c + 1; r < n_param; r++) {
@@ -626,13 +568,13 @@ double log_L_Planck18_BAO_w0wa()
     }
   }
 
-  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
-  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
-  param_diff[2] = cosmology.n_spec-param_fid[2]; 
-  param_diff[3] = cosmology.w0-param_fid[3]; 
-  param_diff[4] = cosmology.wa-param_fid[4];
-  param_diff[5] = cosmology.omb-param_fid[5];
-  param_diff[6] = cosmology.h0-param_fid[6];
+  param_diff[0] = cosmology.Omega_m-prior.Omega_m; 
+  param_diff[1] = cosmology.sigma_8-prior.sigma_8; 
+  param_diff[2] = cosmology.n_spec-prior.n_spec; 
+  param_diff[3] = cosmology.w0-prior.w0;
+  param_diff[4] = cosmology.wa-prior.wa;
+  param_diff[5] = cosmology.omb-prior.omb;
+  param_diff[6] = cosmology.h0-prior.h0;
   
   log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
 
@@ -669,25 +611,19 @@ double log_L_Planck18_w0()
   table[4][4] = 4.79954e+07;
   table[4][5] = -6.50670e+06;
   table[5][5] = 2.42902e+06;
-  param_fid[0] = 3.03785e-01;
-  param_fid[1] = 8.22263e-01;
-  param_fid[2] = 9.65449e-01;
-  param_fid[3] = -1.04080e+00;
-  param_fid[4] = 4.75908e-02;
-  param_fid[5] = 6.86273e-01;
-
+  
   for (c = 0; c < n_param; c++) {
     for (r = c + 1; r < n_param; r++) {
       table[r][c] = table[c][r];
     }
   }
 
-  param_diff[0] = cosmology.Omega_m-param_fid[0]; 
-  param_diff[1] = cosmology.sigma_8-param_fid[1]; 
-  param_diff[2] = cosmology.n_spec-param_fid[2]; 
-  param_diff[3] = cosmology.w0-param_fid[3]; 
-  param_diff[4] = cosmology.omb-param_fid[4];
-  param_diff[5] = cosmology.h0-param_fid[5];
+  param_diff[0] = cosmology.Omega_m-prior.Omega_m; 
+  param_diff[1] = cosmology.sigma_8-prior.sigma_8; 
+  param_diff[2] = cosmology.n_spec-prior.n_spec; 
+  param_diff[3] = cosmology.w0-prior.w0;
+  param_diff[4] = cosmology.omb-prior.wa;
+  param_diff[5] = cosmology.h0-prior.omb;
   
   log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
 

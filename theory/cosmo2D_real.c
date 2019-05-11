@@ -11,7 +11,7 @@ double xi_pm_tomo(int pm, double theta, int ni, int nj); //shear tomography corr
 double xi_pm_rebin(int pm, double thetamin_i, double thetamax_i, int ni,int nj);//xi_pm averaged over large bins
 
 /**************** these routines are only used internally ************/
-typedef  double (*C_tomo_pointer)(double l, int n1, int n2);
+typedef double (*C_tomo_pointer)(double l, int n1, int n2);
 void twopoint_via_hankel(double **xi, double *logthetamin, double *logthetamax, C_tomo_pointer C_tomo, int ni, int nj, int N_Bessel);
 void xipm_via_hankel(double **xi, double *logthetamin, double *logthetamax,  C_tomo_pointer C_tomo,int ni, int nj);
 // simple wrapper to make non-tomography C(l) routies fit into this pointer scheme
@@ -22,7 +22,6 @@ double C_cl_HOD_wrapper(double l,int ni, int nj){
 /******************** all angles in radian! *******************/
 
 double w_tomo_exact(int nt, int ni, int nj){
-
   static int LMAX = 100000;
   static int NTHETA = 0;
   static double ** Pl =0;
@@ -32,77 +31,56 @@ double w_tomo_exact(int nt, int ni, int nj){
   static nuisancepara N;
   static galpara G;
   int i,l,nz;
-  if (like.theta ==NULL){
-    printf("cosmo2D_real.c:w_tomo_exact: like.theta not initialized\nEXIT\n");
-    exit(1);
+  if (like.Ntheta ==0){
+    printf("cosmo2D_real.c:w_tomo_exact: like.Ntheta not initialized\nEXIT\n"); exit(1);
   }
   if (ni != nj){
-    printf("cosmo2D_real.c:w_tomo_exact: ni != nj tomography not supported\nEXIT\n");
-    exit(1);    
+    printf("cosmo2D_real.c:w_tomo_exact: ni != nj tomography not supported\nEXIT\n"); exit(1);    
   }
   if (Pl ==0){
     Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
     Cl = create_double_vector(0,LMAX-1);
     w_vec = create_double_vector(0,tomo.clustering_Nbin*like.Ntheta-1);
     NTHETA = like.Ntheta;
-    char Pl_file[200];
-    char Pl_file2[200];
-    sprintf(Pl_file,"./aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
- //   sprintf(Pl_file2,"/home/teifler/Dropbox/cosmolike/top-level/des_mpp/aux/w_Pl_lmax%d_tmin%.1f_tmax%.1f_Nt%d",LMAX,like.vtmin/constants.arcmin,like.vtmax/constants.arcmin,NTHETA);
-    FILE *f;
-    if ((f = fopen(Pl_file, "r"))){
-    	printf("reading Legendre coefficients from file %s\n",Pl_file);
-	    for (i =0; i < NTHETA; i++){
-    		for (int l = 0; l < LMAX; l++){
-    			int j;
-    			fscanf(f,"%d %d %le",&j,&j,&Pl[i][l]);
-    		}
-    	}
-    	fclose(f);
+    double *xmin, *xmax, *Pmin, *Pmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
     }
-    // quick hack to make this work at JPL clusters
-    //TO DO: PROPER PATH HANDLING
-/*    else if ((f = fopen(Pl_file2, "r"))){
-      printf("reading Legendre coefficients from file %s\n",Pl_file2);
-      for (i =0; i < NTHETA; i++){
-        for (int l = 0; l < LMAX; l++){
-          int j;
-          fscanf(f,"%d %d %le",&j,&j,&Pl[i][l]);
-        }
+
+    for (i = 0; i<NTHETA; i ++){
+      printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
+      gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
+      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+      for (int l = 1; l < LMAX; l ++){
+        //Pl[i][l] = (2*l+1.)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
+        Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
       }
-      fclose(f);
-    } */
-    else{
-    	for (i = 0; i<NTHETA; i ++){
-      		printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
-      		for (int l = 0; l < LMAX; l ++){
-        		Pl[i][l] = (2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
-      		}
-    	}
-    	printf("Legendre coefficients tabulated\nWrite to file %s\n",Pl_file);
-	    if ((f = fopen(Pl_file,"w"))){
-    		for (i =0; i < NTHETA; i++){
-    			for (int l = 0; l < LMAX; l++){
-    				fprintf(f,"%d %d %le\n",i,l,Pl[i][l]);
-    			}	
-		    }
-		    fclose(f);
-    	}
     }
-  }
-  if (recompute_clustering(C,G,N,ni,nj)){
-    for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
-      for (l = 1; l < LMAX; l++){
-        if (l < 20){Cl[l]=C_cl_tomo_nointerp(l,nz,nz);}
-        else Cl[l]=C_cl_tomo(1.0*l,nz,nz);
-      }
-      for (i = 0; i < NTHETA; i++){
-        w_vec[nz*like.Ntheta+i] =0;
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    }
+    if (recompute_clustering(C,G,N,ni,nj)){
+      for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
         for (l = 1; l < LMAX; l++){
-          w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];
+//          if (l < 20){Cl[l]=C_cl_tomo_nointerp(l,nz,nz);}
+          //else 
+            Cl[l]=C_cl_tomo(1.0*l,nz,nz);
+        }
+        for (i = 0; i < NTHETA; i++){
+          w_vec[nz*like.Ntheta+i] =0;
+          for (l = 1; l < LMAX; l++){
+            w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];
+          }
         }
       }
-    }
     update_cosmopara(&C);
     update_galpara(&G);
     update_nuisance(&N);
@@ -110,64 +88,6 @@ double w_tomo_exact(int nt, int ni, int nj){
   return w_vec[ni*like.Ntheta+nt];  
 }
 
-double xip_tomo_exact(int nt, int ni, int nj){
-  static int LMAX = 20000;
-  static int NTHETA = 0;
-  static double ** Pl =0;
-  static double *Cl =0;
-  static double *w_vec =0;
-  static cosmopara C;
-  static nuisancepara N;
-  int i,l,nz;
-  if (like.theta ==NULL){
-    printf("cosmo2D_real.c:xip_tomo_exact: like.theta not initialized\nEXIT\n");
-    exit(1);
-  }
-  if (Pl ==0){
-    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
-    Cl = create_double_vector(0,LMAX-1);
-    w_vec = create_double_vector(0,tomo.shear_Npowerspectra*like.Ntheta-1);
-    NTHETA = like.Ntheta;
-    double x,pref =1./(4.*M_PI);
-    for (i = 0; i<NTHETA; i ++){
-      x = cos(like.theta[i]);
-      for (int l = 0; l < LMAX; l ++){
-        Pl[i][l] = (2.*l+1)*pref*gsl_sf_legendre_Pl(l,x);
-      }
-    }
-  }
-  if (NTHETA != like.Ntheta){
-    free_double_matrix (Pl,0, NTHETA-1, 0, LMAX-1);
-    free_double_vector(w_vec,0, tomo.shear_Npowerspectra*NTHETA-1);
-    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
-    w_vec = create_double_vector(0,tomo.shear_Npowerspectra*like.Ntheta-1);
-    NTHETA = like.Ntheta;
-    double x,pref =1./(4.*M_PI);
-    for (i = 0; i<NTHETA; i++){
-      x = cos(like.theta[i]);
-      for (l = 0; l < LMAX; l++){
-        Pl[i][l] = (2.*l+1)*pref*gsl_sf_legendre_Pl(l,x);
-      }
-    }
-  }
-  if (recompute_shear(C,N)){
-    for (nz = 0; nz <tomo.shear_Npowerspectra; nz ++){
-      for (l = 0; l < LMAX; l++){
-        Cl[l]=C_shear_tomo(1.0*l,Z1(nz),Z2(nz));
-      //Cl[l]=C_shear_tomo_nointerp(1.0*l,Z1(nz),Z2(nz));
-      }
-      for (i = 0; i < NTHETA; i++){
-        w_vec[nz*like.Ntheta+i] =0;
-        for (l = 0; l < LMAX; l++){
-          w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];
-        }
-      }
-    }
-    update_cosmopara(&C);
-    update_nuisance(&N);
-  }
-  return w_vec[N_shear(ni,nj)*like.Ntheta+nt];  
-}
 double int_for_w(double l, void *params){
   double *ar = (double *) params;
   int n1 = (int) ar[1];
@@ -203,7 +123,7 @@ double w_clustering_tomo(double theta, int ni, int nj) // galaxy clustering tomo
     update_galpara(&G);
     update_nuisance(&N);
   }
-  return interpol(table[ni*tomo.clustering_Nbin+nj], Ntable.N_thetaH, logthetamin, logthetamax,dlogtheta, log(theta), 1.0, 1.0);
+  return interpol(table[ni*tomo.clustering_Nbin+nj], Ntable.N_thetaH, logthetamin, logthetamax,dlogtheta, log(theta), 0.0, 0.0);
 }
 
 double w_gamma_t_tomo(double theta,int ni, int nj) //G-G lensing, lens bin ni, source bin nj

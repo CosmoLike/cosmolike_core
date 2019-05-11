@@ -2,7 +2,8 @@
 #define Z_SPLINE_TYPE gsl_interp_cspline
 // lens efficiencies
 double g_cmb (double a);//lens efficiency for CMB lensing
-double g_tomo(double a, int zbin); // lens efficiency of galaxies in tomography bin zbin
+double g_tomo(double a, int zbin); // lens efficiency of source galaxies in tomography bin zbin
+double g_lens(double a, int zbin); // lens efficiency of *lens* galaxies in tomography bin zbin - used for magnification calculations
 
 //shear routines
 double zdistr_photoz(double zz,int j); //returns n(ztrue | j), works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j
@@ -550,6 +551,8 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
     dz = (z_v[i-1]-z_v[0])/(1.*i-1.);
     zhisto_max=z_v[i-1]+dz;
     zhisto_min=z_v[0];
+    // redshift.clustering_zdistrpar_zmin = zhisto_min;
+    // redshift.clustering_zdistrpar_zmax = zhisto_max;
     free_double_vector(z_v,0,zbins-1);
     if (zhisto_max < tomo.clustering_zmax[tomo.clustering_Nbin-1] || zhisto_min > tomo.clustering_zmin[0]){
       printf("Error in redshift_spline.c:pf_histo.c: %s parameters incompatible with tomo.clustering bin choice\nEXIT!\n",redshift.clustering_REDSHIFT_FILE);
@@ -633,7 +636,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     update_nuisance(&N);
     if (table == 0){
       zbins = line_count(redshift.clustering_REDSHIFT_FILE);
-      if (redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){zbins*=20;}//upsample if convolving with analytic photo-z model
+      if (redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model
       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
       for (int i = 0; i < tomo.clustering_Nbin+1; i++){
@@ -859,6 +862,10 @@ double int_for_zmean(double z, void *params){
   return z*pf_photoz(z,(int)array[0]);
 }
 
+double norm_for_zmean(double z, void *params){
+  double *array = (double*)params;
+  return pf_photoz(z,(int)array[0]);
+}
 double zmean(int j){ //mean true redshift of galaxies in tomography bin j
   static double **table = 0;
   if (table ==0){
@@ -867,7 +874,7 @@ double zmean(int j){ //mean true redshift of galaxies in tomography bin j
     table   = create_double_matrix(0, tomo.clustering_Nbin, 0, 1);
     for (int i = 0; i< tomo.clustering_Nbin; i++){
      array[0]  = 1.0*i;
-     table[i][0] = int_gsl_integrate_low_precision(int_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024); 
+     table[i][0] = int_gsl_integrate_low_precision(int_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024)/int_gsl_integrate_low_precision(norm_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024); 
     }
   }
   return table[j][0];
@@ -968,6 +975,46 @@ double g_tomo(double a, int zbin) // for tomography bin zbin
   return interpol(table[zbin+1], Ntable.N_a, 1./(redshift.shear_zdistrpar_zmax+1.), 0.999999, da, a, 1.0, 1.0); //zbin =-1 is non-tomography
 }
 
+
+double int_for_g_lens(double aprime,void *params)
+{
+  double chi1, chi_prime,val;
+  double *ar = (double *) params;
+  int zbin= (int) ar[0];
+  chi1 = chi(ar[1]);
+  chi_prime = chi(aprime);
+
+  val=pf_photoz(1./aprime-1.,zbin)*f_K(chi_prime-chi1)/f_K(chi_prime)/(aprime*aprime);
+  return val;
+}
+
+double g_lens(double a, int zbin) // for *lens* tomography bin zbin
+{
+  static nuisancepara N;
+  static cosmopara C;
+  
+  static double **table = 0;
+  static double da = 0.0;
+  double aa;
+  int i,j;
+  double array[2];
+  if (table ==0 || recompute_zphot_clustering(N) || recompute_expansion(C)){
+    if (table==0) table   = create_double_matrix(0, tomo.clustering_Nbin, 0, Ntable.N_a-1);
+    da = (0.999999-1./(redshift.clustering_zdistrpar_zmax+1.))/(Ntable.N_a-1);
+    for (j=-1;j<tomo.clustering_Nbin;j++) {
+      array[0]=(double) j; //if j=-1, no tomography is being done
+      aa = 1./(redshift.clustering_zdistrpar_zmax+1.);
+      for (i=0;i<Ntable.N_a;i++,aa+=da) {
+        array[1] = aa;
+        table[j+1][i] = int_gsl_integrate_medium_precision(int_for_g_lens,(void*)array,1./(redshift.shear_zdistrpar_zmax+1.),aa,NULL,4000); 
+      }      
+    }  
+    update_nuisance(&N);
+    update_cosmopara(&C);
+  }
+  if (a<=1./(redshift.clustering_zdistrpar_zmax+1.) || a>1.0-da) return 0.0;
+  return interpol(table[zbin+1], Ntable.N_a, 1./(redshift.clustering_zdistrpar_zmax+1.), 0.999999, da, a, 1.0, 1.0); //zbin =-1 is non-tomography
+}
 
 
 
