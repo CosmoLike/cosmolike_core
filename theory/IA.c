@@ -573,8 +573,8 @@ double int_for_C_ggl_IA_mpp(double a, void *params)
   fK     = f_K(chi(a));
   k      = ell/fK;
   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
-  res= W_HOD(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
-  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a))*dchi_da(a)/fK/fK;
+  res= W_gal(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
   
 //  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a)+P_gm_rm(k,a))*dchi_da(a)/fK/fK;
 }
@@ -593,7 +593,7 @@ double int_for_C_ggl_IA_mpp_b2(double a, void *params)
   k      = ell/fK;
   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
   res= W_HOD(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
-  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)))*dchi_da(a)/fK/fK;
+  return res*(W_gal(a,ar[0])*Pdelta(k,a)+W_HOD(a,ar[0])*g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)))*dchi_da(a)/fK/fK;
 }
 
 double int_for_C_ggl_IA_Az_b2(double a, void *params)
