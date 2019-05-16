@@ -1,4 +1,4 @@
-//#include "pt.c"
+#include "pt.c"
 
 double W_kappa(double a, double fK, double nz);//complete lens efficiency weight
 double W_gal(double a, double nz); //complete weight for galaxy statistics

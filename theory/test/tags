@@ -1,0 +1,30 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+CXX	Makefile	/^CXX=gcc -std=99$/;"	m
+DEBUG	Makefile	/^DEBUG := 1$/;"	m
+GSL	Makefile	/^GSL   := 1$/;"	m
+LDFLAGS	Makefile	/^LDFLAGS  =$/;"	m
+N_lambda	main.c	/^  int N_lambda;$/;"	m	struct:__anon1	file:
+Par_lambda_obs	main.c	/^} Par_lambda_obs;$/;"	t	typeref:struct:__anon1	file:
+int_gsl_integrate_medium_precision	main.c	/^double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter)$/;"	f
+int_lobs_probability_observed_richness_given_mass	main.c	/^double int_lobs_probability_observed_richness_given_mass(double obs_lambda, void * params){$/;"	f
+int_ltrue_probability_observed_richness_given_mass	main.c	/^double int_ltrue_probability_observed_richness_given_mass(double true_lambda, void * params){$/;"	f
+intrinsic_alpha	main.c	/^  double intrinsic_alpha;$/;"	m	struct:__anon1	file:
+intrinsic_sigma	main.c	/^  double intrinsic_sigma;$/;"	m	struct:__anon1	file:
+k	main.c	/^  double k;$/;"	m	struct:__anon1	file:
+main	main.c	/^int main() {$/;"	f
+mass	main.c	/^  double mass;$/;"	m	struct:__anon1	file:
+mass_M1	main.c	/^  double mass_M1;$/;"	m	struct:__anon1	file:
+mass_min	main.c	/^  double mass_min;$/;"	m	struct:__anon1	file:
+obs_lambda	main.c	/^  double obs_lambda;$/;"	m	struct:__anon1	file:
+obs_lambda_max	main.c	/^  double obs_lambda_max[10];$/;"	m	struct:__anon1	file:
+obs_lambda_min	main.c	/^  double obs_lambda_min[10];$/;"	m	struct:__anon1	file:
+probability_observed_richness_given_mass	main.c	/^double probability_observed_richness_given_mass(int N_lambda, void * params) {$/;"	f
+probability_observed_richness_given_true_richness	main.c	/^probability_observed_richness_given_true_richness(const double observed_lambda, $/;"	f
+probability_true_richness_given_mass	main.c	/^double probability_true_richness_given_mass(const double true_lambda, $/;"	f
+true_lambda	main.c	/^  double true_lambda;$/;"	m	struct:__anon1	file:
+z	main.c	/^  double z;$/;"	m	struct:__anon1	file:

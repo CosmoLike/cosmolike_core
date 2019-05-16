@@ -93,6 +93,12 @@ void update_nuisance (nuisancepara *N){
   N->cluster_centering_f0 = nuisance.cluster_centering_f0;
   N->cluster_centering_alpha = nuisance.cluster_centering_alpha;
   N->cluster_centering_sigma = nuisance.cluster_centering_sigma;
+  for (int _i = 0; _i < nuisance.N_cluster_MOR; ++_i){
+    N->cluster_MOR[_i] = nuisance.cluster_MOR[_i];
+  }
+  for (int _i = 0; _i < nuisance.N_cluster_selection; ++_i){
+    N->cluster_selection[_i] = nuisance.cluster_selection[_i];
+  }
 }
 int recompute_expansion(cosmopara C){ //rules for recomputing growth factor & comoving distance
   if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
@@ -170,6 +176,9 @@ int recompute_DESclusters(cosmopara C, nuisancepara N){
    if (recompute_cosmo3D(C)) return 1;
    for (int _i = 0; _i < nuisance.N_cluster_MOR; ++_i){
       if (N.cluster_MOR[_i] !=nuisance.cluster_MOR[_i] ) return 1; 
+   }
+   for (int _i = 0; _i < nuisance.N_cluster_selection; ++_i){
+      if (N.cluster_selection[_i] !=nuisance.cluster_selection[_i] ) return 1; 
    }
    return 0;
 }
