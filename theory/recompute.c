@@ -93,6 +93,9 @@ void update_nuisance (nuisancepara *N){
   N->cluster_centering_f0 = nuisance.cluster_centering_f0;
   N->cluster_centering_alpha = nuisance.cluster_centering_alpha;
   N->cluster_centering_sigma = nuisance.cluster_centering_sigma;
+  for (i = 0; i < nuisance.N_cluster_MOR; ++i){
+    N->cluster_MOR[i] = nuisance.cluster_MOR[i];
+  }
 }
 int recompute_expansion(cosmopara C){ //rules for recomputing growth factor & comoving distance
   if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
