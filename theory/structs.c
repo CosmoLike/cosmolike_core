@@ -261,6 +261,8 @@ typedef struct {
   double cluster_centering_M_pivot;
   int N_cluster_MOR;
   double cluster_MOR[10];
+  int N_cluster_selection;
+  double cluster_selection[10];
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
@@ -369,6 +371,7 @@ typedef struct input_nuisance_params_mpp {
     double shear_m[10];
     double  A_z[10];
     double  MOR[10];
+    double selection[10];
 } input_nuisance_params_mpp;
 
 typedef struct input_HOD_params {
