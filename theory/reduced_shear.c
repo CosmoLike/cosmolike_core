@@ -1,9 +1,9 @@
 double Delta_C_shear_reduced_shear_nointerp(double l, int ni, int nj);
-double C_reduced_shear_tomo(double l, int ni, int nj);
+double Delta_C_reduced_shear_tomo(double l, int ni, int nj);
 double Delta_C_shear_gl_shear_nointerp(double l, int nl, int ns);
-double C_gl_reduced_shear_tomo(double l, int ni, int nj);
-double xi_pm_reduced_shear_tomo(int pm, double theta, int ni, int nj);
-double w_gamma_t_reduced_shear_tomo(double theta,int ni, int nj);
+double Delta_C_gl_reduced_shear_tomo(double l, int ni, int nj);
+double Delta_xi_pm_reduced_shear_tomo(int pm, double theta, int ni, int nj);
+double Delta_w_gamma_t_reduced_shear_tomo(double theta,int ni, int nj);
 //typedef double (*C_tomo_pointer)(double l, int n1, int n2);
 
 double fs_2(double k1x, double k1y, double k2x, double k2y)
@@ -114,7 +114,7 @@ double Delta_C_shear_reduced_shear_nointerp(double l, int ni, int nj){
   return int_gsl_integrate_low_precision(int_for_Delta_C_shear_reduced_shear,(void*)array,amin_source(j),amax_source(k),NULL,1000);
 }
 
-double C_reduced_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source galaxies in bins ni, nj
+double Delta_C_reduced_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source galaxies in bins ni, nj
 {
   static cosmopara C;
   static nuisancepara N;
@@ -139,12 +139,12 @@ double C_reduced_shear_tomo(double l, int ni, int nj)  //shear power spectrum of
     for (k=0; k<tomo.shear_Npowerspectra; k++) {
       llog = logsmin;
       for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
-        table[k][i]= log(Delta_C_shear_reduced_shear_nointerp(exp(llog),Z1(k),Z2(k)) + C_shear_tomo_nointerp(exp(llog),Z1(k),Z2(k)));
+        table[k][i]= Delta_C_shear_reduced_shear_nointerp(exp(llog),Z1(k),Z2(k));
       }
     }
     update_cosmopara(&C); update_nuisance(&N); 
   }
-  double f1 = exp(interpol_fitslope(table[N_shear(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
+  double f1 = interpol_fitslope(table[N_shear(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.);
   if (isnan(f1)){f1 = 0.;}
   return f1;
 }
@@ -168,7 +168,7 @@ double Delta_C_shear_gl_shear_nointerp(double l, int nl, int ns){
   return int_gsl_integrate_low_precision(int_for_Delta_C_gl_reduced_shear,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
 }
 
-double C_gl_reduced_shear_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, lens bin ni, source bin nj
+double Delta_C_gl_reduced_shear_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, lens bin ni, source bin nj
 {
   static cosmopara C;
   static nuisancepara N;
@@ -195,20 +195,20 @@ double C_gl_reduced_shear_tomo(double l, int ni, int nj)  //G-G lensing power sp
     for (k=0; k<tomo.ggl_Npowerspectra; k++) {
       llog = logsmin;
       for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
-          table[k][i]= log(C_gl_tomo_nointerp(exp(llog),ZL(k),ZS(k))+Delta_C_shear_gl_shear_nointerp(exp(llog),ZL(k),ZS(k)));
+          table[k][i]= Delta_C_shear_gl_shear_nointerp(exp(llog),ZL(k),ZS(k));
       }
     }
     
     update_cosmopara(&C); update_nuisance(&N); update_galpara(&G);
     
   }
-  if(test_zoverlap(ni,nj)){f1 = exp(interpol_fitslope(table[N_ggl(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));}
+  if(test_zoverlap(ni,nj)){f1 = interpol_fitslope(table[N_ggl(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.);}
   if (isnan(f1)){f1 = 0;}
   return f1;
 }
 
 
-double xi_pm_reduced_shear_tomo(int pm, double theta, int ni, int nj) //shear tomography correlation functions
+double Delta_xi_pm_reduced_shear_tomo(int pm, double theta, int ni, int nj) //shear tomography correlation functions
 {
   static cosmopara C;
   static nuisancepara N; 
@@ -234,7 +234,7 @@ double xi_pm_reduced_shear_tomo(int pm, double theta, int ni, int nj) //shear to
   return interpol(table[2*N_shear(ni,nj)+(1-pm)/2], Ntable.N_thetaH, logthetamin, logthetamax,dlogtheta, log(theta), 0.0, 0.0);
 }
 
-double w_gamma_t_reduced_shear_tomo(double theta,int ni, int nj) //G-G lensing, lens bin ni, source bin nj
+double Delta_w_gamma_t_reduced_shear_tomo(double theta,int ni, int nj) //G-G lensing, lens bin ni, source bin nj
 {
   static cosmopara C;
   static nuisancepara N;
