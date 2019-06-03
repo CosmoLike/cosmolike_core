@@ -179,8 +179,8 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
       gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
       gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
       for (int l = 1; l < LMAX; l ++){
-        Pl[i][l] = (2*l+1.)/(4.*M_PI)*Pmin[l];
-        //Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+        //Pl[i][l] = (2*l+1.)/(4.*M_PI)*Pmin[l];
+        Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
       }
     }
     free_double_vector(xmin,0,like.Ntheta-1);
@@ -222,4 +222,3 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
   }
   return w_vec[ni*like.Ntheta+nt];  
 }
-
