@@ -789,5 +789,6 @@ double C_shear_shear_IA_tab(double l, int ni, int nj)  //shear power spectrum of
   }
   double f1 = exp(interpol_fitslope(table[N_shear(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
   if (isnan(f1)){f1 = 0.;}
+  printf("%le %d %d %le\n", l, ni, nj, f1);
   return f1;
 }
