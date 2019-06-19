@@ -484,21 +484,15 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	for(i=0; i<Nchi; i++) {
 		chi_ar[i] = chi_min * exp(dlnchi*i);
 	}
-	printf("Here!\n");
 	f_chi_for_Psi_cl(chi_ar, Nchi, f1_chi_ar, nl);
-	printf("Here2!\n");
 	f_chi_for_Psi_cl_RSD(chi_ar, Nchi, f1_chi_RSD_ar, nl);
-	printf("Here3!\n");
 	f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, nl);
 	// for(j=0;j<Nchi;j++) {
 	// 	f1_chi_ar[j] += f1_chi_Mag_ar[j];
 	// }
-	printf("Here4!\n");
 	f_chi_for_Psi_sh(chi_ar, Nchi, f2_chi_ar, ns);
-	printf("Here5!\n");
-	f_chi_for_Psi_sh_IA(chi_ar, Nchi, f2_chi_IA_ar, ns);
+	// f_chi_for_Psi_sh_IA(chi_ar, Nchi, f2_chi_IA_ar, ns);
 
-	printf("Here!\n");
 
 	// char outfilename[] = "f_chi_gl1.txt";
 	// char outfilename[] = "f1_chi_gl1.txt";
@@ -573,7 +567,6 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	while (fabs(dev) > tolerance){
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
-		printf("Here!\n");
 		// galaxy density part
 		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);
 		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_ar);
@@ -587,7 +580,6 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 				// printf("Fk1: %d,%d, %lg\n", i,j, Fk1_ar[i][j]);
 			}
 		}
-		printf("Here!\n");
 		// shear part
 		cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config_L, ell_ar, Nell_block, k2_ar, Fk2_ar);	
 		// cfftlog_ells_increment(chi_ar, f2_chi_IA_ar, Nchi, &my_config_L, ell_ar, Nell_block, k2_ar, Fk2_ar);
