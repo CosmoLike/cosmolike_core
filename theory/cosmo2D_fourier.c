@@ -53,6 +53,7 @@ double W_gal(double a, double nz){
     wmag *= (1.+MG_Sigma(a));
   }
   return wgal + wmag;
+  // return wgal;
 }
 double f_rsd (double aa){
   double gamma = 0.55;
@@ -162,11 +163,19 @@ double int_for_C_gl_tomo(double a, void *params)
   double *ar = (double *) params;
   double res,ell, fK, k;
   if (a >= 1.0) error("a>=1 in int_for_C_gl_tomo");
-  
+
+  double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
+  else
+    ell_prefactor2=sqrt(ell_prefactor2);
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  res= W_gal(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
+  res= W_gal(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
+  // res= (W_gal(a,ar[0]) + W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]] *(ell_prefactor1/ell/ell-1.) )*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK /fK/fK * ell_prefactor2/k/k;
   res= res*Pdelta(k,a);
   return res;
 }
@@ -240,13 +249,19 @@ double C_cl_tomo_nointerp(double l, int ni, int nj)  //galaxy clustering power s
 
 double C_gl_tomo_nointerp(double l, int ni, int nj)  //G-G lensing power spectrum, lens bin ni, source bin nj
 {
+  // l=1.0*2;
+  if(l==1.) {return 0.;}
   double array[3] = {(double)ni,(double)nj,l};
   if (gbias.b2[ni] || gbias.b2[nj]){
     return int_gsl_integrate_low_precision(int_for_C_gl_tomo_b2,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
   }
   if (gbias.hod[ni][0] > 10 && gbias.hod[ni][0] < 16) {return int_gsl_integrate_low_precision(int_for_C_gl_HOD_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);}
 
-  return int_gsl_integrate_medium_precision(int_for_C_gl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
+  double res = int_gsl_integrate_medium_precision(int_for_C_gl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
+  // printf("C_gl_tomo_nointerp(l=%lg,ni=%d,nj=%d):%lg\n",l,ni,nj,res);
+  // exit(0);
+  return res;
+  // return int_gsl_integrate_medium_precision(int_for_C_gl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
 }
 
 double C_shear_tomo_nointerp(double l, int ni, int nj) //shear tomography power spectra of source galaxy bins ni, nj

@@ -93,7 +93,9 @@ void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long 
 
 	long N_original = N;
 	long N_pad = config->N_pad;
-	N += 2*N_pad;
+	long N_extrap_low = config->N_extrap_low;
+	long N_extrap_high = config->N_extrap_high;
+	N += (2*N_pad + N_extrap_low+N_extrap_high);
 
 	if(N % 2) {printf("Please use even number of x !\n"); exit(0);}
 	long halfN = N/2;
@@ -118,8 +120,23 @@ void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long 
 		fb[i] = 0.;
 		fb[N-1-i] = 0.;
 	}
-	for(i=N_pad; i<N_pad+N_original; i++) {
-		fb[i] = fx[i-N_pad] / pow(x[i-N_pad], config->nu) ;
+	double xi;
+	if(N_extrap_low) {
+		double dlnf_low = log(fx[1]/fx[0]);
+		for(i=N_pad; i<N_pad+N_extrap_low; i++) {
+			xi = exp(log(x0) + (i-N_pad - N_extrap_low)*dlnx);
+			fb[i] = exp(log(fx[0]) + (i- N_pad - N_extrap_low)*dlnf_low) / pow(xi, config->nu);
+		}
+	}
+	for(i=N_pad+N_extrap_low; i<N_pad+N_extrap_low+N_original; i++) {
+		fb[i] = fx[i-N_pad-N_extrap_low] / pow(x[i-N_pad-N_extrap_low], config->nu) ;
+	}
+	if(N_extrap_high) {
+		double dlnf_high = log(fx[N_original-1]/fx[N_original-2]);
+		for(i=N-N_pad-N_extrap_high; i<N-N_pad; i++) {
+			xi = exp(log(x[N_original-1]) + (i-N_pad - N_extrap_low- N_original)*dlnx);
+			fb[i] = exp(log(fx[N_original-1]) + (i- N_pad - N_extrap_low- N_original)*dlnf_high) / pow(xi, config->nu);
+		}
 	}
 
 	fftw_complex *out, *out_vary;
@@ -149,14 +166,14 @@ void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long 
 		y0 = y[j][0];
 
 		for(i=0; i<=halfN; i++) {
-			out_vary[i] = conj(out[i] * cpow(x0*y0/exp(2*N_pad*dlnx), -I*eta_m[i]) * gl[i]) ;
+			out_vary[i] = conj(out[i] * cpow(x0*y0/exp((N-N_original)*dlnx), -I*eta_m[i]) * gl[i]) ;
 			// printf("gl:%e\n", gl[i]);
 		}
 
 		fftw_execute(plan_backward);
 
 		for(i=0; i<N_original; i++) {
-			Fy[j][i] = out_ifft[i+N_pad] * sqrt(M_PI) / (4.*N * pow(y[j][i], config->nu));
+			Fy[j][i] = out_ifft[i+N_pad+N_extrap_high] * sqrt(M_PI) / (4.*N * pow(y[j][i], config->nu));
 		}
 	}
 	fftw_destroy_plan(plan_forward);
@@ -170,7 +187,9 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 
 	long N_original = N;
 	long N_pad = config->N_pad;
-	N += 2*N_pad;
+	long N_extrap_low = config->N_extrap_low;
+	long N_extrap_high = config->N_extrap_high;
+	N += (2*N_pad + N_extrap_low+N_extrap_high);
 
 	if(N % 2) {printf("Please use even number of x !\n"); exit(0);}
 	long halfN = N/2;
@@ -195,8 +214,23 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 		fb[i] = 0.;
 		fb[N-1-i] = 0.;
 	}
-	for(i=N_pad; i<N_pad+N_original; i++) {
-		fb[i] = fx[i-N_pad] / pow(x[i-N_pad], config->nu) ;
+	double xi;
+	if(N_extrap_low) {
+		double dlnf_low = log(fx[1]/fx[0]);
+		for(i=N_pad; i<N_pad+N_extrap_low; i++) {
+			xi = exp(log(x0) + (i-N_pad - N_extrap_low)*dlnx);
+			fb[i] = exp(log(fx[0]) + (i- N_pad - N_extrap_low)*dlnf_low) / pow(xi, config->nu);
+		}
+	}
+	for(i=N_pad+N_extrap_low; i<N_pad+N_extrap_low+N_original; i++) {
+		fb[i] = fx[i-N_pad-N_extrap_low] / pow(x[i-N_pad-N_extrap_low], config->nu) ;
+	}
+	if(N_extrap_high) {
+		double dlnf_high = log(fx[N_original-1]/fx[N_original-2]);
+		for(i=N-N_pad-N_extrap_high; i<N-N_pad; i++) {
+			xi = exp(log(x[N_original-1]) + (i-N_pad - N_extrap_low- N_original)*dlnx);
+			fb[i] = exp(log(fx[N_original-1]) + (i- N_pad - N_extrap_low- N_original)*dlnf_high) / pow(xi, config->nu);
+		}
 	}
 
 	fftw_complex *out, *out_vary;
@@ -226,14 +260,14 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 		y0 = y[j][0];
 
 		for(i=0; i<=halfN; i++) {
-			out_vary[i] = conj(out[i] * cpow(x0*y0/exp(2*N_pad*dlnx), -I*eta_m[i]) * gl[i]) ;
+			out_vary[i] = conj(out[i] * cpow(x0*y0/exp((N-N_original)*dlnx), -I*eta_m[i]) * gl[i]) ;
 			// printf("gl:%e\n", gl[i]);
 		}
 
 		fftw_execute(plan_backward);
 
 		for(i=0; i<N_original; i++) {
-			Fy[j][i] += out_ifft[i+N_pad] * sqrt(M_PI) / (4.*N * pow(y[j][i], config->nu));
+			Fy[j][i] += out_ifft[i+N_pad+N_extrap_high] * sqrt(M_PI) / (4.*N * pow(y[j][i], config->nu));
 		}
 	}
 	fftw_destroy_plan(plan_forward);
