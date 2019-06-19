@@ -100,7 +100,7 @@ double Tsqr_EH_no_wiggle(double khoverMPC)
 double P_DW(double k, double mu, double a){
   double G2 = pow(growfac(a)/growfac(1.0),2.0);
   double g_mu = G2*(1-mu*mu+mu*mu*pow(1+f_a(a),2.));
-  double damping_los = exp(-g_mu*k*k/(GRS.k_star*GRS.k_star));
+  double damping_los = exp(-g_mu*k*k/(2.0*GRS.k_star*GRS.k_star));
   double Tsqr = Tsqr_EH_no_wiggle(k)*(1.-damping_los)+Tsqr_EH_wiggle(k)*damping_los;
   return G2*cosmology.sigma_8*cosmology.sigma_8/sigma_r_sqr()*Tsqr*pow(k,cosmology.n_spec);
 }
@@ -133,35 +133,35 @@ double P_obs(double k_ref, double mu_ref, int nz){
    	+ GRS_gal.P_shot[nz];
 }
 
-double P_g_mt(double k, double mu, int nz, GRSpara_mt  G, int i, int j){
-  double a =1./(1.+G.z[nz]);
-// return G.b_mt[nz][i]*G.b_mt[nz][j]*(1+f_a(a)/G.b_mt[nz][i]*mu*mu)*(1+f_a(a)/G.b_mt[nz][j]*mu*mu)*Pdelta(k*cosmology.coverH0,a)*pow(cosmology.coverH0,3.);  
- return G.b_mt[nz][i]*G.b_mt[nz][j]*(1+f_a(a)/G.b_mt[nz][i]*mu*mu)*(1+f_a(a)/G.b_mt[nz][j]*mu*mu)*p_lin(k*cosmology.coverH0,a)*pow(cosmology.coverH0,3.);  
-}
-double P_obs_mt(double k_ref, double mu_ref, int nz, GRSpara_mt  G, int i, int j){
-//  return P_g_mt(k_ref,mu_ref,nz,G,i,j);
-//    *exp(-pow(k*mu*sigma_r_z,2.))/(1.+0.5*pow(k*mu*sigma_r_p,2.));
-  double mu, k, k_perp, k_los;
-  double a =1./(1.+G.z[nz]);
+// double P_g_mt(double k, double mu, int nz, GRSpara_mt  G, int i, int j){
+//   double a =1./(1.+G.z[nz]);
+// // return G.b_mt[nz][i]*G.b_mt[nz][j]*(1+f_a(a)/G.b_mt[nz][i]*mu*mu)*(1+f_a(a)/G.b_mt[nz][j]*mu*mu)*Pdelta(k*cosmology.coverH0,a)*pow(cosmology.coverH0,3.);  
+//  return G.b_mt[nz][i]*G.b_mt[nz][j]*(1+f_a(a)/G.b_mt[nz][i]*mu*mu)*(1+f_a(a)/G.b_mt[nz][j]*mu*mu)*p_lin(k*cosmology.coverH0,a)*pow(cosmology.coverH0,3.);  
+// }
+// double P_obs_mt(double k_ref, double mu_ref, int nz, GRSpara_mt  G, int i, int j){
+// //  return P_g_mt(k_ref,mu_ref,nz,G,i,j);
+// //    *exp(-pow(k*mu*sigma_r_z,2.))/(1.+0.5*pow(k*mu*sigma_r_p,2.));
+//   double mu, k, k_perp, k_los;
+//   double a =1./(1.+G.z[nz]);
 
-  double H_Href = cosmology.h0*hoverh0(a)/G.H_ref[nz];
-  double DA_DAref = f_K(a)/cosmology.h0/G.DA_ref[nz];
-  //calculate (k,mu) corresponding to (k_ref,mu_ref) in current cosmology
-  k_perp = k_ref*sqrt(1-mu_ref*mu_ref)/DA_DAref;
-  k_los = k_ref*mu_ref*H_Href;
-  k = pow(k_los*k_los+k_perp*k_perp,0.5);
-  mu = k_los/k;
+//   double H_Href = cosmology.h0*hoverh0(a)/G.H_ref[nz];
+//   double DA_DAref = f_K(a)/cosmology.h0/G.DA_ref[nz];
+//   //calculate (k,mu) corresponding to (k_ref,mu_ref) in current cosmology
+//   k_perp = k_ref*sqrt(1-mu_ref*mu_ref)/DA_DAref;
+//   k_los = k_ref*mu_ref*H_Href;
+//   k = pow(k_los*k_los+k_perp*k_perp,0.5);
+//   mu = k_los/k;
 
-  //distance dispersion corresponding to the physical velocity dispersion sigma_p[nz]
-  double sigma_r_p = (G.sigma_p/2.997e+5)/(cosmology.h0*hoverh0(a)*a);// in c/H0 units
-  sigma_r_p *= cosmology.coverH0;
-  //distance dispersion corresponding to the redshift dispersion sigma_z[nz]
-  double sigma_r_z  = G.sigma_z/(cosmology.h0*hoverh0(a)*a);// in c/H0 units
-  sigma_r_z *= cosmology.coverH0;
+//   //distance dispersion corresponding to the physical velocity dispersion sigma_p[nz]
+//   double sigma_r_p = (G.sigma_p/2.997e+5)/(cosmology.h0*hoverh0(a)*a);// in c/H0 units
+//   sigma_r_p *= cosmology.coverH0;
+//   //distance dispersion corresponding to the redshift dispersion sigma_z[nz]
+//   double sigma_r_z  = G.sigma_z/(cosmology.h0*hoverh0(a)*a);// in c/H0 units
+//   sigma_r_z *= cosmology.coverH0;
 
-  //this expression matches Eq. 4 in Wang et al. 2013
-  return pow(DA_DAref,-2.)*H_Href*P_g_mt(k,mu,nz,G,i,j)
-    *exp(-pow(k*mu*sigma_r_z,2.))/(1.+0.5*pow(k*mu*sigma_r_p,2.));
-}
+//   //this expression matches Eq. 4 in Wang et al. 2013
+//   return pow(DA_DAref,-2.)*H_Href*P_g_mt(k,mu,nz,G,i,j)
+//     *exp(-pow(k*mu*sigma_r_z,2.))/(1.+0.5*pow(k*mu*sigma_r_p,2.));
+// }
 
 

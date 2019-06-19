@@ -400,6 +400,15 @@ typedef struct input_nuisance_params {
     double cluster_c[4];
 } input_nuisance_params;
 
+typedef struct input_nuisance_params_grs {
+    double grsbias[7];
+    double grssigmap[7];
+    double grssigmaz;
+    double grspshot;
+    double grskstar;
+} input_nuisance_params_grs;
+
+
 typedef struct {
     double tmin; /* Theta min (arcmin) */
     double tmax; /* Theta max (arcmin) */
