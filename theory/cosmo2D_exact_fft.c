@@ -140,7 +140,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	double f1_chi_RSD_ar[Nchi], f2_chi_RSD_ar[Nchi];
 	double f1_chi_Mag_ar[Nchi], f2_chi_Mag_ar[Nchi];
 
-	double chi_min = 30., chi_max = 6000.;
+	double chi_min = 60., chi_max = 6000.;
 	double dlnchi = log(chi_max/chi_min) / (Nchi - 1.);
 	double dlnk = dlnchi;
 
@@ -475,7 +475,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 
 	// double f2_chi_temp[Nchi];
 
-	double chi_min = 30., chi_max = 6000.;
+	double chi_min = 60., chi_max = 6000.;
 	// double chi_min = 6., chi_max = 6000.;
 
 	double dlnchi = log(chi_max/chi_min) / (Nchi - 1.);
