@@ -261,7 +261,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	for (l = L; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 	}
-	printf("finished bin %d\n", ni);
+	// printf("finished bin %d\n", ni);
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);
 	free(Fk1_Mag_ar);free(Fk2_Mag_ar);
@@ -303,7 +303,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 		}
 
 		for (i = 0; i<NTHETA; i ++){
-			printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
+			// printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
 			for (int l = 1; l < LMAX; l ++){
@@ -638,7 +638,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		Cl[l]=C_gl_tomo((double)l,nl,ns);
 		// Cl[l]=C_ggl_IA_tab((double)l,nl,ns);
 	}
-	printf("finished bin %d %d\n", nl,ns);
+	// printf("finished bin %d %d\n", nl,ns);
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);
 	free(Fk1_Mag_ar);
@@ -676,7 +676,7 @@ double w_gamma_t_nonLimber(int nt, int ni, int nj){
 		Pmax= create_double_vector(0, LMAX+1);
 
 		for (i = 0; i<NTHETA; i ++){
-			printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
+			// printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
 			for (int l = 2; l < LMAX; l ++){
