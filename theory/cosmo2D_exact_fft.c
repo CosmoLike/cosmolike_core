@@ -262,6 +262,11 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 	}
 	// printf("finished bin %d\n", ni);
+	for(i=0;i<Nell_block;i++) {
+		free(k1_ar[i]);free(k2_ar[i]);
+		free(Fk1_ar[i]);free(Fk2_ar[i]);
+		free(Fk1_Mag_ar[i]);free(Fk2_Mag_ar[i]);
+	}
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);
 	free(Fk1_Mag_ar);free(Fk2_Mag_ar);
@@ -639,6 +644,11 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		// Cl[l]=C_ggl_IA_tab((double)l,nl,ns);
 	}
 	// printf("finished bin %d %d\n", nl,ns);
+	for(i=0;i<Nell_block;i++) {
+		free(k1_ar[i]);free(k2_ar[i]);
+		free(Fk1_ar[i]);free(Fk2_ar[i]);
+		free(Fk1_Mag_ar[i]);
+	}
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);
 	free(Fk1_Mag_ar);
