@@ -87,6 +87,7 @@ void cfftlog(double *x, double *fx, long N, config *config, int ell, double *y, 
 	fftw_destroy_plan(plan_backward);
 	fftw_free(out);
 	free(out_ifft);
+	free(fb);
 }
 
 void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long Nell, double **y, double **Fy) {
@@ -181,6 +182,7 @@ void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long 
 	fftw_free(out);
 	fftw_free(out_vary);
 	free(out_ifft);
+	free(fb);
 }
 
 void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* ell, long Nell, double **y, double **Fy) {
@@ -275,4 +277,5 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 	fftw_free(out);
 	fftw_free(out_vary);
 	free(out_ifft);
+	free(fb);
 }
