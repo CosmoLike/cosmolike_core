@@ -229,14 +229,14 @@ double C_cl_non_Limber(int l, int ni, int nj){ //includes RSD too!
     //checked that these boundaries give better than 1% accuracy for l > 2
     double kmin = fmax(limits.k_min_cH0, 0.25*l/f_K(chi(1./(1.+tomo.clustering_zmax[ni]))));
     double kmax = fmin(limits.k_max_cH0, 20.*l/f_K(chi(1./(1.+tomo.clustering_zmin[ni]))));
-    // res = 2.*int_gsl_integrate_low_precision(int_for_C_cl_nonLimber,(void*)ar,log(kmin),log(kmax),NULL,100)/M_PI;
-    res = 2.*int_gsl_integrate_low_precision(int_for_C_Mag_nonLimber,(void*)ar,log(kmin),log(kmax),NULL,100)/M_PI;
+    res = 2.*int_gsl_integrate_low_precision(int_for_C_cl_nonLimber,(void*)ar,log(kmin),log(kmax),NULL,100)/M_PI;
+    // res = 2.*int_gsl_integrate_low_precision(int_for_C_Mag_nonLimber,(void*)ar,log(kmin),log(kmax),NULL,100)/M_PI;
   }
   else res = 2.*int_gsl_integrate_low_precision(int_for_C_cl_nonLimber_tomo,(void*)ar,log(limits.k_min_cH0),log(limits.k_max_cH0),NULL,1000)/M_PI;
   //gsl_set_error_handler (NULL);
 
   // non add non-linear power spectrum contributions in Limber approximation
-  // res = res + C_cl_tomo_nointerp(1.*l,ni,nj) - C_cl_lin_nointerp(1.*l,ni,nj);
+  res = res + C_cl_tomo_nointerp(1.*l,ni,nj) - C_cl_lin_nointerp(1.*l,ni,nj);
   return res;
 }
 
@@ -318,7 +318,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
     char *outfilename = (char*)malloc(40 * sizeof(char));;
 
     for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
-      sprintf(outfilename, "c_cl_exact_%d_%d_mag_MAG.txt", nz,nz);
+      sprintf(outfilename, "c_cl_exact_%d_%d_mag.txt", nz,nz);
       FILE *OUT = fopen(outfilename, "w");
 
       int L = 1;
@@ -339,6 +339,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
         fprintf(OUT, "%d %lg %lg %lg\n", l, Cl[l], C_cl_tomo_nointerp(1.*L,nz,nz), C_cl_lin_nointerp(1.*L,nz,nz));
       }
       fclose(OUT);
+      exit(0);
       for (i = 0; i < NTHETA; i++){
         w_vec[nz*like.Ntheta+i] =0;
         for (l = 1; l < LMAX; l++){
@@ -368,12 +369,22 @@ double int_for_C_gl_lin(double a, void *params)
   fK     = f_K(chi(a));
   k      = ell/fK;
   
-  double ell_prefactor2 = (ar[2]-1.)*(ar[2])*(ar[2]+1.)*(ar[2]+2.);
+  double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
   if(ell_prefactor2<=0.) 
     ell_prefactor2=0.;
   else
     ell_prefactor2=sqrt(ell_prefactor2);
-  res=W_gal(a,ar[0])*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
+
+  double chi_0,chi_1,a_0,a_1;
+  chi_0 = f_K(ell/k);
+  chi_1 = f_K((ell+1.)/k);
+  if (chi_1 > chi(limits.a_min)){
+    return 0;}
+  a_0 = a_chi(chi_0);
+  a_1 = a_chi(chi_1);
+
+  res=(W_gal(a,ar[0])+W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) )*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
   res= res*p_lin(k,a)*G_taper(k);
   return res;
 }
@@ -465,15 +476,15 @@ double w_gamma_t_nonLimber(int nt, int ni, int nj){
     char *outfilename = (char*)malloc(40 * sizeof(char));;
 
     for (nz = 0; nz <tomo.ggl_Npowerspectra; nz ++){
-      nz = 16;
+      nz = 0;
       sprintf(outfilename, "c_gl_exact_%d_%d_mag_noIA.txt", ZL(nz),ZS(nz));
       FILE *OUT = fopen(outfilename, "w");
 
       int L = 2;
       // initialize to large value in order to start while loop
       dev=10.*tolerance;
-      // while (L<100){
-      while (fabs(dev) > tolerance){
+      while (L<100){
+      // while (fabs(dev) > tolerance){
         //Cl[L] = C_cl_RSD(L,nz,nz);
         printf("L:%d\n", L);
         Cl[L] = C_gl_non_Limber(L,ZL(nz),ZS(nz));

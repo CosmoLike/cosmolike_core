@@ -158,7 +158,29 @@ double int_for_C_gl_tomo_b2(double a, void *params)
   res= res*(b1*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)));
   return res;
 }
-double int_for_C_gl_tomo(double a, void *params)
+// double int_for_C_gl_tomo(double a, void *params)
+// {
+//   double *ar = (double *) params;
+//   double res,ell, fK, k;
+//   if (a >= 1.0) error("a>=1 in int_for_C_gl_tomo");
+
+//   double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+//   double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+//   if(ell_prefactor2<=0.) 
+//     ell_prefactor2=0.;
+//   else
+//     ell_prefactor2=sqrt(ell_prefactor2);
+
+//   ell       = ar[2]+0.5;
+//   fK     = f_K(chi(a));
+//   k      = ell/fK;
+//   res= W_gal(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
+//   // res= (W_gal(a,ar[0]) + W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]] *(ell_prefactor1/ell/ell-1.) )*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK /fK/fK * ell_prefactor2/k/k;
+//   res= res*Pdelta(k,a);
+//   return res;
+// }
+
+double int_for_C_gl_tomo(double a, void *params) // Add RSD
 {
   double *ar = (double *) params;
   double res,ell, fK, k;
@@ -174,7 +196,17 @@ double int_for_C_gl_tomo(double a, void *params)
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  res= W_gal(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
+  double chi_0,chi_1,a_0,a_1;
+  chi_0 = f_K(ell/k);
+  chi_1 = f_K((ell+1.)/k);
+  if (chi_1 > chi(limits.a_min)){
+    return 0;}
+  a_0 = a_chi(chi_0);
+  a_1 = a_chi(chi_1);
+
+  double wgal = W_gal(a,ar[0]);
+  wgal += W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) ;
+  res= (wgal+W_RSD(ell, a_0, a_1, ar[0]))*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
   // res= (W_gal(a,ar[0]) + W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]] *(ell_prefactor1/ell/ell-1.) )*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK /fK/fK * ell_prefactor2/k/k;
   res= res*Pdelta(k,a);
   return res;
