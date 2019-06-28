@@ -120,14 +120,14 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	// ni = 4;
 	// nj = 4;
 
-	extern double S_integrands_cl[5][100][1000];
+	extern double S_integrands_cl[5][200][1000];
 	extern int S_integrands_cl_flag[5];
 
 	int i,j,i_block;
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 100, Nchi = 1000;
+	int Nell_block = 200, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar, **Fk2_Mag_ar;
@@ -421,8 +421,8 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// nl = 4;
 	// ns = 0;
 
-	extern double S_integrands_cl[5][100][1000];
-	extern double S_integrands_sh[4][100][1000];
+	extern double S_integrands_cl[5][200][1000];
+	extern double S_integrands_sh[4][200][1000];
 	extern int S_integrands_cl_flag[5];
 	extern int S_integrands_sh_flag[4];
 
@@ -431,7 +431,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 100, Nchi = 1000;
+	int Nell_block = 200, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar;
@@ -541,7 +541,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		my_config_Mag.nu = 1.;
 		my_config_Mag.c_window_width = 0.25;
 		my_config_Mag.derivative = 0;
-		my_config_Mag.N_pad = 1000;
+		my_config_Mag.N_pad = 500;
 		my_config_Mag.N_extrap_low = 0;
 		my_config_Mag.N_extrap_high = 0;
 
