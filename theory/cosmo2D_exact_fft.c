@@ -460,11 +460,18 @@ void f_chi_for_Psi_sh_IA(double* chi_ar, int Nchi, double* f_chi_IA_ar, int ns) 
 		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0
 		z = 1./a - 1.;
 		fK = f_K(chi_ar[i]/real_coverH0);
-		// printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);
-		wsource = W_source(a, (double)ns);
-		window_L = -wsource * norm / fK / (real_coverH0*real_coverH0);
-		// printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);
-		f_chi_IA_ar[i] = window_L*growfac(a)*g0; // unit [Mpc^-2]
+		if( (a<amin_source(ns)) || (a>amax_source(ns)) )
+		{
+			f_chi_IA_ar[i] = 0.;
+		}
+		else
+		{
+			// printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);
+			wsource = W_source(a, (double)ns);
+			window_L = -wsource * norm / fK / (real_coverH0*real_coverH0);
+			// printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);
+			f_chi_IA_ar[i] = window_L*growfac(a)*g0; // unit [Mpc^-2]
+		}
 	}
 }
 

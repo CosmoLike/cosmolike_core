@@ -408,11 +408,18 @@ void f_chi_for_Psi_sh_IA(double* chi_ar, int Nchi, double* f_chi_IA_ar, int ns) 
 		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0
 		z = 1./a - 1.;
 		fK = f_K(chi_ar[i]/real_coverH0);
-		// printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);
-		wsource = W_source(a, (double)ns);
-		window_L = -wsource * norm / fK / (real_coverH0*real_coverH0);
-		// printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);
-		f_chi_IA_ar[i] = window_L*growfac(a)*g0; // unit [Mpc^-2]
+		if( (a<amin_source(ns)) || (a>amax_source(ns)) )
+		{
+			f_chi_IA_ar[i] = 0.;
+		}
+		else
+		{
+			// printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);
+			wsource = W_source(a, (double)ns);
+			window_L = -wsource * norm / fK / (real_coverH0*real_coverH0);
+			// printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);
+			f_chi_IA_ar[i] = window_L*growfac(a)*g0; // unit [Mpc^-2]
+		}
 	}
 }
 
@@ -577,16 +584,21 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		my_config_L.nu = 1.;
 		my_config_L.c_window_width = 0.25;
 		my_config_L.derivative = 0;
-		my_config_L.N_pad = 1000.;
+		my_config_L.N_pad = 500.;
 		my_config_L.N_extrap_low = 0;
 		my_config_L.N_extrap_high = 0;
 
 		f_chi_for_Psi_sh(chi_ar, Nchi, f2_chi_ar, ns);
-		// f_chi_for_Psi_sh_IA(chi_ar, Nchi, f2_chi_IA_ar, ns);
-		// shear part
+
+		// turn on IA
+		if (like.IA ==3 || like.IA ==4) {
+			f_chi_for_Psi_sh_IA(chi_ar, Nchi, f2_chi_IA_ar, ns);
+			for(i=0;i<Nchi;i++) {
+				f2_chi_ar[i] += f2_chi_IA_ar[i];
+			}
+		}
+
 		cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config_L, ell_ar, Nell_block, k2_ar, Fk2_ar);	
-		// cfftlog_ells_increment(chi_ar, f2_chi_IA_ar, Nchi, &my_config_L, ell_ar, Nell_block, k2_ar, Fk2_ar);
-		// IA Already in f2_chi_temp
 
 		for(i=0;i<Nell_block;i++) {
 			ell_prefactor2 =(ell_ar[i]-1.)*ell_ar[i]*(ell_ar[i]+1.)*(ell_ar[i]+2.);
@@ -604,6 +616,20 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		S_integrands_sh_flag[ns] = 1;
 	}
 	// exit(0);
+	double (*C_gl_tomo_nointerp_pointer)(double,int,int);
+	double (*C_gl_lin_nointerp_pointer)(double,int,int);
+	double (*C_gl_tomo_pointer)(double,int,int);
+	if (like.IA ==3 || like.IA ==4) {
+		C_gl_tomo_nointerp_pointer = &C_ggl_IA_tab;
+		C_gl_lin_nointerp_pointer = &C_gl_lin_nointerp_IA;
+		C_gl_tomo_pointer = &C_ggl_IA_tab;
+	}
+	else {
+		C_gl_tomo_nointerp_pointer = &C_gl_tomo_nointerp;
+		C_gl_lin_nointerp_pointer = &C_gl_lin_nointerp;
+		C_gl_tomo_pointer = &C_gl_tomo;
+	}
+
 	for(i=0;i<Nell_block;i++) {
 		cl_temp = 0.;
 		for(j=0;j<Nchi;j++) {
@@ -611,11 +637,11 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 			k1_cH0 = k1_ar[i][j] * real_coverH0;
 			cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
 		}
-		Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns) - C_gl_lin_nointerp(1.*ell_ar[i],nl,ns);
+		Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_gl_tomo_nointerp_pointer(1.*ell_ar[i],nl,ns) - C_gl_lin_nointerp_pointer(1.*ell_ar[i],nl,ns);
 		// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_ggl_IA_tab(1.*ell_ar[i],nl,ns) - C_gl_lin_nointerp_IA(1.*ell_ar[i],nl,ns);
 		// printf("cl_temp: %d, %lg\n", i, cl_temp);
 		// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns), C_gl_lin_nointerp(1.*ell_ar[i],nl,ns));
-		dev = Cl[ell_ar[i]]/C_gl_tomo_nointerp(1.0*ell_ar[i],nl,ns)-1.;
+		dev = Cl[ell_ar[i]]/C_gl_tomo_nointerp_pointer(1.0*ell_ar[i],nl,ns)-1.;
 		// dev = Cl[L]/C_ggl_IA_tab(1.0*L,nl,ns)-1.;
 
 	   // printf("nl,ns,L,Cl[L],dev=%d %d %d %e %e\n",nl,ns,ell_ar[i],Cl[ell_ar[i]],dev);
@@ -639,7 +665,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// }
 
 	for (l = L; l < LMAX; l++){
-		Cl[l]=C_gl_tomo((double)l,nl,ns);
+		Cl[l]=C_gl_tomo_pointer((double)l,nl,ns);
 		// Cl[l]=C_ggl_IA_tab((double)l,nl,ns);
 	}
 	// printf("finished bin %d %d\n", nl,ns);
