@@ -299,11 +299,13 @@ double C_gl_tomo_nointerp(double l, int ni, int nj)  //G-G lensing power spectru
 double C_shear_tomo_nointerp(double l, int ni, int nj) //shear tomography power spectra of source galaxy bins ni, nj
 {
   double res;
-  double array[3] = {(double) ni, (double) nj,l};
+  double array[3] = {(double)ni, (double)nj,l};
+  // printf("ni,nj:%d,%d\n", ni,nj );
   int j,k;
   if (ni <= nj){j =nj; k = ni;}
   else{j = ni; k = nj;}
   res=int_gsl_integrate_medium_precision(int_for_C_shear_tomo,(void*)array,amin_source(j),amax_source(k),NULL,1000);
+  // printf("res:%lg\n", res);
   return res;
   
 }
@@ -466,7 +468,7 @@ double C_gl_HOD_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, le
 
 double C_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source galaxies in bins ni, nj
 {
-  printf("hallo\n");
+  // printf("hallo\n");
   static cosmopara C;
   static nuisancepara N;
   
@@ -490,7 +492,10 @@ double C_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source 
     for (k=0; k<tomo.shear_Npowerspectra; k++) {
       llog = logsmin;
       for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
+        // printf("Hier!\n");
+        // printf("C_shear_tomo, l, Z1(k),Z2(k): %lg,%lg,%d,%d:\n",log(C_shear_tomo_nointerp(exp(llog),Z1(k),Z2(k))),exp(llog),Z1(k),Z2(k));
         table[k][i]= log(C_shear_tomo_nointerp(exp(llog),Z1(k),Z2(k)));
+       // printf("table[k][i]: %lg:\n",table[k][i]);
       }
     }
     update_cosmopara(&C); update_nuisance(&N); 
