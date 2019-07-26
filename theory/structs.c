@@ -20,19 +20,13 @@ typedef struct {
   int clphotoz;
   int shearcalib;
   int clusterMobs;
-  int Planck;
-  int Planck15;
-  int Planck15_BAO_w0wa; //CH
   int Planck15_BAO_H070p6_JLA_w0wa; //CH
   int Planck18_BAO_Riess18_Pantheon_w0wa; //CH
   int Planck18_BAO_w0wa; //CH
   int Planck18_w0; //CH
-  int BOSS_Chuang;
-  int H0_Efstathiou14;
   int BAO;
-  int SN;
+  int SN_WFIRST;
   int GRS;
-  int Aubourg_Planck_BAO_SN;
   int SRD;
   char DATA_FILE[500];
   char INV_FILE[500]; 
@@ -45,12 +39,13 @@ typedef struct {
   int clusterWL;
   int clusterCG;
  // MANUWARNING: added "int gk, kk, ks;"
-   int gk;
-   int kk;
-   int ks;
+  int gk;
+  int kk;
+  int ks;
   char probes[500];
+  char ext_data[500];
 }likepara;
-likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .Planck =0, .Planck15 =0, .BOSS_Chuang =0, .H0_Efstathiou14 =0, .BAO = 0, .SN = 0, .Aubourg_Planck_BAO_SN = 0, .GRS =0,.SRD=0};
+likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .BAO = 0, .SN_WFIRST = 0, .GRS = 0, .SRD = 0, .Planck15_BAO_H070p6_JLA_w0wa = 0, .Planck18_BAO_Riess18_Pantheon_w0wa = 0, .Planck18_BAO_w0wa = 0, .Planck18_w0 = 0};
 
 typedef struct {
      double Omega_m;  /* matter density parameter                       */

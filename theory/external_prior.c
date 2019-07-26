@@ -1,5 +1,5 @@
 double log_L_BAO();
-double log_L_SN();
+double log_L_SN_WFIRST_w0wa(); //Vivian's paper
 double log_L_Planck();
 double log_L_Planck_BAO_SN();
 double log_L_ia();
@@ -525,6 +525,42 @@ double log_L_Planck18_BAO_Riess18_Pantheon_w0wa()
   return log_L;
 }
 
+double log_L_SN_WFIRST_w0wa()
+{
+  double log_L = 0.;
+  int n_param = 4;
+  double param_fid[n_param], param_diff[n_param];
+  double table[n_param][n_param]; 
+  int c, r;
+  table[0][0] =5.42588226e+03; 
+  table[0][1] =4.88028342e-03; 
+  table[0][2] =3.40315975e+03; 
+  table[0][3] =4.82921866e+02; 
+  table[1][1] =1.91096097e-03; 
+  table[1][2] =1.55848375e-02;
+  table[1][3] =-1.44875083e-03; 
+  table[2][2] =2.39871048e+03; 
+  table[2][3] =2.91581743e+02; 
+  table[3][3] =4.73568550e+01; 
+  
+  for (c = 0; c < n_param; c++) {
+    for (r = c + 1; r < n_param; r++) {
+      table[r][c] = table[c][r];
+    }
+  }
+
+  param_diff[0] = cosmology.Omega_m-prior.Omega_m; 
+  param_diff[1] = cosmology.h0-prior.h0;
+  param_diff[2] = cosmology.w0-prior.w0;
+  param_diff[3] = cosmology.wa-prior.wa;
+  
+  log_L = -0.5*do_matrix_mult_invcov(n_param,table, param_diff);
+  return log_L;
+}
+
+
+
+
 //CH 2018/07/17
 double log_L_Planck18_BAO_w0wa()
 {
@@ -646,7 +682,7 @@ double log_L_wlphotoz()
       printf("external_prior.c: called log_L_wlphotoz while prior.sigma_zphot_shear[0][1] not set.\nEXIT\n");
       exit(1);
     }
-    log_L -=  pow((nuisance.sigma_zphot_shear[0] - prior.sigma_zphot_shear[0][0])/ prior.sigma_zphot_shear[0][1],2.0);
+    log_L -= pow((nuisance.sigma_zphot_shear[0] - prior.sigma_zphot_shear[0][0])/ prior.sigma_zphot_shear[0][1],2.0);
   }
   return 0.5*log_L;
 }
@@ -660,15 +696,14 @@ double log_L_clphotoz()
       printf("external_prior.c: called log_L_clphotoz while prior.bias_zphot_clustering[%d][1] not set.\nEXIT\n",i);
       exit(1);
     }
-
-   log_L -=  pow((nuisance.bias_zphot_clustering[i] - prior.bias_zphot_clustering[i][0])/ prior.bias_zphot_clustering[i][1],2.0);
+    log_L -= pow((nuisance.bias_zphot_clustering[i] - prior.bias_zphot_clustering[i][0])/ prior.bias_zphot_clustering[i][1],2.0);
   }
   if(redshift.clustering_photoz!=4) {
     if (prior.sigma_zphot_clustering[0][1] == 0.){
       printf("external_prior.c: called log_L_clphotoz while prior.sigma_zphot_clustering[0][1] not set.\nEXIT\n");
       exit(1);
     }
-    log_L -=  pow((nuisance.sigma_zphot_clustering[0] - prior.sigma_zphot_clustering[0][0])/ prior.sigma_zphot_clustering[0][1],2.0);
+    log_L -= pow((nuisance.sigma_zphot_clustering[0] - prior.sigma_zphot_clustering[0][0])/ prior.sigma_zphot_clustering[0][1],2.0);
   }
   return 0.5*log_L;
 }
@@ -682,7 +717,7 @@ double log_L_shear_calib()
       printf("external_prior.c: called log_L_clphotoz while prior.shear_calibration_m[%d][1] not set.\nEXIT\n",i);
       exit(1);
     }
-    log_L -=  pow((nuisance.shear_calibration_m[i] - prior.shear_calibration_m[i][0])/ prior.shear_calibration_m[i][1],2.0);
+    log_L -= pow((nuisance.shear_calibration_m[i] - prior.shear_calibration_m[i][0])/ prior.shear_calibration_m[i][1],2.0);
   }
   return 0.5*log_L;
 }

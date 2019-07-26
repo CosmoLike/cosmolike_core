@@ -398,7 +398,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
         fclose(ein);
         redshift.shear_zdistrpar_zmin = fmax(z_v[0],1.e-5);
         redshift.shear_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(zbins1-1.);
-        printf("%d %e %e\n", zbins,redshift.shear_zdistrpar_zmin,redshift.shear_zdistrpar_zmax);
+        printf("redshift_spline.c %d %e %e\n", zbins,redshift.shear_zdistrpar_zmin,redshift.shear_zdistrpar_zmax);
       }
     }
 
