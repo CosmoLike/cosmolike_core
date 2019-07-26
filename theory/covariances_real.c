@@ -62,6 +62,8 @@ double C_gl_tomo_all(double l, int ni, int nj)  //slower version of G-G lensing 
       for (j=0; j<tomo.shear_Nbin; j++) {
         llog = logsmin;
         for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
+          // printf("Hier!\n");
+          // printf("C_gl_tomo_all, l, k,j: %lg,%lg,%d,%d:\n",C_gl_tomo_nointerp(exp(llog),k,j),exp(llog),k,j );
           table[k*10+j][i]= log(C_gl_tomo_nointerp(exp(llog),k,j));
         }
       }

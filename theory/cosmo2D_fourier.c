@@ -53,6 +53,7 @@ double W_gal(double a, double nz){
     wmag *= (1.+MG_Sigma(a));
   }
   return wgal + wmag;
+  // return wgal;
 }
 double f_rsd (double aa){
   double gamma = 0.55;
@@ -157,16 +158,56 @@ double int_for_C_gl_tomo_b2(double a, void *params)
   res= res*(b1*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)));
   return res;
 }
-double int_for_C_gl_tomo(double a, void *params)
+// double int_for_C_gl_tomo(double a, void *params)
+// {
+//   double *ar = (double *) params;
+//   double res,ell, fK, k;
+//   if (a >= 1.0) error("a>=1 in int_for_C_gl_tomo");
+
+//   double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+//   double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+//   if(ell_prefactor2<=0.) 
+//     ell_prefactor2=0.;
+//   else
+//     ell_prefactor2=sqrt(ell_prefactor2);
+
+//   ell       = ar[2]+0.5;
+//   fK     = f_K(chi(a));
+//   k      = ell/fK;
+//   res= W_gal(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
+//   // res= (W_gal(a,ar[0]) + W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]] *(ell_prefactor1/ell/ell-1.) )*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK /fK/fK * ell_prefactor2/k/k;
+//   res= res*Pdelta(k,a);
+//   return res;
+// }
+
+double int_for_C_gl_tomo(double a, void *params) // Add RSD
 {
   double *ar = (double *) params;
   double res,ell, fK, k;
   if (a >= 1.0) error("a>=1 in int_for_C_gl_tomo");
-  
+
+  double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
+  else
+    ell_prefactor2=sqrt(ell_prefactor2);
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  res= W_gal(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
+  double chi_0,chi_1,a_0,a_1;
+  chi_0 = f_K(ell/k);
+  chi_1 = f_K((ell+1.)/k);
+  if (chi_1 > chi(limits.a_min)){
+    return 0;}
+  a_0 = a_chi(chi_0);
+  a_1 = a_chi(chi_1);
+
+  double wgal = W_gal(a,ar[0]);
+  wgal += W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) ;
+  res= (wgal+W_RSD(ell, a_0, a_1, ar[0]))*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
+  // res= (W_gal(a,ar[0]) + W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]] *(ell_prefactor1/ell/ell-1.) )*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK /fK/fK * ell_prefactor2/k/k;
   res= res*Pdelta(k,a);
   return res;
 }
@@ -240,23 +281,31 @@ double C_cl_tomo_nointerp(double l, int ni, int nj)  //galaxy clustering power s
 
 double C_gl_tomo_nointerp(double l, int ni, int nj)  //G-G lensing power spectrum, lens bin ni, source bin nj
 {
+  // l=1.0*2;
+  if(l==1.) {return 0.;}
   double array[3] = {(double)ni,(double)nj,l};
   if (gbias.b2[ni] || gbias.b2[nj]){
     return int_gsl_integrate_low_precision(int_for_C_gl_tomo_b2,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
   }
   if (gbias.hod[ni][0] > 10 && gbias.hod[ni][0] < 16) {return int_gsl_integrate_low_precision(int_for_C_gl_HOD_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);}
 
-  return int_gsl_integrate_medium_precision(int_for_C_gl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
+  double res = int_gsl_integrate_medium_precision(int_for_C_gl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
+  // printf("C_gl_tomo_nointerp(l=%lg,ni=%d,nj=%d):%lg\n",l,ni,nj,res);
+  // exit(0);
+  return res;
+  // return int_gsl_integrate_medium_precision(int_for_C_gl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
 }
 
 double C_shear_tomo_nointerp(double l, int ni, int nj) //shear tomography power spectra of source galaxy bins ni, nj
 {
   double res;
-  double array[3] = {(double) ni, (double) nj,l};
+  double array[3] = {(double)ni, (double)nj,l};
+  // printf("ni,nj:%d,%d\n", ni,nj );
   int j,k;
   if (ni <= nj){j =nj; k = ni;}
   else{j = ni; k = nj;}
   res=int_gsl_integrate_medium_precision(int_for_C_shear_tomo,(void*)array,amin_source(j),amax_source(k),NULL,1000);
+  // printf("res:%lg\n", res);
   return res;
   
 }
@@ -419,7 +468,7 @@ double C_gl_HOD_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, le
 
 double C_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source galaxies in bins ni, nj
 {
-  printf("hallo\n");
+  // printf("hallo\n");
   static cosmopara C;
   static nuisancepara N;
   
@@ -443,13 +492,16 @@ double C_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source 
     for (k=0; k<tomo.shear_Npowerspectra; k++) {
       llog = logsmin;
       for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
+        // printf("Hier!\n");
+        // printf("C_shear_tomo, l, Z1(k),Z2(k): %lg,%lg,%d,%d:\n",log(C_shear_tomo_nointerp(exp(llog),Z1(k),Z2(k))),exp(llog),Z1(k),Z2(k));
         table[k][i]= log(C_shear_tomo_nointerp(exp(llog),Z1(k),Z2(k)));
+       // printf("table[k][i]: %lg:\n",table[k][i]);
       }
     }
     update_cosmopara(&C); update_nuisance(&N); 
   }
   double f1 = exp(interpol_fitslope(table[N_shear(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
   if (isnan(f1)){f1 = 0.;}
-  printf("%le %d %d %le\n", l, ni, nj, f1);
+  // printf("%le %d %d %le\n", l, ni, nj, f1);
   return f1;
 }

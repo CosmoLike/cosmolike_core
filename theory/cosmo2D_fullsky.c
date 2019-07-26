@@ -129,12 +129,12 @@ double w_gamma_t_fullsky(int nt, int ni, int nj){
 		if (like.IA ==3 || like.IA ==4) C_gl_pointer = &C_ggl_IA_tab;
 
 		for (nz = 0; nz <tomo.ggl_Npowerspectra; nz ++){
-			for (l = 1; l < LMAX; l++){
+			for (l = 2; l < LMAX; l++){
 				Cl[l]=C_ggl_IA_tab(1.0*l,ZL(nz),ZS(nz));
 			}
 			for (i = 0; i < NTHETA; i++){
 				w_vec[nz*like.Ntheta+i] =0;
-				for (l = 1; l < LMAX; l++){
+				for (l = 2; l < LMAX; l++){
 					w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];
 				}
 			}

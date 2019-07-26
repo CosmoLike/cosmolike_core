@@ -3,6 +3,8 @@ typedef struct config {
 	double c_window_width;
 	int derivative;
 	long N_pad;
+	long N_extrap_low;
+	long N_extrap_high;
 } config;
 
 void cfftlog(double *x, double *fx, long N, config *config, int ell, double *y, double *Fy);

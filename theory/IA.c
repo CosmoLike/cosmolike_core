@@ -569,12 +569,19 @@ double int_for_C_ggl_IA_mpp(double a, void *params)
   double res, ell, fK, k,norm;
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_C_II");
+
+  double ell_prefactor = (ar[2]-1.)*(ar[2])*(ar[2]+1.)*(ar[2]+2.);
+  if(ell_prefactor<=0.) 
+    ell_prefactor=0.;
+  else
+    ell_prefactor=sqrt(ell_prefactor);
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
   res= W_gal(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
-  return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor/ell/ell;
   
 //  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a)+P_gm_rm(k,a))*dchi_da(a)/fK/fK;
 }
@@ -789,6 +796,6 @@ double C_shear_shear_IA_tab(double l, int ni, int nj)  //shear power spectrum of
   }
   double f1 = exp(interpol_fitslope(table[N_shear(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
   if (isnan(f1)){f1 = 0.;}
-  printf("%le %d %d %le\n", l, ni, nj, f1);
+  // printf("%le %d %d %le\n", l, ni, nj, f1);
   return f1;
 }
