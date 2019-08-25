@@ -206,7 +206,8 @@ double int_for_C_gl_tomo(double a, void *params) // Add RSD
 
   double wgal = W_gal(a,ar[0]);
   wgal += W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) ;
-  res= (wgal+W_RSD(ell, a_0, a_1, ar[0]))*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
+  // res= (wgal+W_RSD(ell, a_0, a_1, ar[0]))*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
+  res= (wgal)*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
   // res= (W_gal(a,ar[0]) + W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]] *(ell_prefactor1/ell/ell-1.) )*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK /fK/fK * ell_prefactor2/k/k;
   res= res*Pdelta(k,a);
   return res;

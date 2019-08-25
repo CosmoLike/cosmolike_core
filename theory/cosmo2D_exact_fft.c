@@ -316,18 +316,31 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 		double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
 		Pmin= create_double_vector(0, LMAX+1);
 		Pmax= create_double_vector(0, LMAX+1);
+
+		double *xmid, *Pmid;
+		double mythetamin, mythetamax;
+		xmid= create_double_vector(0, like.Ntheta-1);
+		Pmid= create_double_vector(0, LMAX+1);
+
 		for(i=0; i<like.Ntheta ; i++){
-			xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
-			xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+			mythetamin = exp(log(like.vtmin)+(i+0.0)*logdt);
+			mythetamax = exp(log(like.vtmin)+(i+1.0)*logdt);
+			xmin[i]=cos(mythetamin);
+			xmax[i]=cos(mythetamax);
+			xmid[i]= cos((2./3.) * (pow(mythetamax,3) - pow(mythetamin,3)) / (mythetamax*mythetamax - mythetamin*mythetamin));
 		}
 
 		for (i = 0; i<NTHETA; i ++){
 			// printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+			gsl_sf_legendre_Pl_array(LMAX, xmid[i],Pmid);
+
 			for (int l = 1; l < LMAX; l ++){
-				Pl[i][l] = (2*l+1.)/(4.*M_PI)*Pmin[l];
-				//Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+				// Pl[i][l] = (2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
+				Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+				// Pl[i][l] = (2.*l+1)/(4.*M_PI)*Pmid[l];
+				// printf("l,%ld\n", l);
 			}
 		}
 		free_double_vector(xmin,0,like.Ntheta-1);
@@ -389,6 +402,7 @@ double int_for_C_gl_lin(double a, void *params)
 	double wgal = W_gal(a,ar[0]);
 	wgal += W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) ;
   	res=(wgal + W_RSD(ell, a_0, a_1, ar[0]))*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
+  	// res=(wgal)*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
 	res= res*p_lin(k,a)*G_taper(k);
 	return res;
 }
@@ -711,23 +725,33 @@ double w_gamma_t_nonLimber(int nt, int ni, int nj){
 		xmin= create_double_vector(0, like.Ntheta-1);
 		xmax= create_double_vector(0, like.Ntheta-1);
 		double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+
+		// double *xmid, *Pmid;
+		double mythetamin, mythetamax;
+		// xmid= create_double_vector(0, like.Ntheta-1);
+		// Pmid= create_double_vector(0, LMAX+1);
+
 		for(i=0; i<like.Ntheta ; i++){
-			xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
-			xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+			mythetamin = exp(log(like.vtmin)+(i+0.0)*logdt);
+			mythetamax = exp(log(like.vtmin)+(i+1.0)*logdt);
+			xmin[i]=cos(mythetamin);
+			xmax[i]=cos(mythetamax);
+			// xmid[i]= (2./3.) * (pow(thetamax,3) - pow(thetamin,3)) / (thetamax*thetamax - thetamin*thetamin);
 		}
 		Pmin= create_double_vector(0, LMAX+1);
-		Pmax= create_double_vector(0, LMAX+1);
-
+    	Pmax= create_double_vector(0, LMAX+1);
 		for (i = 0; i<NTHETA; i ++){
 			// printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+		    // gsl_sf_legendre_Plm_array(LMAX,2, xmid[i],Pmid);
 			for (int l = 2; l < LMAX; l ++){
-				//Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));	
+				// Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));	
 				Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
 				*((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
 				+(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
 				-2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+				// Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));
 			}
 		}
 		free_double_vector(xmin,0,like.Ntheta-1);
