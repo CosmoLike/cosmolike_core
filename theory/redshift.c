@@ -103,6 +103,7 @@ int test_kmax(double l, int zl){ //test whether the (l,zl) bin is in the linear 
 
 
 int test_zoverlap(int zl, int zs){ //test whether source bin zs is behind lens bin zl
+  // if (tomo.clustering_zmin[zl] >= tomo.shear_zmax[zs]) {return 0;}
   if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}
   if (redshift.shear_photoz < 4 && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}
   if (redshift.shear_photoz == 4 && redshift.clustering_photoz != 4 && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}
@@ -110,6 +111,8 @@ int test_zoverlap(int zl, int zs){ //test whether source bin zs is behind lens b
   return 0;
 }
 int test_zoverlap_cov(int zl, int zs){ //test whether source bin zs is behind lens bin zl
+  // if (tomo.clustering_zmin[zl] >= tomo.shear_zmax[zs]) {return 0;}
+  if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}
   if (redshift.shear_photoz < 4 && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}
   if (redshift.shear_photoz == 4 && redshift.clustering_photoz != 4 && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}
   if (redshift.shear_photoz == 4 && redshift.clustering_photoz == 4 && zmean(zl)+0.1 < zmean_source(zs)){return 1;}

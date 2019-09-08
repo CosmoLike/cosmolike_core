@@ -570,18 +570,20 @@ double int_for_C_ggl_IA_mpp(double a, void *params)
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_C_II");
 
-  double ell_prefactor = (ar[2]-1.)*(ar[2])*(ar[2]+1.)*(ar[2]+2.);
-  if(ell_prefactor<=0.) 
-    ell_prefactor=0.;
+  double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
   else
-    ell_prefactor=sqrt(ell_prefactor);
+    ell_prefactor2=sqrt(ell_prefactor2);
 
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
   res= W_gal(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
-  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor/ell/ell;
+  // res= (W_gal(a,ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.))*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
   
 //  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a)+P_gm_rm(k,a))*dchi_da(a)/fK/fK;
 }
@@ -699,7 +701,8 @@ double C_ggl_IA(double s, int nl, int ns)
     case 3: if (gbias.b2[nl]) return int_gsl_integrate_low_precision(int_for_C_ggl_IA_Az_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
             return int_gsl_integrate_low_precision(int_for_C_ggl_IA_Az,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
     case 4: if (gbias.b2[nl]) return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
-            return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+            // return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+            return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),0.9999,NULL,1000);
     default: printf("IA.c: C_ggl_IA does not support like.IA = %d\nEXIT\n", like.IA); exit(1);
   }
 }
