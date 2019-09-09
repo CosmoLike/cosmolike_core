@@ -21,6 +21,37 @@ double cov_G_gl_shear_real_binned(double theta1_min, double theta1_max,double th
 double cov_NG_cl_shear_real_binned(double theta1_min, double theta1_max,double theta2_min, double theta2_max, int z1,int z2, int z3, int z4, int pm); //z1,z2 clustering bins; z3,z4 shear bins
 double cov_G_cl_shear_real_binned(double theta1_min, double theta1_max,double theta2_min, double theta2_max, int z1,int z2, int z3, int z4, int pm);
 
+
+
+void filter_cov_fourier(double l1, double l2, double lmax, double lpivot) {
+  long i,j;
+  double W;
+  double l_interval = lmax - lpivot;
+  if(l_interval<=0) {return 1.;}
+
+  if(l1<=lpivot){
+    W = 1.;
+  }
+  else if(l1>=lmax){
+    W = 0.;
+  }
+  else{
+    W = (lmax - l1) / l_interval - 1./(2.*M_PI) * sin(2.*(lmax - l1)*M_PI/l_interval);
+  }
+
+  if(l2<=lpivot){
+    W *= 1.;
+  }
+  else if(l2>=lmax){
+    W *= 0.;
+  }
+  else{
+    W *= (lmax - l2) / l_interval - 1./(2.*M_PI) * sin(2.*(lmax - l2)*M_PI/l_interval);
+  }
+  return W;
+}
+
+
 /************************* covariance routines for angular correlation functions *********************/
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 // Note the look-up tables for power spectrum covariances are recomputed if one the redshift bins changes
@@ -180,6 +211,7 @@ double bin_cov_NG_shear_shear_tomo(double l1,double l2, int z1, int z2, int z3, 
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
     res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res *= filter_cov_fourier(llog1, llog2, logsmax, log(4.e4));
   return res;
 }
 double bin_cov_NG_gl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
