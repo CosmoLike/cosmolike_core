@@ -23,7 +23,7 @@ double cov_G_cl_shear_real_binned(double theta1_min, double theta1_max,double th
 
 
 
-void filter_cov_fourier(double l1, double l2, double lmax, double lpivot) {
+double filter_cov_fourier(double l1, double l2, double lmax, double lpivot) {
   long i,j;
   double W;
   double l_interval = lmax - lpivot;
