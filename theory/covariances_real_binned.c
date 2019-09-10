@@ -388,6 +388,68 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
 /***************************************************/
 /************ shear shear NG, bin averaged *********/
 /***************************************************/
+
+double int2_for_cov_NG_shear_binned_fullsky(double l2,void *params){
+  double *ar = (double *) params;
+  double l1,tri = 0.,res =0;
+  int n1,n2,n3,n4,j0;
+  l1= ar[0];
+  
+  n1 = (int) ar[1];n2 = (int) ar[2];n3 = (int) ar[3];n4 = (int) ar[4];
+  tri= bin_cov_NG_shear_shear_tomo(l1,l2,n1,n2,n3,n4);
+  if (j0==1) res=(tri)*l2*J0_binned(l2,ar[7],ar[8]);
+  if (j0==0) res=(tri)*l2*J4_binned(l2,ar[7],ar[8]);
+  return res;
+}
+double int_for_cov_NG_shear_binned_fullsky(double l1, void *params){
+  double *array = (double *) params,res=0.,result = 1.,res_fin = 0.;
+  int j0;
+  array[0] = l1;
+  j0= (int)array[10];
+  unsigned int n =1;
+  double x2 =0, x1 = 20.; //x1 = l_min for NG Covariance integration
+  while (x2 <= x1){ //find first root of J0/4(l*theta2) with l > 20
+    if (j0==1) x2 = gsl_sf_bessel_zero_J0 (n)/array[7];
+    if (j0==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/array[7];
+    n++;
+  }
+  while (fabs(result) > 1.e-4*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+    result=int_gsl_integrate_low_precision(int2_for_cov_NG_shear_binned,(void*)array, x1, x2 ,NULL,512);
+    res = res+result;
+    x1 = x2;
+    if (j0==1) x2 = gsl_sf_bessel_zero_J0 (n)/array[7];
+    if (j0==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/array[7];
+    n+=2;
+  }
+  if ((int)array[9]==1) res_fin=res*l1*J0_binned(l1,array[5],array[6]);
+  if ((int)array[9]==0) res_fin=res*l1*J4_binned(l1,array[5],array[6]);
+  return res_fin;
+}
+double cov_NG_shear_shear_real_binned_fullsky(double theta1_min, double theta1_max,double theta2_min,double theta2_max, int z1,int z2,int z3,int z4,int pm1,int pm2){
+ double array[11],res = 0., result =1.;
+  array[1] = (double) z1; array[2] = (double) z2;array[3] = (double) z3;array[4] = (double) z4;  array[9] = (double) pm1;array[10] = (double) pm2;
+  array[5] = theta1_min; array[6] = theta1_max;
+  array[7] = theta2_min; array[8] = theta2_max;
+  unsigned int n = 1;
+  double x2 =0, x1 = 20.,t = (theta1_min+theta1_max)/2.; //x1 = l_min for Covariance integration, OK for typical angular scales of interest
+  while (x2 <= x1){ //find first root of J0/4(l*theta1) with l > 10
+    if (pm1==1) x2 = gsl_sf_bessel_zero_J0 (n)/t;
+    if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/t;    
+    n++;
+  }
+  while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){
+    result=int_gsl_integrate_medium_precision(int_for_cov_NG_shear_binned,(void*)array, x1, x2 ,NULL,1000);
+    res = res+result;
+    x1 = x2;
+    if (pm1==1) x2 = gsl_sf_bessel_zero_J0 (n)/t;
+    if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/t;
+    n+=2;
+  }
+  return res/(4.0*M_PI*M_PI);
+}
+
+/*****************/
+
 double int2_for_cov_NG_shear_binned(double l2,void *params){
   double *ar = (double *) params;
   double l1,tri = 0.,res =0;
@@ -412,7 +474,7 @@ double int_for_cov_NG_shear_binned(double l1, void *params){
     if (j0==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/array[7];
     n++;
   }
-  while (fabs(result) > 1.e-4*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+  while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
     result=int_gsl_integrate_low_precision(int2_for_cov_NG_shear_binned,(void*)array, x1, x2 ,NULL,512);
     res = res+result;
     x1 = x2;

@@ -448,10 +448,73 @@ double int_for_C_gl_IA_lin(double a, void *params)
   return res;
 }
 
+double int_for_C_gl_IA_lin_part1(double a, void *params)
+{
+  double res,ell, fK, k;
+  double *ar = (double *) params;
+  ell       = ar[2]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+  
+  double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
+  else
+    ell_prefactor2=sqrt(ell_prefactor2);
+
+  double chi_0,chi_1,a_0,a_1;
+  chi_0 = f_K(ell/k);
+  chi_1 = f_K((ell+1.)/k);
+  if (chi_1 > chi(limits.a_min)){
+    return 0;}
+  a_0 = a_chi(chi_0);
+  a_1 = a_chi(chi_1);
+
+  double norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+
+  res=(W_gal(a,ar[0])+W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) )*(W_kappa(a,fK, ar[1]))*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
+  // res=(W_gal(a,ar[0]) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
+  res= res*p_lin(k,a)*G_taper(k);
+  return res;
+}
+
+double int_for_C_gl_IA_lin_part2(double a, void *params)
+{
+  double res,ell, fK, k;
+  double *ar = (double *) params;
+  ell       = ar[2]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+  
+  double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
+  else
+    ell_prefactor2=sqrt(ell_prefactor2);
+
+  double chi_0,chi_1,a_0,a_1;
+  chi_0 = f_K(ell/k);
+  chi_1 = f_K((ell+1.)/k);
+  if (chi_1 > chi(limits.a_min)){
+    return 0;}
+  a_0 = a_chi(chi_0);
+  a_1 = a_chi(chi_1);
+
+  double norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+
+  res=(W_gal(a,ar[0])+W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) )*(-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
+  // res=(W_gal(a,ar[0]) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
+  res= res*p_lin(k,a)*G_taper(k);
+  return res;
+}
+
 double C_gl_lin_IA_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
 {
   double array[3] = {1.0*ni,1.0*nj,l};
-  return int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin,(void*)array,amin_lens(ni),0.9999,NULL,1000);
+  // return int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin,(void*)array,amin_lens(ni),0.9999,NULL,1000);
+  return int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin_part1,(void*)array,amin_lens(ni),0.9999,NULL,1000)+int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin_part2,(void*)array,amin_lens(ni),0.9999,NULL,1000);
 }
 
 void f_chi_for_Psi_sh(double* chi_ar, int Nchi, double* f_chi_ar, int ns) {
@@ -484,7 +547,7 @@ void f_chi_for_Psi_sh_IA(double* chi_ar, int Nchi, double* f_chi_IA_ar, int ns) 
 	double a, z, fK;
 	int i;
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
-	double window_L, wsource;
+	double window_ia, wsource;
 	double norm;
 	// printf("norm:%lg\n", norm);
 	// exit(0);
@@ -505,9 +568,9 @@ void f_chi_for_Psi_sh_IA(double* chi_ar, int Nchi, double* f_chi_IA_ar, int ns) 
 			// printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);
 			wsource = W_source(a, (double)ns);
 			wsource = (wsource>0.)? wsource:0.;
-			window_L = -wsource * norm / fK / (real_coverH0*real_coverH0);
+			window_ia = -wsource * norm / fK / (real_coverH0*real_coverH0);
 			// printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);
-			f_chi_IA_ar[i] = window_L*growfac(a)*g0; // unit [Mpc^-2]
+			f_chi_IA_ar[i] = window_ia*growfac(a)*g0; // unit [Mpc^-2]
 		}
 		// printf("%lg\n", f_chi_IA_ar[i]);
 	}
@@ -575,7 +638,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// char outfilename[] = "f_chi_gl1.txt";
 	// char outfilename[] = "f1_chi_gl1.txt";
 	// char *outfilename = (char*)malloc(40 * sizeof(char));;
-	// sprintf(outfilename, "f_chi_sh_%d.txt", ns);
+	// sprintf(outfilename, "f_chi_sh_%d_largeIA.txt", ns);
 	// FILE *OUT = fopen(outfilename, "w");
 	// for(i=0; i<Nchi; i++) {
 	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);
@@ -586,9 +649,9 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// 	printf("f_chi_ar: %d, %lg\n", i, f2_chi_ar[i]);
 	// }
 	// exit(0);
-	// char *outfilename = (char*)malloc(40 * sizeof(char));;
-	// sprintf(outfilename, "cls/c_gl_%d_%d_mag_IA_new.txt", nl,ns);
-	// FILE *OUT = fopen(outfilename, "w");
+	char *outfilename = (char*)malloc(40 * sizeof(char));;
+	sprintf(outfilename, "cls/c_gl_%d_%d_mag_IA.txt", nl,ns);
+	FILE *OUT = fopen(outfilename, "w");
 
 
 	// char *outfilename = (char*)malloc(40 * sizeof(char));;
@@ -689,7 +752,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;
 			// printf("cl_temp: %d, %lg\n", i, cl_temp);
 			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns), C_gl_lin_nointerp(1.*ell_ar[i],nl,ns));
-			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_ggl_IA(1.*ell_ar[i],nl,ns), C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns));
+			fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_ggl_IA(1.*ell_ar[i],nl,ns), C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns));
 			// dev = Cl[ell_ar[i]]/C_gl_tomo_nointerp(1.0*ell_ar[i],nl,ns)-1.;
 			dev = Cl[ell_ar[i]]/C_ggl_IA(1.0*ell_ar[i],nl,ns)-1.;
 
@@ -699,7 +762,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		i_block++;
 		L = i_block*Nell_block -1 ;
 		// dev = Cl[L]/C_gl_tomo_nointerp(1.0*L,nl,ns)-1.;
-		dev = Cl[L]/C_ggl_IA_tab(1.0*L,nl,ns)-1.;
+		dev = Cl[L]/C_ggl_IA(1.0*L,nl,ns)-1.;
 
 	 //   printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
 		// printf("i_block: %d\n", i_block);
@@ -727,7 +790,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);
 	free(Fk1_Mag_ar);
-	// fclose(OUT);
+	fclose(OUT);
 	// exit(0);
 }
 
