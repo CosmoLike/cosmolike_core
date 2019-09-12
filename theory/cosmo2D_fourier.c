@@ -340,11 +340,15 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
   }
   int j = ni*tomo.clustering_Nbin+nj;
   if(table[j][0] > 123456780.0){ //still need to recompute this tomography bin combination
+    //printf("recompute C_cl_tomo, %d, %d\n", ni, nj) ;
     double llog = logsmin;
+    double result;
     for (int i=0; i<Ntable.N_ell; i++, llog+=ds) {
 
 //      table[j][i]= log(C_cl_RSD_nointerp(exp(llog),ni,nj));
-      table[j][i]= log(C_cl_tomo_nointerp(exp(llog),ni,nj));
+      result = C_cl_tomo_nointerp(exp(llog),ni,nj);
+      if(result<=0) table[j][i] = -100; 
+      else table[j][i] = log(result);
       table[nj*tomo.clustering_Nbin+ni][i]=table[j][i];
     }
   }
