@@ -175,16 +175,16 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 	// char outfilename[] = "f1_chi4.txt";
 	// char outfilename[] = "f1_chi4_rsd.txt";
-	// char *outfilename = (char*)malloc(40 * sizeof(char));;
-	// sprintf(outfilename, "f_chi_cl_%d.txt", ni);
-	// FILE *OUT = fopen(outfilename, "w");
+	char *outfilename = (char*)malloc(40 * sizeof(char));;
+	sprintf(outfilename, "fchi/f_chi_cl_%d.txt", ni);
+	FILE *OUT = fopen(outfilename, "w");
 	
-	// for(i=0; i<Nchi; i++) {
+	for(i=0; i<Nchi; i++) {
 		// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);
 		// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_RSD_ar[i]);
-		// fprintf(OUT, "%lg %lg %lg %lg\n", chi_ar[i], f1_chi_ar[i], f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);
+		fprintf(OUT, "%lg %lg %lg %lg\n", chi_ar[i], f1_chi_ar[i], f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);
 		// fprintf(OUT, "\n");
-	// }
+	}
 	// for(i=0; i<Nchi; i++) {
 	// 	printf("f_chi_ar: %d, %lg, %lg, %lg, %lg\n", i,chi_ar[i], f1_chi_ar[i],f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);
 	// }
@@ -513,8 +513,8 @@ double int_for_C_gl_IA_lin_part2(double a, void *params)
 double C_gl_lin_IA_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
 {
   double array[3] = {1.0*ni,1.0*nj,l};
-  // return int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin,(void*)array,amin_lens(ni),0.9999,NULL,1000);
-  return int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin_part1,(void*)array,amin_lens(ni),0.9999,NULL,1000)+int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin_part2,(void*)array,amin_lens(ni),0.9999,NULL,1000);
+  return int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin,(void*)array,amin_lens(ni),0.9999,NULL,1000);
+  // return int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin_part1,(void*)array,amin_lens(ni),0.9999,NULL,1000)+int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin_part2,(void*)array,amin_lens(ni),0.9999,NULL,1000);
 }
 
 void f_chi_for_Psi_sh(double* chi_ar, int Nchi, double* f_chi_ar, int ns) {
@@ -637,21 +637,21 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 
 	// char outfilename[] = "f_chi_gl1.txt";
 	// char outfilename[] = "f1_chi_gl1.txt";
-	// char *outfilename = (char*)malloc(40 * sizeof(char));;
-	// sprintf(outfilename, "f_chi_sh_%d_largeIA.txt", ns);
-	// FILE *OUT = fopen(outfilename, "w");
-	// for(i=0; i<Nchi; i++) {
-	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);
-	// 	fprintf(OUT, "%lg %lg %lg", chi_ar[i], f2_chi_ar[i]-f2_chi_IA_ar[i], f2_chi_IA_ar[i]);
-	// 	fprintf(OUT, "\n");
-	// }
+	char *outfilename = (char*)malloc(40 * sizeof(char));;
+	sprintf(outfilename, "fchi/f_chi_sh_%d.txt", ns);
+	FILE *OUT = fopen(outfilename, "w");
+	for(i=0; i<Nchi; i++) {
+		// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);
+		fprintf(OUT, "%lg %lg %lg", chi_ar[i], f2_chi_ar[i]-f2_chi_IA_ar[i], f2_chi_IA_ar[i]);
+		fprintf(OUT, "\n");
+	}
 	// for(i=0; i<Nchi; i++) {
 	// 	printf("f_chi_ar: %d, %lg\n", i, f2_chi_ar[i]);
 	// }
 	// exit(0);
-	char *outfilename = (char*)malloc(40 * sizeof(char));;
-	sprintf(outfilename, "cls/c_gl_%d_%d_mag_IA.txt", nl,ns);
-	FILE *OUT = fopen(outfilename, "w");
+	// char *outfilename = (char*)malloc(40 * sizeof(char));;
+	// sprintf(outfilename, "cls/c_gl_%d_%d_mag_IA.txt", nl,ns);
+	// FILE *OUT = fopen(outfilename, "w");
 
 
 	// char *outfilename = (char*)malloc(40 * sizeof(char));;
@@ -752,7 +752,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;
 			// printf("cl_temp: %d, %lg\n", i, cl_temp);
 			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns), C_gl_lin_nointerp(1.*ell_ar[i],nl,ns));
-			fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_ggl_IA(1.*ell_ar[i],nl,ns), C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns));
+			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_ggl_IA(1.*ell_ar[i],nl,ns), C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns));
 			// dev = Cl[ell_ar[i]]/C_gl_tomo_nointerp(1.0*ell_ar[i],nl,ns)-1.;
 			dev = Cl[ell_ar[i]]/C_ggl_IA(1.0*ell_ar[i],nl,ns)-1.;
 

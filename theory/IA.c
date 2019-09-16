@@ -778,8 +778,8 @@ double C_ggl_IA(double s, int nl, int ns)
             return int_gsl_integrate_low_precision(int_for_C_ggl_IA_Az,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
     case 4: if (gbias.b2[nl]) return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
             // return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
-            // return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),0.9999,NULL,1000);
-            return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_part1,(void*)array,amin_lens(nl),0.9999,NULL,1000)+int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_part2,(void*)array,amin_lens(nl),0.9999,NULL,1000);
+            return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),0.9999,NULL,1000);
+            // return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_part1,(void*)array,amin_lens(nl),0.9999,NULL,1000)+int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_part2,(void*)array,amin_lens(nl),0.9999,NULL,1000);
     default: printf("IA.c: C_ggl_IA does not support like.IA = %d\nEXIT\n", like.IA); exit(1);
   }
 }
