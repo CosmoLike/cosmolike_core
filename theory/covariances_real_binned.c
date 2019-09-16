@@ -513,7 +513,7 @@ double cov_NG_shear_shear_real_binned(double theta1_min, double theta1_max,doubl
 void cov_NG_shear_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm1,int pm2){
   
   int i,j;
-  static int LMAX = 25000;
+  static int LMAX = 50000;
   static double **Glplus =0;
   static double **Glminus =0;
   if (Glplus ==0){
@@ -593,48 +593,65 @@ void cov_NG_shear_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,i
     }
   }
 
-  for(i=0; i<like.Ntheta ; i++){
-    for(j=0; j<like.Ntheta ; j++){
-      printf("i,j:%d,%d\n", i,j);
-      if(pm1>0 && pm2>0){
-        for (l1 = 2; l1 < LMAX; l1++){
-          l1_double = (double)l1;
-          for (l2 = 2; l2 < LMAX; l2++){
-            tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
-            cov[i][j] += tri * Glplus[i][l1] * Glplus[j][l2];
-          }
-        }
-      }
-      else if(pm1>0 && pm2==0){
-        for (l1 = 2; l1 < LMAX; l1++){
-          l1_double = (double)l1;
-          for (l2 = 2; l2 < LMAX; l2++){
-            tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
-            cov[i][j] += tri * Glplus[i][l1] * Glminus[j][l2];
-          }
-        }
-      }
-      else if(pm1==0 && pm2>0){
-        for (l1 = 2; l1 < LMAX; l1++){
-          l1_double = (double)l1;
-          for (l2 = 2; l2 < LMAX; l2++){
-            tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
-            cov[i][j] += tri * Glminus[i][l1] * Glplus[j][l2];
-          }
-        }
-      }
-      else{
-        for (l1 = 2; l1 < LMAX; l1++){
-          l1_double = (double)l1;
-          for (l2 = 2; l2 < LMAX; l2++){
-            tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
-            cov[i][j] += tri * Glminus[i][l1] * Glminus[j][l2];
+  // printf("i,j:%d,%d\n", i,j);
+  double triGl1;
+  if(pm1>0 && pm2>0){
+    for (l1 = 2; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      // printf("l1,%d\n", l1);
+      for (l2 = 2; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glplus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glplus[j][l2];
           }
         }
       }
     }
   }
-
+  else if(pm1>0 && pm2==0){
+    for (l1 = 2; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 2; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glplus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else if(pm1==0 && pm2>0){
+    for (l1 = 2; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 2; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glminus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glplus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else{
+    for (l1 = 2; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 2; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glminus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
 }
 
 /*********** rebin routines for shear shear G**********/
