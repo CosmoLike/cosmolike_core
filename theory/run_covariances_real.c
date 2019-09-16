@@ -247,13 +247,21 @@ void run_cov_shear_shear_real_bin(char *OUTFILE, char *PATH,double *theta, int N
   printf("N_shear2 = %d (%d, %d)\n",n2,z3,z4);
   sprintf(filename,"%s%s_%d",PATH,OUTFILE,start);
   F1 =fopen(filename,"w");
+
+
+  double **cov_fullsky = 0;
+  if(NG){
+    cov_fullsky = create_double_matrix(0, like.Ntheta-1, 0, like.Ntheta-1);
+    cov_NG_shear_shear_real_binned_fullsky(cov_fullsky,z1,z2,z3,z4,pm1,pm2);
+  }
+
   for (nl1 = 0; nl1 < Ntheta; nl1 ++){
   	double t1 = 2./3.*(pow(theta[nl1+1],3.)-pow(theta[nl1],3.))/(pow(theta[nl1+1],2.)-pow(theta[nl1],2.));
     for (nl2 = 0; nl2 < Ntheta; nl2 ++){
 	  double t2 = 2./3.*(pow(theta[nl2+1],3.)-pow(theta[nl2],3.))/(pow(theta[nl2+1],2.)-pow(theta[nl2],2.));
       c_ng = 0.; c_g = 0.;sn = 0.;
       // if(NG){ c_ng = cov_NG_shear_shear_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,z3,z4,pm1,pm2);}
-      if(NG){ c_ng = cov_NG_shear_shear_real_binned_fullsky(nl1,nl2,z1,z2,z3,z4,pm1,pm2);}
+      if(NG){ c_ng = cov_fullsky[nl1][nl2];}
       c_g = cov_G_shear_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,z3,z4,pm1,pm2);
       if(pm1==1 && pm2==1) fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*n1+nl1,Ntheta*(n2)+nl2, t1,t2,z1,z2,z3,z4,c_g,c_ng);
       if(pm1==0 && pm2==0) fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(tomo.shear_Npowerspectra+n1)+nl1,Ntheta*(tomo.shear_Npowerspectra+n2)+nl2,t1,t2,z1,z2,z3,z4,c_g,c_ng);
@@ -261,6 +269,7 @@ void run_cov_shear_shear_real_bin(char *OUTFILE, char *PATH,double *theta, int N
 
     }
   }
+  free_double_matrix(cov_fullsky,0, like.Ntheta-1, 0, like.Ntheta-1);
   fclose(F1);
 }
 

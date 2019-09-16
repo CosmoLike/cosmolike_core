@@ -510,21 +510,15 @@ double cov_NG_shear_shear_real_binned(double theta1_min, double theta1_max,doubl
 }
 
 
-double cov_NG_shear_shear_real_binned_fullsky(int itheta, int jtheta, int z1,int z2,int z3,int z4,int pm1,int pm2){
+void cov_NG_shear_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm1,int pm2){
   
   int i,j;
-  static int LMAX = 100000;
+  static int LMAX = 50000;
   static double **Glplus =0;
   static double **Glminus =0;
-  static double *Cl =0;
-  static double *xi_vec_plus =0;
-  static double *xi_vec_minus =0;
   if (Glplus ==0){
     Glplus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
     Glminus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
-    Cl = create_double_vector(0,LMAX-1);
-    xi_vec_plus = create_double_vector(0,tomo.shear_Npowerspectra*like.Ntheta-1);
-    xi_vec_minus = create_double_vector(0,tomo.shear_Npowerspectra*like.Ntheta-1);
     double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
     xmin= create_double_vector(0, like.Ntheta-1);
     xmax= create_double_vector(0, like.Ntheta-1);
@@ -591,49 +585,65 @@ double cov_NG_shear_shear_real_binned_fullsky(int itheta, int jtheta, int z1,int
     free_double_vector(dPmax,0,LMAX+1);
   }
 
-  double tri, l1_double;
+  double l1_double;
   int l1,l2;
-  double cov =0.;
-  i = itheta; j = jtheta;
-  if(pm1>0 && pm2>0){
-    for (l1 = 2.; l1 < LMAX; l1++){
-      l1_double = (double)l1;
-      for (l2 = 2.; l2 < LMAX; l2++){
-        tri= bin_cov_NG_shear_shear_tomo(l1,(double)l2,z1,z2,z3,z4);
-        cov += tri * Glplus[i][l1] * Glplus[j][l2];
-      }
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
     }
   }
-  else if(pm1>0 && pm2==0){
-    for (l1 = 2.; l1 < LMAX; l1++){
-      l1_double = (double)l1;
-      for (l2 = 2.; l2 < LMAX; l2++){
-        tri= bin_cov_NG_shear_shear_tomo(l1,(double)l2,z1,z2,z3,z4);
-        cov += tri * Glplus[i][l1] * Glminus[j][l2];
-      }
-    }
-  }
-  else if(pm1==0 && pm2>0){
-    for (l1 = 2.; l1 < LMAX; l1++){
-      l1_double = (double)l1;
-      for (l2 = 2.; l2 < LMAX; l2++){
-        tri= bin_cov_NG_shear_shear_tomo(l1,(double)l2,z1,z2,z3,z4);
-        cov += tri * Glminus[i][l1] * Glplus[j][l2];
-      }
-    }
-  }
-  else{
-    for (l1 = 2.; l1 < LMAX; l1++){
-      l1_double = (double)l1;
-      for (l2 = 2.; l2 < LMAX; l2++){
-        tri= bin_cov_NG_shear_shear_tomo(l1,(double)l2,z1,z2,z3,z4);
-        cov += tri * Glminus[i][l1] * Glminus[j][l2];
-      }
-    }
-  }
-  return cov;
-}
+  double **tri =0;
+  tri = create_double_matrix(0, LMAX-1, 0, LMAX-1);
 
+  for (l1 = 2; l1 < LMAX; l1++){
+    l1_double = (double)l1;
+    for (l2 = 2; l2 < LMAX; l2++){
+      tri[l1][l2]= bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+    }
+  }
+
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      if(pm1>0 && pm2>0){
+        for (l1 = 2; l1 < LMAX; l1++){
+          l1_double = (double)l1;
+          for (l2 = 2; l2 < LMAX; l2++){
+            cov[i][j] += tri[l1][l2] * Glplus[i][l1] * Glplus[j][l2];
+          }
+        }
+      }
+      else if(pm1>0 && pm2==0){
+        for (l1 = 2; l1 < LMAX; l1++){
+          l1_double = (double)l1;
+          for (l2 = 2; l2 < LMAX; l2++){
+            tri[l1][l2]= bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+            cov[i][j] += tri[l1][l2] * Glplus[i][l1] * Glminus[j][l2];
+          }
+        }
+      }
+      else if(pm1==0 && pm2>0){
+        for (l1 = 2; l1 < LMAX; l1++){
+          l1_double = (double)l1;
+          for (l2 = 2; l2 < LMAX; l2++){
+            tri[l1][l2]= bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+            cov[i][j] += tri[l1][l2] * Glminus[i][l1] * Glplus[j][l2];
+          }
+        }
+      }
+      else{
+        for (l1 = 2; l1 < LMAX; l1++){
+          l1_double = (double)l1;
+          for (l2 = 2; l2 < LMAX; l2++){
+            tri[l1][l2]= bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+            cov[i][j] += tri[l1][l2] * Glminus[i][l1] * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  free_double_matrix(tri,0, LMAX-1, 0, LMAX-1);
+
+}
 
 /*********** rebin routines for shear shear G**********/
 double int_for_cov_G_shear_binned(double l, void *params){
