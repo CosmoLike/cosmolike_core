@@ -513,7 +513,7 @@ double cov_NG_shear_shear_real_binned(double theta1_min, double theta1_max,doubl
 void cov_NG_shear_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm1,int pm2){
   
   int i,j;
-  static int LMAX = 50000;
+  static int LMAX = 25000;
   static double **Glplus =0;
   static double **Glminus =0;
   if (Glplus ==0){
@@ -595,6 +595,7 @@ void cov_NG_shear_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,i
 
   for(i=0; i<like.Ntheta ; i++){
     for(j=0; j<like.Ntheta ; j++){
+      printf("i,j:%d,%d\n", i,j);
       if(pm1>0 && pm2>0){
         for (l1 = 2; l1 < LMAX; l1++){
           l1_double = (double)l1;
