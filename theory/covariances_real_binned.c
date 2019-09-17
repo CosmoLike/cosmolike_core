@@ -454,19 +454,21 @@ double int2_for_cov_NG_shear_binned(double l2,void *params){
   double *ar = (double *) params;
   double l1,tri = 0.,res =0;
   int n1,n2,n3,n4,j0;
+  j0= (int)ar[10];
   l1= ar[0];
   
   n1 = (int) ar[1];n2 = (int) ar[2];n3 = (int) ar[3];n4 = (int) ar[4];
   tri= bin_cov_NG_shear_shear_tomo(l1,l2,n1,n2,n3,n4);
   if (j0==1) res=(tri)*l2*J0_binned(l2,ar[7],ar[8]);
   if (j0==0) res=(tri)*l2*J4_binned(l2,ar[7],ar[8]);
+  // printf("l2,J0,J4,%lg, %lg, %lg\n",l2, J0_binned(l2,ar[7],ar[8]),J4_binned(l2,ar[7],ar[8]));
   return res;
 }
 double int_for_cov_NG_shear_binned(double l1, void *params){
   double *array = (double *) params,res=0.,result = 1.,res_fin = 0.;
   int j0;
   array[0] = l1;
-  j0= (int)array[10];
+  j0= (int)array[9];
   unsigned int n =1;
   double x2 =0, x1 = 20.; //x1 = l_min for NG Covariance integration
   while (x2 <= x1){ //find first root of J0/4(l*theta2) with l > 20
@@ -484,6 +486,7 @@ double int_for_cov_NG_shear_binned(double l1, void *params){
   }
   if ((int)array[9]==1) res_fin=res*l1*J0_binned(l1,array[5],array[6]);
   if ((int)array[9]==0) res_fin=res*l1*J4_binned(l1,array[5],array[6]);
+  // printf("res1,%lg\n", res_fin);
   return res_fin;
 }
 double cov_NG_shear_shear_real_binned(double theta1_min, double theta1_max,double theta2_min,double theta2_max, int z1,int z2,int z3,int z4,int pm1,int pm2){
@@ -506,6 +509,7 @@ double cov_NG_shear_shear_real_binned(double theta1_min, double theta1_max,doubl
     if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/t;
     n+=2;
   }
+  // printf("res2,%lg\n", res);
   return res/(4.0*M_PI*M_PI);
 }
 
