@@ -250,6 +250,8 @@ void run_cov_shear_shear_real_bin(char *OUTFILE, char *PATH,double *theta, int N
 
 
   double **cov_fullsky = 0;
+  like.vtmin = theta[0];
+  like.vtmax = theta[Ntheta];
   if(NG){
     cov_fullsky = create_double_matrix(0, like.Ntheta-1, 0, like.Ntheta-1);
     cov_NG_shear_shear_real_binned_fullsky(cov_fullsky,z1,z2,z3,z4,pm1,pm2);
