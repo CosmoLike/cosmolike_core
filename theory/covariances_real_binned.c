@@ -514,156 +514,6 @@ double cov_NG_shear_shear_real_binned(double theta1_min, double theta1_max,doubl
 }
 
 
-void cov_NG_shear_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm1,int pm2){
-  
-  int i,j;
-  static int LMAX = 50000;
-  static double **Glplus =0;
-  static double **Glminus =0;
-  if (Glplus ==0){
-    Glplus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
-    Glminus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
-    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
-    xmin= create_double_vector(0, like.Ntheta-1);
-    xmax= create_double_vector(0, like.Ntheta-1);
-    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
-    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
-    for(i=0; i<like.Ntheta ; i++){
-      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
-      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
-    }
-    Pmin= create_double_vector(0, LMAX+1);
-    Pmax= create_double_vector(0, LMAX+1);
-    dPmin= create_double_vector(0, LMAX+1);
-    dPmax= create_double_vector(0, LMAX+1);
-    for (i = 0; i<like.Ntheta; i ++){
-      double x = cos(like.theta[i]);
-      gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
-      gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
-      // printf("xmax[%d]:%lg\n", i,xmax[i]);
-      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
-      for (int l = 3; l < LMAX; l ++){
-        /*double plm = gsl_sf_legendre_Plm(l,2,x);
-        double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
-        Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
-        *(plm*((4-l+2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
-        +plm_1*(l-1,2,x)*(l+2)*(x-2)/(1-x*x));
-
-
-        Glminus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
-        *(plm*(l,2,x)*((4-l-2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
-        +plm_1*(l-1,2,x)*(l+2)*(x+2)/(1-x*x));*/
-
-        Glplus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
-
-        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
-        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
-
-        +(4-l)   * (dPmin[l]-dPmax[l])
-        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
-
-        +2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
-        -2*(l+2) * (dPmin[l-1]-dPmax[l-1])
-
-        )/(xmin[i]-xmax[i]);           
-
-        Glminus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
-
-        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
-        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
-
-        +(4-l)   * (dPmin[l]-dPmax[l])
-        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
-
-        -2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
-        +2*(l+2) * (dPmin[l-1]-dPmax[l-1])
-
-        )/(xmin[i]-xmax[i]);
-        
-        // printf("Pmin[%d], Pmax[%d]:%lg, %lg\n", l,l, Pmin[l], Pmax[l]);
-        // printf("Glplus[%d][%d],%lg\n", i,l, Glplus[i][l]);
-      }
-    }
-    free_double_vector(xmin,0,like.Ntheta-1);
-    free_double_vector(xmax,0,like.Ntheta-1);
-    free_double_vector(Pmin,0,LMAX+1);
-    free_double_vector(Pmax,0,LMAX+1);
-    free_double_vector(dPmin,0,LMAX+1);
-    free_double_vector(dPmax,0,LMAX+1);
-  }
-
-  double l1_double,tri;
-  int l1,l2;
-  for(i=0; i<like.Ntheta ; i++){
-    for(j=0; j<like.Ntheta ; j++){
-      cov[i][j] = 0.;
-    }
-  }
-
-  // printf("i,j:%d,%d\n", i,j);
-  double triGl1;
-  if(pm1>0 && pm2>0){
-    for (l1 = 3; l1 < LMAX; l1++){
-      l1_double = (double)l1;
-      // printf("l1,%d\n", l1);
-      for (l2 = 3; l2 < LMAX; l2++){
-        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
-        for(i=0; i<like.Ntheta ; i++){
-          triGl1 = tri * Glplus[i][l1];
-          // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
-          for(j=0; j<like.Ntheta ; j++){
-            cov[i][j] += triGl1 * Glplus[j][l2];
-          }
-        }
-      }
-    }
-  }
-  else if(pm1>0 && pm2==0){
-    for (l1 = 3; l1 < LMAX; l1++){
-      l1_double = (double)l1;
-      for (l2 = 3; l2 < LMAX; l2++){
-        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
-        for(i=0; i<like.Ntheta ; i++){
-          triGl1 = tri * Glplus[i][l1];
-          for(j=0; j<like.Ntheta ; j++){
-            cov[i][j] += triGl1 * Glminus[j][l2];
-          }
-        }
-      }
-    }
-  }
-  else if(pm1==0 && pm2>0){
-    for (l1 = 3; l1 < LMAX; l1++){
-      l1_double = (double)l1;
-      for (l2 = 3; l2 < LMAX; l2++){
-        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
-        for(i=0; i<like.Ntheta ; i++){
-          triGl1 = tri * Glminus[i][l1];
-          for(j=0; j<like.Ntheta ; j++){
-            cov[i][j] += triGl1 * Glplus[j][l2];
-          }
-        }
-      }
-    }
-  }
-  else{
-    for (l1 = 3; l1 < LMAX; l1++){
-      l1_double = (double)l1;
-      for (l2 = 3; l2 < LMAX; l2++){
-        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
-        for(i=0; i<like.Ntheta ; i++){
-          triGl1 = tri * Glminus[i][l1];
-          for(j=0; j<like.Ntheta ; j++){
-            cov[i][j] += triGl1 * Glminus[j][l2];
-          }
-        }
-      }
-    }
-  }
-}
-
 /*********** rebin routines for shear shear G**********/
 double int_for_cov_G_shear_binned(double l, void *params){
   double *ar = (double *) params;
@@ -1226,4 +1076,597 @@ double cov_G_gl_shear_real_binned (double theta1_min,double theta1_max, double t
     n+=2;
   }
   return res/(2.0*M_PI*survey.area*survey.area_conversion_factor);
+}
+
+
+/////// full sky covs
+void cov_NG_shear_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm1,int pm2){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Glplus =0;
+  static double **Glminus =0;
+  if (Glplus ==0){
+    Glplus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Glminus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
+      // printf("xmax[%d]:%lg\n", i,xmax[i]);
+      for (int l = 3; l < LMAX; l ++){
+        /*double plm = gsl_sf_legendre_Plm(l,2,x);
+        double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
+        Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*((4-l+2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x-2)/(1-x*x));
+
+
+        Glminus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*(l,2,x)*((4-l-2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x+2)/(1-x*x));*/
+
+        Glplus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        +2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        -2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);           
+
+        Glminus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        -2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        +2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);
+        
+        // printf("Pmin[%d], Pmax[%d]:%lg, %lg\n", l,l, Pmin[l], Pmax[l]);
+        // printf("Glplus[%d][%d],%lg\n", i,l, Glplus[i][l]);
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  // printf("i,j:%d,%d\n", i,j);
+  double triGl1;
+  if(pm1>0 && pm2>0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      // printf("l1,%d\n", l1);
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glplus[i][l1];
+          // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glplus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else if(pm1>0 && pm2==0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glplus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else if(pm1==0 && pm2>0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glminus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glplus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else{
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glminus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_gl_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Glplus =0;
+  static double **Glminus =0;
+  static double **Pl =0;
+  if (Glplus ==0){
+    Glplus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Glminus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
+      // printf("xmax[%d]:%lg\n", i,xmax[i]);
+      for (int l = 3; l < LMAX; l ++){
+        /*double plm = gsl_sf_legendre_Plm(l,2,x);
+        double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
+        Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*((4-l+2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x-2)/(1-x*x));
+
+
+        Glminus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*(l,2,x)*((4-l-2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x+2)/(1-x*x));*/
+
+        Glplus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        +2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        -2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);           
+
+        Glminus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        -2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        +2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);
+        
+        // printf("Pmin[%d], Pmax[%d]:%lg, %lg\n", l,l, Pmin[l], Pmax[l]);
+        // printf("Glplus[%d][%d],%lg\n", i,l, Glplus[i][l]);
+        Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
+        *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
+        +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  // printf("i,j:%d,%d\n", i,j);
+  double triP;
+  if(pm>0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      // printf("l1,%d\n", l1);
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_gl_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triP = tri * Pl[i][l1];
+          // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triP * Glplus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else{
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_gl_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triP = tri * Pl[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triP * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_cl_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Glplus =0;
+  static double **Glminus =0;
+  static double **Pl =0;
+  if (Glplus ==0){
+    Glplus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Glminus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
+      // printf("xmax[%d]:%lg\n", i,xmax[i]);
+      for (int l = 3; l < LMAX; l ++){
+        /*double plm = gsl_sf_legendre_Plm(l,2,x);
+        double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
+        Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*((4-l+2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x-2)/(1-x*x));
+
+
+        Glminus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*(l,2,x)*((4-l-2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x+2)/(1-x*x));*/
+
+        Glplus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        +2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        -2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);           
+
+        Glminus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        -2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        +2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);
+        
+        Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+        // printf("Pmin[%d], Pmax[%d]:%lg, %lg\n", l,l, Pmin[l], Pmax[l]);
+        // printf("Glplus[%d][%d],%lg\n", i,l, Glplus[i][l]);
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  // printf("i,j:%d,%d\n", i,j);
+  double triP;
+  if(pm>0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      // printf("l1,%d\n", l1);
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_cl_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triP = tri * Pl[i][l1];
+          // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triP * Glplus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else{
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_cl_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triP = tri * Pl[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triP * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_cl_gl_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Pl =0;
+  static double **Pl2=0;
+  if (Pl ==0){
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Pl2=create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
+      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+      for (int l = 2; l < LMAX; l ++){
+        Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+        Pl2[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
+        *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
+        +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  double triP;
+  for (l1 = 3; l1 < LMAX; l1++){
+    l1_double = (double)l1;
+    for (l2 = 3; l2 < LMAX; l2++){
+      tri = bin_cov_NG_cl_gl_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+      for(i=0; i<like.Ntheta ; i++){
+        triP = tri * Pl[i][l1];
+        for(j=0; j<like.Ntheta ; j++){
+          cov[i][j] += triP * Pl2[j][l2];
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_gl_gl_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Pl =0;
+  if (Pl ==0){
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
+      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+      for (int l = 2; l < LMAX; l ++){
+        Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
+        *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
+        +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  double triP;
+  for (l1 = 3; l1 < LMAX; l1++){
+    l1_double = (double)l1;
+    for (l2 = 3; l2 < LMAX; l2++){
+      tri = bin_cov_NG_gl_gl_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+      for(i=0; i<like.Ntheta ; i++){
+        triP = tri * Pl[i][l1];
+        for(j=0; j<like.Ntheta ; j++){
+          cov[i][j] += triP * Pl[j][l2];
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_cl_cl_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Pl =0;
+  if (Pl ==0){
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
+      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+      for (int l = 1; l < LMAX; l ++){
+        Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  double triP;
+  for (l1 = 3; l1 < LMAX; l1++){
+    l1_double = (double)l1;
+    for (l2 = 3; l2 < LMAX; l2++){
+      tri = bin_cov_NG_cl_cl_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+      for(i=0; i<like.Ntheta ; i++){
+        triP = tri * Pl[i][l1];
+        for(j=0; j<like.Ntheta ; j++){
+          cov[i][j] += triP * Pl[j][l2];
+        }
+      }
+    }
+  }
 }
