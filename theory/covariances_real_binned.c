@@ -253,7 +253,7 @@ double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   static int Z2 = -42;
   static int Z3 = -42;
   static int Z4 = -42;
-  static int Ntab = 20;
+  static int Ntab = 40;
   static double **table=0;
   static double ds = .0, logsmin = .0, logsmax = .0;
   int i,j;
@@ -270,7 +270,7 @@ double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
       llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
-        table[i][j]=log(cov_NG_cl_cl_tomo(ll1,ll2,z1,z2,z3,z4));
+        table[i][j]=cov_NG_cl_cl_tomo(ll1,ll2,z1,z2,z3,z4);
       }
     }
     Z1=z1; Z2=z2; Z3=z3; Z4=z4;
@@ -279,7 +279,7 @@ double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
   return res;
 }
 double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -287,7 +287,7 @@ double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   static int Z2 = -42;
   static int Z3 = -42;
   static int Z4 = -42;
-  static int Ntab = 20;
+  static int Ntab = 40;
   static double **table=0;
   static double ds = .0, logsmin = .0, logsmax = .0;
   int i,j;
@@ -304,7 +304,8 @@ double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
       llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
-        table[i][j]=log(cov_NG_cl_shear_tomo(ll1,ll2,z1,z2,z3,z4));
+        table[i][j]=cov_NG_cl_shear_tomo(ll1,ll2,z1,z2,z3,z4);
+        // printf("cov_NG_cl_shear_tomo(%lg,%lg),%lg\n",ll1,ll2, table[i][j]); 
       }
     }
     Z1=z1; Z2=z2; Z3=z3; Z4=z4;
@@ -313,7 +314,7 @@ double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
   return res;
 }
 double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -321,7 +322,7 @@ double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   static int Z2 = -42;
   static int Z3 = -42;
   static int Z4 = -42;
-  static int Ntab = 20;
+  static int Ntab = 40;
   static double **table=0;
   static double ds = .0, logsmin = .0, logsmax = .0;
   int i,j;
@@ -338,7 +339,7 @@ double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
       llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
-        table[i][j]=log(cov_NG_cl_gl_tomo(ll1,ll2,z1,z2,z3,z4));
+        table[i][j]=cov_NG_cl_gl_tomo(ll1,ll2,z1,z2,z3,z4);
       }
     }
     Z1=z1; Z2=z2; Z3=z3; Z4=z4;
@@ -347,7 +348,7 @@ double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
   return res;
 }
 double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -1360,7 +1361,7 @@ void cov_NG_gl_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int 
 void cov_NG_cl_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm){
   
   int i,j;
-  static int LMAX = 50000;
+  static int LMAX = 10000;
   static double **Glplus =0;
   static double **Glminus =0;
   static double **Pl =0;
@@ -1471,6 +1472,7 @@ void cov_NG_cl_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int 
       l1_double = (double)l1;
       for (l2 = 3; l2 < LMAX; l2++){
         tri = bin_cov_NG_cl_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        // printf("tri:%lg\n", tri);
         for(i=0; i<like.Ntheta ; i++){
           triP = tri * Pl[i][l1];
           for(j=0; j<like.Ntheta ; j++){

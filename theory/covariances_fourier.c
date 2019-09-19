@@ -237,8 +237,10 @@ double inner_project_tri_cov_cl_shear_tomo(double a,void *params)
   weights = W_gal(a,ar[2])*W_gal(a, ar[3])*W_kappa(a,fK,ar[4])*W_kappa(a,fK,ar[5])*dchi_da(a);
   if (weights >0.){
     if (cNG) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
+    // printf("res cNG:%lg , ", res);
     res += (delP_SSC(k1,a)-2.*bgal_a(a,ar[2])*Pdelta(k1,a))*(delP_SSC(k2,a))*survey_variance(a,ar[6])*pow(fK,-4.); //SSC
   }
+  // printf("res +SSC, weights:%lg, %lg\n", res, weights);
   res *= weights;
   return res;
 }
