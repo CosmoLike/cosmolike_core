@@ -356,7 +356,7 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   static int Z2 = -42;
   static int Z3 = -42;
   static int Z4 = -42;
-  static int Ntab = 20;
+  static int Ntab = 40;
   static double **table=0;
   static double ds = .0, logsmin = .0, logsmax = .0;
   int i,j;
@@ -373,7 +373,8 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
       llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
-        table[i][j]=log(cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4));
+        table[i][j]=cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4);
+        // printf("cov_NG_gl_shear_tomo(%lg,%lg),%lg\n",ll1,ll2, cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4)); 
       }
     }
     Z1=z1; Z2=z2; Z3=z3; Z4=z4;
@@ -382,7 +383,7 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
   return res;
 }
 
