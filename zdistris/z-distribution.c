@@ -14,6 +14,7 @@ double int_for_zdistr(double z);
 void set_redshift_DES_conti();
 void set_redshift_DES_SV();
 void set_redshift_DES_Tully_Fisher();
+void set_redshift_WFIRST_Tully_Fisher();
 void set_redshift_LSST_conti();
 void set_redshift_LSST_gold_conti();
 void set_redshift_Euclid_conti();
@@ -212,6 +213,18 @@ void set_redshift_DES_Tully_Fisher()
   sprintf(redshiftclustering.REDSHIFT_FILE,"dummy");
   redshiftclustering.histogram_zbins=0;
 }
+
+void set_redshift_WFIRST_Tully_Fisher()
+{
+  redshiftclustering.z0        = 0.501;
+  redshiftclustering.beta_p    = 1.795;
+  redshiftclustering.alpha   =   3.213;
+  redshiftclustering.zdistrpar_zmin = 0.;
+  redshiftclustering.zdistrpar_zmax = 3.0;
+  sprintf(redshiftclustering.REDSHIFT_FILE,"dummy");
+  redshiftclustering.histogram_zbins=0;
+}
+
 
 void set_redshift_DES_SV()
 {
@@ -521,7 +534,9 @@ void LSST_gold_zdistricalc()
   fclose(F);
 }
 
-void WFIRST_zdistricalc()
+
+
+void KL_WFIRST_zdistricalc()
 {
   int i;
   double z;
@@ -529,9 +544,9 @@ void WFIRST_zdistricalc()
   double res;
   double sum[301];
   int flag[5]={0,0,0,0,0};
-  set_redshift_WFIRST_conti();
+  set_redshift_WFIRST_Tully_Fisher();
   FILE *F;
-  F=fopen("zdistribution_WFIRST_conti","w");
+  F=fopen("zdistribution_WFIRST_KL","w");
   sum[0]=0.0;
   i=0;
   z=0.0;
@@ -540,7 +555,7 @@ void WFIRST_zdistricalc()
   for(i=0;i<Nstep;i++){
     z=0.0+(i+0.5)*dz;
     res=pf_LSST(z);
-    sum[i+1]=sum[i]+pf_LSST(z);
+    sum[i+1]=sum[i]+pf(z);
     fprintf(F,"%le %le %le %le\n",0.0+i*dz,z,0.0+(i+1)*dz,res);   
    // printf("%le %le %le %le\n",0.0+i*dz,z,0.0+(i+1)*dz,res);
   }
@@ -729,8 +744,8 @@ int main(void)
 //DES_zdistricalc();
 //LSST_zdistricalc();
 //LSST_gold_zdistricalc();
-multi_zdistricalc();
-
+//multi_zdistricalc();
+KL_WFIRST_zdistricalc();
 //  WFIRST_zdistricalc();
 //  Euclid_zdistricalc();
 //  normalization_tomography_binning("zdistribution_Euclid_conti");
