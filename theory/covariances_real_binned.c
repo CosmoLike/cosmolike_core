@@ -793,6 +793,19 @@ double cov_G_cl_cl_real_binned(double thetamin_i, double thetamax_i,double theta
   return cov_G_cl_no_shot_noise_binned(thetamin_i,thetamax_i, thetamin_j,thetamax_j,z1,z2,z3,z4)+ N;
 }
 
+// double cov_G_cl_cl_fourier(double l, int z1, int z2, int z3, int z4){
+//   double C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
+//   double noshot;
+//   C13 = C_cl_tomo(l,z1,z3);C24 = C_cl_tomo(l,z2,z4);
+//   C14 = C_cl_tomo(l,z1,z4);C23 = C_cl_tomo(l,z2,z3);
+//   if (z1 == z3){N13= 1./(nlens(z1)*survey.n_gal_conversion_factor);}
+//   if (z1 == z4){N14= 1./(nlens(z1)*survey.n_gal_conversion_factor);}
+//   if (z2 == z3){N23= 1./(nlens(z2)*survey.n_gal_conversion_factor);}
+//   if (z2 == z4){N24= 1./(nlens(z2)*survey.n_gal_conversion_factor);}
+//   noshot = (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23);
+  
+// }
+
 /*********************************************************/
 /************ clustering x shear NG, bin averaged ********/
 /*********************************************************/

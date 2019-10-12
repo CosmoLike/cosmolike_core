@@ -173,18 +173,16 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, ni);
 	if(ni != nj) {f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f2_chi_Mag_ar, nj);}
 
-	// char outfilename[] = "f1_chi4.txt";
-	// char outfilename[] = "f1_chi4_rsd.txt";
-	char *outfilename = (char*)malloc(40 * sizeof(char));;
-	sprintf(outfilename, "fchi/f_chi_cl_%d.txt", ni);
-	FILE *OUT = fopen(outfilename, "w");
+	// char *outfilename = (char*)malloc(40 * sizeof(char));;
+	// sprintf(outfilename, "fchi/cl_%d_testlinear.txt", ni);
+	// FILE *OUT = fopen(outfilename, "w");
 	
-	for(i=0; i<Nchi; i++) {
-		// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);
-		// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_RSD_ar[i]);
-		fprintf(OUT, "%lg %lg %lg %lg\n", chi_ar[i], f1_chi_ar[i], f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);
-		// fprintf(OUT, "\n");
-	}
+	// for(i=0; i<Nchi; i++) {
+	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);
+	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_RSD_ar[i]);
+	// 	fprintf(OUT, "%lg %lg %lg %lg\n", chi_ar[i], f1_chi_ar[i], f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);
+	// 	// fprintf(OUT, "\n");
+	// }
 	// for(i=0; i<Nchi; i++) {
 	// 	printf("f_chi_ar: %d, %lg, %lg, %lg, %lg\n", i,chi_ar[i], f1_chi_ar[i],f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);
 	// }
@@ -637,14 +635,14 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 
 	// char outfilename[] = "f_chi_gl1.txt";
 	// char outfilename[] = "f1_chi_gl1.txt";
-	char *outfilename = (char*)malloc(40 * sizeof(char));;
-	sprintf(outfilename, "fchi/f_chi_sh_%d.txt", ns);
-	FILE *OUT = fopen(outfilename, "w");
-	for(i=0; i<Nchi; i++) {
-		// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);
-		fprintf(OUT, "%lg %lg %lg", chi_ar[i], f2_chi_ar[i]-f2_chi_IA_ar[i], f2_chi_IA_ar[i]);
-		fprintf(OUT, "\n");
-	}
+	// char *outfilename = (char*)malloc(40 * sizeof(char));;
+	// sprintf(outfilename, "fchi/f_chi_sh_%d.txt", ns);
+	// FILE *OUT = fopen(outfilename, "w");
+	// for(i=0; i<Nchi; i++) {
+	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);
+	// 	fprintf(OUT, "%lg %lg %lg", chi_ar[i], f2_chi_ar[i]-f2_chi_IA_ar[i], f2_chi_IA_ar[i]);
+	// 	fprintf(OUT, "\n");
+	// }
 	// for(i=0; i<Nchi; i++) {
 	// 	printf("f_chi_ar: %d, %lg\n", i, f2_chi_ar[i]);
 	// }
@@ -790,7 +788,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);
 	free(Fk1_Mag_ar);
-	fclose(OUT);
+	// fclose(OUT);
 	// exit(0);
 }
 
@@ -822,7 +820,6 @@ double w_gamma_t_nonLimber(int nt, int ni, int nj){
 		double mythetamin, mythetamax;
 		// xmid= create_double_vector(0, like.Ntheta-1);
 		// Pmid= create_double_vector(0, LMAX+1);
-
 		for(i=0; i<like.Ntheta ; i++){
 			mythetamin = exp(log(like.vtmin)+(i+0.0)*logdt);
 			mythetamax = exp(log(like.vtmin)+(i+1.0)*logdt);
@@ -832,18 +829,19 @@ double w_gamma_t_nonLimber(int nt, int ni, int nj){
 		}
 		Pmin= create_double_vector(0, LMAX+1);
     	Pmax= create_double_vector(0, LMAX+1);
+
 		for (i = 0; i<NTHETA; i ++){
 			// printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
-		    // gsl_sf_legendre_Plm_array(LMAX,2, xmid[i],Pmid);
+		    // gsl_sf_legendre_Pl_array(LMAX, xmid[i],Pmid);
 			for (int l = 2; l < LMAX; l ++){
 				// Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));	
 				Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
 				*((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
 				+(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
 				-2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
-				// Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));
+				// Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*Pmid[l]*Pmid[l];
 			}
 		}
 		free_double_vector(xmin,0,like.Ntheta-1);
