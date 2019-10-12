@@ -324,19 +324,11 @@ void init_priors(char *cosmoPrior1, char *cosmoPrior2, char *cosmoPrior3, char *
   printf("Initializing priors for marginalization\n");
   printf("---------------------------------------\n");
   
-  like.Planck=like.BAO=like.Aubourg_Planck_BAO_SN=like.SN=0;
-  like.Planck15_BAO_w0wa=like.Planck15_BAO_H070p6_JLA_w0wa=0; //CH
+  like.Planck15_BAO_H070p6_JLA_w0wa=0; //CH
   like.Planck18_BAO_Riess18_Pantheon_w0wa=like.Planck18_BAO_w0wa=like.Planck18_w0=0; //CH
 
-  if(strcmp(cosmoPrior1,"Planck_BAO_SN_Aubourg")==0)like.Aubourg_Planck_BAO_SN=1;
-  if(strcmp(cosmoPrior2,"DES_SN")==0) like.SN=1;
-  if(strcmp(cosmoPrior3,"PhotoBAO")==0) like.BAO=1;
   //CH BEGINS
-  if(strcmp(cosmoPrior4,"Planck")==0){ 
-    like.Planck=1;  
-  } else if(strcmp(cosmoPrior4,"Planck15_BAO_w0wa")==0){
-    like.Planck15_BAO_w0wa=1;  
-  } else if(strcmp(cosmoPrior4,"Planck15_BAO_H070p6_JLA_w0wa")==0){
+  if(strcmp(cosmoPrior4,"Planck15_BAO_H070p6_JLA_w0wa")==0){
     like.Planck15_BAO_H070p6_JLA_w0wa=1;  
   } else if(strcmp(cosmoPrior4,"Planck18_BAO_Riess18_Pantheon_w0wa")==0){
     like.Planck18_BAO_Riess18_Pantheon_w0wa=1;  
