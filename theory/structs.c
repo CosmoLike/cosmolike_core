@@ -30,7 +30,8 @@ typedef struct {
   int SRD;
   char DATA_FILE[500];
   char INV_FILE[500]; 
-  char COV_FILE[500]; 
+  char COV_FILE[500];
+  char BARY_FILE[500]; 
   char MASK_FILE[500]; 
   int shear_shear;
   int shear_pos;
@@ -393,6 +394,7 @@ typedef struct input_nuisance_params {
     double lf[6];
     double m_lambda[6];
     double cluster_c[4];
+    double bary[2];
 } input_nuisance_params;
 
 typedef struct input_nuisance_params_grs {
