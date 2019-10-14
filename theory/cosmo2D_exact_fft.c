@@ -44,6 +44,26 @@ double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power sp
 	return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.99999,NULL,1000);
 }
 
+// test for replacing Plin with Pdelta and rescaled
+double int_for_C_cl_nl_rescale(double a, void *params)
+{
+	double res,ell, fK, k;
+	double *ar = (double *) params;
+	ell       = ar[2]+0.5;
+	fK     = f_K(chi(a));
+	k      = ell/fK;
+	
+	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
+	res= res*Pdelta(k,0.9999)*growfac(a)*growfac(a)/growfac(1.)/growfac(1.)*G_taper(k);
+	return res;
+}
+double C_cl_nl_rescaled_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
+{
+	double array[3] = {1.0*ni,1.0*nj,l};
+	// return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
+	return int_gsl_integrate_medium_precision(int_for_C_cl_nl_rescale,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.99999,NULL,1000);
+}
+
 /////// Integrand for galaxy density
 void f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni){
 	double g0 =1./growfac(1.);
@@ -173,8 +193,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, ni);
 	if(ni != nj) {f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f2_chi_Mag_ar, nj);}
 
-	// char *outfilename = (char*)malloc(40 * sizeof(char));;
-	// sprintf(outfilename, "fchi/cl_%d_testlinear.txt", ni);
+	// char *outfilename = (char*)malloc(80 * sizeof(char));
+	// sprintf(outfilename, "cl_test_lin_vs_nl/cl_%d_testnlrescaled.txt", ni);
 	// FILE *OUT = fopen(outfilename, "w");
 	
 	// for(i=0; i<Nchi; i++) {
@@ -262,7 +282,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
 			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;
 			// printf("cl_t/emp: %d, %lg\n", i, cl_temp);
-			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
+			// fprintf(OUT, "%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
 			// fprintf(OUT, "%d %lg\n", ell_ar[i], Cl[ell_ar[i]]);
 		}
 
@@ -274,7 +294,11 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	}
 	// L++;
 	// printf("switching to Limber calculation at l = %d\n",L);
-	for (l = 1; l < LMAX; l++){
+	for (l = 1; l < 50; l++){
+		Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
+		// fprintf(OUT, "%d %lg\n", l, Cl[l]);
+	}
+	for (l = 50; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 		// fprintf(OUT, "%d %lg\n", l, Cl[l]);
 	}
