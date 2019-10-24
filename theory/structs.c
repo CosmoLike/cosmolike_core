@@ -39,6 +39,7 @@ typedef struct {
   int clusterN;
   int clusterWL;
   int clusterCG;
+  int clusterCC;
  // MANUWARNING: added "int gk, kk, ks;"
   int gk;
   int kk;
