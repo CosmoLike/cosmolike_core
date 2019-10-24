@@ -146,6 +146,8 @@ typedef struct {
 Cmb cmb;
 
 double bgal_z(double z, int nz);
+double b1_per_bin(double z, int nz);
+
 typedef  double (*B1_model)(double z, int nz);
 typedef struct{
   double b[10]; /* linear galaxy bias paramter in clustering bin i*/
@@ -158,7 +160,7 @@ typedef struct{
   double b_mag[10]; /*amplitude of magnification bias, b_mag[i] = 5*s[i]+beta[i] -2 */
   B1_model b1_function;
 }galpara;
-galpara gbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.b1_function = &bgal_z, .b_mag ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}; //default: point to old bgal_z routin
+galpara gbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.b1_function = &b1_per_bin, .b_mag ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}; //default: point to old bgal_z routin
 
 typedef struct{
   double hod[5];
