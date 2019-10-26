@@ -368,6 +368,7 @@ typedef struct input_nuisance_params_mpp {
     double  A_z[10];
     double  MOR[10];
     double selection[10];
+    double b_mag[10];
 } input_nuisance_params_mpp;
 
 typedef struct input_HOD_params {
@@ -395,6 +396,7 @@ typedef struct input_nuisance_params {
     double m_lambda[6];
     double cluster_c[4];
     double bary[2];
+    double b_mag[10];
 } input_nuisance_params;
 
 typedef struct input_nuisance_params_grs {
