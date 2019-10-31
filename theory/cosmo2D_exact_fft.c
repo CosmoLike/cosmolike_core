@@ -55,6 +55,9 @@ double int_for_C_cl_nl_rescale(double a, void *params)
 	
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
 	res= res*Pdelta(k,0.9999)*growfac(a)*growfac(a)/growfac(1.)/growfac(1.)*G_taper(k);
+	// printf("Pdelta(k,1):%lg, Prescale(k,1):%lg\n", Pdelta(k,0.9999), Pdelta(k,0.9999)*growfac(1.)*growfac(1.)/growfac(1.)/growfac(1.));
+	printf("Pdelta(k,0.5):%lg, Prescale(k,0.5):%lg\n", Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.5), Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.9999)*growfac(0.5)*growfac(0.5)/growfac(1.)/growfac(1.));
+	exit(0);
 	return res;
 }
 double C_cl_nl_rescaled_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
@@ -243,8 +246,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	double k1_cH0;
 
 
-	// while (fabs(dev) > tolerance){
-	while(0){
+	while (fabs(dev) > tolerance){
+	// while(0){
 	// while (L<100){
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
@@ -282,6 +285,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
 			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;
 			// printf("cl_t/emp: %d, %lg\n", i, cl_temp);
+			// printf("%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
 			// fprintf(OUT, "%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
 			// fprintf(OUT, "%d %lg\n", ell_ar[i], Cl[ell_ar[i]]);
 		}
@@ -292,13 +296,13 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	   // printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
 		// printf("i_block: %d\n", i_block);
 	}
-	// L++;
+	L++;
 	// printf("switching to Limber calculation at l = %d\n",L);
-	for (l = 1; l < 50; l++){
-		Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
-		// fprintf(OUT, "%d %lg\n", l, Cl[l]);
-	}
-	for (l = 50; l < LMAX; l++){
+	// for (l = 1; l < 50; l++){
+	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
+	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);
+	// }
+	for (l = L; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 		// fprintf(OUT, "%d %lg\n", l, Cl[l]);
 	}
@@ -311,6 +315,20 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);
 	free(Fk1_Mag_ar);free(Fk2_Mag_ar);
+
+
+	 // FILE *F;
+	 // F=fopen("growth_z_0.3.txt","w");
+	 // double dlogk = log(5./0.0001)/400.;
+	 // double z=.3;
+	 // double a=1./(1.+z);
+	 // // double a=0.9999;
+	 // for (int i = 0; i <400; i++){
+	 //   double k = exp(log(0.0001)+i*dlogk);
+	 //   fprintf(F,"%lg %lg\n",k, Pdelta(k*cosmology.coverH0 / cosmology.h0,a)/growfac(a)/growfac(a)*growfac(1.)*growfac(1.));
+	 //   // fprintf(F,"%lg %lg\n",k, Pdelta(k*cosmology.coverH0 / cosmology.h0,a));
+	 // }
+	 // exit(0);
 	// fclose(OUT);
 	// exit(0);
 }
