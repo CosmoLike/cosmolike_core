@@ -246,8 +246,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	double k1_cH0;
 
 
-	while (fabs(dev) > tolerance){
-	// while(0){
+	// while (fabs(dev) > tolerance){
+	while(0){
 	// while (L<100){
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
@@ -296,13 +296,13 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	   // printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
 		// printf("i_block: %d\n", i_block);
 	}
-	L++;
+	// L++;
 	// printf("switching to Limber calculation at l = %d\n",L);
-	// for (l = 1; l < 50; l++){
-	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
-	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);
-	// }
-	for (l = L; l < LMAX; l++){
+	for (l = 1; l < 50; l++){
+		Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
+		// fprintf(OUT, "%d %lg\n", l, Cl[l]);
+	}
+	for (l = 50; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 		// fprintf(OUT, "%d %lg\n", l, Cl[l]);
 	}
