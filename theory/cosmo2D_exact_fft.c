@@ -32,7 +32,7 @@ double int_for_C_cl_lin(double a, void *params)
 	k      = ell/fK;
 	
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
-	res= res*p_lin(k,a)*G_taper(k);
+	res= res*p_lin(k,a);
 	return res;
 }
 
@@ -54,10 +54,10 @@ double int_for_C_cl_nl_rescale(double a, void *params)
 	k      = ell/fK;
 	
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
-	res= res*Pdelta(k,0.9999)*growfac(a)*growfac(a)/growfac(1.)/growfac(1.)*G_taper(k);
+	res= res*Pdelta(k,0.9999)*growfac(a)*growfac(a)/growfac(1.)/growfac(1.);
 	// printf("Pdelta(k,1):%lg, Prescale(k,1):%lg\n", Pdelta(k,0.9999), Pdelta(k,0.9999)*growfac(1.)*growfac(1.)/growfac(1.)/growfac(1.));
-	printf("Pdelta(k,0.5):%lg, Prescale(k,0.5):%lg\n", Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.5), Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.9999)*growfac(0.5)*growfac(0.5)/growfac(1.)/growfac(1.));
-	exit(0);
+	// printf("Pdelta(k,0.5):%lg, Prescale(k,0.5):%lg\n", Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.5), Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.9999)*growfac(0.5)*growfac(0.5)/growfac(1.)/growfac(1.));
+	// exit(0);
 	return res;
 }
 double C_cl_nl_rescaled_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
@@ -197,7 +197,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	if(ni != nj) {f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f2_chi_Mag_ar, nj);}
 
 	// char *outfilename = (char*)malloc(80 * sizeof(char));
-	// sprintf(outfilename, "cl_test_lin_vs_nl/cl_%d_testnlrescaled.txt", ni);
+	// sprintf(outfilename, "cl_test_lin_vs_nl/cl_%d_testnl_rescale.txt", ni);
 	// FILE *OUT = fopen(outfilename, "w");
 	
 	// for(i=0; i<Nchi; i++) {
@@ -210,8 +210,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	// 	printf("f_chi_ar: %d, %lg, %lg, %lg, %lg\n", i,chi_ar[i], f1_chi_ar[i],f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);
 	// }
 	// exit(0);
-	// char *outfilename = (char*)malloc(40 * sizeof(char));;
-	// sprintf(outfilename, "cls/c_cl_%d_%d_rsd_mag_fft.txt", ni,nj);
+	// char *outfilename = (char*)malloc(80 * sizeof(char));;
+	// sprintf(outfilename, "cls2/c_cl_%d_%d_rsd_mag_fft.txt", ni,nj);
 	// FILE *OUT = fopen(outfilename, "w");
 
 
@@ -275,11 +275,12 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
 				if(ni == nj) {
-					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
+					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *Pdelta(k1_cH0,0.9999);
 					// printf("plin,%lg, %lg\n", k1_ar[i][j],p_lin(k1_cH0,1.0));
 				}
 				else {
-					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
+					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
 				}
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
@@ -287,6 +288,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 			// printf("cl_t/emp: %d, %lg\n", i, cl_temp);
 			// printf("%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
 			// fprintf(OUT, "%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
+			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
 			// fprintf(OUT, "%d %lg\n", ell_ar[i], Cl[ell_ar[i]]);
 		}
 
@@ -448,7 +450,7 @@ double int_for_C_gl_lin(double a, void *params)
 	wgal += W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) ;
   	res=(wgal + W_RSD(ell, a_0, a_1, ar[0]))*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
   	// res=(wgal)*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
-	res= res*p_lin(k,a)*G_taper(k);
+	res= res*p_lin(k,a);
 	return res;
 }
 
@@ -485,7 +487,7 @@ double int_for_C_gl_IA_lin(double a, void *params)
 
   res=(W_gal(a,ar[0])+W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
   // res=(W_gal(a,ar[0]) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
-  res= res*p_lin(k,a)*G_taper(k);
+  res= res*p_lin(k,a);
   return res;
 }
 
@@ -516,7 +518,7 @@ double int_for_C_gl_IA_lin_part1(double a, void *params)
 
   res=(W_gal(a,ar[0])+W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) )*(W_kappa(a,fK, ar[1]))*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
   // res=(W_gal(a,ar[0]) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
-  res= res*p_lin(k,a)*G_taper(k);
+  res= res*p_lin(k,a);
   return res;
 }
 
@@ -547,7 +549,7 @@ double int_for_C_gl_IA_lin_part2(double a, void *params)
 
   res=(W_gal(a,ar[0])+W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) )*(-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
   // res=(W_gal(a,ar[0]) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
-  res= res*p_lin(k,a)*G_taper(k);
+  res= res*p_lin(k,a);
   return res;
 }
 
@@ -691,7 +693,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// }
 	// exit(0);
 	// char *outfilename = (char*)malloc(40 * sizeof(char));;
-	// sprintf(outfilename, "cls/c_gl_%d_%d_mag_IA.txt", nl,ns);
+	// sprintf(outfilename, "cls2/c_gl_%d_%d_mag_IA.txt", nl,ns);
 	// FILE *OUT = fopen(outfilename, "w");
 
 
@@ -786,7 +788,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 			for(j=0;j<Nchi;j++) {
 				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
-				cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
+				cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
 			}
 			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns) - C_gl_lin_nointerp(1.*ell_ar[i],nl,ns);
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_ggl_IA(1.*ell_ar[i],nl,ns) - C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns);

@@ -387,7 +387,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
     char *outfilename = (char*)malloc(40 * sizeof(char));;
 
     for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
-      sprintf(outfilename, "cls/c_cl_exact_%d_%d_rsd_mag.txt", nz,nz);
+      sprintf(outfilename, "cls2/c_cl_exact_%d_%d_rsd_mag.txt", nz,nz);
       FILE *OUT = fopen(outfilename, "w");
 
       int L = 1;
@@ -634,7 +634,7 @@ double w_gamma_t_nonLimber(int nt, int ni, int nj){
 
     for (nz = 0; nz <tomo.ggl_Npowerspectra; nz ++){
       // nz = 0;
-      sprintf(outfilename, "cls/c_gl_exact_%d_%d_mag_IA.txt", ZL(nz),ZS(nz));
+      sprintf(outfilename, "cls2/c_gl_exact_%d_%d_mag_IA.txt", ZL(nz),ZS(nz));
       FILE *OUT = fopen(outfilename, "w");
 
       int L = 2;
