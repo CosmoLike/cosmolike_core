@@ -322,6 +322,9 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double cluster_centering_alpha[2];
   double cluster_centering_sigma[2];
   double cluster_centering_M_pivot[2];
+  double bary_Q1[2];
+  double bary_Q2[2];
+  double bary_Q3[2];
 }priorpara;
 priorpara prior = {.shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
@@ -368,8 +371,8 @@ typedef struct input_nuisance_params_mpp {
     double lens_z_bias[10];
     double source_z_bias[10];
     double shear_m[10];
-    double  A_z[10];
-    double  MOR[10];
+    double A_z[10];
+    double MOR[10];
     double selection[10];
     double b_mag[10];
 } input_nuisance_params_mpp;
@@ -398,7 +401,7 @@ typedef struct input_nuisance_params {
     double lf[6];
     double m_lambda[6];
     double cluster_c[4];
-    double bary[2];
+    double bary[3];
     double b_mag[10];
 } input_nuisance_params;
 
