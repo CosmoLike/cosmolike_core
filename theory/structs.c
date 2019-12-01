@@ -212,7 +212,7 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   int N;
   int N_per_dec;
   char Plin_FILE[200];
-  // parameters for table of IA terms
+  // parameters for table of bias terms
   double **tab_AB;
   int N_AB;
   // parameters for table of IA terms - note that N_IA needs to be initialized below!!!
@@ -221,7 +221,7 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   char path[200];
   cosmopara C;
 }FPTpara;
-FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7};
+FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7,.N_IA = 10};
 typedef struct {
   double A_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3)
   double A_ia; //A IA see Joachimi2012
