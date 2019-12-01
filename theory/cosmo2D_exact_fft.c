@@ -248,7 +248,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 
 	while (fabs(dev) > tolerance){
-	//while(0){
+	// while(0){
 	// while (L<100){
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
