@@ -198,7 +198,7 @@ void get_FPT_IA(void){
     for (i =0; i < FPT.N; i++){
       FPT.tab_IA[0][i] = IA_tt_EE[i]; //tt_EE
       FPT.tab_IA[1][i] = IA_tt_BB[i]; //tt_BB
-      printf("tt k=%e, Plin =%e   %e %e\n",i, k[i],Pin[i], FPT.tab_IA[0][i],FPT.tab_IA[1][i]);
+      printf("tt k=%e, Plin =%e   %e %e\n",k[i],Pin[i], FPT.tab_IA[0][i],FPT.tab_IA[1][i]);
     }
 
     IA_ta(k, Pin, FPT.N, IA_ta_dE1, IA_ta_dE2, IA_ta_0E0E, IA_ta_0B0B);
@@ -207,7 +207,7 @@ void get_FPT_IA(void){
       FPT.tab_IA[3][i] = IA_ta_dE2[i]; //ta_dE2
       FPT.tab_IA[4][i] = IA_ta_0E0E[i]; //ta_EE
       FPT.tab_IA[5][i] = IA_ta_0B0B[i]; //ta_BB
-      printf("ta %d %e %e %e %e\n",i, FPT.tab_IA[2][i],FPT.tab_IA[3][i],FPT.tab_IA[4][i],FPT.tab_IA[5][i]);
+      printf("ta k=%e, Plin =%e  %e %e %e %e\n",k[i],Pin[i], FPT.tab_IA[2][i],FPT.tab_IA[3][i],FPT.tab_IA[4][i],FPT.tab_IA[5][i]);
     }
 
     IA_mix(k,Pin, FPT.N, IA_mix_A, IA_mix_B, IA_mix_DEE, IA_mix_DBB);
@@ -216,7 +216,7 @@ void get_FPT_IA(void){
       FPT.tab_IA[7][i] = IA_mix_B[i]; //mix_B
       FPT.tab_IA[8][i] = IA_mix_DEE[i]; //mix_D_EE
       FPT.tab_IA[9][i] = IA_mix_DBB[i]; //mix_D_BB
-      printf("mix %d %e %e %e %e\n",i, FPT.tab_IA[6][i],FPT.tab_IA[7][i],FPT.tab_IA[8][i],FPT.tab_IA[9][i]);
+      printf("mix k=%e, Plin =%e  %e %e %e %e\n",k[i],Pin[i], FPT.tab_IA[6][i],FPT.tab_IA[7][i],FPT.tab_IA[8][i],FPT.tab_IA[9][i]);
     }
   }
 }
