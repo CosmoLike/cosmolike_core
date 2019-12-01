@@ -223,11 +223,18 @@ typedef struct { // parameters for power spectrum passed to FASTPT
 }FPTpara;
 FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7,.N_IA = 10};
 typedef struct {
-  double A_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3)
+  //like.IA = 3: NLA, per bin
+  //like.IA = 4: NLA, power law
+  //like.IA = 5: TATT, per bin
+  //like.IA = 6: TATT, power law
+  double A_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3 or like.IA = 5)
+  double A2_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA = 5)
+  double b_ta_z[10]; //b_ta, per bin (like.IA = 6), or use b_ta_z[0] with like.IA = 5
   double A_ia; //A IA see Joachimi2012
   double A2_ia; //placeholder param for quadratic,etc IA
   double beta_ia; //beta IA see Joachimi2012
   double eta_ia; //eta_other IA see Joachimi2012
+  double eta_ia_tt; //same as eta_ia, for TT
   double eta_ia_highz; //uncertainty in high z evolution
   double oneplusz0_ia; //oneplusz0-ia MegaZ
   double c1rhocrit_ia;
@@ -268,6 +275,8 @@ typedef struct {
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
   .A_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .A2_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .b_ta_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .shear_calibration_m = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},

@@ -198,6 +198,7 @@ void get_FPT_IA(void){
     for (i =0; i < FPT.N; i++){
       FPT.tab_IA[0][i] = IA_tt_EE[i]; //tt_EE
       FPT.tab_IA[1][i] = IA_tt_BB[i]; //tt_BB
+      printf("tt k=%e, Plin =%e   %e %e\n",i, k[i],Pin[i], FPT.tab_IA[0][i],FPT.tab_IA[1][i]);
     }
 
     IA_ta(k, Pin, FPT.N, IA_ta_dE1, IA_ta_dE2, IA_ta_0E0E, IA_ta_0B0B);
@@ -206,13 +207,16 @@ void get_FPT_IA(void){
       FPT.tab_IA[3][i] = IA_ta_dE2[i]; //ta_dE2
       FPT.tab_IA[4][i] = IA_ta_0E0E[i]; //ta_EE
       FPT.tab_IA[5][i] = IA_ta_0B0B[i]; //ta_BB
+      printf("ta %d %e %e %e %e\n",i, FPT.tab_IA[2][i],FPT.tab_IA[3][i],FPT.tab_IA[4][i],FPT.tab_IA[5][i]);
     }
+
     IA_mix(k,Pin, FPT.N, IA_mix_A, IA_mix_B, IA_mix_DEE, IA_mix_DBB);
     for (i =0; i < FPT.N; i++){
       FPT.tab_IA[6][i] = IA_mix_A[i]; //mix_A
       FPT.tab_IA[7][i] = IA_mix_B[i]; //mix_B
       FPT.tab_IA[8][i] = IA_mix_DEE[i]; //mix_D_EE
       FPT.tab_IA[9][i] = IA_mix_DBB[i]; //mix_D_BB
+      printf("mix %d %e %e %e %e\n",i, FPT.tab_IA[6][i],FPT.tab_IA[7][i],FPT.tab_IA[8][i],FPT.tab_IA[9][i]);
     }
   }
 }
@@ -227,14 +231,14 @@ double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta
   if (C2 != 0 || b_ta != 0){
     // only call FASTPT if cosmology changed since last call
     if (recompute_cosmo3D(C)){
-      get_FPT_bias();
+      get_FPT_IA();
       update_cosmopara(&C); 
       logkmin =log(FPT.k_min);
       logkmax = log(FPT.k_max);
       dlgk = log(10.)/(double) FPT.N_per_dec;
     }
     double lgk = log(k_coverH0);
-    if (lgk < logkmin || lgk >= logkmax){return nla_EE;}
+    if (lgk <= logkmin || lgk >= logkmax){return nla_EE;}
     double g4 = pow(growfac(a)/growfac(0.99),4.0);
 
 
@@ -256,6 +260,7 @@ double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta
       tt_EE = C2*C2*g4*interpol(FPT.tab_IA[0], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
     }
   }
+
   return nla_EE + ta_EE + mix_EE + tt_EE;
 }
 
@@ -268,7 +273,7 @@ double TATT_II_BB (double k_coverH0, double a, double C1, double C2, double b_ta
   if (C2 != 0 || b_ta != 0){
     // only call FASTPT if cosmology changed since last call
     if (recompute_cosmo3D(C)){
-      get_FPT_bias();
+      get_FPT_IA();
       update_cosmopara(&C); 
       logkmin =log(FPT.k_min);
       logkmax = log(FPT.k_max);
@@ -292,6 +297,7 @@ double TATT_II_BB (double k_coverH0, double a, double C1, double C2, double b_ta
 
 double TATT_GI_E (double k_coverH0, double a, double C1, double C2, double b_ta){
   double nla_GI = 0., ta_GI = 0., tt_GI = 0., mix_GI = 0.;
+ // printf("in GI\n");
   nla_GI = C1*Pdelta(k_coverH0,a);
   static cosmopara C; 
   static double logkmin = 0.,logkmax = 0.,dlgk = 0.;
@@ -299,7 +305,7 @@ double TATT_GI_E (double k_coverH0, double a, double C1, double C2, double b_ta)
   if (C2 != 0 || b_ta != 0){
     // only call FASTPT if cosmology changed since last call
     if (recompute_cosmo3D(C)){
-      get_FPT_bias();
+      get_FPT_IA();
       update_cosmopara(&C); 
       logkmin =log(FPT.k_min);
       logkmax = log(FPT.k_max);
@@ -323,5 +329,6 @@ double TATT_GI_E (double k_coverH0, double a, double C1, double C2, double b_ta)
       tt_GI = C2*(P_mix_A + 2.*P_mix_B);
     }
   }
+ // printf("completed GI\n");
   return nla_GI + ta_GI  + tt_GI;
 }

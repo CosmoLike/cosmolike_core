@@ -1,6 +1,7 @@
 //#include "pt.c"
 
 double W_kappa(double a, double fK, double nz);//complete lens efficiency weight
+double W_source(double a, double nz); //source redshift distribution (radial weight for IA,source clustering)
 double W_gal(double a, double nz); //complete weight for galaxy statistics
 double W_HOD(double a, double nz); //galaxy weigth without bias factor (for projecting P_gg instead of P_nl)
 
@@ -55,6 +56,11 @@ double W_gal(double a, double nz){
   return wgal + wmag;
   // return wgal;
 }
+
+double W_source(double a, double nz){
+  return zdistr_photoz(1./a-1.,(int)nz)*hoverh0(a);
+}
+
 double f_rsd (double aa){
   double gamma = 0.55;
   return pow(cosmology.Omega_m /(cosmology.Omega_m +omv_vareos(aa) *aa*aa*aa),gamma);
@@ -88,8 +94,10 @@ double int_for_C_cl_tomo_b2(double a, void *params)
   
   double s4 = 0.;//PT_sigma4(k);
   res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;
-  //if (b1*b1*Pdelta(k,a)+g4*(b1*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)) <0.)printf("%e %e %e  %e %e %e  %e\n",k/cosmology.coverH0,1./a-1.,b1,Pdelta(k,a),g4*PT_d2d2(k),g4*2.*s4, b1*b1*Pdelta(k,a)+g4*(b1*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)));
-  res= res*(b1*b1*Pdelta(k,a)+g4*(b1*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1*b3nl_from_b1(b1)*PT_d1d3(k)));
+  if(res){
+    res= res*(b1*b1*Pdelta(k,a)+g4*(b1*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1*b3nl_from_b1(b1)*PT_d1d3(k)));
+  }
+  res += (W_gal( a, ar[0])*W_mag(a, fK,ar[1])+ W_gal( a, ar[1])*W_mag(a, fK,ar[0]))*dchi_da(a)/fK/fK*Pdelta(k,a);
   return res;
 }
 
@@ -156,29 +164,9 @@ double int_for_C_gl_tomo_b2(double a, void *params)
   
   res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
   res= res*(b1*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)));
+  res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1*Pdelta(k,a);
   return res;
 }
-// double int_for_C_gl_tomo(double a, void *params)
-// {
-//   double *ar = (double *) params;
-//   double res,ell, fK, k;
-//   if (a >= 1.0) error("a>=1 in int_for_C_gl_tomo");
-
-//   double ell_prefactor1 = (ar[2])*(ar[2]+1.);
-//   double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
-//   if(ell_prefactor2<=0.) 
-//     ell_prefactor2=0.;
-//   else
-//     ell_prefactor2=sqrt(ell_prefactor2);
-
-//   ell       = ar[2]+0.5;
-//   fK     = f_K(chi(a));
-//   k      = ell/fK;
-//   res= W_gal(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK  * ell_prefactor2/ell/ell;
-//   // res= (W_gal(a,ar[0]) + W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]] *(ell_prefactor1/ell/ell-1.) )*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK /fK/fK * ell_prefactor2/k/k;
-//   res= res*Pdelta(k,a);
-//   return res;
-// }
 
 double int_for_C_gl_tomo(double a, void *params) // Add RSD
 {

@@ -423,7 +423,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 
 ///////////////////////// 
 ///////// galaxy-galaxy lensing
-
+/*
 double int_for_C_gl_lin(double a, void *params)
 {
 	double res,ell, fK, k;
@@ -935,3 +935,4 @@ double w_gamma_t_nonLimber(int nt, int ni, int nj){
 	}
 	return w_vec[N_ggl(ni,nj)*like.Ntheta+nt];  
 }
+*/

@@ -186,10 +186,6 @@ int check_LF(void){ //return 1 if combination of all + red galaxy LF parameters 
 /*=============  Intrinsic Alignment models  ==============*/
 /*=========================================================*/
 
-double W_source(double a, double nz){
-  return zdistr_photoz(1./a-1.,(int)nz)*hoverh0(a);
-}
-
 
 double A_IA_Joachimi(double a){
   double z, A_red, highz = 0.75;

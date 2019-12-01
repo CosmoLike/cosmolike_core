@@ -79,6 +79,7 @@ double amin_lens(int i){
   return 1./(1+fmin(tomo.clustering_zmax[i] + 5.*nuisance.sigma_zphot_clustering[i] + fabs(nuisance.bias_zphot_clustering[i]),redshift.clustering_zdistrpar_zmax));
 }
 double amax_lens(int i){
+  if (gbias.b_mag[i] != 0){return 1./(1.+fmax(redshift.shear_zdistrpar_zmin,0.001));}
   if (i == -1 || redshift.clustering_photoz == 1 || redshift.clustering_photoz == 2){return 1./(1.+fmax(redshift.clustering_zdistrpar_zmin,0.001));}
   if (redshift.clustering_photoz == 0){ return 1./(1.+fmax(tomo.clustering_zmin[i],0.001));}
   if (redshift.clustering_photoz == 4){ return 1./(1+fmax(tomo.clustering_zmin[i]-2.*fabs(nuisance.bias_zphot_clustering[i]),0.001));}
