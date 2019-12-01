@@ -457,6 +457,10 @@ int run_class(
     background_free(ba);  
     return 1;
   }
+  cosmology.theta_s = 100.*th->rs_rec/th->ra_rec;
+  cosmology.h0 = ba->h;
+  //  printf("theta_* = %.5f\n",cosmology.theta_s);
+  //  printf("h_CLASS = %.3f\n\n", ba->h);
   if (perturb_init(&pr,ba,th,pt) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS perturb:%s\n",pt->error_message);
     thermodynamics_free(th);
@@ -590,9 +594,15 @@ double get_class_s8(struct file_content *fc, int *status){
   strcpy(fc->value[5],"no");
 
   // now, copy over cosmology parameters
-  strcpy(fc->name[6],"h");
-  sprintf(fc->value[6],"%e",cosmology.h0);
-
+  // pass either h or theta_s; if theta_s specified, shoot for h
+  if (like.theta_s){
+    strcpy(fc->name[6],"100*theta_s");
+    sprintf(fc->value[6],"%e",cosmology.theta_s);    
+  }
+  else{
+    strcpy(fc->name[6],"h");
+    sprintf(fc->value[6],"%e",cosmology.h0);
+  }
   strcpy(fc->name[7],"Omega_cdm");
   sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb);
 
