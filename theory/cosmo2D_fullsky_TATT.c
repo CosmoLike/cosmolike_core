@@ -7,27 +7,33 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj); //shear tomography correlatio
 
 /* NLA/TA amplitude C1, nz argument only need if per-bin amplitude*/
 double C1_TA(double a, double nz){
+	// per-bin IA parameters
 	if (like.IA ==3 || like.IA ==5){
 		return -nuisance.A_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a);
 	}
+	//power law evolution
 	return -cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
 }
 /* TA source bias parameter, nz argument only need if per-bin amplitude*/
 double b_TA(double a, double nz){
+	// per-bin IA parameters
 	if (like.IA ==5){
 		return nuisance.b_ta_z[(int)nz];
 	}	
+	//power law evolution
 	return nuisance.b_ta_z[0];
 }
 /* TT amplitude C2, nz argument only need if per-bin amplitude*/
 double C2_TT(double a, double nz){
+	// per-bin IA parameters
 	if (like.IA == 5){
 		return nuisance.A2_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(0.9999)/growfac(a),2.0);
 	}
+	//power law evolution
 	return cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(0.9999)/growfac(a),2.0)*nuisance.A2_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia_tt);
 }
 
-
+/****** Limber integrands for shear and ggl ******/
 double int_for_C_shear_shear_IA_EE(double a, void *params){
   double res, ell, fK, k,ws1,ws2,wk1,wk2, norm,C1,C1_2,C2,C2_2,b_ta,b_ta_2;
   double *ar = (double *) params;
@@ -35,24 +41,23 @@ double int_for_C_shear_shear_IA_EE(double a, void *params){
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  ws1 = W_source(a,ar[0]);
-  ws2 = W_source(a,ar[1]);
-  wk1 = W_kappa(a,fK,ar[0]);
-  wk2 = W_kappa(a,fK,ar[1]);
+  ws1 = W_source(a,ar[0]); /*radial n_z weight for first source bin (for use with IA term)*/
+  ws2 = W_source(a,ar[1]); /*radial n_z weight for second source bin (for use with IA term)*/
+  wk1 = W_kappa(a,fK,ar[0]); /* radial lens efficiency for first source bin*/
+  wk2 = W_kappa(a,fK,ar[1]); /* radial lens efficiency for second source bin*/
 
+  /* IA parameters for first source bin*/
   C1 = C1_TA(a,ar[0]); b_ta = b_TA(a,ar[0]); C2 = C2_TT(a,ar[0]);
-  /*calculate C1_1 to allow for per-bin NLA*/
-  C1_2 = C1_TA(a,ar[1]); 
-  /* per-bin TATT not supported yet*/
-  //b_ta_2 = b_TA(a,ar[1]); C2_2 = C2_TT(a,ar[1]);
+  /* IA parameters for second source bin*/
+  C1_2 = C1_TA(a,ar[1]); b_ta_2 = b_TA(a,ar[1]); C2_2 = C2_TT(a,ar[1]);
 
   /*GG cosmic shear */
   res = wk1*wk2*Pdelta(k,a);
   if (C1 || C1_2 || C2 || C2_2){
   	/*II contribution */
-  	res += ws1*ws2*TATT_II_EE(k,a,-sqrt(C1*C1_2),C2,b_ta);
+  	res += ws1*ws2*TATT_II_EE(k,a,C1,C2,b_ta,C1_2,C2_2,b_ta_2);
   	/*GI contribution */
-  	res += ws1*wk2*TATT_GI_E(k,a,C1,C2,b_ta)+ws2*wk1*TATT_GI_E(k,a,C1_2,C2,b_ta);
+  	res += ws1*wk2*TATT_GI_E(k,a,C1,C2,b_ta)+ws2*wk1*TATT_GI_E(k,a,C1_2,C2_2,b_ta_2);
   }
   return res*dchi_da(a)/fK/fK;
 }
@@ -64,15 +69,17 @@ double int_for_C_shear_shear_IA_BB(double a, void *params){
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  ws1 = W_source(a,ar[0]);
-  ws2 = W_source(a,ar[1]);
-  wk1 = W_kappa(a,fK,ar[0]);
-  wk2 = W_kappa(a,fK,ar[1]);
+  ws1 = W_source(a,ar[0]); /*radial n_z weight for first source bin (for use with IA term)*/
+  ws2 = W_source(a,ar[1]); /*radial n_z weight for second source bin (for use with IA term)*/
+  wk1 = W_kappa(a,fK,ar[0]); /* radial lens efficiency for first source bin*/
+  wk2 = W_kappa(a,fK,ar[1]); /* radial lens efficiency for second source bin*/
 
+  /* IA parameters for first source bin*/
   C1 = C1_TA(a,ar[0]); b_ta = b_TA(a,ar[0]); C2 = C2_TT(a,ar[0]);
-  /* per-bin TATT not supported yet */
-  //  C1_2 = C1_TA(a,ar[1]); b_ta_2 = b_TA(a,ar[1]); C2_2 = C2_TA(a,ar[1]);
-  if (b_ta || C2){res = ws1*ws2*TATT_II_BB(k,a,C1,C2,b_ta);}
+  /* IA parameters for second source bin*/
+  C1_2 = C1_TA(a,ar[1]); b_ta_2 = b_TA(a,ar[1]); C2_2 = C2_TT(a,ar[1]);
+
+  if ((b_ta || C2) &&(b_ta_2 || C2_2)){res = ws1*ws2*TATT_II_BB(k,a,C1,C2,b_ta,C1_2,C2_2,b_ta_2);}
   return res*dchi_da(a)/fK/fK;
 }
 
@@ -85,13 +92,15 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   fK     = f_K(chi(a));
   k      = ell/fK;
 
-  ws = W_source(a,ar[1]);
-  wk = W_kappa(a,fK,ar[1]);
+  ws = W_source(a,ar[1]); /*radial n_z weight for source bin (for use with IA term)*/
+  wk = W_kappa(a,fK,ar[1]); /* radial lens efficiency for source bin*/
+  /* IA parameters for first source bin*/
   C1 = C1_TA(a,ar[1]); b_ta = b_TA(a,ar[1]); C2 = C2_TT(a,ar[1]);
 
-  w_density = W_HOD(a,ar[0]);
-  w_mag = W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]];
+  w_density = W_HOD(a,ar[0]); /*radial n_z weight for lens bin (for use with clustering term)*/
+  w_mag = W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]]; /* lens efficiency *b_mag for lens bin (for lens magnification)*/
 
+  /* galaxy bias parameters for lens bin*/
   b1 = gbias.b1_function(1./a-1.,(int)ar[0]);
   b2 = gbias.b2[(int)ar[0]];
   bs2 = gbias.bs2[(int)ar[0]];
@@ -107,7 +116,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   res = w_density*wk*P_1loop;
   /* lens magnification x G term*/
   res += w_mag*wk*Pnl;
-  /* (linear bias lens density + lens magnification) x TATT_GI terms*/
+  /* (linear bias lens density + lens magnification) with TATT_GI terms*/
   if (C1 || C2) res += (b1*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
   return res*dchi_da(a)/fK/fK;
 }

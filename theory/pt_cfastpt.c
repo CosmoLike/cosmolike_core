@@ -5,8 +5,8 @@ double PT_d1s2(double k_coverH0);
 double PT_d2s2(double k_coverH0);
 double PT_s2s2(double k_coverH0);
 double PT_sigma4(double k_coverH0);
-double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta);
-double TATT_II_BB (double k_coverH0, double a, double C1, double C2, double b_ta);
+double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta, double C1_2, double C2_2, double b_ta_2);
+double TATT_II_BB (double k_coverH0, double a, double C1, double C2, double b_ta, double C1_2, double C2_2, double b_ta_2);
 double TATT_GI_E(double k_coverH0, double a, double C1, double C2, double b_ta);
 double K_CH0(double k_mpch){
   return k_mpch*cosmology.coverH0;
@@ -235,7 +235,7 @@ void get_FPT_IA(void){
   }
 }
 
-double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta){
+double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta, double C1_2, double C2_2, double b_ta_2){
   double nla_EE = 0., ta_EE = 0., tt_EE = 0., mix_EE = 0.;
   nla_EE = C1*C1*Pdelta(k_coverH0,a);
 
@@ -252,6 +252,7 @@ double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta
       dlgk = log(10.)/(double) FPT.N_per_dec;
     }
     double lgk = log(k_coverH0);
+    //outside FASTPT interpolation range; return NLA contribution only
     if (lgk <= logkmin || lgk >= logkmax){return nla_EE;}
     double g4 = pow(growfac(a)/growfac(0.99),4.0);
 
@@ -269,16 +270,16 @@ double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta
       P_mix_A = g4*interpol(FPT.tab_IA[6], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
       P_mix_B = g4*interpol(FPT.tab_IA[7], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 
-      mix_EE = 2.*C1*C2*(P_mix_A + 2.*P_mix_B + b_ta*P_mix_EE);
+      mix_EE = (C1*C2+C1_2*C2_2)*(P_mix_A + 2.*P_mix_B) + (C1*b_ta*C2_2+C1_2*b_ta_2*C2)*P_mix_EE;
  
-      tt_EE = C2*C2*g4*interpol(FPT.tab_IA[0], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
+      tt_EE = C2*C2_2*g4*interpol(FPT.tab_IA[0], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
     }
   }
 
   return nla_EE + ta_EE + mix_EE + tt_EE;
 }
 
-double TATT_II_BB (double k_coverH0, double a, double C1, double C2, double b_ta){
+double TATT_II_BB (double k_coverH0, double a, double C1, double C2, double b_ta,double C1_2, double C2_2, double b_ta_2){
   double ta_BB = 0., tt_BB = 0., mix_BB = 0.;
 
   static cosmopara C; 
@@ -298,12 +299,12 @@ double TATT_II_BB (double k_coverH0, double a, double C1, double C2, double b_ta
     double g4 = pow(growfac(a)/growfac(0.99),4.0);
 
 
-    ta_BB = C1*C1*b_ta*b_ta*g4*interpol(FPT.tab_IA[5], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
+    ta_BB = C1*C1_2*b_ta*b_ta_2*g4*interpol(FPT.tab_IA[5], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 
     if (C2){
-      mix_BB = 2.*C1*C2*b_ta*g4*interpol(FPT.tab_IA[9], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
+      mix_BB = (C1*C2_2+C1_2*C2)*b_ta*g4*interpol(FPT.tab_IA[9], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 
-      tt_BB = C2*C2*g4*interpol(FPT.tab_IA[1], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
+      tt_BB = C2*C2_2*g4*interpol(FPT.tab_IA[1], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
     }
   }
   return ta_BB + mix_BB + tt_BB;
