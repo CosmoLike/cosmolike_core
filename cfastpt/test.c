@@ -15,8 +15,8 @@
 int main(int argc, char const *argv[])
 {
 	FILE *finput;
-	finput = fopen("Pk_test.dat", "r");
-	long Nk = 3000;
+	finput = fopen("Pk_test_cl", "r");
+	long Nk = 70;
 	long line_num;
 	double k[Nk], Pin[Nk];
 	double dummy; 
@@ -56,7 +56,9 @@ int main(int argc, char const *argv[])
 	printf("ta finished\n");
 	IA_mix(k,Pin, Nk, IA_mix_A, IA_mix_B, IA_mix_DEE, IA_mix_DBB);
 	printf("mix finished\n");
-
+	for (int i = 0; i < Nk; i++){
+		printf("%e %e   %e %e %e %e %e %e %e %e %e %e\n",k[i],Pin[i], IA_tt_EE[i],IA_tt_BB[i], IA_ta_dE1[i],IA_ta_dE2[i],IA_ta_0E0E[i],IA_ta_0B0B[i],IA_mix_A[i], IA_mix_B[i], IA_mix_DEE[i],IA_mix_DBB[i]);
+	}
 	t2 = clock();
 	printf("time: %lg\n", (double)(t2 - t1) / CLOCKS_PER_SEC);
 
