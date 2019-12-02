@@ -221,7 +221,7 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   char path[200];
   cosmopara C;
 }FPTpara;
-FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7,.N_IA = 10};
+FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 700, .N_per_dec = 100, .N_AB = 7,.N_IA = 10};
 typedef struct {
   //like.IA = 3: NLA, per bin
   //like.IA = 4: NLA, power law

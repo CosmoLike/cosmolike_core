@@ -174,6 +174,19 @@ double PT_sigma4(double k_coverH0){
   return 0.0;
 }
 
+void write_plin(void){
+  //create filename from filebas, processid, Omega_m and A_ia value to ensure unique file names
+  double k[FPT.N], P[FPT.N];
+  FPT_input(k, P);
+  sprintf(FPT.Plin_FILE,"%s","Pk_test_cl");
+  FILE *F;
+  F = fopen(FPT.Plin_FILE,"w");
+//  fprintf(F,"# k[h/Mpc] P_lin(k,z=1.0) [Mpc^3/h^3]\n");
+  for (int i = 0; i< FPT.N; i++){
+    fprintf(F,"%e %e %e %e\n",k[i],P[i],1.0,1.0);
+  }
+  fclose(F);
+}
 
 void get_FPT_IA(void){
   static cosmopara C; 
@@ -193,12 +206,13 @@ void get_FPT_IA(void){
     double IA_mix_A[FPT.N], IA_mix_B[FPT.N], IA_mix_DEE[FPT.N], IA_mix_DBB[FPT.N];
 
     FPT_input(k, Pin); 
+    //write_plin();
     int i;
     IA_tt(k, Pin, FPT.N, IA_tt_EE, IA_tt_BB);
     for (i =0; i < FPT.N; i++){
       FPT.tab_IA[0][i] = IA_tt_EE[i]; //tt_EE
       FPT.tab_IA[1][i] = IA_tt_BB[i]; //tt_BB
-      printf("tt k=%e, Plin =%e   %e %e\n",k[i],Pin[i], FPT.tab_IA[0][i],FPT.tab_IA[1][i]);
+      //printf("tt k=%e, Plin =%e   %e %e\n",k[i],Pin[i], FPT.tab_IA[0][i],FPT.tab_IA[1][i]);
     }
 
     IA_ta(k, Pin, FPT.N, IA_ta_dE1, IA_ta_dE2, IA_ta_0E0E, IA_ta_0B0B);
@@ -207,7 +221,7 @@ void get_FPT_IA(void){
       FPT.tab_IA[3][i] = IA_ta_dE2[i]; //ta_dE2
       FPT.tab_IA[4][i] = IA_ta_0E0E[i]; //ta_EE
       FPT.tab_IA[5][i] = IA_ta_0B0B[i]; //ta_BB
-      printf("ta k=%e, Plin =%e  %e %e %e %e\n",k[i],Pin[i], FPT.tab_IA[2][i],FPT.tab_IA[3][i],FPT.tab_IA[4][i],FPT.tab_IA[5][i]);
+      //printf("ta k=%e, Plin =%e  %e %e %e %e\n",k[i],Pin[i], FPT.tab_IA[2][i],FPT.tab_IA[3][i],FPT.tab_IA[4][i],FPT.tab_IA[5][i]);
     }
 
     IA_mix(k,Pin, FPT.N, IA_mix_A, IA_mix_B, IA_mix_DEE, IA_mix_DBB);
@@ -216,7 +230,7 @@ void get_FPT_IA(void){
       FPT.tab_IA[7][i] = IA_mix_B[i]; //mix_B
       FPT.tab_IA[8][i] = IA_mix_DEE[i]; //mix_D_EE
       FPT.tab_IA[9][i] = IA_mix_DBB[i]; //mix_D_BB
-      printf("mix k=%e, Plin =%e  %e %e %e %e\n",k[i],Pin[i], FPT.tab_IA[6][i],FPT.tab_IA[7][i],FPT.tab_IA[8][i],FPT.tab_IA[9][i]);
+      //printf("mix k=%e, Plin =%e  %e %e %e %e\n",k[i],Pin[i], FPT.tab_IA[6][i],FPT.tab_IA[7][i],FPT.tab_IA[8][i],FPT.tab_IA[9][i]);
     }
   }
 }

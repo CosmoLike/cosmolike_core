@@ -48,7 +48,7 @@ double int_for_C_shear_shear_IA_EE(double a, void *params){
 
   /*GG cosmic shear */
   res = wk1*wk2*Pdelta(k,a);
-  if (C1 || C2){
+  if (C1 || C1_2 || C2 || C2_2){
   	/*II contribution */
   	res += ws1*ws2*TATT_II_EE(k,a,-sqrt(C1*C1_2),C2,b_ta);
   	/*GI contribution */
@@ -114,14 +114,14 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
 
 double C_EE_TATT(double l, int ni,int  nj){
   double array[3] = {(double) ni, (double) nj, l};
-  double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
+  double EE = int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
   return EE;
 }
 
 
 double C_BB_TATT(double l, int ni, int nj){
   double array[3] = {(double) ni, (double) nj, l};
-  return int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_BB,(void*)array,fmax(amin_source(ni),amin_source(nj)),fmin(amax_source_IA(ni),amax_source_IA(nj)),NULL,1000);
+  return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_BB,(void*)array,fmax(amin_source(ni),amin_source(nj)),fmin(amax_source_IA(ni),amax_source_IA(nj)),NULL,1000);
 }
 
 double C_ggl_TATT(double l, int nl, int ns)
@@ -165,7 +165,7 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 		Pmax= create_double_vector(0, LMAX+1);
 
 		for (i = 0; i<NTHETA; i ++){
-			printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
+			//printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
 			for (int l = 2; l < LMAX; l ++){
