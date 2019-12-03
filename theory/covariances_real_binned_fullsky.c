@@ -120,10 +120,35 @@ double w_mask(double theta_min){
       fclose(F1);
 
       printf("\nTabulating w_mask(theta) from mask power spectrum %s\n",covparams.C_FOOTPRINT_FILE);
+      double **Pl, *xmin, *xmax, *Pmin, *Pmax;
+      Pl =create_double_matrix(0, like.Ntheta-1, 0, lbins);
+      xmin= create_double_vector(0, like.Ntheta-1);
+      xmax= create_double_vector(0, like.Ntheta-1);
+      double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+      Pmin= create_double_vector(0, lbins);
+      Pmax= create_double_vector(0, lbins);
+      for(i=0; i<like.Ntheta ; i++){
+        xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+        xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+      }
+
+      for (i = 0; i < lbins; i++){
+        gsl_sf_legendre_Pl_array(lbins, xmin[i],Pmin);
+        gsl_sf_legendre_Pl_array(lbins, xmax[i],Pmax);
+        for (int l = 1; l < lbins; l ++){
+          Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+        }
+      }
+      free_double_vector(xmin,0,like.Ntheta-1);
+      free_double_vector(xmax,0,like.Ntheta-1);
+      free_double_vector(Pmin,0,lbins);
+      free_double_vector(Pmax,0,lbins);
+      free_double_matrix(Pl, 0, like.Ntheta-1, 0, lbins);
+    
       for (i = 0; i < NTHETA; i++){
         w_vec[i] =0.;
         for (l = 0; l < lbins; l++){
-          w_vec[i]+=Cl[l]*(2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
+          w_vec[i]+=Cl[l]*Pl[i][l];
         }
       }
       free_double_vector(Cl,0,lbins-1);
