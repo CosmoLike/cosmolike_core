@@ -237,7 +237,7 @@ void get_FPT_IA(void){
 
 double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta, double C1_2, double C2_2, double b_ta_2){
   double nla_EE = 0., ta_EE = 0., tt_EE = 0., mix_EE = 0.;
-  nla_EE = C1*C1*Pdelta(k_coverH0,a);
+  nla_EE = C1*C1_2*Pdelta(k_coverH0,a);
 
   static cosmopara C; 
   static double logkmin = 0.,logkmax = 0.,dlgk = 0.;
@@ -262,7 +262,7 @@ double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta
     P_ta_dE1 = g4*interpol(FPT.tab_IA[2], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
     P_ta_dE2 = g4*interpol(FPT.tab_IA[3], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 
-    ta_EE = C1*C1*(b_ta*b_ta*P_ta_EE + 2.*b_ta*(P_ta_dE1+P_ta_dE2));
+    ta_EE = C1*C1_2*(b_ta*b_ta_2*P_ta_EE + (b_ta+b_ta_2)*(P_ta_dE1+P_ta_dE2));
 
     if (C2){
       double P_mix_EE, P_mix_A, P_mix_B;
@@ -270,7 +270,7 @@ double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta
       P_mix_A = g4*interpol(FPT.tab_IA[6], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
       P_mix_B = g4*interpol(FPT.tab_IA[7], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 
-      mix_EE = (C1*C2+C1_2*C2_2)*(P_mix_A + 2.*P_mix_B) + (C1*b_ta*C2_2+C1_2*b_ta_2*C2)*P_mix_EE;
+      mix_EE = (C1*C2+C1_2*C2_2)*(P_mix_A + P_mix_B) + (C1*b_ta*C2_2+C1_2*b_ta_2*C2)*P_mix_EE;
  
       tt_EE = C2*C2_2*g4*interpol(FPT.tab_IA[0], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
     }
@@ -302,7 +302,7 @@ double TATT_II_BB (double k_coverH0, double a, double C1, double C2, double b_ta
     ta_BB = C1*C1_2*b_ta*b_ta_2*g4*interpol(FPT.tab_IA[5], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 
     if (C2){
-      mix_BB = (C1*C2_2+C1_2*C2)*b_ta*g4*interpol(FPT.tab_IA[9], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
+      mix_BB = (C1*b_ta*C2_2+C1_2*b_ta_2*C2)*g4*interpol(FPT.tab_IA[9], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 
       tt_BB = C2*C2_2*g4*interpol(FPT.tab_IA[1], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
     }
@@ -341,7 +341,7 @@ double TATT_GI_E (double k_coverH0, double a, double C1, double C2, double b_ta)
       P_mix_A = g4*interpol(FPT.tab_IA[6], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
       P_mix_B = g4*interpol(FPT.tab_IA[7], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 
-      tt_GI = C2*(P_mix_A + 2.*P_mix_B);
+      tt_GI = C2*(P_mix_A + P_mix_B);
     }
   }
  // printf("completed GI\n");
