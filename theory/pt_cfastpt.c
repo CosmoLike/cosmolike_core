@@ -270,7 +270,7 @@ double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta
       P_mix_A = g4*interpol(FPT.tab_IA[6], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
       P_mix_B = g4*interpol(FPT.tab_IA[7], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 
-      mix_EE = (C1*C2+C1_2*C2_2)*(P_mix_A + P_mix_B) + (C1*b_ta*C2_2+C1_2*b_ta_2*C2)*P_mix_EE;
+      mix_EE = (C1*C2_2+C1_2*C2)*(P_mix_A + P_mix_B) + (C1*b_ta*C2_2+C1_2*b_ta_2*C2)*P_mix_EE;
  
       tt_EE = C2*C2_2*g4*interpol(FPT.tab_IA[0], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
     }
