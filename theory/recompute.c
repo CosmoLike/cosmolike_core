@@ -5,6 +5,7 @@ void update_nuisance (nuisancepara *N);
 int recompute_expansion(cosmopara C);
 int recompute_Delta(cosmopara C);
 int recompute_cosmo3D(cosmopara C);
+int recompute_cosmo3D_CLASS(cosmopara C);
 int recompute_zphot_shear(nuisancepara N);
 int recompute_zphot_clustering(nuisancepara N);
 int recompute_zphot_magnification(nuisancepara N);
@@ -34,6 +35,7 @@ void update_cosmopara (cosmopara *C){
   C->MGSigma = cosmology.MGSigma;
   C->MGmu = cosmology.MGmu;
   C->M_nu = cosmology.M_nu;
+  C->theta_s = cosmology.theta_s;
 }
 
 void update_galpara (galpara *G){
@@ -73,6 +75,8 @@ void update_nuisance (nuisancepara *N){
     N->sigma_zphot_shear[i] = nuisance.sigma_zphot_shear[i];
     N->bias_zphot_shear[i] = nuisance.bias_zphot_shear[i];
     N->A_z[i] = nuisance.A_z[i];
+    N->A2_z[i] = nuisance.A2_z[i];
+    N->b_ta_z[i] = nuisance.b_ta_z[i];
   }
   for(i = 0; i < tomo.magnification_Nbin; i++){
     N->sigma_zphot_magnification[i] = nuisance.sigma_zphot_magnification[i];
@@ -102,6 +106,7 @@ void update_nuisance (nuisancepara *N){
 }
 int recompute_expansion(cosmopara C){ //rules for recomputing growth factor & comoving distance
   if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
+  if (cosmology.theta_s > 0 && C.theta_s != cosmology.theta_s){return 1;}
   else{return 0;}
 }
 
@@ -124,6 +129,18 @@ int recompute_cosmo3D(cosmopara C){
   else{
      if (C.sigma_8 != cosmology.sigma_8){return 1;}
   }
+  if (cosmology.theta_s > 0 && C.theta_s != cosmology.theta_s){return 1;}
+  return 0;
+}
+int recompute_cosmo3D_CLASS(cosmopara C){
+  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
+  if (cosmology.A_s > 0){
+     if(C.A_s != cosmology.A_s){return 1;}
+  }
+  else{
+     if (C.sigma_8 != cosmology.sigma_8){return 1;}
+  }
+  if (cosmology.theta_s > 0 && C.theta_s != cosmology.theta_s){return 1;}
   return 0;
 }
 
@@ -156,9 +173,11 @@ int recompute_zphot_magnification(nuisancepara N){
   return res;
 }
 int recompute_IA(nuisancepara N){
-  if (N.A_ia != nuisance.A_ia || N.eta_ia != nuisance.eta_ia) return 1;
+  if (N.A_ia != nuisance.A_ia || N.eta_ia != nuisance.eta_ia || N.A2_ia != nuisance.A2_ia || N.eta_ia_tt != nuisance.eta_ia_tt) return 1;
   for(int i = 0; i < tomo.shear_Nbin; i++){
     if (N.A_z[i]!= nuisance.A_z[i]){ return 1;}
+    if (N.A2_z[i]!= nuisance.A2_z[i]){ return 1;}
+    if (N.b_ta_z[i]!= nuisance.b_ta_z[i]){ return 1;}
   }
   return 0;
 }
