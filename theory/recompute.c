@@ -60,6 +60,8 @@ void update_nuisance (nuisancepara *N){
   N->beta_ia = nuisance.beta_ia;
   N->eta_ia = nuisance.eta_ia;
   N->eta_ia_highz = nuisance.eta_ia_highz;
+  N->A2_ia = nuisance.A2_ia;
+  N->eta_ia_tt = nuisance.eta_ia_tt;
   N->LF_alpha = nuisance.LF_alpha;
   N->LF_P = nuisance.LF_P;
   N->LF_Q = nuisance.LF_Q;
