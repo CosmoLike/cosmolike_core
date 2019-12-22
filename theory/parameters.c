@@ -278,6 +278,15 @@ void set_cosmological_parameters_to_(char *cosmofile, int output)
       }
       continue;
     }
+    else if(strcmp(name, "A_s")==0)
+    {
+      sscanf(val, "%lf", &cosmology.A_s);
+      if(output==1)
+      {
+        printf("f_NL %f \n",cosmology.A_s);
+      }
+      continue;
+    }
   }
 }
 
