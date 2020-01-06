@@ -279,7 +279,7 @@ typedef struct {
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
-  .A_z =,
+  .A_z = __ZERO_OF_NTOMO__,
   .shear_calibration_m = __ZERO_OF_NTOMO__,
   .sigma_zphot_shear = __ZERO_OF_NTOMO__,
   .bias_zphot_shear = __ZERO_OF_NTOMO__,
