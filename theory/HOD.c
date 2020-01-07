@@ -352,7 +352,7 @@ void set_HOD(int n){ //n >=0: set HOD parameters in redshift bin n; n = -1: unse
   switch (n)
   {
     case -1:
-    for (i = 0; i <10; i++){
+    for (i = 0; i <tomo.clustering_Nbin; i++){
       gbias.hod[i][0] = 0.;
       gbias.hod[i][1] = 0.;
       gbias.hod[i][2] = 0.;

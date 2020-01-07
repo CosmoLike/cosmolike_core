@@ -368,8 +368,8 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
   static int zbins = -1;
-  static gsl_spline * photoz_splines[11];
-  static gsl_interp_accel * photoz_accel[11];
+  static gsl_spline * photoz_splines[__NTOMO__+1];
+  static gsl_interp_accel * photoz_accel[__NTOMO__+1];
 
   if (redshift.shear_photoz == -1){return n_of_z(zz,j);}
   if ((redshift.shear_photoz != 4 && recompute_zphot_shear(N)) || table==0){
@@ -408,7 +408,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
     for (int i = 0;i < zbins; i++){
       z_v[i] = zhisto_min+(i+0.5)*da;
     }
-    double array[4], NORM[11],norm,x1,x2,eta,outfrac;
+    double array[4], NORM[__NTOMO__+1],norm,x1,x2,eta,outfrac;
     //the outlier fraction (outfrac) should be specified externally. This is a temporary hack.
     int i,k;
     for (i = 0; i< tomo.shear_Nbin; i++){
@@ -942,7 +942,6 @@ double int_for_g_tomo(double aprime,void *params)
   int zbin= (int) ar[0];
   chi1 = chi(ar[1]);
   chi_prime = chi(aprime);
-
   val=zdistr_photoz(1./aprime-1.,zbin)*f_K(chi_prime-chi1)/f_K(chi_prime)/(aprime*aprime);
   return val;
 }

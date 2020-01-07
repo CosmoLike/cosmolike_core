@@ -98,11 +98,9 @@ double int_for_C_cl_tomo(double a, void *params)
   double res,ell, fK, k;
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");
-  
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  
   res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
   res= res*Pdelta(k,a);
   return res;
