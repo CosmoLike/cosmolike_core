@@ -51,6 +51,8 @@ int ZSC(int Nbin);//N_tomo_cgl -> z_s
 int N_shear (int z1, int z2);//(z_1,z_2)-> N_tomo_shear, assuming z1<=z2
 int Z1(int Nbin);//N_tomo_shear -> z1, assuming z1<=z2
 int Z2(int Nbin);//N_tomo_shear -> z2, assuming z1<=z2
+int Zcl1(int Nbin);//N_tomo_clustering -> zcl1, assuming z1<=z2
+int Zcl2(int Nbin);//N_tomo_clustering -> zcl2, assuming z1<=z2
 void write_gglensing_zbins(char *surveyname);
 double ggl_efficiency(int zl, int zs);
 ///
@@ -258,6 +260,33 @@ int Z2(int Nbin){ // find z2 of tomography combination (z1,z2) constituting shea
   return N[Nbin];
 }
 
+int Zcl1(int Nbin){// find zcl1 of tomography combination (zcl1,zcl2) constituting galaxy clustering tomography bin Nbin
+  static int N[55] = {-42};
+  if (N[0] < -1){
+    int i, j,n = 0;
+    for (i = 0; i < tomo.clustering_Nbin; i ++){
+      for (j = i; j < tomo.clustering_Nbin; j++){
+        N[n] = i;
+        n++;
+      }
+    }
+  }
+  return N[Nbin];
+}
+
+int Zcl2(int Nbin){ // find zcl2 of tomography combination (zcl1,zcl2) constituting galaxy clustering tomography bin Nbin
+  static int N[55]={-42};
+  if (N[0] < -1){
+    int i, j,n = 0;
+    for (i = 0; i < tomo.clustering_Nbin; i ++){
+      for (j = i; j < tomo.clustering_Nbin; j++){
+        N[n] = j;
+        n++;
+      }
+    }
+  }
+  return N[Nbin];
+}
 
 /******************** routines for redshift distributions, including photo-zs (optional) ********************/
 ///////////////// Start shear routines /////////////////////
