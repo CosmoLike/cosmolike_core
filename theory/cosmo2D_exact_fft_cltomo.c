@@ -142,8 +142,8 @@ void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni
 
 // Mixture of non-Limber and Limber of C_cl (galaxy clustering)
 void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance) {
-	// ni = 4;
-	// nj = 4;
+	ni = 1;
+	nj = 2;
 	int i,j,i_block;
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
