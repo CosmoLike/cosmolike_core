@@ -474,3 +474,11 @@ typedef struct {
   int isPkbary;     // if isPkbary=1
 }barypara;
 barypara bary ={.isPkbary=0};
+
+typedef struct {
+  double*** S_integrands_cl; // galaxy density nonlimber integrand
+  double*** S_integrands_sh; // galaxy shape nonlimber integrand
+  int *recompute_cl; // recompute the above or not
+  int *recompute_sh;
+} fft_optimize;
+fft_optimize;
