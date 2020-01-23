@@ -252,13 +252,13 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	while (i_block<1){ // only nonlimber for L<200 (1 block = 200 ell)
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
-		printf("ni nj (%d,%d) here!\n", ni,nj);
+
 		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);
 		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);}
-		printf("ni nj (%d,%d) here!!\n", ni,nj);
+
 		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_ar);
 		if(ni != nj) {cfftlog_ells_increment(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_ar);}
-		printf("ni nj (%d,%d) here!!!\n", ni,nj);
+
 		// Add in lensing magnification contribution
 		cfftlog_ells(chi_ar, f1_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k1_ar, Fk1_Mag_ar);
 		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k2_ar, Fk2_Mag_ar);}
@@ -356,7 +356,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 	if (Pl ==0){
 		Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
 		Cl = create_double_vector(0,LMAX-1);
-		w_vec = create_double_vector(0,tomo.clustering_Nbin*like.Ntheta-1);
+		w_vec = create_double_vector(0,tomo.clustering_Npowerspectra*like.Ntheta-1);
 		NTHETA = like.Ntheta;
 		double *xmin, *xmax, *Pmin, *Pmax;
 		xmin= create_double_vector(0, like.Ntheta-1);
