@@ -148,7 +148,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 100, Nchi = 1000;
+	int Nell_block = 200, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar, **Fk2_Mag_ar;
@@ -247,9 +247,9 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	double k1_cH0;
 
 
-	while (fabs(dev) > tolerance){
+	// while (fabs(dev) > tolerance){
 	// while(0){
-	// while (L<100){
+	while (i_block<1){ // only nonlimber for L<200 (1 block = 200 ell)
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
 
@@ -292,11 +292,11 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
 			// fprintf(OUT, "%d %lg\n", ell_ar[i], Cl[ell_ar[i]]);
 		}
-
 		i_block++;
 		L = i_block*Nell_block -1 ;
 		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
-	   // printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
+
+	   // printf("ni,nj,L,Cl[L],cllim,dev=%d %d %e %e %e\n",ni,nj,L,Cl[L],C_cl_tomo_nointerp((double)L,ni,nj),dev);
 		// printf("i_block: %d\n", i_block);
 	}
 	L++;
@@ -406,6 +406,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 			int L = 1;
 			// initialize to large value in order to start while loop
 			dev=10.*tolerance;
+			// printf("here-- %d,%d\n",Zcl1(nz),Zcl2(nz) );
 			C_cl_mixed(L, LMAX, Zcl1(nz),Zcl2(nz), Cl, dev, tolerance);
 			for (i = 0; i < NTHETA; i++){
 				w_vec[nz*like.Ntheta+i] =0;
