@@ -187,7 +187,7 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 				Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
 				*((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
 				+(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-				-2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+				-2./(2*l+1.)*(Pmin[l+1]-Pmax[l+1]));
 			}
 		}
 		free_double_vector(xmin,0,like.Ntheta-1);

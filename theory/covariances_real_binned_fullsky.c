@@ -704,7 +704,7 @@ void cov_gl_shear_real_binned_fullsky(double **cov, double **covNG, int z1,int z
         Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
         *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
         +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l+1]));
       }
       Glplus[i][2] = 0.; Glminus[i][2] = 0.;
     }
@@ -976,7 +976,7 @@ void cov_cl_gl_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,i
         Pl2[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
         *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
         +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l+1]));
       }
     }
     free_double_vector(xmin,0,like.Ntheta-1);
@@ -1055,7 +1055,7 @@ void cov_gl_gl_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,i
         Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
         *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
         +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l+1]));
       }
     }
     free_double_vector(xmin,0,like.Ntheta-1);
