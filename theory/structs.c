@@ -221,7 +221,7 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   char path[200];
   cosmopara C;
 }FPTpara;
-FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 700, .N_per_dec = 100, .N_AB = 7,.N_IA = 10};
+FPTpara FPT ={.k_min = 1.e-5, .k_max =1.e+3, .N = 800, .N_per_dec = 100, .N_AB = 7,.N_IA = 10};
 typedef struct {
   //like.IA = 3: NLA, per bin
   //like.IA = 4: NLA, power law
@@ -273,7 +273,7 @@ typedef struct {
   double cluster_selection[10];
 }
 nuisancepara;
-nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
+nuisancepara nuisance ={.c1rhocrit_ia = 0.01389,
   .A_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .A2_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .b_ta_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},

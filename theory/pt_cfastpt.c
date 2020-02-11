@@ -227,11 +227,18 @@ void get_FPT_IA(void){
     IA_mix(k,Pin, FPT.N, IA_mix_A, IA_mix_B, IA_mix_DEE, IA_mix_DBB);
     for (i =0; i < FPT.N; i++){
       FPT.tab_IA[6][i] = IA_mix_A[i]; //mix_A
-      FPT.tab_IA[7][i] = IA_mix_B[i]; //mix_B
+      FPT.tab_IA[7][i] = IA_mix_B[i]*4.; //mix_B
       FPT.tab_IA[8][i] = IA_mix_DEE[i]; //mix_D_EE
       FPT.tab_IA[9][i] = IA_mix_DBB[i]; //mix_D_BB
       //printf("mix k=%e, Plin =%e  %e %e %e %e\n",k[i],Pin[i], FPT.tab_IA[6][i],FPT.tab_IA[7][i],FPT.tab_IA[8][i],FPT.tab_IA[9][i]);
     }
+   /* printf("# k P_lin  IA_tt_EE IA_tt_BB IA_ta_dE1 IA_ta_dE2 A_ta_0E0E IA_ta_0B0B IA_mix_A IA_mix_B IA_mix_DEE IA_mix_DBB");
+    for (i =0; i < FPT.N; i++){
+      printf("\n%e   %e ", k[i]/cosmology.coverH0,Pin[i]*pow(cosmology.coverH0,3.));
+      for (int j = 0; j < 10; j++){
+        printf(" %e",FPT.tab_IA[j][i]*pow(cosmology.coverH0,3.));
+      }
+    }    */  
   }
 }
 

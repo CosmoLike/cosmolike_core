@@ -384,8 +384,8 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
 			gsl_sf_legendre_Pl_array(LMAX, xmid[i],Pmid);
 
+			Pl[i][0] = 1.0;
 			for (int l = 1; l < LMAX; l ++){
-				// Pl[i][l] = (2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
 				Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
 				// Pl[i][l] = (2.*l+1)/(4.*M_PI)*Pmid[l];
 				// printf("l,%ld\n", l);
@@ -403,7 +403,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 		double dev;
 
 		for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
-			int L = 1;
+			int L = 0;
 			// initialize to large value in order to start while loop
 			dev=10.*tolerance;
 			C_cl_mixed(L, LMAX, nz,nz, Cl, dev, tolerance);

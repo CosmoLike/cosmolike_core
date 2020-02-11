@@ -41,7 +41,7 @@ double C2_TT(double a, double nz){
 
 /****** Limber integrands for shear and ggl ******/
 double int_for_C_shear_shear_IA_EE(double a, void *params){
-  double res, ell, fK, k,ws1,ws2,wk1,wk2, norm,C1,C1_2,C2,C2_2,b_ta,b_ta_2;
+  double res=0., ell, fK, k,ws1,ws2,wk1,wk2, norm,C1,C1_2,C2,C2_2,b_ta,b_ta_2;
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_C_II");
   ell       = ar[2]+0.5;
@@ -142,10 +142,9 @@ double C_BB_TATT(double l, int ni, int nj){
 double C_ggl_TATT(double l, int nl, int ns)
 {
   double array[3] = {(double) nl, (double) ns, l};
-  double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+  double gE = int_gsl_integrate_medium_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
   return gE;
 }
-
 /*************** look-up tables for angular correlation functions ***************/
 /******************** all angles in radian!   ***********************************/
 /******************** full-sky, bin-avergage  ***********************************/
@@ -174,6 +173,7 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 		for(i=0; i<like.Ntheta ; i++){
 			xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
 			xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+			printf("bin %d: theta_min = %e [rad], theta_max = %e [rad]\n", i, exp(log(like.vtmin)+(i+0.0)*logdt),exp(log(like.vtmin)+(i+1.0)*logdt));
 		}
 		Pmin= create_double_vector(0, LMAX+1);
 		Pmax= create_double_vector(0, LMAX+1);
@@ -182,13 +182,15 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 			//printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
-			for (int l = 2; l < LMAX; l ++){
+			for (int l = 1; l < LMAX; l ++){
 				//Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));	
 				Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
 				*((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
 				+(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
 				-2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+				if (l < 100){printf("%d %d %e\n", i,l,Pl[i][l]);}
 			}
+		printf("\n");
 		}
 		free_double_vector(xmin,0,like.Ntheta-1);
 		free_double_vector(xmax,0,like.Ntheta-1);
@@ -263,8 +265,6 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation
 				Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
 				*(plm*((4-l+2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
 				+plm_1*(l-1,2,x)*(l+2)*(x-2)/(1-x*x));
-
-
 				Glminus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
 				*(plm*(l,2,x)*((4-l-2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
 				+plm_1*(l-1,2,x)*(l+2)*(x+2)/(1-x*x));*/
