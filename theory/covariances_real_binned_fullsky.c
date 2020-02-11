@@ -131,10 +131,10 @@ double w_mask(double theta_min){
         xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
         xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
       }
-
-      for (i = 0; i < lbins; i++){
+      for (i = 0; i < like.Ntheta; i++){
         gsl_sf_legendre_Pl_array(lbins, xmin[i],Pmin);
         gsl_sf_legendre_Pl_array(lbins, xmax[i],Pmax);
+        Pl[i][0] = 1.0/(4.*M_PI);
         for (int l = 1; l < lbins; l ++){
           Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
         }
@@ -143,15 +143,15 @@ double w_mask(double theta_min){
       free_double_vector(xmax,0,like.Ntheta-1);
       free_double_vector(Pmin,0,lbins);
       free_double_vector(Pmax,0,lbins);
-      free_double_matrix(Pl, 0, like.Ntheta-1, 0, lbins);
-    
       for (i = 0; i < NTHETA; i++){
         w_vec[i] =0.;
         for (l = 0; l < lbins; l++){
           w_vec[i]+=Cl[l]*Pl[i][l];
         }
+        printf("w_mask[%d] = %e\n",i, w_vec[i]);
       }
       free_double_vector(Cl,0,lbins-1);
+      free_double_matrix(Pl, 0, like.Ntheta-1, 0, lbins);
     }
     else{ //covparams.C_FOOTPRINT_FILE does not exit, ignore boundary effects
       printf("covparams.C_FOOTPRINT_FILE = %s not found\nNo boundary effect correction applied\n",covparams.C_FOOTPRINT_FILE);
@@ -704,7 +704,7 @@ void cov_gl_shear_real_binned_fullsky(double **cov, double **covNG, int z1,int z
         Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
         *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
         +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l+1]));
       }
       Glplus[i][2] = 0.; Glminus[i][2] = 0.;
     }
@@ -976,7 +976,7 @@ void cov_cl_gl_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,i
         Pl2[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
         *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
         +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l+1]));
       }
     }
     free_double_vector(xmin,0,like.Ntheta-1);
@@ -1055,7 +1055,7 @@ void cov_gl_gl_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,i
         Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
         *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
         +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l+1]));
       }
     }
     free_double_vector(xmin,0,like.Ntheta-1);

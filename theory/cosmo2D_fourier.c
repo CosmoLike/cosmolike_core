@@ -265,7 +265,8 @@ double C_cl_tomo_nointerp(double l, int ni, int nj)  //galaxy clustering power s
     // return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
     return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(ni),0.999999,NULL,1000);
   }
-  return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
+  // return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
+  return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(nj),0.99999,NULL,1000); // zi<=zj
 }
 
 
