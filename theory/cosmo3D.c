@@ -1335,19 +1335,16 @@ double PkRatio_baryons(double kintern,double a){
 	static double *logk_bins=0;
 	static double *a_bins = 0 ;
 	static double **TblogPkR =0 ;
-
-  if (bary.isPkbary == 0) return 1. ;
-
+	
 	const gsl_interp2d_type *T = gsl_interp2d_bilinear;
 	gsl_interp2d *interp2d = gsl_interp2d_alloc (T, bary.Nkbins, bary.Nabins);
-
-  static double *GSLPKR = 0;
-
-  GSLPKR = malloc(bary.Nkbins * bary.Nabins * sizeof(double));
+	double *GSLPKR = malloc(bary.Nkbins * bary.Nabins * sizeof(double));
+		
+	if (bary.isPkbary == 0) return 1. ;
+	
 	if (recompute_PkRatio(B)){
-
 		update_PkRatio(&B);
-
+		
 		printf("in recompute PkRatio \n");
 		
 		if (TblogPkR!=0) free_double_matrix(TblogPkR,0,bary.Nkbins-1, 0, bary.Nabins-1);
@@ -1377,19 +1374,17 @@ double PkRatio_baryons(double kintern,double a){
 				fscanf(infile,"%le ",&TblogPkR[i][j]);
 			}
 		}
-		fclose(infile);	
-
-    for (int i=0;i<bary.Nkbins;i++){
-      for (int j=0;j<bary.Nabins;j++){
-        gsl_interp2d_set(interp2d, GSLPKR, i, j, TblogPkR[i][j]);
-      }
-    }
-    
-    gsl_interp2d_init(interp2d, logk_bins, a_bins, GSLPKR, bary.Nkbins, bary.Nabins);
-
+		fclose(infile);		
 	}
 	
-
+	for (int i=0;i<bary.Nkbins;i++){
+		for (int j=0;j<bary.Nabins;j++){
+			gsl_interp2d_set(interp2d, GSLPKR, i, j, TblogPkR[i][j]);
+		}
+	}
+	
+	gsl_interp2d_init(interp2d, logk_bins, a_bins, GSLPKR, bary.Nkbins, bary.Nabins);
+		
 /*	
 	if (a < a_bins[0]){
 		printf("warning doing extrapolation (a too small/z_in too high)\n");
@@ -1549,7 +1544,6 @@ double f_K(double chi)
   }
   return f;
 }
-
 
 
 
