@@ -239,5 +239,5 @@ int recompute_PkRatio(barypara B){
 }
 
 void update_PkRatio(barypara *B){
-	sprintf((*B).scenario,bary.scenario);
+	sprintf((*B).scenario,"%s", bary.scenario);
 }
