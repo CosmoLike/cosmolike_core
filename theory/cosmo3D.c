@@ -633,14 +633,16 @@ double get_class_s8(struct file_content *fc, int *status){
     if (cosmology.Omega_nu >0.)
     {
       strcpy(fc->name[15],"Omega_ncdm"); 
+//      sprintf(fc->value[15],"%e,%e,%e",cosmology.Omega_nu/3,cosmology.Omega_nu/3,cosmology.Omega_nu/3);
       sprintf(fc->value[15],"%e",cosmology.Omega_nu);
     }    
     else{
       strcpy(fc->name[15],"m_ncdm"); //\Sigma(m_nu) in eV
-      sprintf(fc->value[15],"%e",cosmology.M_nu);
+      sprintf(fc->value[15],"%e,%e,%e",cosmology.M_nu/3,cosmology.M_nu/3,cosmology.M_nu/3);
+      sprintf(fc->value[15],"%e,%e,%e",cosmology.M_nu/3,cosmology.M_nu/3,cosmology.M_nu/3);
     }
     strcpy(fc->name[16],"N_ur");
-    sprintf(fc->value[16],"%e",2.0328);
+    sprintf(fc->value[16],"%e",2.0328);//0.00641);
   }
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
   if (cosmology.A_s >0){

@@ -1,3 +1,5 @@
+double C1_TA(double a, double nz);
+double C2_TT(double a, double nz);
 double C_EE_tab(double l, int ni, int nj);
 double C_BB_tab(double l, int ni, int nj);
 double C_ggl_TATT_tab(double l, int ni, int nj);
@@ -9,7 +11,7 @@ int LMAX = 100000;
 //ell_min for switching from exact evalution of C(ell) to interpolated look-up table
 int LMIN_tab =20;
 //number of grid point for C(ell) look-up tables
-int NTAB_TATT = 50;
+int NTAB_TATT = 60;
 
 /* NLA/TA amplitude C1, nz argument only need if per-bin amplitude*/
 double C1_TA(double a, double nz){
@@ -142,7 +144,7 @@ double C_BB_TATT(double l, int ni, int nj){
 double C_ggl_TATT(double l, int nl, int ns)
 {
   double array[3] = {(double) nl, (double) ns, l};
-  double gE = int_gsl_integrate_medium_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+  double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
   return gE;
 }
 /*************** look-up tables for angular correlation functions ***************/
@@ -173,7 +175,7 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 		for(i=0; i<like.Ntheta ; i++){
 			xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
 			xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
-			printf("bin %d: theta_min = %e [rad], theta_max = %e [rad]\n", i, exp(log(like.vtmin)+(i+0.0)*logdt),exp(log(like.vtmin)+(i+1.0)*logdt));
+			//printf("bin %d: theta_min = %e [rad], theta_max = %e [rad]\n", i, exp(log(like.vtmin)+(i+0.0)*logdt),exp(log(like.vtmin)+(i+1.0)*logdt));
 		}
 		Pmin= create_double_vector(0, LMAX+1);
 		Pmax= create_double_vector(0, LMAX+1);
@@ -182,15 +184,15 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 			//printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
-			for (int l = 1; l < LMAX; l ++){
+			for (int l = 2; l < LMAX; l ++){
 				//Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));	
 				Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
 				*((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
 				+(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
 				-2./(2*l+1.)*(Pmin[l+1]-Pmax[l+1]));
-				if (l < 100){printf("%d %d %e\n", i,l,Pl[i][l]);}
+				//if (l < 100){printf("%d %d %e\n", i,l,Pl[i][l]);}
 			}
-		printf("\n");
+		//printf("\n");
 		}
 		free_double_vector(xmin,0,like.Ntheta-1);
 		free_double_vector(xmax,0,like.Ntheta-1);
@@ -200,7 +202,7 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 	if (recompute_ggl(C,G,N,ni)){
 
 		for (nz = 0; nz <tomo.ggl_Npowerspectra; nz ++){
-			for (l = 2; l < LMIN_tab; l++){
+			for (l = 1; l < LMIN_tab; l++){
 				Cl[l]=C_ggl_TATT(1.0*l,ZL(nz),ZS(nz));
 			}
 			for (l = LMIN_tab; l < LMAX; l++){
