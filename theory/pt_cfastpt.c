@@ -1,3 +1,4 @@
+#include "FASTPT_b3nl.h"
 double PT_d1d2(double k_coverH0);
 double PT_d1d3(double k_coverH0);
 double PT_d2d2(double k_coverH0);
@@ -19,8 +20,9 @@ void FPT_input(double k[FPT.N], double P[FPT.N]){
     printf("FPT.k_min=%e, FPT.k_max=%e, FPT.N_per_dec=%d; FPT.N=%d\nEXIT\n",FPT.k_min,FPT.k_max,FPT.N_per_dec,FPT.N);
     exit(1);
   }
+  //printf("%e < %e ||  %e > %e?\n",FPT.k_min,limits.k_min_cH0,FPT.k_max, limits.k_max_cH0);
   if (FPT.k_min < limits.k_min_cH0 || FPT.k_max > limits.k_max_cH0){
-    printf("pt_cfastpt.c:FPT_input: k_min/k_max out of range\n");
+    printf("pt_cfastpt.c:FPT_input: k_min/k_max out of range:\n");
     exit(1);
   }
   dlgk = log(10.)/(double) FPT.N_per_dec;
@@ -98,7 +100,7 @@ double PT_d1d3(double k_coverH0){ //interpolate FPT.tab_AB[0] - Pd1d3
   }
   double lgk = log(k_coverH0);
   if (lgk < logkmin || lgk >= logkmax){return 0.;}
-  return 0.0;//interpol(FPT.tab_AB[6], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
+  return interpol(tab_d1d3, FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
 }
 
 double PT_d2d2(double k_coverH0){ //interpolate FPT.tab_AB[1]
