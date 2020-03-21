@@ -31,7 +31,7 @@ double kappa_reconstruction_noise(double l){
    static double *noise;
    static int nEll;
    
-   if((strcmp(cmb.name, "so_baseline")==0) || (strcmp(cmb.name, "so_gold")==0) ){
+   if((strcmp(cmb.name, "so_Y1")==0) || (strcmp(cmb.name, "so_Y5")==0) ){
       printf("run %s\n", cmb.name);
       if (noise==0){
          // count lines
