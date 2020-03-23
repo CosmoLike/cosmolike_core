@@ -633,7 +633,6 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   static int zbins = -1;
   static gsl_spline * photoz_splines[11];
   static gsl_interp_accel * photoz_accel[11];
-
   if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}
     if ((redshift.clustering_photoz != 4 && recompute_zphot_clustering(N)) || table==0){
     update_nuisance(&N);
