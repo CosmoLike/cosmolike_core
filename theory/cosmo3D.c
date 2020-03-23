@@ -457,6 +457,10 @@ int run_class(
     background_free(ba);  
     return 1;
   }
+  cosmology.theta_s = 100.*th->rs_rec/th->ra_rec;
+  cosmology.h0 = ba->h;
+//    printf("theta_* = %.5f\n",cosmology.theta_s);
+//    printf("h_CLASS = %.3f\n\n", ba->h);
   if (perturb_init(&pr,ba,th,pt) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS perturb:%s\n",pt->error_message);
     thermodynamics_free(th);
@@ -590,9 +594,15 @@ double get_class_s8(struct file_content *fc, int *status){
   strcpy(fc->value[5],"no");
 
   // now, copy over cosmology parameters
-  strcpy(fc->name[6],"h");
-  sprintf(fc->value[6],"%e",cosmology.h0);
-
+  // pass either h or theta_s; if theta_s specified, shoot for h
+  if (cosmology.theta_s > 0.2){
+    strcpy(fc->name[6],"100*theta_s");
+    sprintf(fc->value[6],"%e",cosmology.theta_s);    
+  }
+  else{
+    strcpy(fc->name[6],"h");
+    sprintf(fc->value[6],"%e",cosmology.h0);
+  }
   strcpy(fc->name[7],"Omega_cdm");
   sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb);
 
@@ -623,34 +633,35 @@ double get_class_s8(struct file_content *fc, int *status){
     if (cosmology.Omega_nu >0.)
     {
       strcpy(fc->name[15],"Omega_ncdm"); 
+//      sprintf(fc->value[15],"%e,%e,%e",cosmology.Omega_nu/3,cosmology.Omega_nu/3,cosmology.Omega_nu/3);
       sprintf(fc->value[15],"%e",cosmology.Omega_nu);
     }    
     else{
       strcpy(fc->name[15],"m_ncdm"); //\Sigma(m_nu) in eV
-      sprintf(fc->value[15],"%e",cosmology.M_nu);
+      sprintf(fc->value[15],"%e,%e,%e",cosmology.M_nu/3,cosmology.M_nu/3,cosmology.M_nu/3);
+      sprintf(fc->value[15],"%e,%e,%e",cosmology.M_nu/3,cosmology.M_nu/3,cosmology.M_nu/3);
     }
     strcpy(fc->name[16],"N_ur");
-    sprintf(fc->value[16],"%e",2.0328);
+    sprintf(fc->value[16],"%e",2.0328);//0.00641);
   }
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
-  if (cosmology.A_s){
+  if (cosmology.A_s >0){
 //  printf("passing A_s=%e directly\n",cosmology.A_s);
    strcpy(fc->name[parser_length-1],"A_s");
    sprintf(fc->value[parser_length-1],"%e",cosmology.A_s);
- }
- else{
-  double A_s = get_class_As(fc,parser_length-1,cosmology.sigma_8, &status);
-  strcpy(fc->name[parser_length-1],"A_s");
-  sprintf(fc->value[parser_length-1],"%e",A_s);
-  if (status == 0){
-   A_s *=pow(cosmology.sigma_8/get_class_s8(fc,&status),2.0);
-   strcpy(fc->name[parser_length-1],"A_s");
-   sprintf(fc->value[parser_length-1],"%e",A_s);
-   }
- cosmology.A_s = A_s;
+  }
+  else{
+    double A_s = get_class_As(fc,parser_length-1,cosmology.sigma_8, &status);
+    strcpy(fc->name[parser_length-1],"A_s");
+    sprintf(fc->value[parser_length-1],"%e",A_s);
+    if (status == 0){
+      A_s *=pow(cosmology.sigma_8/get_class_s8(fc,&status),2.0);
+      strcpy(fc->name[parser_length-1],"A_s");
+      sprintf(fc->value[parser_length-1],"%e",A_s);}
+    cosmology.A_s = A_s;
     printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
-}
-strcpy(fc->name[1],"non linear");
+  }
+  strcpy(fc->name[1],"non linear");
   strcpy(fc->value[1],"Halofit"); //to use Halofit within CLASS
   return status;
 }
@@ -664,7 +675,6 @@ double p_class(double k_coverh0,double a, int NL, int *status){
   double val,klog;
 
   if (recompute_cosmo3D(C)){
-    update_cosmopara(&C);
     if (table_P_L ==0){
       table_P_L = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1); 
       table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1); 
@@ -728,6 +738,7 @@ double p_class(double k_coverh0,double a, int NL, int *status){
     }
     free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
   }
+  update_cosmopara(&C);
 }
 klog = log(k_coverh0);
 if (isnan(klog) || class_status) return 0.0;
@@ -1326,16 +1337,18 @@ double PkRatio_baryons(double kintern,double a){
 	static double *logk_bins=0;
 	static double *a_bins = 0 ;
 	static double **TblogPkR =0 ;
-	
-	const gsl_interp2d_type *T = gsl_interp2d_bilinear;
-	gsl_interp2d *interp2d = gsl_interp2d_alloc (T, bary.Nkbins, bary.Nabins);
-	double *GSLPKR = malloc(bary.Nkbins * bary.Nabins * sizeof(double));
-		
-	if (bary.isPkbary == 0) return 1. ;
-	
-	if (recompute_PkRatio(B)){
+
+  if (bary.isPkbary == 0) return 1. ;
+
+  static double *GSLPKR = 0;
+  static gsl_interp2d *interp2d = 0;
+	if (recompute_PkRatio(B) && GSLPKR == 0){
+
+    const gsl_interp2d_type *T = gsl_interp2d_bilinear;
+    interp2d = gsl_interp2d_alloc (T, bary.Nkbins, bary.Nabins);
+    GSLPKR = malloc(bary.Nkbins * bary.Nabins * sizeof(double));
 		update_PkRatio(&B);
-		
+
 		printf("in recompute PkRatio \n");
 		
 		if (TblogPkR!=0) free_double_matrix(TblogPkR,0,bary.Nkbins-1, 0, bary.Nabins-1);
@@ -1365,17 +1378,19 @@ double PkRatio_baryons(double kintern,double a){
 				fscanf(infile,"%le ",&TblogPkR[i][j]);
 			}
 		}
-		fclose(infile);		
+		fclose(infile);	
+
+    for (int i=0;i<bary.Nkbins;i++){
+      for (int j=0;j<bary.Nabins;j++){
+        gsl_interp2d_set(interp2d, GSLPKR, i, j, TblogPkR[i][j]);
+      }
+    }
+    
+    gsl_interp2d_init(interp2d, logk_bins, a_bins, GSLPKR, bary.Nkbins, bary.Nabins);
+
 	}
 	
-	for (int i=0;i<bary.Nkbins;i++){
-		for (int j=0;j<bary.Nabins;j++){
-			gsl_interp2d_set(interp2d, GSLPKR, i, j, TblogPkR[i][j]);
-		}
-	}
-	
-	gsl_interp2d_init(interp2d, logk_bins, a_bins, GSLPKR, bary.Nkbins, bary.Nabins);
-		
+
 /*	
 	if (a < a_bins[0]){
 		printf("warning doing extrapolation (a too small/z_in too high)\n");
@@ -1392,8 +1407,8 @@ double PkRatio_baryons(double kintern,double a){
 	res = gsl_interp2d_eval_extrap(interp2d, logk_bins, a_bins, GSLPKR, logkin, a, NULL, NULL);    // allow extrapolation beyond k>1500 
 	res = pow(10, res)	;  // Pk_ratio
 			
-	gsl_interp2d_free(interp2d);
-	free(GSLPKR);
+	// gsl_interp2d_free(interp2d);
+	// free(GSLPKR);
 	return res;
 }
 

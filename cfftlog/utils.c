@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-double gamma_lanczos_real(double z) {
+double gamma_lanczos_real_cfft(double z) {
 /* Lanczos coefficients for g = 7 */
 	static double p[] = {
 		0.99999999999980993227684700473478,
@@ -16,7 +16,7 @@ double gamma_lanczos_real(double z) {
 		9.984369578019570859563e-6,
 		1.50563273514931155834e-7};
 
-	if(z < 0.5) {return M_PI / (sin(M_PI*z)*gamma_lanczos_real(1. - z));}
+	if(z < 0.5) {return M_PI / (sin(M_PI*z)*gamma_lanczos_real_cfft(1. - z));}
 	z -= 1;
 	double x = p[0];
 	for(int n = 1; n < 9; n++){ x += p[n] / (z + (double)(n));}
@@ -25,7 +25,7 @@ double gamma_lanczos_real(double z) {
 	return sqrt(2*M_PI) * pow(t, z+0.5) * exp(-t) * x;
 }
 
-double lngamma_lanczos_real(double z) {
+double lngamma_lanczos_real_cfft(double z) {
 /* Lanczos coefficients for g = 7 */
 	static double p[] = {
 		0.99999999999980993227684700473478,
@@ -38,7 +38,7 @@ double lngamma_lanczos_real(double z) {
 		9.984369578019570859563e-6,
 		1.50563273514931155834e-7};
 
-	if(z < 0.5) {return log(M_PI) - log(sin(M_PI*z)) - lngamma_lanczos_real(1. - z);}
+	if(z < 0.5) {return log(M_PI) - log(sin(M_PI*z)) - lngamma_lanczos_real_cfft(1. - z);}
 	z -= 1;
 	double x = p[0];
 	for(int n = 1; n < 9; n++){ x += p[n] / (z + (double)(n));}
@@ -48,7 +48,7 @@ double lngamma_lanczos_real(double z) {
 }
 
 
-void extrap_log_linear(double *fk, int N_origin, int N_extra, double *large_fk) {
+void extrap_log_linear_cfft(double *fk, int N_origin, int N_extra, double *large_fk) {
 	double dln_left, dln_right;
 	int i;
 

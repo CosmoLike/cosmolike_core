@@ -79,6 +79,33 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       }
       continue;
     }
+    if(strcmp(name, "lmin")==0)
+    {
+      sscanf(val, "%lf", &covparams.lmin);
+      if(output==1)
+      {
+        printf("lmin %f \n",covparams.lmin);
+      }
+      continue;
+    }
+    else if(strcmp(name, "lmax")==0)
+    {
+      sscanf(val, "%lf", &covparams.lmax);
+      if(output==1)
+      {
+        printf("lmax %f \n",covparams.lmax);
+      }
+      continue;
+    }
+    else if(strcmp(name, "ncl")==0)
+    {
+      sscanf(val, "%d", &covparams.ncl);
+      if(output==1)
+      {
+        printf("Ncl %d \n",covparams.ncl);
+      }
+      continue;
+    }
     else if(strcmp(name, "ng")==0)
     {
       sscanf(val, "%d", &covparams.ng);
@@ -275,6 +302,15 @@ void set_cosmological_parameters_to_(char *cosmofile, int output)
       if(output==1)
       {
         printf("runmode %s \n",pdeltaparams.runmode);
+      }
+      continue;
+    }
+    else if(strcmp(name, "A_s")==0)
+    {
+      sscanf(val, "%lf", &cosmology.A_s);
+      if(output==1)
+      {
+        printf("f_NL %f \n",cosmology.A_s);
       }
       continue;
     }

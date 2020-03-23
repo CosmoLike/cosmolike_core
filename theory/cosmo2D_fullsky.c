@@ -110,7 +110,7 @@ double w_gamma_t_fullsky(int nt, int ni, int nj){
 			printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
-			for (int l = 2; l < LMAX; l ++){
+			for (int l = 1; l < LMAX; l ++){
 				//Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));	
 				Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
 				*((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
@@ -129,7 +129,7 @@ double w_gamma_t_fullsky(int nt, int ni, int nj){
 		if (like.IA ==3 || like.IA ==4) C_gl_pointer = &C_ggl_IA_tab;
 
 		for (nz = 0; nz <tomo.ggl_Npowerspectra; nz ++){
-			for (l = 2; l < LMAX; l++){
+			for (l = 1; l < LMAX; l++){
 				Cl[l]=C_ggl_IA_tab(1.0*l,ZL(nz),ZS(nz));
 			}
 			for (i = 0; i < NTHETA; i++){

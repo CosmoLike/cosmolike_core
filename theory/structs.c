@@ -30,7 +30,8 @@ typedef struct {
   int SRD;
   char DATA_FILE[500];
   char INV_FILE[500]; 
-  char COV_FILE[500]; 
+  char COV_FILE[500];
+  char BARY_FILE[500]; 
   char MASK_FILE[500]; 
   int shear_shear;
   int shear_pos;
@@ -38,14 +39,16 @@ typedef struct {
   int clusterN;
   int clusterWL;
   int clusterCG;
+  int clusterCC;
  // MANUWARNING: added "int gk, kk, ks;"
   int gk;
   int kk;
   int ks;
   char probes[500];
   char ext_data[500];
+  int theta_s;
 }likepara;
-likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .BAO = 0, .SN_WFIRST = 0, .GRS = 0, .SRD = 0, .Planck15_BAO_H070p6_JLA_w0wa = 0, .Planck18_BAO_Riess18_Pantheon_w0wa = 0, .Planck18_BAO_w0wa = 0, .Planck18_w0 = 0};
+likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .BAO = 0, .SN_WFIRST = 0, .GRS = 0, .SRD = 0, .Planck15_BAO_H070p6_JLA_w0wa = 0, .Planck18_BAO_Riess18_Pantheon_w0wa = 0, .Planck18_BAO_w0wa = 0, .Planck18_w0 = 0,.theta_s =0};
 
 typedef struct {
      double Omega_m;  /* matter density parameter                       */
@@ -65,8 +68,9 @@ typedef struct {
      double f_NL; 
      double MGSigma;
      double MGmu;
+     double theta_s;
 }cosmopara;
-cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0};
+cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.theta_s =0.0};
 
 typedef struct {
   int shear_Nbin; // number of tomography bins
@@ -144,6 +148,8 @@ typedef struct {
 Cmb cmb;
 
 double bgal_z(double z, int nz);
+double b1_per_bin(double z, int nz);
+
 typedef  double (*B1_model)(double z, int nz);
 typedef struct{
   double b[10]; /* linear galaxy bias paramter in clustering bin i*/
@@ -156,7 +162,7 @@ typedef struct{
   double b_mag[10]; /*amplitude of magnification bias, b_mag[i] = 5*s[i]+beta[i] -2 */
   B1_model b1_function;
 }galpara;
-galpara gbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.b1_function = &bgal_z, .b_mag ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}; //default: point to old bgal_z routin
+galpara gbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.b1_function = &b1_per_bin, .b_mag ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}; //default: point to old bgal_z routin
 
 typedef struct{
   double hod[5];
@@ -206,7 +212,7 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   int N;
   int N_per_dec;
   char Plin_FILE[200];
-  // parameters for table of IA terms
+  // parameters for table of bias terms
   double **tab_AB;
   int N_AB;
   // parameters for table of IA terms - note that N_IA needs to be initialized below!!!
@@ -215,13 +221,20 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   char path[200];
   cosmopara C;
 }FPTpara;
-FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7};
+FPTpara FPT ={.k_min = 1.e-5, .k_max =1.e+3, .N = 800, .N_per_dec = 100, .N_AB = 7,.N_IA = 10};
 typedef struct {
-  double A_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3)
+  //like.IA = 3: NLA, per bin
+  //like.IA = 4: NLA, power law
+  //like.IA = 5: TATT, per bin
+  //like.IA = 6: TATT, power law
+  double A_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3 or like.IA = 5)
+  double A2_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA = 5)
+  double b_ta_z[10]; //b_ta, per bin (like.IA = 6), or use b_ta_z[0] with like.IA = 5
   double A_ia; //A IA see Joachimi2012
   double A2_ia; //placeholder param for quadratic,etc IA
   double beta_ia; //beta IA see Joachimi2012
   double eta_ia; //eta_other IA see Joachimi2012
+  double eta_ia_tt; //same as eta_ia, for TT
   double eta_ia_highz; //uncertainty in high z evolution
   double oneplusz0_ia; //oneplusz0-ia MegaZ
   double c1rhocrit_ia;
@@ -260,8 +273,10 @@ typedef struct {
   double cluster_selection[10];
 }
 nuisancepara;
-nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
+nuisancepara nuisance ={.c1rhocrit_ia = 0.01389,
   .A_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .A2_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .b_ta_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .shear_calibration_m = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
@@ -318,6 +333,9 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double cluster_centering_alpha[2];
   double cluster_centering_sigma[2];
   double cluster_centering_M_pivot[2];
+  double bary_Q1[2];
+  double bary_Q2[2];
+  double bary_Q3[2];
 }priorpara;
 priorpara prior = {.shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
@@ -364,9 +382,10 @@ typedef struct input_nuisance_params_mpp {
     double lens_z_bias[10];
     double source_z_bias[10];
     double shear_m[10];
-    double  A_z[10];
-    double  MOR[10];
+    double A_z[10];
+    double MOR[10];
     double selection[10];
+    double b_mag[10];
 } input_nuisance_params_mpp;
 
 typedef struct input_HOD_params {
@@ -393,6 +412,8 @@ typedef struct input_nuisance_params {
     double lf[6];
     double m_lambda[6];
     double cluster_c[4];
+    double bary[3];
+    double b_mag[10];
 } input_nuisance_params;
 
 typedef struct input_nuisance_params_grs {
@@ -453,3 +474,13 @@ typedef struct {
   int isPkbary;     // if isPkbary=1
 }barypara;
 barypara bary ={.isPkbary=0};
+
+typedef struct {
+  double*** S_integrands_cl; // galaxy density nonlimber integrand
+  double*** S_integrands_sh; // galaxy shape nonlimber integrand
+  int *recompute_cl; // recompute the above or not
+  int *recompute_sh;
+  int Nell;
+  int Nchi;
+} fft_optimize;
+fft_optimize fft_int;

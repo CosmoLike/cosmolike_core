@@ -35,9 +35,9 @@ void cfftlog(double *x, double *fx, long N, config *config, int ell, double *y, 
 	double complex gl[halfN+1];
 	
 	switch(config->derivative) {
-		case 0: g_l((double)ell, config->nu, eta_m, gl, halfN+1); break;
-		case 1: g_l_1((double)ell, config->nu, eta_m, gl, halfN+1); break;
-		case 2: g_l_2((double)ell, config->nu, eta_m, gl, halfN+1); break;
+		case 0: g_l_cfft((double)ell, config->nu, eta_m, gl, halfN+1); break;
+		case 1: g_l_1_cfft((double)ell, config->nu, eta_m, gl, halfN+1); break;
+		case 2: g_l_2_cfft((double)ell, config->nu, eta_m, gl, halfN+1); break;
 		default: printf("Integral Not Supported! Please choose config->derivative from [0,1,2].\n");
 	}
 	// printf("g2[0]: %.15e+I*(%.15e)\n", creal(g2[0]),cimag(g2[0]));
@@ -64,7 +64,7 @@ void cfftlog(double *x, double *fx, long N, config *config, int ell, double *y, 
 
 	fftw_execute(plan_forward);
 
-	c_window(out, config->c_window_width, halfN);
+	c_window_cfft(out, config->c_window_width, halfN);
 	// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
 
 	for(i=0; i<=halfN; i++) {
@@ -162,7 +162,7 @@ void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long 
 	plan_forward = fftw_plan_dft_r2c_1d(N, fb, out, FFTW_ESTIMATE);
 	fftw_execute(plan_forward);
 
-	c_window(out, config->c_window_width, halfN);
+	c_window_cfft(out, config->c_window_width, halfN);
 	// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
 
 	double *out_ifft;
@@ -171,9 +171,9 @@ void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long 
 
 	for(j=0; j<Nell; j++){
 		switch(config->derivative) {
-			case 0: g_l((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
-			case 1: g_l_1((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
-			case 2: g_l_2((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 0: g_l_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 1: g_l_1_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 2: g_l_2_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
 			default: printf("Integral Not Supported! Please choose config->derivative from [0,1,2].\n");
 		}
 
@@ -272,7 +272,7 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 	plan_forward = fftw_plan_dft_r2c_1d(N, fb, out, FFTW_ESTIMATE);
 	fftw_execute(plan_forward);
 
-	c_window(out, config->c_window_width, halfN);
+	c_window_cfft(out, config->c_window_width, halfN);
 	// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
 
 	double *out_ifft;
@@ -281,9 +281,9 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 
 	for(j=0; j<Nell; j++){
 		switch(config->derivative) {
-			case 0: g_l((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
-			case 1: g_l_1((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
-			case 2: g_l_2((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 0: g_l_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 1: g_l_1_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 2: g_l_2_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
 			default: printf("Integral Not Supported! Please choose config->derivative from [0,1,2].\n");
 		}
 

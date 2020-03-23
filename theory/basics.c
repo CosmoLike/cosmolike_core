@@ -116,10 +116,10 @@ typedef struct {
 lim limits = {
 //	0.19, //a_min (in order to compute z=4 WFIRST)
     1./(1.+10.), //a_min (z=10, needed for CMB lensing)
-	6.667e-5, //k_min_mpc
+	6.667e-6, //k_min_mpc
 	1.e3, //k_max_mpc
 	50., //k_max_mpc_class 
-	2.e-1, //k_min_cH0
+	2.e-2, //k_min_cH0
 	3.e+6,  //k_max_cH0
 	0.1,//P_2_s_min
 	1.0e5,//P_2_s_max

@@ -2,13 +2,13 @@ void f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni);
 void f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni);
 void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni);
 void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance);
-double w_tomo_nonLimber(int nt, int ni, int nj); //w(theta) including non-Limber+RSD
+double w_tomo_nonLimber(int nt, int ni, int nj); //w(theta) including non-Limber+RSD+Mag
 
 
 void f_chi_for_Psi_sh(double* chi_ar, int Nchi, double* f_chi_ar, int nz);
 void f_chi_for_Psi_sh_IA(double* chi_ar, int Nchi, double* f_chi_IA_ar, int nz);
 void C_gl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance);
-double w_gamma_t_nonLimber(int nt, int ni, int nj);
+double w_gamma_t_nonLimber(int nt, int ni, int nj); //gamma_t(theta) including non-Limber+RSD+Mag+IA
 
 
 /////////////////////
@@ -142,13 +142,13 @@ void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni
 
 // Mixture of non-Limber and Limber of C_cl (galaxy clustering)
 void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance) {
-	// ni = 4;
-	// nj = 4;
+	// ni = 1;
+	// nj = 2;
 	int i,j,i_block;
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 100, Nchi = 1000;
+	int Nell_block = fft_int.Nell, Nchi = fft_int.Nchi;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar, **Fk2_Mag_ar;
@@ -187,38 +187,6 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		chi_ar[i] = chi_min * exp(dlnchi*i);
 	}
 
-	f_chi_for_Psi_cl(chi_ar, Nchi, f1_chi_ar, ni);
-	if(ni != nj) {f_chi_for_Psi_cl(chi_ar, Nchi, f2_chi_ar, nj);}
-
-	f_chi_for_Psi_cl_RSD(chi_ar, Nchi, f1_chi_RSD_ar, ni);
-	if(ni != nj) {f_chi_for_Psi_cl_RSD(chi_ar, Nchi, f2_chi_RSD_ar, nj);}
-
-	f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, ni);
-	if(ni != nj) {f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f2_chi_Mag_ar, nj);}
-
-	// char *outfilename = (char*)malloc(80 * sizeof(char));
-	// sprintf(outfilename, "cl_test_lin_vs_nl/cl_%d_testnl_lin.txt", ni);
-	// // sprintf(outfilename, "cl_test_lin_vs_nl/cl_%d_testnl_rescale.txt", ni);
-	// FILE *OUT = fopen(outfilename, "w");
-	
-	// for(i=0; i<Nchi; i++) {
-	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);
-	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_RSD_ar[i]);
-	// 	fprintf(OUT, "%lg %lg %lg %lg\n", chi_ar[i], f1_chi_ar[i], f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);
-	// 	// fprintf(OUT, "\n");
-	// }
-	// for(i=0; i<Nchi; i++) {
-	// 	printf("f_chi_ar: %d, %lg, %lg, %lg, %lg\n", i,chi_ar[i], f1_chi_ar[i],f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);
-	// }
-	// exit(0);
-	// char *outfilename = (char*)malloc(80 * sizeof(char));;
-	// sprintf(outfilename, "cls2/c_cl_%d_%d_rsd_mag_fft.txt", ni,nj);
-	// FILE *OUT = fopen(outfilename, "w");
-
-
-	i_block = 0;
-	double cl_temp;
-
 	config my_config, my_config_RSD, my_config_Mag;
 	my_config.nu = 1.;
 	my_config.c_window_width = 0.25;
@@ -241,71 +209,94 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	my_config_Mag.N_extrap_low = 0;
 	my_config_Mag.N_extrap_high = 0;
 
+	i_block = 0;
+	double cl_temp;
+
 	double ell_prefactor;
 
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
 	double k1_cH0;
 
+	for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
 
-	while (fabs(dev) > tolerance){
-	// while(0){
-	// while (L<100){
-		//Cl[L] = C_cl_RSD(L,nz,nz);
-		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
+	if(fft_int.recompute_cl[ni]) {
+		f_chi_for_Psi_cl(chi_ar, Nchi, f1_chi_ar, ni);
+		f_chi_for_Psi_cl_RSD(chi_ar, Nchi, f1_chi_RSD_ar, ni);
+		f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, ni);
 
 		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);
-		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);}
-
 		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_ar);
-		if(ni != nj) {cfftlog_ells_increment(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_ar);}
-
 		// Add in lensing magnification contribution
 		cfftlog_ells(chi_ar, f1_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k1_ar, Fk1_Mag_ar);
-		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k2_ar, Fk2_Mag_ar);}
 		for(i=0;i<Nell_block;i++) {
 			ell_prefactor = ell_ar[i]*(ell_ar[i]+1.);
 			for(j=0;j<Nchi;j++) {
 				Fk1_ar[i][j]+= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j]) * (gbias.b_mag[ni]) *  Fk1_Mag_ar[i][j]);
-				if(ni != nj) {Fk2_ar[i][j]+= (ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* (gbias.b_mag[nj]) *  Fk2_Mag_ar[i][j]);}
+				fft_int.S_integrands_cl[ni][i][j] = Fk1_ar[i][j];
+				fft_int.recompute_cl[ni] = 0;
 			}
 		}
-
-		for(i=0;i<Nell_block;i++) {
-			cl_temp = 0.;
-			for(j=0;j<Nchi;j++) {
-				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
-				k1_cH0 = k1_ar[i][j] * real_coverH0;
-				if(ni == nj) {
-					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
-					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *Pdelta(k1_cH0,0.9999);
-					// printf("plin,%lg, %lg\n", k1_ar[i][j],p_lin(k1_cH0,1.0));
-				}
-				else {
-					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
-				}
-			}
-			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
-			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;
-			// printf("cl_t/emp: %d, %lg\n", i, cl_temp);
-			// printf("%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
-			// fprintf(OUT, "%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
-			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
-			// fprintf(OUT, "%d %lg\n", ell_ar[i], Cl[ell_ar[i]]);
-		}
-
-		i_block++;
-		L = i_block*Nell_block -1 ;
-		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
-	   // printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
-		// printf("i_block: %d\n", i_block);
 	}
-	L++;
-	// printf("switching to Limber calculation at l = %d\n",L);
-	// for (l = 1; l < 50; l++){
-	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
-	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);
-	// }
-	for (l = L; l < LMAX; l++){
+	else{
+		for(i=0;i<Nell_block;i++) {
+			for(j=0;j<Nchi;j++) {
+				k1_ar[i][j] = (i+1.)/chi_ar[Nchi-1-j];
+				Fk1_ar[i][j] = fft_int.S_integrands_cl[ni][i][j];
+			}
+		}
+	}
+
+	if(fft_int.recompute_cl[nj]) {
+		f_chi_for_Psi_cl(chi_ar, Nchi, f2_chi_ar, nj);
+		f_chi_for_Psi_cl_RSD(chi_ar, Nchi, f2_chi_RSD_ar, nj);
+		f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f2_chi_Mag_ar, nj);
+
+		cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);
+		cfftlog_ells_increment(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_ar);
+		// Add in lensing magnification contribution
+		cfftlog_ells(chi_ar, f2_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k2_ar, Fk2_Mag_ar);
+		for(i=0;i<Nell_block;i++) {
+			ell_prefactor = ell_ar[i]*(ell_ar[i]+1.);
+			for(j=0;j<Nchi;j++) {
+				Fk2_ar[i][j]+= (ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* (gbias.b_mag[nj]) *  Fk2_Mag_ar[i][j]);
+				fft_int.S_integrands_cl[nj][i][j] = Fk2_ar[i][j];
+				fft_int.recompute_cl[nj] = 0;
+			}
+		}
+	}
+	else{
+		for(i=0;i<Nell_block;i++) {
+			for(j=0;j<Nchi;j++) {
+				k2_ar[i][j] = (i+1.)/chi_ar[Nchi-1-j];
+				Fk2_ar[i][j] = fft_int.S_integrands_cl[nj][i][j];
+			}
+		}
+	}
+
+	for(i=0;i<Nell_block;i++) {
+		cl_temp = 0.;
+		for(j=0;j<Nchi;j++) {
+			// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
+			k1_cH0 = k1_ar[i][j] * real_coverH0;
+			if(ni == nj) {
+				cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+				// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *Pdelta(k1_cH0,0.9999);
+				// printf("plin,%lg, %lg\n", k1_ar[i][j],p_lin(k1_cH0,1.0));
+			}
+			else {
+				cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+			}
+		}
+		Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
+		// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;
+		// printf("cl_t/emp: %d, %lg\n", i, cl_temp);
+		// printf("%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
+		// fprintf(OUT, "%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
+		// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
+		// fprintf(OUT, "%d %lg\n", ell_ar[i], Cl[ell_ar[i]]);
+	}
+
+	for (l = Nell_block; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 		// fprintf(OUT, "%d %lg\n", l, Cl[l]);
 	}
@@ -350,13 +341,13 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 	if (like.Ntheta ==0){
 		printf("cosmo2D_real.c:w_tomo_exact: like.Ntheta not initialized\nEXIT\n"); exit(1);
 	}
-	if (ni != nj){
-		printf("cosmo2D_real.c:w_tomo_exact: ni != nj tomography not supported\nEXIT\n"); exit(1);    
-	}
+	// if (ni != nj){
+	// 	printf("cosmo2D_real.c:w_tomo_exact: ni != nj tomography not supported\nEXIT\n"); exit(1);    
+	// }
 	if (Pl ==0){
 		Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
 		Cl = create_double_vector(0,LMAX-1);
-		w_vec = create_double_vector(0,tomo.clustering_Nbin*like.Ntheta-1);
+		w_vec = create_double_vector(0,tomo.clustering_Npowerspectra*like.Ntheta-1);
 		NTHETA = like.Ntheta;
 		double *xmin, *xmax, *Pmin, *Pmax;
 		xmin= create_double_vector(0, like.Ntheta-1);
@@ -384,8 +375,8 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
 			gsl_sf_legendre_Pl_array(LMAX, xmid[i],Pmid);
 
-			Pl[i][0] = 1.0;
 			for (int l = 1; l < LMAX; l ++){
+				// Pl[i][l] = (2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
 				Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
 				// Pl[i][l] = (2.*l+1)/(4.*M_PI)*Pmid[l];
 				// printf("l,%ld\n", l);
@@ -402,11 +393,12 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 		//dev will be the actual difference between exact and Limber calcuation
 		double dev;
 
-		for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
-			int L = 0;
+		for (nz = 0; nz <tomo.clustering_Npowerspectra; nz ++){
+			int L = 1;
 			// initialize to large value in order to start while loop
 			dev=10.*tolerance;
-			C_cl_mixed(L, LMAX, nz,nz, Cl, dev, tolerance);
+			// printf("here-- %d,%d\n",Zcl1(nz),Zcl2(nz) );
+			C_cl_mixed(L, LMAX, Zcl1(nz),Zcl2(nz), Cl, dev, tolerance);
 			for (i = 0; i < NTHETA; i++){
 				w_vec[nz*like.Ntheta+i] =0;
 				for (l = 1; l < LMAX; l++){

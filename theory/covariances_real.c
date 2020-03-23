@@ -28,7 +28,7 @@ double cov_G_gl_shear_real(double theta1, double theta2, double Dtheta, int zl,i
 double cov_G_gl_shear_real_rebin(double thetamin_i, double thetamax_i,double thetamin_j,double thetamax_j,int zl,int zs, int z3, int z4,int pm);
 
 
-void filter_cov_fourier(double l1, double l2, double lmax, double lpivot) {
+double filter_cov_fourier(double l1, double l2, double lmax, double lpivot) {
   long i,j;
   double W;
   double l_interval = lmax - lpivot;
