@@ -30,81 +30,35 @@ double kappa_reconstruction_noise(double l){
    static double *ell;
    static double *noise;
    static int nEll;
-   
-   if((strcmp(cmb.name, "so_Y1")==0) || (strcmp(cmb.name, "so_Y5")==0) ){
-      printf("run %s\n", cmb.name);
-      if (noise==0){
-         // count lines
-         nEll = line_count(cmb.pathLensRecNoise)-1;
-         printf("Reading CMB lensing noise: %s\n", cmb.pathLensRecNoise);
 
-         // allocate ell and Nlkk
-         ell = create_double_vector(0, nEll-1);
-         noise = create_double_vector(0, nEll-1);
-         
-         // read each line
-         FILE *file = fopen(cmb.pathLensRecNoise, "r");
-         int iEll;
-         for (iEll=0; iEll<nEll; iEll++) {
-            fscanf(file, "%le %le", &ell[iEll], &noise[iEll]);
-         }
-         fclose(file);
-      }
-      // if l is in the range
-      if ((l>=ell[0]) &&(l<=ell[nEll-1])){
-         // find value of ell just above l
-         int iEll = 0;
-         while (ell[iEll] < l) {
-            iEll ++;
-         }
-         // evaluate at that ell
-         // C_ell^kk = l*(l+1)/4 * C_ell^dd
-         return noise[iEll];
-      }
-   }
-   else{
-      // if first time
-      if (noise==0) {
-         // count lines
-         nEll = line_count(cmb.pathLensRecNoise)-1;
-         printf("Reading CMB lensing noise: %s\n", cmb.pathLensRecNoise);
-         // nb of pairs {TT,TT}, {TT,TE}, etc
-         int nObs = 16;
-         
-         double cov[nObs][nEll];
-         // allocate ell and Nmv
-         ell = create_double_vector(0, nEll-1);
-         noise = create_double_vector(0, nEll-1);
-         
-         // read each line
-         FILE *file = fopen(cmb.pathLensRecNoise, "r");
-         int iEll;
-         for (iEll=0; iEll<nEll; iEll++) {
-            fscanf(file, "%le", &ell[iEll]);
-            // read covariances
-            int iObs;
-            for (iObs=0; iObs<nObs; iObs++) {
-               fscanf(file, "%le", &cov[iObs][iEll]);
-   //            printf("%le ", cov[iObs][iEll]);
-            }
-            // keep N_mv
-            noise[iEll] = cov[nObs-1][iEll];
-   //         printf("l, noise_l = %e, %e\n", ell[iEll], noise[iEll]);
-         }
-         fclose(file);
-      }
+   printf("run %s\n", cmb.name);
+   if (noise==0){
+      // count lines
+      nEll = line_count(cmb.pathLensRecNoise)-1;
+      printf("Reading CMB lensing noise: %s\n", cmb.pathLensRecNoise);
+
+      // allocate ell and Nlkk
+      ell = create_double_vector(0, nEll-1);
+      noise = create_double_vector(0, nEll-1);
       
-      // if l is in the range
-      if ((l>=ell[0]) &&(l<=ell[nEll-1])){
-         // find value of ell just above l
-         int iEll = 0;
-         while (ell[iEll] < l) {
-            iEll ++;
-         }
-         // evaluate at that ell
-         // C_ell^kk = l*(l+1)/4 * C_ell^dd
-         return noise[iEll] * l*(l+1)/4.;
+      // read each line
+      FILE *file = fopen(cmb.pathLensRecNoise, "r");
+      int iEll;
+      for (iEll=0; iEll<nEll; iEll++) {
+         fscanf(file, "%le %le", &ell[iEll], &noise[iEll]);
       }
+      fclose(file);
+   }
+   // if l is in the range
+   if ((l>=ell[0]) &&(l<=ell[nEll-1])){
+      // find value of ell just above l
+      int iEll = 0;
+      while (ell[iEll] < l) {
+         iEll ++;
+      }
+      // evaluate at that ell
+      // C_ell^kk = l*(l+1)/4 * C_ell^dd
+      return noise[iEll];
    }
    return 0.;
 }
