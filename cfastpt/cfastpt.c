@@ -46,7 +46,7 @@ void J_abl_ar(double *x, double *fx, long N, int *alpha, int *beta, int *ell, in
 	long N_extrap_high = config->N_extrap_high;
 	N += (2*N_pad + N_extrap_low+N_extrap_high);
 
-	if(N % 2) {printf("Please use even number of x !\n"); exit(0);}
+	if(N % 2) {printf("cfastpt.c: J_abl_ar: Please use even number of x !\n"); exit(0);}
 	long halfN = N/2;
 
 	double x0, y0;
@@ -73,12 +73,12 @@ void J_abl_ar(double *x, double *fx, long N, int *alpha, int *beta, int *ell, in
 	int sign;
 	if(N_extrap_low) {
 		if(fx[0]==0) {
-			printf("Can't log-extrapolate zero on the low side!\n");
+			printf("cfastpt.c: J_abl_ar: Can't log-extrapolate zero on the low side!\n");
 			exit(1);
 		}
 		else if(fx[0]>0) {sign = 1;}
 		else {sign=-1;}
-		if(fx[1]/fx[0]<=0) {printf("Log-extrapolation on the low side fails due to sign change!\n"); exit(1);}
+		if(fx[1]/fx[0]<=0) {printf("cfastpt.c: J_abl_ar: Log-extrapolation on the low side fails due to sign change!\n"); exit(1);}
 		double dlnf_low = log(fx[1]/fx[0]);
 		for(i=N_pad; i<N_pad+N_extrap_low; i++) {
 			xi = exp(log(x0) + (i-N_pad - N_extrap_low)*dlnx);
@@ -90,12 +90,12 @@ void J_abl_ar(double *x, double *fx, long N, int *alpha, int *beta, int *ell, in
 	}
 	if(N_extrap_high) {
 		if(fx[N_original-1]==0) {
-			printf("Can't log-extrapolate zero on the high side!\n");
+			printf("cfastpt.c: J_abl_ar: Can't log-extrapolate zero on the high side!\n");
 			exit(1);
 		}
 		else if(fx[N_original-1]>0) {sign = 1;}
 		else {sign=-1;}
-		if(fx[N_original-1]/fx[N_original-2]<=0) {printf("Log-extrapolation on the high side fails due to sign change!\n"); exit(1);}
+		if(fx[N_original-1]/fx[N_original-2]<=0) {printf("cfastpt.c: J_abl_ar: Log-extrapolation on the high side fails due to sign change!\n"); exit(1);}
 		double dlnf_high = log(fx[N_original-1]/fx[N_original-2]);
 		for(i=N-N_pad-N_extrap_high; i<N-N_pad; i++) {
 			xi = exp(log(x[N_original-1]) + (i-N_pad - N_extrap_low- N_original)*dlnx);
@@ -147,7 +147,7 @@ void J_abl_ar(double *x, double *fx, long N, int *alpha, int *beta, int *ell, in
 	if(N%2==0) { // N+1 is odd
 		Ntotal_convolve = 2*N + 1;
 	}else {
-		printf("This fftconvolve doesn't support even size input arrays (of out_pad1, outpad2)\n"); exit(1);
+		printf("cfastpt.c: J_abl_ar: This fftconvolve doesn't support even size input arrays (of out_pad1, outpad2)\n"); exit(1);
 	}
 
 	// initialize FFT plans for Convolution
@@ -268,7 +268,7 @@ void J_abJ1J2Jk_ar(double *x, double *fx, long N, int *alpha, int *beta, int *J1
 	long N_extrap_high = config->N_extrap_high;
 	N += (2*N_pad + N_extrap_low+N_extrap_high);
 
-	if(N % 2) {printf("Please use even number of x !\n"); exit(0);}
+	if(N % 2) {printf("cfastpt.c: J_abJ1J2Jk_ar: Please use even number of x !\n"); exit(0);}
 	long halfN = N/2;
 
 	double x0, y0;
@@ -299,12 +299,12 @@ void J_abJ1J2Jk_ar(double *x, double *fx, long N, int *alpha, int *beta, int *J1
 	int sign;
 	if(N_extrap_low) {
 		if(fx[0]==0) {
-			printf("Can't log-extrapolate zero on the low side!\n");
+			printf("cfastpt.c: J_abJ1J2Jk_ar: Can't log-extrapolate zero on the low side!\n");
 			exit(1);
 		}
 		else if(fx[0]>0) {sign = 1;}
 		else {sign=-1;}
-		if(fx[1]/fx[0]<=0) {printf("Log-extrapolation on the low side fails due to sign change!\n"); exit(1);}
+		if(fx[1]/fx[0]<=0) {printf("cfastpt.c: J_abJ1J2Jk_ar: Log-extrapolation on the low side fails due to sign change!\n"); exit(1);}
 		double dlnf_low = log(fx[1]/fx[0]);
 		for(i=N_pad; i<N_pad+N_extrap_low; i++) {
 			x_full[i] = exp(log(x0) + (i-N_pad - N_extrap_low)*dlnx);
@@ -317,12 +317,12 @@ void J_abJ1J2Jk_ar(double *x, double *fx, long N, int *alpha, int *beta, int *J1
 	}
 	if(N_extrap_high) {
 		if(fx[N_original-1]==0) {
-			printf("Can't log-extrapolate zero on the high side!\n");
+			printf("cfastpt.c: J_abJ1J2Jk_ar: Can't log-extrapolate zero on the high side!\n");
 			exit(1);
 		}
 		else if(fx[N_original-1]>0) {sign = 1;}
 		else {sign=-1;}
-		if(fx[N_original-1]/fx[N_original-2]<=0) {printf("Log-extrapolation on the high side fails due to sign change!\n"); exit(1);}
+		if(fx[N_original-1]/fx[N_original-2]<=0) {printf("cfastpt.c: J_abJ1J2Jk_ar: Log-extrapolation on the high side fails due to sign change!\n"); exit(1);}
 		double dlnf_high = log(fx[N_original-1]/fx[N_original-2]);
 		for(i=N-N_pad-N_extrap_high; i<N-N_pad; i++) {
 			x_full[i] = exp(log(x[N_original-1]) + (i-N_pad - N_extrap_low- N_original)*dlnx);
@@ -377,7 +377,7 @@ void J_abJ1J2Jk_ar(double *x, double *fx, long N, int *alpha, int *beta, int *J1
 	if(N%2==0) { // N+1 is odd
 		Ntotal_convolve = 2*N + 1;
 	}else {
-		printf("This fftconvolve doesn't support even size input arrays (of out_pad1, outpad2)\n"); exit(1);
+		printf("cfastpt.c: J_abJ1J2Jk_ar: This fftconvolve doesn't support even size input arrays (of out_pad1, outpad2)\n"); exit(1);
 	}
 
 	// initialize FFT plans for Convolution
