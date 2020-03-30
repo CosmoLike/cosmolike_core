@@ -461,6 +461,9 @@ void J_abJ1J2Jk_ar(double *x, double *fx, long N, int *alpha, int *beta, int *J1
 	fftw_free(out);
 	fftw_free(out2);
 	fftw_free(out_vary);
+	fftw_free(out_pad1);
+	fftw_free(out_pad2);
+	fftw_free(pads_convolve);
 	free(out_ifft);
 	free(fb1);free(fb2);
 
