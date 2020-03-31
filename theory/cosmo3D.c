@@ -112,7 +112,8 @@ static inline double hoverh0(double a){
 }
 
 double growfac_from_class(double a){
-	double k_small = limits.k_min_mpc*cosmology.coverH0*10.;
+//	double k_small = limits.k_min_mpc*cosmology.coverH0*10.;
+  double k_small = 1.e-4*cosmology.coverH0;
 	return sqrt(Pdelta(k_small,a)/Pdelta(k_small,1.0));
 }
 
@@ -137,7 +138,7 @@ double growfac(double a)
 
     int i;
     //if using CLASS, calculate growth factor from low-k ratio of power spectrum at different redshifts
-  /*  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){
+    if ((strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) && cosmology.w0 == -1.0){
     	double da = (1. - limits.a_min)/(Ntable.N_a-1.);
 
     	for (i=0;i< Ntable.N_a-1;i++) {
@@ -149,7 +150,7 @@ double growfac(double a)
     	table[Ntable.N_a-1] = 1.0;
 	    update_cosmopara(&C);
     }
-    else{*/
+    else{
 	    const gsl_odeiv_step_type *T=gsl_odeiv_step_rkf45;
 	    gsl_odeiv_step *s=gsl_odeiv_step_alloc(T,2);
 	    gsl_odeiv_control *c=gsl_odeiv_control_y_new(1.e-6,0.0);
@@ -175,7 +176,7 @@ double growfac(double a)
 	    gsl_odeiv_control_free(c);
 	    gsl_odeiv_step_free(s);
 	    update_cosmopara(&C);
-	  //}
+	  }
   }
   gsl_interp_init(intf,ai,table,Ntable.N_a);
   res=gsl_interp_eval(intf,ai,table,a,acc);
