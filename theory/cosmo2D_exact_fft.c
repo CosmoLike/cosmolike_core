@@ -179,7 +179,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	double f1_chi_RSD_ar[Nchi], f2_chi_RSD_ar[Nchi];
 	double f1_chi_Mag_ar[Nchi], f2_chi_Mag_ar[Nchi];
 
-	double chi_min = 10., chi_max = 7000.;
+	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
+	double chi_min = chi(1./(1.+0.002))*real_coverH0, chi_max = chi(1./(1.+4.))*real_coverH0;
 	double dlnchi = log(chi_max/chi_min) / (Nchi - 1.);
 	double dlnk = dlnchi;
 
@@ -243,7 +244,6 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 	double ell_prefactor;
 
-	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
 	double k1_cH0;
 
 
@@ -365,24 +365,24 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 		Pmin= create_double_vector(0, LMAX+1);
 		Pmax= create_double_vector(0, LMAX+1);
 
-		double *xmid, *Pmid;
+		// double *xmid, *Pmid;
 		double mythetamin, mythetamax;
-		xmid= create_double_vector(0, like.Ntheta-1);
-		Pmid= create_double_vector(0, LMAX+1);
+		// xmid= create_double_vector(0, like.Ntheta-1);
+		// Pmid= create_double_vector(0, LMAX+1);
 
 		for(i=0; i<like.Ntheta ; i++){
 			mythetamin = exp(log(like.vtmin)+(i+0.0)*logdt);
 			mythetamax = exp(log(like.vtmin)+(i+1.0)*logdt);
 			xmin[i]=cos(mythetamin);
 			xmax[i]=cos(mythetamax);
-			xmid[i]= cos((2./3.) * (pow(mythetamax,3) - pow(mythetamin,3)) / (mythetamax*mythetamax - mythetamin*mythetamin));
+			// xmid[i]= cos((2./3.) * (pow(mythetamax,3) - pow(mythetamin,3)) / (mythetamax*mythetamax - mythetamin*mythetamin));
 		}
 
 		for (i = 0; i<NTHETA; i ++){
 			// printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
-			gsl_sf_legendre_Pl_array(LMAX, xmid[i],Pmid);
+			// gsl_sf_legendre_Pl_array(LMAX, xmid[i],Pmid);
 
 			Pl[i][0] = 1.0;
 			for (int l = 1; l < LMAX; l ++){
