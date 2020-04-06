@@ -131,11 +131,28 @@ double int_for_C_ks_IA_Az(double a, void *params)
   
   return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
 }
+
+double int_for_C_ks_IA_mpp(double a, void *params)
+{ // for like.IA==4
+   double res, ell, fK, k,ws1,ws2,wk1,wk2, norm;
+   double *ar = (double *) params;
+   ell       = ar[1]+0.5;
+   fK     = f_K(chi(a));
+   k      = ell/fK;
+   ws1 = W_source(a,ar[0]);
+   wk1 = W_kappa(a,fK,ar[0]);
+   wk2 = W_k(a,fK);
+   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+   res= -ws1*wk2*norm + wk1*wk2;
+   return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
+}
+
 double C_ks_IA(double s, int ni)
 {
    double array[2] = {(double) ni,s};
    if (like.IA==1) return int_gsl_integrate_medium_precision(int_for_C_ks_IA,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
    if (like.IA==3) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_Az,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
+   if (like.IA==4) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_mpp,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
    printf("CMBxLSS.c: C_ks_IA does not support like.IA = %d\nEXIT\n", like.IA);
   exit(1);
 }
@@ -219,7 +236,8 @@ double C_ks(double l, int ni)
    static cosmopara C;
    static nuisancepara N;
    
-   static double **table;
+   static double **table, *sig;
+   static int osc[100];
    static double ds = .0, logsmin = .0, logsmax = .0;
    if (ni < 0 || ni >= tomo.clustering_Nbin){
       printf("Bin %d outside tomo.clustering_Nbin range\nEXIT\n",ni); exit(1);
@@ -229,24 +247,42 @@ double C_ks(double l, int ni)
    {
       if (table==0) {
          table   = create_double_matrix(0, tomo.shear_Nbin-1, 0, Ntable.N_ell-1);
+         sig = create_double_vector(0,tomo.shear_Nbin-1);
          logsmin = log(limits.P_2_s_min);
          logsmax = log(limits.P_2_s_max);
          ds = (logsmax - logsmin)/(Ntable.N_ell);
       }
       
-      double llog;
+      double res,llog;
       int i,l1,k;
       
       for (k=0; k<tomo.shear_Nbin; k++) {
-         llog = logsmin;
-         for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
-            table[k][i]= log(C_ks_nointerp(exp(llog),k));
-         }
+        llog = logsmin;
+
+        sig[k] = 1.;
+        osc[k] = 0;
+        res = C_ks_nointerp(500.,k);
+        if (res < 0){sig[k] = -1.;}
+        for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
+          table[k][i]= C_ks_nointerp(exp(llog),k);
+          if (res*sig[k] <0.) {
+            osc[k] = 1;
+          }
+        }
+        if (osc[k] == 0){
+          for(i = 0; i < Ntable.N_ell; i++){
+              res = table[k][i];
+              table[k][i] = log(sig[k]*res);}
+        }
       }
       update_cosmopara(&C); update_nuisance(&N);
    }
 
-   double f1 = exp(interpol(table[ni], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));
+   double f1 = 0.;
+   if(osc[ni] ==0 ){f1 = sig[ni]*exp(interpol_fitslope(table[ni], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));}
+   if(osc[ni] ==1 ){f1 = interpol_fitslope(table[ni], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.);}
+
+   // if(osc[k] ==0) {f1 = exp(interpol(table[ni], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));}
    if (isnan(f1)){f1 = 0.;}
    return f1;
 }
