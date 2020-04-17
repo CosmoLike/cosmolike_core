@@ -529,12 +529,13 @@ double get_class_s8(struct file_content *fc, int *status){
       sprintf(fc->value[position_kmax],"%e",10.);
     }
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+    double sigma8 = *nl.sigma8;
     if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
     if (k_max_old >0){
       sprintf(fc->value[position_kmax],"%e",k_max_old);
     }
     //if (strcmp(__VERSION__, "v2.9.2")>=0) return  *nl.sigma8;
-    return *nl.sigma8;
+    return sigma8;
   }
 
   double get_class_As(struct file_content *fc, int position_As,double sigma8, int *status){
@@ -607,10 +608,16 @@ double get_class_s8(struct file_content *fc, int *status){
     sprintf(fc->value[6],"%e",cosmology.h0);
   }
   strcpy(fc->name[7],"Omega_cdm");
-    //assumes spin and color degeneracies are both 2, fermionic idr
-  double Omega_idr = 2.0*2*7/8*1.235*pow(10.0, -5)*pow(cosmology.xi_idr, 4)/cosmology.h0/cosmology.h0;
-  if (cosmology.xi_idr<=0)  sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb);//-1.68*pow(10.0, -5)/cosmology.h0/cosmology.h0);
-  else sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb - Omega_idr);
+  
+  //ultra-relativistic neutrinos have a very small energy density, taken into account here.   
+  if (cosmology.N_ncdm==0) cosmology.Omega_nu = 1.68*pow(10.0, -5)/cosmology.h0/cosmology.h0;
+  sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb);
+
+  //Energy density due to idr. assumes spin and color degeneracies are both 2, fermionic idr
+  if(cosmology.xi_idr>0.){  
+    double Omega_idr = 2.0*2*7/8*1.235*pow(10.0, -5)*pow(cosmology.xi_idr, 4)/cosmology.h0/cosmology.h0;
+    sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb - Omega_idr);
+  }
 
   strcpy(fc->name[8],"Omega_b");
   sprintf(fc->value[8],"%e",cosmology.omb);
@@ -632,51 +639,41 @@ double get_class_s8(struct file_content *fc, int *status){
     sprintf(fc->value[13],"%e",cosmology.wa);
   }
 // pass neutrino parameters
-
+    
     if (cosmology.xi_idr<=0){
       strcpy(fc->name[16],"N_ur");
-
-      if (cosmology.N_ncdm>0)
-      { 
-      strcpy(fc->name[14],"N_ncdm");
-      sprintf(fc->value[14],"%d",cosmology.N_ncdm);
-      strcpy(fc->name[15],"m_ncdm");
-      if (cosmology.N_ncdm == 1) sprintf(fc->value[15],"%e",cosmology.M_nu);
-      else if (cosmology.N_ncdm == 2) sprintf(fc->value[15],"%e,%e",cosmology.M_nu/2, cosmology.M_nu/2);
-      else sprintf(fc->value[15],"%e,%e,%e",cosmology.M_nu/3,cosmology.M_nu/3,cosmology.M_nu/3);
+      //N_ur (N_eff) is affected by N_ncdm. These logic statements define N_ur based on common values of N_ncdm.
+      // still need to add parameterizations for idr and check whether idr and ncdm can be handled together in class.
+      if (cosmology.N_ncdm>0){ 
+        strcpy(fc->name[14],"N_ncdm");
+        sprintf(fc->value[14],"%d",cosmology.N_ncdm);
+        
+        double ncdm_mass_or_omega;
+        if (cosmology.Omega_nu>0.){ ncdm_mass_or_omega = cosmology.Omega_nu; strcpy(fc->name[15],"Omega_ncdm");}
+        else {ncdm_mass_or_omega = cosmology.M_nu; strcpy(fc->name[15],"m_ncdm");}
+        if (cosmology.N_ncdm == 1){
+          sprintf(fc->value[16],"%e",2.0328);
+          sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
+        }
+        if (cosmology.N_ncdm == 2){
+          sprintf(fc->value[16],"%e",1.0196);
+          sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega/2, ncdm_mass_or_omega/2);
+        }
+        if (cosmology.N_ncdm == 3){ 
+          sprintf(fc->value[16],"%e",0.00641);
+          sprintf(fc->value[15],"%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3);
+        }
       }
-
-      if (cosmology.N_ncdm == 1) sprintf(fc->value[16],"%e",2.0328);
-      else if (cosmology.N_ncdm == 2) sprintf(fc->value[16],"%e",1.0196);
-      else if (cosmology.N_ncdm == 3) sprintf(fc->value[16],"%e",0.00641);
-      else sprintf(fc->value[16],"%e",3.046);
+      else sprintf(fc->value[16],"%e",cosmology.N_ur);
     }
+
+
     else{
       strcpy(fc->name[17],"xi_idr");
       sprintf(fc->value[17],"%e",cosmology.xi_idr);
+      //need b_idr and beta_idr and maybe omega_idr
     }
 
-  /*if (cosmology.M_nu > 1.e-5 || cosmology.Omega_nu >0.){
-    //strcpy(fc->name[14],"N_ncdm");
-    //sprintf(fc->value[14],"%d",3);
-
-    if (cosmology.Omega_nu >0.)
-    {
-      strcpy(fc->name[15],"Omega_ncdm");
-      sprintf(fc->value[15],"%e,%e,%e",cosmology.Omega_nu/3,cosmology.Omega_nu/3,cosmology.Omega_nu/3);
-      //sprintf(fc->value[15],"%e",cosmology.Omega_nu);
-    }
-    else{
-      strcpy(fc->name[15],"m_ncdm"); //\Sigma(m_nu) in eV
-      sprintf(fc->value[15],"%e,%e,%e",cosmology.M_nu/3,cosmology.M_nu/3,cosmology.M_nu/3);
-      //sprintf(fc->value[15],"%e",cosmology.M_nu);
-    }
-    strcpy(fc->name[16],"N_ur");
-    sprintf(fc->value[16],"%e",3.046);//2.0328,1.0196,0.00641);
-
-    //strcpy(fc->name[17],"T_idr");
-    //sprintf(fc->value[17],"%e",2.1);
-  }*/
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
   if (cosmology.A_s >0){
 //  printf("passing A_s=%e directly\n",cosmology.A_s);
@@ -689,11 +686,12 @@ double get_class_s8(struct file_content *fc, int *status){
     sprintf(fc->value[parser_length-1],"%e",A_s);
     if (status == 0){
       A_s *=pow(cosmology.sigma_8/get_class_s8(fc,&status),2.0);
-      strcpy(fc->name[parser_length-1],"A_s");
-      sprintf(fc->value[parser_length-1],"%e",A_s);}
+    }
     cosmology.A_s = A_s;
+    sprintf(fc->value[parser_length-1],"%e",A_s);
     printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
   }
+
   strcpy(fc->name[1],"non linear");
   strcpy(fc->value[1],"Halofit"); //to use Halofit within CLASS
   //fprint_parser(fc, parser_length);
