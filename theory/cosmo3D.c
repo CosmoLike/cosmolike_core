@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <class.h>
+#include "../class/include/class.h"
 
 #include <gsl/gsl_odeiv.h>
 #include <gsl/gsl_integration.h>
@@ -671,7 +671,7 @@ double get_class_s8(struct file_content *fc, int *status){
   
 
       //omega_idm_dr or f_idm_dr
-      //m_idm = ;//1.011eV by default
+      //m_idm = ;//1.0e11eV by default
       //stat_f_idr = ; //either 7/8 for fermionic(default) or 1 for bosonic.
       //idr_nature = ; //free_streaming or fluid
       //l_max_idr = ; //17 by default
