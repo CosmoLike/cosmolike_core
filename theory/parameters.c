@@ -581,6 +581,29 @@ void set_survey_parameters_to_(char *surveyfile, int output)
 
 }
 
+void set_cosmological_parameters_to_DES_Y3()
+{
+  cosmology.Omega_m   = 0.3;
+  cosmology.Omega_v   = 0.7;
+  cosmology.sigma_8   = 0.82355;
+  cosmology.n_spec    = 0.97;
+  
+  cosmology.w0=-1.;
+  cosmology.wa=0.;
+  cosmology.omb=0.048;
+  cosmology.h0=0.69;
+  //cosmology.coverH0= 2997.92458; 
+  cosmology.Omega_nu = 0.00083/cosmology.h0/cosmology.h0;
+  cosmology.N_ur = 0.0328;
+  cosmology.N_ncdm = 3;
+  //cosmology.rho_crit = 7.4775e+21;
+  printf("Cosmology set DES Y3\n");
+  cosmology.f_NL = 0.0;
+}
+
+
+
+
 void set_cosmological_parameters_to_Planck_WP()
 {
   cosmology.Omega_m   = 0.315;
