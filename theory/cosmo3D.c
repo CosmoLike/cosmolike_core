@@ -613,11 +613,7 @@ double get_class_s8(struct file_content *fc, int *status){
   if (cosmology.N_ncdm==0) cosmology.Omega_nu = 1.68*pow(10.0, -5)/cosmology.h0/cosmology.h0;
   sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb);
 
-  //Energy density due to idr. assumes spin and color degeneracies are both 2, fermionic idr
-  if(cosmology.xi_idr>0.){  
-    double Omega_idr = 2.0*2*7/8*1.235*pow(10.0, -5)*pow(cosmology.xi_idr, 4)/cosmology.h0/cosmology.h0;
-    sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb - Omega_idr);
-  }
+
 
   strcpy(fc->name[8],"Omega_b");
   sprintf(fc->value[8],"%e",cosmology.omb);
@@ -639,8 +635,6 @@ double get_class_s8(struct file_content *fc, int *status){
     sprintf(fc->value[13],"%e",cosmology.wa);
   }
 // pass neutrino parameters
-    
-    if (cosmology.xi_idr<=0){
       strcpy(fc->name[16],"N_ur");
       //N_ur (N_eff) is affected by N_ncdm. These logic statements define N_ur based on common values of N_ncdm.
       // still need to add parameterizations for idr and check whether idr and ncdm can be handled together in class.
@@ -665,12 +659,31 @@ double get_class_s8(struct file_content *fc, int *status){
         }
       }
       else sprintf(fc->value[16],"%e",cosmology.N_ur);
-    }
+    
 
 
-    else{
+    if(cosmology.xi_idr>0){
       strcpy(fc->name[17],"xi_idr");
       sprintf(fc->value[17],"%e",cosmology.xi_idr);
+      //Energy density due to idr. assumes spin and color degeneracies are both 2, fermionic idr
+      double Omega_idr = 2.0*2*7/8*1.235*pow(10.0, -5)*pow(cosmology.xi_idr, 4)/cosmology.h0/cosmology.h0;
+      sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb -cosmology.Omega_nu - Omega_idr);
+  
+
+      //omega_idm_dr or f_idm_dr
+      //m_idm = ;//1.011eV by default
+      //stat_f_idr = ; //either 7/8 for fermionic(default) or 1 for bosonic.
+      //idr_nature = ; //free_streaming or fluid
+      //l_max_idr = ; //17 by default
+      //n_index_dark = ;//0 by default
+      //alpha_idm_dr = ;//all 1.5 by default
+      //beta_idm_dr = ;//all 1.5 by default
+      //a_idm_dr = ;//0 by default
+      //b_idr = ;//0 by default
+      //double Omega_idr = 2.0*2*stat_f_idr*1.235*pow(10.0, -5)*pow(cosmology.xi_idr, 4)/cosmology.h0/cosmology.h0;
+
+
+
       //need b_idr and beta_idr and maybe omega_idr
     }
 
