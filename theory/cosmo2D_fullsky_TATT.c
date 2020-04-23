@@ -131,6 +131,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
 
 double C_EE_TATT(double l, int ni,int  nj){
   double array[3] = {(double) ni, (double) nj, l};
+  
   double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
   return EE;
 }
@@ -316,10 +317,12 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation
 				Cl_EE[l]=C_EE_TATT(1.0*l,Z1(nz),Z2(nz));
 				Cl_BB[l]=0.0;
 			}
+
 			for (l = LMIN_tab; l < LMAX; l++){
 				Cl_EE[l]=C_EE_tab(1.0*l,Z1(nz),Z2(nz));
 				Cl_BB[l]=0.0;
 			}
+
 			// only compute BB if the TATT parameters allow for B-mode terms
 			if (nuisance.b_ta_z[0] || nuisance.b_ta_z[Z1(nz)] || nuisance.b_ta_z[Z2(nz)] || nuisance.A2_ia || nuisance.A2_z[Z1(nz)] || nuisance.A2_z[Z2(nz)]){
 				for (l = 2; l < LMIN_tab; l++){

@@ -330,9 +330,7 @@ int spectra_init(
 int spectra_free(
                  struct spectra * psp
                  ) {
-
   int index_md;
-
   if (psp->md_size > 0) {
     if (psp->ct_size > 0) {
 
@@ -348,14 +346,14 @@ int spectra_free(
       free(psp->cl);
       free(psp->ddcl);
     }
+    for (index_md=0; index_md < psp->md_size; index_md++)
+      free(psp->is_non_zero[index_md]);
+
+    free(psp->is_non_zero);
+    free(psp->ic_size);
+    free(psp->ic_ic_size);
+
   }
-
-  for (index_md=0; index_md < psp->md_size; index_md++)
-    free(psp->is_non_zero[index_md]);
-
-  free(psp->is_non_zero);
-  free(psp->ic_size);
-  free(psp->ic_ic_size);
 
   return _SUCCESS_;
 

@@ -10,6 +10,7 @@ void set_cosmological_parameters_to_Tinker();
 void set_cosmological_parameters_to_BCC();
 void set_cosmological_parameters_to_chincilla();
 void set_cosmological_parameters_to_();
+void set_cosmological_parameters_to_DES_Y3();
 void set_cov_parameters_to_();
 void set_survey_parameters_to_();
 void set_survey_parameters_to_DES_COV_Y1();

@@ -50,7 +50,7 @@ double get_chi2( double * param){
   sprintf(fc.value[6],"%g",param[2]);
   sprintf(fc.value[8],"%g",param[3]);
   sprintf(fc.value[9],"%g",param[4]);
-  if (input_init(&fc,&pr,&ba,&th,&pt,&bs,&tr,&pm,&sp,&nl,&le,&op,errmsg) == _FAILURE_) {
+  if (input_init(&fc,&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&op,errmsg) == _FAILURE_) {
     printf("\n\nError running input_init_from_arguments \n=>%s\n",errmsg); 
     return _FAILURE_;
   }

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "../class/include/class.h"
+#include <class.h>
 
 #include <gsl/gsl_odeiv.h>
 #include <gsl/gsl_integration.h>
@@ -402,6 +402,7 @@ void free_class_structs(
     printf("\n\nError in lensing_free \n=>%s\n",le->error_message);
   }
 
+
   if (spectra_free(sp) == _FAILURE_) {
     printf("\n\nError in spectra_free \n=>%s\n",sp->error_message);
   }
@@ -425,7 +426,6 @@ void free_class_structs(
   if (thermodynamics_free(th) == _FAILURE_) {
     printf("\n\nError in thermodynamics_free \n=>%s\n",th->error_message);
   }
-
   if (background_free(ba) == _FAILURE_) {
     printf("\n\nError in background_free \n=>%s\n",ba->error_message);
   }
@@ -450,6 +450,7 @@ int run_class(
     parser_free(fc);
     return 1;
   }
+
   if (background_init(&pr,ba) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS background:%s\n",ba->error_message);
     return 1;
@@ -562,7 +563,7 @@ double get_class_s8(struct file_content *fc, int *status){
     A_s_guess = 2.43e-9*pow(sigma8/0.87659,2.0);
     printf("A_s_guess=%e\n",A_s_guess);
     sprintf(fc->value[position_As],"%e",A_s_guess);
-
+/*
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
     A_s_guess*=pow(sigma8/ *nl.sigma8,2.);
     printf("A_s_guess=%e\n",A_s_guess);
@@ -570,6 +571,16 @@ double get_class_s8(struct file_content *fc, int *status){
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
     A_s_guess*=pow(sigma8/ *nl.sigma8,2.);
     printf("A_s_guess=%e\n",A_s_guess);
+    sprintf(fc->value[position_As],"%e",A_s_guess);*/
+
+    int tindex = 0;
+    for (tindex=0; tindex<12; tindex++){     
+    *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+    A_s_guess*=pow(sigma8/ *nl.sigma8,2.);
+    printf("A_s_guess=%e, %e %e\n",A_s_guess,*nl.sigma8, pm.A_s);
+    sprintf(fc->value[position_As],"%e",A_s_guess);
+    }
+
     if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
 
     if (k_max_old >0){
@@ -607,11 +618,8 @@ double get_class_s8(struct file_content *fc, int *status){
     strcpy(fc->name[6],"h");
     sprintf(fc->value[6],"%e",cosmology.h0);
   }
-  strcpy(fc->name[7],"Omega_cdm");
-  
-  //ultra-relativistic neutrinos have a very small energy density, taken into account here.   
-  if (cosmology.N_ncdm==0) cosmology.Omega_nu = 1.68*pow(10.0, -5)/cosmology.h0/cosmology.h0;
-  sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb);
+  //strcpy(fc->name[7],"Omega_cdm");
+  //sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb);
 
 
 
@@ -635,32 +643,56 @@ double get_class_s8(struct file_content *fc, int *status){
     sprintf(fc->value[13],"%e",cosmology.wa);
   }
 // pass neutrino parameters
+
+      //user could TEHCNICALLY pass N_ur or Omega_ur, but I think requiring only N_ur is OK
       strcpy(fc->name[16],"N_ur");
-      //N_ur (N_eff) is affected by N_ncdm. These logic statements define N_ur based on common values of N_ncdm.
-      // still need to add parameterizations for idr and check whether idr and ncdm can be handled together in class.
-      if (cosmology.N_ncdm>0){ 
-        strcpy(fc->name[14],"N_ncdm");
-        sprintf(fc->value[14],"%d",cosmology.N_ncdm);
+      sprintf(fc->value[16],"%e",cosmology.N_ur);
+      //N_ur (N_eff) is affected by N_ncdm. These logic statements enforce N_ur based on common values of N_ncdm,
+      // as N_ur should equal 3.046 in the early universe
+      if (cosmology.M_nu>0. || cosmology.Omega_nu>0.){ 
         
         double ncdm_mass_or_omega;
         if (cosmology.Omega_nu>0.){ ncdm_mass_or_omega = cosmology.Omega_nu; strcpy(fc->name[15],"Omega_ncdm");}
         else {ncdm_mass_or_omega = cosmology.M_nu; strcpy(fc->name[15],"m_ncdm");}
-        if (cosmology.N_ncdm == 1){
-          sprintf(fc->value[16],"%e",2.0328);
-          sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
-        }
-        if (cosmology.N_ncdm == 2){
-          sprintf(fc->value[16],"%e",1.0196);
-          sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega/2, ncdm_mass_or_omega/2);
-        }
-        if (cosmology.N_ncdm == 3){ 
-          sprintf(fc->value[16],"%e",0.00641);
-          sprintf(fc->value[15],"%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3);
+        switch(cosmology.N_ncdm){
+          case 1: 
+            strcpy(fc->name[14],"N_ncdm");
+            sprintf(fc->value[14],"%d",cosmology.N_ncdm);
+            //raise error here if N_ur is defined and not equal to value below
+            //this means that Neff != 3.046 in early universe, must protect!
+            sprintf(fc->value[16],"%e",2.0328);
+            sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
+            break;
+          case 2:
+            strcpy(fc->name[14],"N_ncdm");
+            sprintf(fc->value[14],"%d",cosmology.N_ncdm);
+            //raise error here if N_ur is defined and not equal to value below
+            //this means that Neff != 3.046 in early universe, must protect!
+            sprintf(fc->value[16],"%e",1.0196);
+            sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega/2, ncdm_mass_or_omega/2);
+            break;
+          case 3:
+            strcpy(fc->name[14],"N_ncdm");
+            sprintf(fc->value[14],"%d",cosmology.N_ncdm);
+            //raise error here if N_ur is defined and not equal to value below
+            //this means that Neff != 3.046 in early universe, must protect!
+            sprintf(fc->value[16],"%e",0.00641);
+            sprintf(fc->value[15],"%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3);
+            break;
+          default:
+            sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
         }
       }
-      else sprintf(fc->value[16],"%e",cosmology.N_ur);
-    
-
+      //ultra-relativistic neutrinos have a very small energy density, should be taken into account when calculating Omega_cdm. 
+      double Omega_ur = 0.0;
+      //If there is NCDM, then we should calculate the contribution of Omega_ur. 
+      //Otherwise, Omega_nu is the user's definition for Omega_ur and should be passed as such.
+      if(cosmology.N_ncdm>0){
+        double Omega_gammah2 = 2.47*pow(10,-5); //From planck
+        Omega_ur = 7.0/8*cosmology.N_ur*pow(4.0/11, 4.0/3)*Omega_gammah2/cosmology.h0/cosmology.h0;
+      }
+      strcpy(fc->name[7],"Omega_cdm");
+      sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb-Omega_ur);
 
     if(cosmology.xi_idr>0){
       strcpy(fc->name[17],"xi_idr");
@@ -672,6 +704,7 @@ double get_class_s8(struct file_content *fc, int *status){
 
       //omega_idm_dr or f_idm_dr
       //m_idm = ;//1.0e11eV by default
+      //xi_idr or N_idr
       //stat_f_idr = ; //either 7/8 for fermionic(default) or 1 for bosonic.
       //idr_nature = ; //free_streaming or fluid
       //l_max_idr = ; //17 by default
@@ -681,10 +714,7 @@ double get_class_s8(struct file_content *fc, int *status){
       //a_idm_dr = ;//0 by default
       //b_idr = ;//0 by default
       //double Omega_idr = 2.0*2*stat_f_idr*1.235*pow(10.0, -5)*pow(cosmology.xi_idr, 4)/cosmology.h0/cosmology.h0;
-
-
-
-      //need b_idr and beta_idr and maybe omega_idr
+      //sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb-Omega_ur-Omega_idr);
     }
 
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
@@ -694,8 +724,9 @@ double get_class_s8(struct file_content *fc, int *status){
    sprintf(fc->value[parser_length-1],"%e",cosmology.A_s);
   }
   else{
-    double A_s = get_class_As(fc,parser_length-1,cosmology.sigma_8, &status);
     strcpy(fc->name[parser_length-1],"A_s");
+    double A_s = get_class_As(fc,parser_length-1,cosmology.sigma_8, &status);
+
     sprintf(fc->value[parser_length-1],"%e",A_s);
     if (status == 0){
       A_s *=pow(cosmology.sigma_8/get_class_s8(fc,&status),2.0);
@@ -716,6 +747,7 @@ void fprint_parser(struct file_content * fc,int parser_length){
   }
 }
 double p_class(double k_coverh0,double a, int NL, int *status){
+
   static cosmopara C;
   static double **table_P_L = 0;
   static double **table_P_NL = 0;
@@ -776,17 +808,17 @@ double p_class(double k_coverh0,double a, int NL, int *status){
   else{
     norm = log(pow(cosmology.sigma_8/ *nl.sigma8,2.)*pow(cosmology.h0/cosmology.coverH0,3.));
   }
-    //printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/ *nl.sigma8,2.));
+//    printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/ *nl.sigma8,2.));
   if (*status ==0){
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
         k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
         //s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk, &ic);
         table_P_L[i][j] = log(Pk) +norm;
         //s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total,  &Pk, &ic);
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster,  &Pk, &ic);
         table_P_NL[i][j] = log(Pk) +norm;
       }
     }
@@ -794,6 +826,7 @@ double p_class(double k_coverh0,double a, int NL, int *status){
   }
   update_cosmopara(&C);
 }
+
 klog = log(k_coverh0);
 if (isnan(klog) || class_status) return 0.0;
 if (NL==1) val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.99), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);

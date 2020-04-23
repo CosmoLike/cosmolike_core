@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
   FILE * output;
 
   output=fopen("output/test.trsf","w");
-
+  
   for (index_l=0; index_l<tr.l_size[index_mode]; index_l++) {
     for (index_q=0; index_q<tr.q_size; index_q++) {
 
