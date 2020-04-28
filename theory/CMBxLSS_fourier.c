@@ -142,7 +142,7 @@ double int_for_C_ks_IA_mpp(double a, void *params)
    ws1 = W_source(a,ar[0]);
    wk1 = W_kappa(a,fK,ar[0]);
    wk2 = W_k(a,fK);
-   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
    res= -ws1*wk2*norm + wk1*wk2;
    return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
 }
@@ -242,7 +242,7 @@ double C_ks(double l, int ni)
    if (ni < 0 || ni >= tomo.clustering_Nbin){
       printf("Bin %d outside tomo.clustering_Nbin range\nEXIT\n",ni); exit(1);
    }
-   
+
    if (recompute_shear(C,N))
    {
       if (table==0) {
