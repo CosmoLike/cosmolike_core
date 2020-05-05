@@ -17,10 +17,10 @@ int NTAB_TATT = 60;
 double C1_TA(double a, double nz){
 	// per-bin IA parameters
 	if (like.IA ==3 || like.IA ==5){
-		return -nuisance.A_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a);
+		return -nuisance.A_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a);
 	}
 	//power law evolution
-	return -cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+	return -cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
 }
 /* TA source bias parameter, nz argument only need if per-bin amplitude*/
 double b_TA(double a, double nz){
@@ -35,10 +35,10 @@ double b_TA(double a, double nz){
 double C2_TT(double a, double nz){
 	// per-bin IA parameters
 	if (like.IA == 5){
-		return 5.*nuisance.A2_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(0.9999)/growfac(a),2.0);
+		return 5.*nuisance.A2_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(1.)/growfac(a),2.0);
 	}
 	//power law evolution
-	return 5.*nuisance.A2_ia*cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(0.9999)/growfac(a),2.0)*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia_tt);
+	return 5.*nuisance.A2_ia*cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(1.)/growfac(a),2.0)*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia_tt);
 }
 
 /****** Limber integrands for shear and ggl ******/
