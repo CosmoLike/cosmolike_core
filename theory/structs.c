@@ -273,7 +273,7 @@ typedef struct {
   double cluster_selection[10];
 }
 nuisancepara;
-nuisancepara nuisance ={.c1rhocrit_ia = 0.01389,
+nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .A_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .A2_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .b_ta_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
