@@ -462,8 +462,8 @@ int run_class(
   }
   cosmology.theta_s = 100.*th->rs_rec/th->ra_rec;
   cosmology.h0 = ba->h;
-//    printf("theta_* = %.5f\n",cosmology.theta_s);
-//    printf("h_CLASS = %.3f\n\n", ba->h);
+    printf("theta_* = %.5f\n",cosmology.theta_s);
+    printf("h_CLASS = %.3f\n\n", ba->h);
   if (perturb_init(&pr,ba,th,pt) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS perturb:%s\n",pt->error_message);
     thermodynamics_free(th);
@@ -649,18 +649,26 @@ double get_class_s8(struct file_content *fc, int *status){
       sprintf(fc->value[16],"%e",cosmology.N_ur);
       //N_ur (N_eff) is affected by N_ncdm. These logic statements enforce N_ur based on common values of N_ncdm,
       // as N_ur should equal 3.046 in the early universe
+      
+
+      //TODO implement different hierarchies
       if (cosmology.M_nu>0. || cosmology.Omega_nu>0.){ 
         
         double ncdm_mass_or_omega;
         if (cosmology.Omega_nu>0.){ ncdm_mass_or_omega = cosmology.Omega_nu; strcpy(fc->name[15],"Omega_ncdm");}
         else {ncdm_mass_or_omega = cosmology.M_nu; strcpy(fc->name[15],"m_ncdm");}
         switch(cosmology.N_ncdm){
+          case 0:
+
+            sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
+            break;
           case 1: 
             strcpy(fc->name[14],"N_ncdm");
             sprintf(fc->value[14],"%d",cosmology.N_ncdm);
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
             sprintf(fc->value[16],"%e",2.0328);
+            cosmology.N_ur = 2.0328;
             sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
             break;
           case 2:
@@ -669,6 +677,7 @@ double get_class_s8(struct file_content *fc, int *status){
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
             sprintf(fc->value[16],"%e",1.0196);
+            cosmology.N_ur = 1.0196;
             sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega/2, ncdm_mass_or_omega/2);
             break;
           case 3:
@@ -677,49 +686,75 @@ double get_class_s8(struct file_content *fc, int *status){
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
             sprintf(fc->value[16],"%e",0.00641);
+            cosmology.N_ur = 0.00641;
+            //cosmology.N_ur = 0.0328;
+            //sprintf(fc->value[16],"%e",0.0328); 
             sprintf(fc->value[15],"%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3);
             break;
           default:
-            sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
+            printf("Unsupported neutrino parameterization. Exiting\n");
+            exit(1);
         }
       }
+      printf("%e\n", cosmology.N_ur);
       //ultra-relativistic neutrinos have a very small energy density, should be taken into account when calculating Omega_cdm. 
       double Omega_ur = 0.0;
       //If there is NCDM, then we should calculate the contribution of Omega_ur. 
       //Otherwise, Omega_nu is the user's definition for Omega_ur and should be passed as such.
-      if(cosmology.N_ncdm>0){
-        double Omega_gammah2 = 2.47*pow(10,-5); //From planck
+      //if(cosmology.N_ncdm>0){
+        double Omega_gammah2 = 2.47*pow(10,-5); //From planck, need reference
         Omega_ur = 7.0/8*cosmology.N_ur*pow(4.0/11, 4.0/3)*Omega_gammah2/cosmology.h0/cosmology.h0;
-      }
+      //}
       strcpy(fc->name[7],"Omega_cdm");
-      sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb-Omega_ur);
+      sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb-cosmology.Omega_nu-Omega_ur);
 
     if(cosmology.xi_idr>0){
-      strcpy(fc->name[17],"xi_idr");
-      sprintf(fc->value[17],"%e",cosmology.xi_idr);
+
       //Energy density due to idr. assumes spin and color degeneracies are both 2, fermionic idr
-      double Omega_idr = 2.0*2*7/8*1.235*pow(10.0, -5)*pow(cosmology.xi_idr, 4)/cosmology.h0/cosmology.h0;
-      sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb -cosmology.Omega_nu - Omega_idr);
   
 
-      //omega_idm_dr or f_idm_dr
-      //m_idm = ;//1.0e11eV by default
-      //xi_idr or N_idr
-      //stat_f_idr = ; //either 7/8 for fermionic(default) or 1 for bosonic.
-      //idr_nature = ; //free_streaming or fluid
-      //l_max_idr = ; //17 by default
-      //n_index_dark = ;//0 by default
-      //alpha_idm_dr = ;//all 1.5 by default
-      //beta_idm_dr = ;//all 1.5 by default
-      //a_idm_dr = ;//0 by default
-      //b_idr = ;//0 by default
-      //double Omega_idr = 2.0*2*stat_f_idr*1.235*pow(10.0, -5)*pow(cosmology.xi_idr, 4)/cosmology.h0/cosmology.h0;
-      //sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb-Omega_ur-Omega_idr);
+      //double f_idm_dr=0.0001; //can alternatively define Omega_idm_dr. defines the fraction of total CDM that interacts with DR
+      double m_idm = 1.0e11;//1.0e11eV by default, models not very sensitive to variations (1706.06870)
+      //double xi_idr = 0.5;//can alternatively set N_idr. xi_idr is the ratio of T_DR to T_gamma.
+      double stat_f_idr = 0.875; //either 7/8 for fermionic(default) or 1 for bosonic. models not very sensitive to variations (1706.06870)
+      int idr_nature = 0; //free_streaming(0) or fluid(1)
+      int l_max_idr = 17; //17 by default, sets max multipole moment evaluates for DR (only relevant for free-stream case) 
+      double n_index_dark = 4;//4 by default, sets scattering rate as a power law of the temperature. Higher n -> more DAO
+      //double alpha_idm_dr = 1.5;//all 1.5 by default, DM-DR interaction angular coefficients for l=2 to l_max_idr, models not very sensitive to variations (1706.06870)
+      //double beta_idm_dr = 1.5;//all 1.5 by default, DR-DR interaction angular coefficients for l=2 to l_max_idr, models not very sensitive to variations (1706.06870)
+      double a_idm_dr = pow(10., 10);//0 by default, coupling strength between DM and DR
+      double b_idr =0;//pow(10,8);//0 by default, strength of DR self-interactions
+
+      double Omega_idr = 2.0*2*stat_f_idr*1.235*pow(10.0, -5)*pow(cosmology.xi_idr, 4)/cosmology.h0/cosmology.h0;// page 6 of 1512.05344
+      sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.Omega_nu-cosmology.omb-Omega_ur-Omega_idr);
+      strcpy(fc->name[17],"xi_idr");
+      sprintf(fc->value[17],"%e",cosmology.xi_idr);
+
+      strcpy(fc->name[18],"Omega_idm_dr");
+      strcpy(fc->name[19],"stat_f_idr");
+      strcpy(fc->name[20],"idr_nature");
+      strcpy(fc->name[21],"l_max_idr");
+      strcpy(fc->name[22],"n_index_dark");
+      //strcpy(fc->name[23],"alpha_idm_dr");
+      //strcpy(fc->name[24],"beta_idm_dr");
+      strcpy(fc->name[25],"a_idm_dr");
+      strcpy(fc->name[26],"b_idr");
+      sprintf(fc->value[18],"%e",Omega_idr);
+      sprintf(fc->value[19],"%e",stat_f_idr);
+      sprintf(fc->value[20],"%d",idr_nature);
+      sprintf(fc->value[21],"%d",l_max_idr);
+      sprintf(fc->value[22],"%e",n_index_dark);
+      //sprintf(fc->value[23],"%e",alpha_idm_dr);
+      //sprintf(fc->value[24],"%e",beta_idm_dr);
+      sprintf(fc->value[25],"%e",a_idm_dr);
+      sprintf(fc->value[26],"%e",b_idr);
+
     }
 
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
+    printf("%e\n", cosmology.A_s);
   if (cosmology.A_s >0){
-//  printf("passing A_s=%e directly\n",cosmology.A_s);
+    printf("passing A_s=%e directly\n",cosmology.A_s);
    strcpy(fc->name[parser_length-1],"A_s");
    sprintf(fc->value[parser_length-1],"%e",cosmology.A_s);
   }
@@ -750,7 +785,9 @@ double p_class(double k_coverh0,double a, int NL, int *status){
 
   static cosmopara C;
   static double **table_P_L = 0;
+  static double **table_P_L_c = 0;
   static double **table_P_NL = 0;
+  static double **table_P_NL_c = 0;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   static int class_status = 0;
   double val,klog;
@@ -798,7 +835,7 @@ double p_class(double k_coverh0,double a, int NL, int *status){
      return 1;
    }
    parser_free(&fc);
-   double aa,norm, k_class,Pk,ic;
+   double aa,norm, k_class,Pk,ic,Pk_c;
    int i,j,s;
    aa = limits.a_min;
    if (cosmology.A_s){
@@ -810,18 +847,44 @@ double p_class(double k_coverh0,double a, int NL, int *status){
   }
 //    printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/ *nl.sigma8,2.));
   if (*status ==0){
+  //FILE *fp_lin;
+  //FILE *fp_non;
+
+   //fp_lin = fopen("./p_ks/P_lin_3_Nncdm_0.00083.txt", "w+");
+   //fp_non = fopen("./p_ks/P_non_3_Nncdm_0.00083.txt", "w+");
+    printf("%d %e %e, %d %e %e\n", Ntable.N_a, da, aa, Ntable.N_k_nlin, dk, klog);
+
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
         k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
         //s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk, &ic);
+        //if (cosmology.N_ncdm>0) s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk, &ic);
+        //else s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
         table_P_L[i][j] = log(Pk) +norm;
+
+        //fprintf(fp_lin, "%f %f %f\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
         //s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster,  &Pk, &ic);
+        //if (cosmology.N_ncdm>0) s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk, &ic);
+        //else s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
         table_P_NL[i][j] = log(Pk) +norm;
+        //fprintf(fp_non, "%f %f %f\n", k_class, fmax(1./aa-1.,0.), table_P_NL[i][j]);
+
+
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk_c, &ic);
+        table_P_L_c[i][j] = log(Pk_c) +norm;
+
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk_c, &ic);
+        table_P_NL_c[i][j] = log(Pk_c) +norm;
+
       }
     }
+
+   
+   //fclose(fp_lin);
+   //fclose(fp_non);
     free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
   }
   update_cosmopara(&C);

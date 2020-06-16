@@ -586,7 +586,9 @@ void set_cosmological_parameters_to_DES_Y3()
 {
   cosmology.Omega_m   = 0.3;
   cosmology.Omega_v   = 0.7;
-  cosmology.sigma_8   = 0.82355;
+  cosmology.A_s   = 2.19*pow(10, -9);
+  
+  //cosmology.sigma_8 = 0.82355;
   cosmology.n_spec    = 0.97;
   
   cosmology.w0=-1.;
