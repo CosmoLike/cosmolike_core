@@ -131,7 +131,9 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
 
 double C_EE_TATT(double l, int ni,int  nj){
   double array[3] = {(double) ni, (double) nj, l};
-  double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
+  // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
+  double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.99999,NULL,1000);
+  // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.98,NULL,1000);
   return EE;
 }
 
@@ -144,7 +146,8 @@ double C_BB_TATT(double l, int ni, int nj){
 double C_ggl_TATT(double l, int nl, int ns)
 {
   double array[3] = {(double) nl, (double) ns, l};
-  double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+  // double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+  double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),0.99999,NULL,1000);
   return gE;
 }
 /*************** look-up tables for angular correlation functions ***************/
@@ -261,7 +264,7 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation
 			double x = cos(like.theta[i]);
 			gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
 			gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
-			for (int l = 3; l < LMAX; l ++){
+			for (int l = 2; l < LMAX; l ++){
 				/*double plm = gsl_sf_legendre_Plm(l,2,x);
 				double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
 				Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))

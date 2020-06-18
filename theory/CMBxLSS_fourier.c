@@ -168,7 +168,8 @@ double C_gk_nointerp(double l, int nl)
 //   printf("amin_lens, amax_lens, %e %e\n", amin_lens(nl), amax_lens(nl));
    if (gbias.b2[nl] || gbias.b2[nl]) return int_gsl_integrate_medium_precision(int_for_C_gk_b2 ,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
 
-   return int_gsl_integrate_medium_precision(int_for_C_gk,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+   // return int_gsl_integrate_medium_precision(int_for_C_gk,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+   return int_gsl_integrate_medium_precision(int_for_C_gk,(void*)array,amin_lens(nl),0.99999,NULL,1000);
 }
 
 // shear x kappa CMB, for source z-bin ns
