@@ -752,8 +752,8 @@ double p_class(double k_coverh0,double a, int NL, int *status){
 }
 klog = log(k_coverh0);
 if (isnan(klog) || class_status) return 0.0;
-if (NL==1) val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.99), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
-else val = interpol2d_fitslope(table_P_L, Ntable.N_a, limits.a_min, 1., da, fmin(a,.99), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+if (NL==1) val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+else val = interpol2d_fitslope(table_P_L, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
 if(isnan(val)) return 0.0;
 return exp(val);
 }
