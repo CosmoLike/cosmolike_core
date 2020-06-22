@@ -296,6 +296,10 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		i_block++;
 		L = i_block*Nell_block -1 ;
 		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
+        if(L>=LMAX){ 
+            printf("L>Lmax\n");
+            break;
+        }
 	   // printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
 		// printf("i_block: %d\n", i_block);
 	}
