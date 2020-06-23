@@ -67,7 +67,7 @@ double r_s(double m, double a)
 
 double radius(double m)
 {
-  return pow(3./4.*m/(M_PI*cosmology.rho_crit*cosmology.Omega_m),1./3.);
+  return pow(3./4.*m/(M_PI*cosmology.rho_crit*(cosmology.Omega_m-cosmology.Omega_nu)),1./3.);
 }
 
 /*++++++++++++++++++++++++++++++++++++++++*
@@ -79,7 +79,7 @@ double sigma2_integrand(double x, void * params)   // inner integral
   double *array = (double*)params;
   double k= x/array[0];
   //refactored FT of spherical top-hat to avoid numerica divergence of 1/x
-  return p_lin(k,1.0)*pow(3.*gsl_sf_bessel_j1(x)/array[0],2.)/(array[0]*2.*M_PI*M_PI);
+  return p_lin_cdm_b(k,1.0)*pow(3.*gsl_sf_bessel_j1(x)/array[0],2.)/(array[0]*2.*M_PI*M_PI);
 }
 double sigma2(double m)
 {
@@ -256,6 +256,7 @@ double bias_norm(double a)
 
 double massfunc(double m, double a){
 	return fnu_tinker(nu(m,a),a)*cosmology.rho_crit*cosmology.Omega_m/m/m*dlognudlogm(m);
+
 }
 
 
