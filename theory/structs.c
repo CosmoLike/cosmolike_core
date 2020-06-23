@@ -336,6 +336,7 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double bary_Q1[2];
   double bary_Q2[2];
   double bary_Q3[2];
+  double theta_star[2];
 }priorpara;
 priorpara prior = {.shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
