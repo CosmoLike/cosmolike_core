@@ -255,7 +255,7 @@ double bias_norm(double a)
 }
 
 double massfunc(double m, double a){
-	return fnu_tinker(nu(m,a),a)*cosmology.rho_crit*cosmology.Omega_m/m/m*dlognudlogm(m);
+	return fnu_tinker(nu(m,a),a)*cosmology.rho_crit*(cosmology.Omega_m-cosmology.Omega_nu)/m/m*dlognudlogm(m);
 
 }
 
