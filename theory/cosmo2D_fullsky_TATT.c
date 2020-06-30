@@ -134,6 +134,7 @@ double C_EE_TATT(double l, int ni,int  nj){
   // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
   double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.99999,NULL,1000);
   // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.98,NULL,1000);
+  // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,0.95,0.99,NULL,1000);
   return EE;
 }
 
@@ -278,7 +279,7 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation
 
 				-l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
 				-l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-				+l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+				+l*(l-1.)/(2.*l+1)           * (Pmin[l+1]-Pmax[l+1])
 
 				+(4-l)   * (dPmin[l]-dPmax[l])
 				+(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
@@ -292,7 +293,7 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation
 
 				-l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
 				-l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-				+l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+				+l*(l-1.)/(2.*l+1)           * (Pmin[l+1]-Pmax[l+1])
 
 				+(4-l)   * (dPmin[l]-dPmax[l])
 				+(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
