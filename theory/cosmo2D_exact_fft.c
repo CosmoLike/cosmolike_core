@@ -25,6 +25,7 @@ double f_growth(double z){
 
 double int_for_C_cl_lin(double a, void *params)
 {
+	int status;
 	double res,ell, fK, k;
 	double *ar = (double *) params;
 	ell       = ar[2]+0.5;
@@ -32,7 +33,7 @@ double int_for_C_cl_lin(double a, void *params)
 	k      = ell/fK;
 	
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
-	res= res*p_lin(k,a);
+	res= res*p_lin_cluster(k,a);
 	return res;
 }
 
@@ -52,9 +53,9 @@ double int_for_C_cl_nl_rescale(double a, void *params)
 	ell       = ar[2]+0.5;
 	fK     = f_K(chi(a));
 	k      = ell/fK;
-	
+	int status;
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
-	res= res*Pdelta(k,0.9999)*growfac(a)*growfac(a)/growfac(1.)/growfac(1.);
+	res= res*Pdelta_cluster(k,0.9999)*growfac(a)*growfac(a)/growfac(1.)/growfac(1.);
 	// printf("Pdelta(k,1):%lg, Prescale(k,1):%lg\n", Pdelta(k,0.9999), Pdelta(k,0.9999)*growfac(1.)*growfac(1.)/growfac(1.)/growfac(1.));
 	// printf("Pdelta(k,0.5):%lg, Prescale(k,0.5):%lg\n", Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.5), Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.9999)*growfac(0.5)*growfac(0.5)/growfac(1.)/growfac(1.));
 	// exit(0);
@@ -144,6 +145,7 @@ void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni
 void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance) {
 	// ni = 4;
 	// nj = 4;
+	int status;
 	int i,j,i_block;
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
@@ -276,12 +278,12 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
 				if(ni == nj) {
-					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin_cluster(k1_cH0,1.0);
 					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *Pdelta(k1_cH0,0.9999);
 					// printf("plin,%lg, %lg\n", k1_ar[i][j],p_lin(k1_cH0,1.0));
 				}
 				else {
-					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin_cluster(k1_cH0,1.0);
 				}
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);

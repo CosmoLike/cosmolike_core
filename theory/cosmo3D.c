@@ -781,7 +781,7 @@ void fprint_parser(struct file_content * fc,int parser_length){
     fprintf(stderr, "%d %s %s\n",i, fc->name[i],fc->value[i]);
   }
 }
-double p_class(double k_coverh0,double a, int NL, int *status){
+double p_class(double k_coverh0,double a, int NL, int CLUSTERING, int *status){
 
   static cosmopara C;
   static double **table_P_L = 0;
@@ -853,6 +853,10 @@ double p_class(double k_coverh0,double a, int NL, int *status){
    //fp_lin = fopen("./p_ks/P_lin_3_Nncdm_0.00083.txt", "w+");
    //fp_non = fopen("./p_ks/P_non_3_Nncdm_0.00083.txt", "w+");
     printf("%d %e %e, %d %e %e\n", Ntable.N_a, da, aa, Ntable.N_k_nlin, dk, klog);
+    
+    int index;
+    if (CLUSTERING==1) index = nl.index_pk_cluster;
+    else index = nl.index_pk_total;
 
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       klog = logkmin;
@@ -861,28 +865,24 @@ double p_class(double k_coverh0,double a, int NL, int *status){
         //s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
         //if (cosmology.N_ncdm>0) s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk, &ic);
         //else s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), index, &Pk, &ic);
         table_P_L[i][j] = log(Pk) +norm;
 
         //fprintf(fp_lin, "%f %f %f\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
         //s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
         //if (cosmology.N_ncdm>0) s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk, &ic);
         //else s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), index, &Pk, &ic);
         table_P_NL[i][j] = log(Pk) +norm;
         //fprintf(fp_non, "%f %f %f\n", k_class, fmax(1./aa-1.,0.), table_P_NL[i][j]);
-
-
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk_c, &ic);
-        table_P_L_c[i][j] = log(Pk_c) +norm;
-
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk_c, &ic);
-        table_P_NL_c[i][j] = log(Pk_c) +norm;
 
       }
     }
 
-   
+   //P_cm = sqrt(Pmm^2 - Pcc^2) 
+    //P_cm = sqrt(Pmm*Pcc)
+
+
    //fclose(fp_lin);
    //fclose(fp_non);
     free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
@@ -897,6 +897,33 @@ else val = interpol2d_fitslope(table_P_L, Ntable.N_a, limits.a_min, 1., da, fmin
 if(isnan(val)) return 0.0;
 return exp(val);
 }
+
+double p_lin_cluster(double k,double a)
+{
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){ int status; return p_class(k,a,0, 1, &status);}
+  return p_lin(k,a);
+}
+double Pdelta_cluster(double k,double a)
+{
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){ int status; return p_class(k,a,1, 1, &status);}
+  return Pdelta(k,a);
+}
+
+double p_lin_cross_class(double k,double a)
+{
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){ int status; return sqrt(p_class(k,a,0, 1, &status)*p_class(k,a,0,0,&status));}
+  return 0.0;
+}
+double Pdelta_cross_class(double k,double a)
+{
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){ int status; return sqrt(p_class(k,a,1, 1, &status)*p_class(k,a,1,0,&status));}
+  return 0.0;
+}
+
+
+
+
+
 // linear power spectrum routine with k in units H_0/c; used in covariances.c for beat coupling and in halo.c
 double p_lin(double k,double a)
 {
@@ -904,7 +931,7 @@ double p_lin(double k,double a)
   static double **table_P_Lz = 0;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   int status;
-  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) return p_class(k,a,0, &status);
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) return p_class(k,a,0, 0, &status);
 
   double amp,ampsqr,grow0,aa,klog,val;
 
@@ -1589,7 +1616,7 @@ double Pdelta(double k_NL,double a)
     case 1: pdelta=2.0*constants.pi_sqr*Delta_NL_emu(kintern,a)/k_NL/k_NL/k_NL; break;
     case 2: pdelta=2.0*constants.pi_sqr*Delta_NL_emu_only(kintern,a)/k_NL/k_NL/k_NL; break;
     case 3: pdelta=p_lin(k_NL,a); break;
-    case 4: pdelta=p_class(k_NL,a,1, &status); break;
+    case 4: pdelta=p_class(k_NL,a,1, 0, &status); break;
     case 5: k_nonlin=nonlinear_scale_computation(a);
     if (kintern<0.01) pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
     else{

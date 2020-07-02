@@ -60,7 +60,7 @@ double int_for_C_shear_shear_IA_EE(double a, void *params){
   C1_2 = C1_TA(a,ar[1]); b_ta_2 = b_TA(a,ar[1]); C2_2 = C2_TT(a,ar[1]);
 
   /*GG cosmic shear */
-  res = wk1*wk2*Pdelta(k,a);
+  res = wk1*wk2*Pdelta_cluster(k,a);
   if (C1 || C1_2 || C2 || C2_2){
   	/*II contribution */
   	res += ws1*ws2*TATT_II_EE(k,a,C1,C2,b_ta,C1_2,C2_2,b_ta_2);
@@ -113,7 +113,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   b2 = gbias.b2[(int)ar[0]];
   bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);
-  double Pnl = Pdelta(k,a);
+  double Pnl = sqrt(Pdelta(k,a)*Pdelta_cluster(k,a));
 
   double P_1loop =b1*Pnl;
   if (w_density*b2 !=0){
