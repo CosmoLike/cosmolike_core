@@ -5,7 +5,8 @@ double C_BB_tab(double l, int ni, int nj);
 double C_ggl_TATT_tab(double l, int ni, int nj);
 double w_gamma_t_TATT(int nt,int ni, int nj); //G-G lensing, lens bin ni, source bin nj, including IA contamination if like.IA = 3
 double xi_pm_TATT(int pm, int nt, int ni, int nj); //shear tomography correlation functions, including IA contamination if like.IA = 3
-
+int reduced_shear = 1;
+int source_clustering = 0;
 //ell_max for transform to angular correlation functions
 int LMAX = 100000;
 //ell_min for switching from exact evalution of C(ell) to interpolated look-up table
@@ -61,6 +62,9 @@ double int_for_C_shear_shear_IA_EE(double a, void *params){
 
   /*GG cosmic shear */
   res = wk1*wk2*Pdelta(k,a);
+	if (reduced_shear||source_clustering){
+		res += wk1*wk2*(reduced_shear*(wk1+wk2)+source_clustering*(ws1+ws2))*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+	}
   if (C1 || C1_2 || C2 || C2_2){
   	/*II contribution */
   	res += ws1*ws2*TATT_II_EE(k,a,C1,C2,b_ta,C1_2,C2_2,b_ta_2);
@@ -125,6 +129,13 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   /* lens magnification x G term*/
   res += w_mag*wk*Pnl;
   /* (linear bias lens density + lens magnification) with TATT_GI terms*/
+	if (reduced_shear){
+		res += (b1*w_density+reduced_shear*w_mag)*wk*wk*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+	}
+	if (source_clustering){
+		res += (b1*w_density+w_mag)*wk*ws*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+	}
+
   if (C1 || C2) res += (b1*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
   return res*dchi_da(a)/fK/fK;
 }
