@@ -5,7 +5,8 @@ double C_BB_tab(double l, int ni, int nj);
 double C_ggl_TATT_tab(double l, int ni, int nj);
 double w_gamma_t_TATT(int nt,int ni, int nj); //G-G lensing, lens bin ni, source bin nj, including IA contamination if like.IA = 3
 double xi_pm_TATT(int pm, int nt, int ni, int nj); //shear tomography correlation functions, including IA contamination if like.IA = 3
-
+int reduced_shear = 0;
+int source_clustering = 0;
 //ell_max for transform to angular correlation functions
 int LMAX = 100000;
 //ell_min for switching from exact evalution of C(ell) to interpolated look-up table
@@ -27,7 +28,7 @@ double b_TA(double a, double nz){
 	// per-bin IA parameters
 	if (like.IA ==5){
 		return nuisance.b_ta_z[(int)nz];
-	}	
+	}
 	//power law evolution
 	return nuisance.b_ta_z[0];
 }
@@ -61,6 +62,9 @@ double int_for_C_shear_shear_IA_EE(double a, void *params){
 
   /*GG cosmic shear */
   res = wk1*wk2*Pdelta(k,a);
+	if (reduced_shear||source_clustering){
+		res += wk1*wk2*(reduced_shear*(wk1+wk2)+source_clustering*(ws1+ws2))*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+	}
   if (C1 || C1_2 || C2 || C2_2){
   	/*II contribution */
   	res += ws1*ws2*TATT_II_EE(k,a,C1,C2,b_ta,C1_2,C2_2,b_ta_2);
@@ -125,6 +129,13 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   /* lens magnification x G term*/
   res += w_mag*wk*Pnl;
   /* (linear bias lens density + lens magnification) with TATT_GI terms*/
+	if (reduced_shear){
+		res += (b1*w_density+reduced_shear*w_mag)*wk*wk*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+	}
+	if (source_clustering){
+		res += (b1*w_density+w_mag)*wk*ws*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+	}
+
   if (C1 || C2) res += (b1*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
   return res*dchi_da(a)/fK/fK;
 }
@@ -189,7 +200,7 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
 			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
 			for (int l = 2; l < LMAX; l ++){
-				//Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));	
+				//Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));
 				Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
 				*((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
 				+(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
@@ -223,7 +234,7 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 		update_galpara(&G);
 		update_nuisance(&N);
 	}
-	return w_vec[N_ggl(ni,nj)*like.Ntheta+nt];  
+	return w_vec[N_ggl(ni,nj)*like.Ntheta+nt];
 }
 
 
@@ -287,7 +298,7 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation
 				+2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
 				-2*(l+2) * (dPmin[l-1]-dPmax[l-1])
 
-				)/(xmin[i]-xmax[i]);           
+				)/(xmin[i]-xmax[i]);
 
 				Glminus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
 
@@ -355,7 +366,7 @@ double C_EE_tab(double l, int ni, int nj)  //shear power spectrum of source gala
 {
   static cosmopara C;
   static nuisancepara N;
-  
+
   static double **table,*sig;
   static int osc[100];
   static double ds = .0, logsmin = .0, logsmax = .0;
@@ -371,11 +382,11 @@ double C_EE_tab(double l, int ni, int nj)  //shear power spectrum of source gala
       logsmax = log(LMAX + 1);
       ds = (logsmax - logsmin)/(NTAB_TATT - 1.);
     }
-    
+
     double llog;
     int i,k;
 
-    
+
     for (k=0; k<tomo.shear_Npowerspectra; k++) {
       llog = logsmin;
       sig[k] = 1.;
@@ -391,9 +402,9 @@ double C_EE_tab(double l, int ni, int nj)  //shear power spectrum of source gala
         for(i = 0; i < NTAB_TATT; i++){
             table[k][i] = log(sig[k]*table[k][i]);}
       }
-        
+
     }
-    update_cosmopara(&C); update_nuisance(&N); 
+    update_cosmopara(&C); update_nuisance(&N);
   }
   if (log(l) < logsmin || log(l) > logsmax){
   	printf ("C_EE_tab: l = %e outside look-up table range [%e,%e]\n",l,exp(logsmin),exp(logsmax));
@@ -412,14 +423,14 @@ double C_BB_tab(double l, int ni, int nj)  //shear power spectrum of source gala
 {
   static cosmopara C;
   static nuisancepara N;
-  
+
   static double **table,*sig;
   static int osc[100];
   static double ds = .0, logsmin = .0, logsmax = .0;
   if (ni < 0 || ni >= tomo.shear_Nbin ||nj < 0 || nj >= tomo.shear_Nbin){
     printf("C_shear_shear_BB(l,%d,%d) outside tomo.shear_Nbin range\nEXIT\n",ni,nj); exit(1);
   }
-  
+
   if (recompute_shear(C,N)){
     //printf("calculating C_shear_shear_IA_tab  %e %e %e %e %e\n", nuisance.A_z[0], nuisance.A_z[1], nuisance.A_z[2], nuisance.A_z[3], nuisance.A_z[4]);
     if (table==0) {
@@ -429,11 +440,11 @@ double C_BB_tab(double l, int ni, int nj)  //shear power spectrum of source gala
       logsmax = log(LMAX + 1);
       ds = (logsmax - logsmin)/(NTAB_TATT - 1.);
     }
-    
+
     double llog;
     int i,k;
 
-    
+
     for (k=0; k<tomo.shear_Npowerspectra; k++) {
       llog = logsmin;
       sig[k] = 1.;
@@ -449,9 +460,9 @@ double C_BB_tab(double l, int ni, int nj)  //shear power spectrum of source gala
         for(i = 0; i < NTAB_TATT; i++){
             table[k][i] = log(sig[k]*table[k][i]);}
       }
-        
+
     }
-    update_cosmopara(&C); update_nuisance(&N); 
+    update_cosmopara(&C); update_nuisance(&N);
   }
   if (log(l) < logsmin || log(l) > logsmax){
   	printf ("C_BB_tab: l = %e outside look-up table range [%e,%e]\n",l,exp(logsmin),exp(logsmax));
@@ -471,15 +482,15 @@ double C_ggl_TATT_tab(double l, int ni, int nj)  //G-G lensing power spectrum, l
   static cosmopara C;
   static nuisancepara N;
   static galpara G;
-  
+
   static double **table, *sig;
   static int osc[100];
   static double ds = .0, logsmin = .0, logsmax = .0;
-  
+
   if (ni < 0 || ni >= tomo.clustering_Nbin ||nj < 0 || nj >= tomo.shear_Nbin){
     printf("C_ggl_TATT_tab(l,%d,%d) outside tomo.X_Nbin range\nEXIT\n",ni,nj); exit(1);
   }
-  
+
   if (recompute_ggl(C,G,N,ni)){
 	    //printf("calculating C_ggl_IA_tab  %e %e %e %e %e\n", nuisance.A_z[0], nuisance.A_z[1], nuisance.A_z[2], nuisance.A_z[3], nuisance.A_z[4]);
     if (table==0){
@@ -491,7 +502,7 @@ double C_ggl_TATT_tab(double l, int ni, int nj)  //G-G lensing power spectrum, l
     }
     int i,k;
     double llog;
-    
+
     for (k=0; k<tomo.ggl_Npowerspectra; k++) {
       llog = logsmin;
 
@@ -508,11 +519,11 @@ double C_ggl_TATT_tab(double l, int ni, int nj)  //G-G lensing power spectrum, l
         for(i = 0; i < NTAB_TATT; i++){
             table[k][i] = log(sig[k]*table[k][i]);}
       }
-      
+
     }
 
     update_cosmopara(&C); update_nuisance(&N); update_galpara(&G);
-    
+
   }
   if (log(l) < logsmin || log(l) > logsmax){
   	printf ("C_ggl_TATT_tab: l = %e outside look-up table range [%e,%e]\n",l,exp(logsmin),exp(logsmax));
