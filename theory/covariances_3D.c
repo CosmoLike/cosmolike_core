@@ -20,6 +20,7 @@ double tri_multih_cov(double k1, double k2, double a); //4h+3h+2h terms in covar
 double survey_variance (double a, double fsky);
 double delP_SSC(double k, double a);
 
+double cross_survey_variance (double a, double fsky, double fsky2);
 
 /* mode coupling functions */
 
@@ -263,6 +264,14 @@ double int_for_variance (double logk, void *params){
   return k*k/constants.twopi*p_lin(k,ar[0])*pow(2.*gsl_sf_bessel_J1(x)/x,2.0);
 }
 
+double int_for_cross_variance (double logk, void *params){
+  double *ar = (double *) params;
+  double k = exp(logk);
+  double x = pow(4.0*ar[1],0.5)*k*chi(ar[0]); //theta_s*k*chi(a)
+  double x2= pow(4.0*ar[2],0.5)*k*chi(ar[0]); //theta_s2*k*chi(a)
+  return k*k/constants.twopi*p_lin(k,ar[0])*(4.*gsl_sf_bessel_J1(x)/x *gsl_sf_bessel_J1(x2)/x2);
+}
+
 //curved sky, healpix window function
 double sum_variance_healpix(double a){
   double res = 0.;
@@ -306,6 +315,45 @@ double survey_variance (double a, double fsky){
         table_SV[i]=result;
       }
     }
+  }
+  return interpol(table_SV, Ntable.N_a, amin, amax, da,a, 1.0,1.0 );
+}
+
+double cross_survey_variance (double a, double fsky, double fsky2){
+  static cosmopara C;
+  static double FSKY = -42., FSKY2 = -42.;
+  
+  static double *table_SV;
+  static double da =0, amin = 1./(1+4.01), amax =0.999;
+  double aa,result,array[3];
+  int i;
+  if (recompute_cosmo3D(C) || FSKY != fsky || FSKY2 != fsky2){
+    update_cosmopara(&C);
+    FSKY = fsky;
+    FSKY2= fsky2;
+    if (table_SV==0){
+      table_SV  = create_double_vector(0, Ntable.N_a-1);
+      amin  = limits.a_min;
+      da = (amax - amin)/(Ntable.N_a-1.);
+    }
+    aa= amin;
+    array[1] = fsky;
+    array[2] = fsky2;
+    // FILE *F1;
+    // F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
+    // if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
+    //   fclose(F1);
+    //   for (i=0; i<Ntable.N_a; i++, aa += da) {
+    //      table_SV[i]=sum_variance_healpix(aa);
+    //   }
+    // }
+    // else{ //covparams.C_FOOTPRINT_FILE doesn't exist, use analytic window
+    for (i=0; i<Ntable.N_a; i++, aa += da) {
+      array[0] = aa;
+      result = int_gsl_integrate_high_precision(int_for_cross_variance,(void*)array,log(1.e-6),log(1.e+6),NULL,2000);
+      table_SV[i]=result;
+    }
+    // }
   }
   return interpol(table_SV, Ntable.N_a, amin, amax, da,a, 1.0,1.0 );
 }
