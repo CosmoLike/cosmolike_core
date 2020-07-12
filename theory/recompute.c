@@ -18,6 +18,9 @@ int recompute_PkRatio(barypara B);
 void update_PkRatio(barypara *B);
 int recompute_DESclusters(cosmopara C, nuisancepara N); //recompute criteria
 
+int recompute_gk(cosmopara C, galpara G, nuisancepara N,int i);//for gk statistics
+int recompute_ks(cosmopara C, galpara G, nuisancepara N, int i);//ks
+
 void update_cosmopara (cosmopara *C){
   C->Omega_m = cosmology.Omega_m;
   C->Omega_v = cosmology.Omega_v;
@@ -232,6 +235,15 @@ int recompute_clustering(cosmopara C, galpara G, nuisancepara N, int i, int j){
  
 }
 
+int recompute_gk(cosmopara C, galpara G, nuisancepara N, int i){
+  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_galaxies(G,i) ){return 1;}
+  else{return 0;}
+}
+
+int recompute_ks(cosmopara C, galpara G, nuisancepara N, int i){
+  if (recompute_cosmo3D(C) || recompute_zphot_shear(N) || recompute_galaxies(G,i) ||recompute_IA(N) ){return 1;}
+  else{return 0;}
+}
 
 int recompute_PkRatio(barypara B){
 	if (strcmp(B.scenario,bary.scenario)!=0){return 1;}
