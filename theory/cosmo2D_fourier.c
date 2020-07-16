@@ -229,6 +229,9 @@ double int_for_C_shear_tomo(double a, void *params)
   double *ar = (double *) params;
   double res,ell, fK, k;
   if (a >= 1.0) error("a>=1 in int_for_C_shear_tomo");
+
+  double ell_prefactor = (ar[2]-1.)*(ar[2])*(ar[2]+1.)*(ar[2]+2.);
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
@@ -304,7 +307,8 @@ double C_shear_tomo_nointerp(double l, int ni, int nj) //shear tomography power 
   int j,k;
   if (ni <= nj){j =nj; k = ni;}
   else{j = ni; k = nj;}
-  res=int_gsl_integrate_medium_precision(int_for_C_shear_tomo,(void*)array,amin_source(j),amax_source(k),NULL,1000);
+  // res=int_gsl_integrate_medium_precision(int_for_C_shear_tomo,(void*)array,amin_source(j),amax_source(k),NULL,1000);
+  res=int_gsl_integrate_medium_precision(int_for_C_shear_tomo,(void*)array,amin_source(j),0.99999,NULL,1000);
   // printf("res:%lg\n", res);
   return res;
 
