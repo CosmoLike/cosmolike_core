@@ -1,6 +1,7 @@
 //#include "pt.c"
 
 double W_kappa(double a, double fK, double nz);//complete lens efficiency weight
+double W2_kappa(double a, double fK, double nz); //complete (lens efficiency)^2 weight for source clustering
 double W_source(double a, double nz); //source redshift distribution (radial weight for IA,source clustering)
 double W_gal(double a, double nz); //complete weight for galaxy statistics
 double W_HOD(double a, double nz); //galaxy weigth without bias factor (for projecting P_gg instead of P_nl)
@@ -24,7 +25,7 @@ double MG_Sigma(double a)
   double omegav=omv_vareos(a);
   double hub=hoverh0(a);
   hub = hub*hub;
- 
+
   return cosmology.MGSigma*omegav/hub/cosmology.Omega_v;
 }
 
@@ -35,6 +36,13 @@ double W_kappa(double a, double fK, double nz){
   double wkappa = 1.5*cosmology.Omega_m*fK/a*g_tomo(a,(int)nz);
   if(cosmology.MGSigma != 0.){
     wkappa *= (1.+MG_Sigma(a));
+  }
+  return wkappa;
+}
+double W2_kappa(double a, double fK, double nz){
+  double wkappa = pow(1.5*cosmology.Omega_m*fK/a,2.0)*g2_tomo(a,(int)nz);
+  if(cosmology.MGSigma != 0.){
+    wkappa *= pow((1.+MG_Sigma(a)),2.);
   }
   return wkappa;
 }
@@ -87,11 +95,11 @@ double int_for_C_cl_tomo_b2(double a, void *params)
   double bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);
   if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");
-  
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  
+
   double s4 = 0.;//PT_sigma4(k);
   res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;
   if(res){
@@ -106,11 +114,11 @@ double int_for_C_cl_tomo(double a, void *params)
   double res,ell, fK, k;
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");
-  
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  
+
   res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
   res= res*Pdelta(k,a);
   return res;
@@ -139,11 +147,11 @@ double int_for_C_cl_HOD(double a, void *params)
   double res,ell, fK, k;
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_p_2");
-  
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  
+
   res= W_HOD(a,ar[0])*W_HOD(a,ar[0])*dchi_da(a)/fK/fK;
   if (res !=0){res= res*P_gg(k,a,(int)ar[0]);}
   return res;
@@ -157,11 +165,11 @@ double int_for_C_gl_tomo_b2(double a, void *params)
   double bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);
   if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");
-  
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  
+
   res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
   res= res*(b1*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)));
   res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1*Pdelta(k,a);
@@ -176,7 +184,7 @@ double int_for_C_gl_tomo(double a, void *params) // Add RSD
 
   double ell_prefactor1 = (ar[2])*(ar[2]+1.);
   double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
-  if(ell_prefactor2<=0.) 
+  if(ell_prefactor2<=0.)
     ell_prefactor2=0.;
   else
     ell_prefactor2=sqrt(ell_prefactor2);
@@ -206,11 +214,11 @@ double int_for_C_gl_HOD_tomo(double a, void *params)
   double *ar = (double *) params;
   double res,ell, fK, k;
   if (a >= 1.0) error("a>=1 in int_for_p_2");
-  
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  
+
   res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
   if (res !=0){res= res*P_gm(k,a, (int) ar[0]);}
   return res;
@@ -225,13 +233,13 @@ double int_for_C_shear_tomo(double a, void *params)
   fK     = f_K(chi(a));
   k      = ell/fK;
   res= W_kappa(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
-  res= res*Pdelta(k,a); 
+  res= res*Pdelta(k,a);
   return res;
 }
 
 /*********** angular power spectra - without look-up tables ******************/
 double C_cl_RSD_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
-{ 
+{
   double array[3] = {1.0*ni,1.0*nj,l};
   if (gbias.b2[ni] || gbias.b2[nj]){
           printf("\nCalled C_cl_RSD_nointerp(l,z1=%d,z2=%d) with non-linear bias parameters set.\n",ni,nj);
@@ -299,7 +307,7 @@ double C_shear_tomo_nointerp(double l, int ni, int nj) //shear tomography power 
   res=int_gsl_integrate_medium_precision(int_for_C_shear_tomo,(void*)array,amin_source(j),amax_source(k),NULL,1000);
   // printf("res:%lg\n", res);
   return res;
-  
+
 }
 
 /*********** angular power spectra - with look-up tables ******************/
@@ -309,7 +317,7 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
   static cosmopara C;
   static nuisancepara N;
   static galpara G;
-  
+
   static double **table;
   static double ds = .0, logsmin = .0, logsmax = .0;
   if (ni < 0 || ni >= tomo.clustering_Nbin ||nj < 0 || nj >= tomo.clustering_Nbin){
@@ -336,7 +344,7 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
 
 //      table[j][i]= log(C_cl_RSD_nointerp(exp(llog),ni,nj));
       result = C_cl_tomo_nointerp(exp(llog),ni,nj);
-      if(result<=0) table[j][i] = -100; 
+      if(result<=0) table[j][i] = -100;
       else table[j][i] = log(result);
       table[nj*tomo.clustering_Nbin+ni][i]=table[j][i];
     }
@@ -351,7 +359,7 @@ double C_cl_HOD(double l, int ni)  //galaxy clustering power spectrum of galaxie
   static cosmopara C;
   static nuisancepara N;
   static galpara G;
-  
+
   static double **table;
   static double ds = .0, logsmin = .0, logsmax = .0;
   if (ni < 0 || ni >= tomo.clustering_Nbin){
@@ -378,7 +386,7 @@ double C_cl_HOD(double l, int ni)  //galaxy clustering power spectrum of galaxie
     }
     update_cosmopara(&C); update_nuisance(&N); update_galpara(&G);
   }
-  
+
   double f1 = exp(interpol(table[ni], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));
   if (isnan(f1)){f1 = 0.;}
   return f1;
@@ -388,15 +396,15 @@ double C_gl_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, lens b
   static cosmopara C;
   static nuisancepara N;
   static galpara G;
-  
+
   static double **table;
   static double ds = .0, logsmin = .0, logsmax = .0;
   double f1 = 0.;
-  
+
   if (ni < 0 || ni >= tomo.clustering_Nbin ||nj < 0 || nj >= tomo.shear_Nbin){
     printf("C_gl_tomo(l,%d,%d) outside tomo.X_Nbin range\nEXIT\n",ni,nj); exit(1);
   }
-  
+
   if (recompute_ggl(C,G,N,ni)){
     if (table==0){
       table   = create_double_matrix(0, tomo.ggl_Npowerspectra-1, 0, Ntable.N_ell-1);
@@ -406,16 +414,16 @@ double C_gl_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, lens b
     }
     int i,k;
     double llog;
-    
+
     for (k=0; k<tomo.ggl_Npowerspectra; k++) {
       llog = logsmin;
       for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
           table[k][i]= log(C_gl_tomo_nointerp(exp(llog),ZL(k),ZS(k)));
       }
     }
-    
+
     update_cosmopara(&C); update_nuisance(&N); update_galpara(&G);
-    
+
   }
   if(test_zoverlap(ni,nj)){f1 = exp(interpol_fitslope(table[N_ggl(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));}
   if (isnan(f1)){f1 = 0;}
@@ -427,15 +435,15 @@ double C_gl_HOD_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, le
   static cosmopara C;
   static nuisancepara N;
   static galpara G;
-  
+
   static double **table;
   static double ds = .0, logsmin = .0, logsmax = .0;
   double f1 = 0.;
-  
+
   if (ni < 0 || ni >= tomo.clustering_Nbin ||nj < 0 || nj >= tomo.shear_Nbin){
     printf("C_gl_tomo(l,%d,%d) outside tomo.X_Nbin range\nEXIT\n",ni,nj); exit(1);
   }
-  
+
   if (recompute_ggl(C,G,N,ni)){
     if (table==0){
       table   = create_double_matrix(0, tomo.ggl_Npowerspectra-1, 0, Ntable.N_ell-1);
@@ -445,7 +453,7 @@ double C_gl_HOD_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, le
     }
     int i,k;
     double llog,array[3];
-    
+
     for (k=0; k<tomo.ggl_Npowerspectra; k++) {
       array[0]=(double) ZL(k); array[1]=(double) ZS(k);
       llog = logsmin;
@@ -453,9 +461,9 @@ double C_gl_HOD_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, le
         table[k][i]= log(int_gsl_integrate_low_precision(int_for_C_gl_HOD_tomo,(void*)array,amin_source(ZS(k)),amax_lens(ZL(k)),NULL,1000));
       }
     }
-    
+
     update_cosmopara(&C); update_nuisance(&N); update_galpara(&G);
-    
+
   }
   if(test_zoverlap(ni,nj)){f1 = exp(interpol(table[N_ggl(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.,1.));}
   if (isnan(f1)){f1 = 0;}
@@ -467,13 +475,13 @@ double C_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source 
   // printf("hallo\n");
   static cosmopara C;
   static nuisancepara N;
-  
+
   static double **table;
   static double ds = .0, logsmin = .0, logsmax = .0;
   if (ni < 0 || ni >= tomo.shear_Nbin ||nj < 0 || nj >= tomo.shear_Nbin){
     printf("C_shear_tomo(l,%d,%d) outside tomo.shear_Nbin range\nEXIT\n",ni,nj); exit(1);
   }
-  
+
   if (recompute_shear(C,N)){
     if (table==0) {
       table   = create_double_matrix(0, tomo.shear_Npowerspectra-1, 0, Ntable.N_ell-1);
@@ -481,10 +489,10 @@ double C_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source 
       logsmax = log(limits.P_2_s_max);
       ds = (logsmax - logsmin)/(Ntable.N_ell-1.);
     }
-    
+
     double llog;
     int i,k;
-    
+
     for (k=0; k<tomo.shear_Npowerspectra; k++) {
       llog = logsmin;
       for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
@@ -494,7 +502,7 @@ double C_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source 
        // printf("table[k][i]: %lg:\n",table[k][i]);
       }
     }
-    update_cosmopara(&C); update_nuisance(&N); 
+    update_cosmopara(&C); update_nuisance(&N);
   }
   double f1 = exp(interpol_fitslope(table[N_shear(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
   if (isnan(f1)){f1 = 0.;}

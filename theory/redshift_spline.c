@@ -5,6 +5,7 @@ double g_cmb (double a);//lens efficiency for CMB lensing
 double g_tomo(double a, int zbin); // lens efficiency of source galaxies in tomography bin zbin
 double g_lens(double a, int zbin); // lens efficiency of *lens* galaxies in tomography bin zbin - used for magnification calculations
 
+double g2_tomo(double a, int zbin); //(lens efficiency)^2 for source galaxies in tomography bin zbin
 //shear routines
 double zdistr_photoz(double zz,int j); //returns n(ztrue | j), works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j
 //double zdistr_gaussian_ztrue (double zz, int j);
@@ -303,7 +304,7 @@ double zdistr_histo_n(double z,  void *params) // return nz(z,j) based on redshi
   static double **tab;
   FILE *ein;
   static double zhisto_max,zhisto_min,dz;
-  
+
   if (tab==0){
     double *z_v;
     int i,k,zbins;
@@ -347,7 +348,7 @@ double zdistr_histo_n(double z,  void *params) // return nz(z,j) based on redshi
       exit(1);
     }
   }
-  
+
   if ((z>=zhisto_min) &&(z<zhisto_max)){
     return tab[(int)array[0]][(int)floor((z-zhisto_min)/dz)];
   }
@@ -358,9 +359,9 @@ double zdistr_histo_1(double z, void *params) //return nz(z) based on redshift f
 {
   static double *tab =0;
   FILE *ein;
-  
+
   static double zhisto_max,zhisto_min,dz;
-  
+
   if (tab==0){
     double *z_v,space1,space2;
     int i,zbins;
@@ -368,7 +369,7 @@ double zdistr_histo_1(double z, void *params) //return nz(z) based on redshift f
     tab=create_double_vector(0, zbins-1);
     z_v=create_double_vector(0, zbins-1);
     ein=fopen(redshift.shear_REDSHIFT_FILE,"r");
-    
+
     for (i=0;i<zbins;i++){
       fscanf(ein,"%le %le %le %le\n",&z_v[i],&space1,&space2,&tab[i]);
       if (i > 0 && z_v[i] < z_v[i-1]){break;}
@@ -381,7 +382,7 @@ double zdistr_histo_1(double z, void *params) //return nz(z) based on redshift f
     redshift.shear_zdistrpar_zmax = zhisto_max;
     free_double_vector(z_v,0,zbins-1);
   }
-  
+
   if ((z>=zhisto_min) &&(z<zhisto_max)){
     return tab[(int)floor((z-zhisto_min)/dz)];
   }
@@ -522,7 +523,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
             norm += table[i+1][k]*da;
           }
           for (k = 0;k<zbins; k++){table[i+1][k]/= norm;}
-          break;        
+          break;
         default:
           printf("redshift.shear_photoz = %d not supported in this cosmolike version\n",redshift.shear_photoz);
           exit(1);
@@ -532,7 +533,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
     // calculate normalized overall redshift distribution (without bins), store in table[0][:]
     norm = 0;
     for (i = 0; i <tomo.shear_Nbin; i++){norm += NORM[i];}
-    
+
     for (k = 0;k<zbins; k++){
       table[0][k] = 0;
       for (i = 0; i <tomo.shear_Nbin; i++){table[0][k]+= table[i+1][k]*NORM[i]/norm;}
@@ -540,7 +541,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
     for (i = -1; i < tomo.shear_Nbin; i++){
       gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);
 //      printf("spline init shear %d, %e\n",i,gsl_spline_eval(photoz_splines[i+1],1.0,NULL));
-    } 
+    }
   }
   if (j >= tomo.shear_Nbin){
     printf("redshift.c: zdistr_photoz(z,%d) outside tomo.shear_Nbin range\n", j);
@@ -568,7 +569,7 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
   FILE *ein;
 
   static double zhisto_max,zhisto_min,dz;
-  
+
   if (tab==0){
     double *z_v,space1,space2;
     int i,zbins;
@@ -592,21 +593,21 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
       exit(1);
     }
   }
-  
+
   if ((z>=zhisto_min) &&(z<zhisto_max)){
     return tab[(int)floor((z-zhisto_min)/dz)];
   }
   return 0.;
 }
 
- 
+
 double pf_histo_n(double z,  void *params) //return pf(z,j) based on redshift file with structure z[i] nz[0][i] .. nz[tomo.clustering_Nbin-1][i]
 {
   double *array = (double*)params;
   static double **tab;
   FILE *ein;
   static double zhisto_max,zhisto_min,dz;
-  
+
   if (tab==0){
     double *z_v;
     int i,k,zbins;
@@ -647,7 +648,7 @@ double pf_histo_n(double z,  void *params) //return pf(z,j) based on redshift fi
       exit(1);
     }
   }
-  
+
   if ((z>=zhisto_min) &&(z<zhisto_max)){
     return tab[(int)array[0]][(int)floor((z-zhisto_min)/dz)];
   }
@@ -789,19 +790,19 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     norm = 0;
     for (i = 0; i <tomo.clustering_Nbin; i++){norm += NORM[i];}
     for (k = 0,zi = zhisto_min;k<zbins; k++,zi+=da){
-      table[0][k] = 0; 
+      table[0][k] = 0;
       for (i = 0; i <tomo.clustering_Nbin; i++){table[0][k]+= table[i+1][k]*NORM[i]/norm;}
     }
       for (i = -1; i < tomo.clustering_Nbin; i++){
       //for(k = 0; k<zbins; k++){printf("%d %d %e %e\n",i,k,z_v[k],table[i+1][k]);}
       gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);
-    } 
- 
+    }
+
   }
   if (j >= tomo.clustering_Nbin){
     printf("redshift.c: pf_photoz(z,%d) outside tomo.clustering_Nbin range\n", j);
     exit(1);
-  } 
+  }
   if (redshift.clustering_photoz == 4){ zz = zz -nuisance.bias_zphot_clustering[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
   return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);
@@ -815,7 +816,7 @@ double int_nsource(double z, void* param){
 double nsource(int j) //returns n_gal for shear tomography bin j, works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j
 {
   static double **table = 0;
-  
+
   double array[3];
   int i;
   if (table ==0|| table[0][0] != survey.n_gal){
@@ -867,7 +868,7 @@ double nlens(int j) //returns n_gal for clustering tomography bin j, works only 
         table[i+1][0] = tomo.n_lens[i];
               }
       printf("\n");
-    } 
+    }
     else{
       double res,norm;
       array[0] = tomo.clustering_zmin[0];
@@ -907,14 +908,14 @@ double zmean(int j){ //mean true redshift of galaxies in tomography bin j
     table   = create_double_matrix(0, tomo.clustering_Nbin, 0, 1);
     for (int i = 0; i< tomo.clustering_Nbin; i++){
      array[0]  = 1.0*i;
-     table[i][0] = int_gsl_integrate_low_precision(int_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024)/int_gsl_integrate_low_precision(norm_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024); 
+     table[i][0] = int_gsl_integrate_low_precision(int_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024)/int_gsl_integrate_low_precision(norm_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024);
     }
   }
   return table[j][0];
 }
 
 double int_for_zmean_source(double z, void *params){
-  
+
   double *array = (double*)params;
   return z*zdistr_photoz(z,(int)array[0]);
 }
@@ -935,7 +936,7 @@ double zmean_source(int j){ //mean true redshift of source galaxies in tomograph
 }
 
 double int_for_ggl_efficiency(double z, void *params){
-  
+
   double *array = (double*)params;
   int zs = (int)array[1];
   return pf_photoz(z,(int)array[0])*g_tomo(1./(1.+z),zs)*(1.+z)*f_K(chi(1./(1.+z)));
@@ -958,7 +959,7 @@ double ggl_efficiency(int zl, int zs){
     table   = create_double_matrix(0, tomo.clustering_Nbin, 0, tomo.shear_Nbin);
     for (int i = 0; i< tomo.clustering_Nbin; i++){
      array[0]  = 1.0*i;
-     for (int j = 0; j < tomo.shear_Nbin; j++){ 
+     for (int j = 0; j < tomo.shear_Nbin; j++){
         array[1] = 1.0*j;
        table[i][j] = int_gsl_integrate_medium_precision(int_for_ggl_efficiency, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024)/max_g_tomo(j);
       }
@@ -984,7 +985,7 @@ double g_tomo(double a, int zbin) // for tomography bin zbin
 {
   static nuisancepara N;
   static cosmopara C;
-  
+
   static double **table = 0;
   static double da = 0.0;
   double aa;
@@ -998,17 +999,56 @@ double g_tomo(double a, int zbin) // for tomography bin zbin
       aa = 1./(redshift.shear_zdistrpar_zmax+1.);
       for (i=0;i<Ntable.N_a;i++,aa+=da) {
         array[1] = aa;
-        table[j+1][i] = int_gsl_integrate_medium_precision(int_for_g_tomo,(void*)array,1./(redshift.shear_zdistrpar_zmax+1.),aa,NULL,4000); 
-      }      
-    }  
+        table[j+1][i] = int_gsl_integrate_medium_precision(int_for_g_tomo,(void*)array,1./(redshift.shear_zdistrpar_zmax+1.),aa,NULL,4000);
+      }
+    }
     update_nuisance(&N);
     update_cosmopara(&C);
   }
   if (a<=1./(redshift.shear_zdistrpar_zmax+1.) || a>1.0-da) return 0.0;
   return interpol(table[zbin+1], Ntable.N_a, 1./(redshift.shear_zdistrpar_zmax+1.), 0.999999, da, a, 1.0, 1.0); //zbin =-1 is non-tomography
 }
+/**** \int n(z') W(z,z')^2 routines for source clustering ******/
+double int_for_g2_tomo(double aprime,void *params)
+{
+  double chi1, chi_prime,val;
+  double *ar = (double *) params;
+  int zbin= (int) ar[0];
+  chi1 = chi(ar[1]);
+  chi_prime = chi(aprime);
 
+  val=zdistr_photoz(1./aprime-1.,zbin)/(aprime*aprime)*f_K(chi_prime-chi1)/f_K(chi_prime)*f_K(chi_prime-chi1)/f_K(chi_prime);
+  return val;
+}
 
+double g2_tomo(double a, int zbin) // for tomography bin zbin
+{
+  static nuisancepara N;
+  static cosmopara C;
+
+  static double **table = 0;
+  static double da = 0.0;
+  double aa;
+  int i,j;
+  double array[2];
+  if (table ==0 || recompute_zphot_shear(N) || recompute_expansion(C)){
+    if (table==0) table   = create_double_matrix(0, tomo.shear_Nbin, 0, Ntable.N_a-1);
+    da = (0.999999-1./(redshift.shear_zdistrpar_zmax+1.))/(Ntable.N_a-1);
+    for (j=-1;j<tomo.shear_Nbin;j++) {
+      array[0]=(double) j; //if j=-1, no tomography is being done
+      aa = 1./(redshift.shear_zdistrpar_zmax+1.);
+      for (i=0;i<Ntable.N_a;i++,aa+=da) {
+        array[1] = aa;
+        table[j+1][i] = int_gsl_integrate_medium_precision(int_for_g2_tomo,(void*)array,1./(redshift.shear_zdistrpar_zmax+1.),aa,NULL,4000);
+      }
+    }
+    update_nuisance(&N);
+    update_cosmopara(&C);
+  }
+  if (a<=1./(redshift.shear_zdistrpar_zmax+1.) || a>1.0-da) return 0.0;
+  return interpol(table[zbin+1], Ntable.N_a, 1./(redshift.shear_zdistrpar_zmax+1.), 0.999999, da, a, 1.0, 1.0); //zbin =-1 is non-tomography
+}
+/******* lens efficiency for clustering sample*******/
 double int_for_g_lens(double aprime,void *params)
 {
   double chi1, chi_prime,val;
@@ -1025,7 +1065,7 @@ double g_lens(double a, int zbin) // for *lens* tomography bin zbin
 {
   static nuisancepara N;
   static cosmopara C;
-  
+
   static double **table = 0;
   static double da = 0.0;
   double aa;
@@ -1039,9 +1079,9 @@ double g_lens(double a, int zbin) // for *lens* tomography bin zbin
       aa = 1./(redshift.clustering_zdistrpar_zmax+1.);
       for (i=0;i<Ntable.N_a;i++,aa+=da) {
         array[1] = aa;
-        table[j+1][i] = int_gsl_integrate_medium_precision(int_for_g_lens,(void*)array,1./(redshift.shear_zdistrpar_zmax+1.),aa,NULL,4000); 
-      }      
-    }  
+        table[j+1][i] = int_gsl_integrate_medium_precision(int_for_g_lens,(void*)array,1./(redshift.shear_zdistrpar_zmax+1.),aa,NULL,4000);
+      }
+    }
     update_nuisance(&N);
     update_cosmopara(&C);
   }
@@ -1053,7 +1093,7 @@ double g_lens(double a, int zbin) // for *lens* tomography bin zbin
 
 double g_cmb (double a){
   static cosmopara C;
-  
+
   static double chi_cmb = 0.;
   double array[1];
   if (recompute_expansion(C)){
@@ -1091,7 +1131,7 @@ double p_zphot_shear(double zp, double zs){ //p(z_{phot} | z_{true}) for source 
     fclose(ein);
     init = 1.0;
   }
-  
+
   if (zs < zmin || zp < zmin || zs> zmax ||zp> zmax){return 0.;}
   res = interpol2d(table_z,Ntable.N_zp, zmin, zmax,dz,zp,Ntable.N_zs, zmin, zmax,dz,zs,1.0,1.0)/dz;
   return res;
@@ -1115,7 +1155,7 @@ double p_zspec_shear(double zs, double zp){  //p(z_{true} | z_{phot}) for source
         fscanf(ein,"%le %le %le %le %le",&z1,&a2,&a3,&a4,&z);
         table_z[i][j] = a4;
       }
-      
+
     }
     fclose(ein);
     init = 1.0;
@@ -1146,7 +1186,7 @@ double p_zphot_clustering(double zp, double zs){ //p(z_{phot} | z_{true}) for le
     fclose(ein);
     init = 1.0;
   }
-  
+
   if (zs < zmin || zp < zmin || zs> zmax ||zp> zmax){return 0.;}
   res = interpol2d(table_z,Ntable.N_zp, zmin, zmax,dz,zp,Ntable.N_zs, zmin, zmax,dz,zs,1.0,1.0)/dz;
   return res;
@@ -1164,13 +1204,13 @@ double p_zspec_clustering(double zs, double zp){  //p(z_{true} | z_{phot}) for l
     double a2,a3,a4,z,z1;
     ein = fopen("../theory/distr_zphot_zspec_100","r");
     EXIT_MISSING_FILE(ein, "p_zspec_clustering", "../theory/distr_zphot_zspec_100")
-    
+
     for (i = 0; i< Ntable.N_zs; i++){
       for (j = 0; j< Ntable.N_zp; j++){
         fscanf(ein,"%le %le %le %le %le",&z1,&a2,&a3,&a4,&z);
         table_z[i][j] = a4;
       }
-      
+
     }
     fclose(ein);
     init = 1.0;
