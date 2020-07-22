@@ -185,3 +185,75 @@ void set_bary_parameters_to_owls_WML4()
 	
 	for (int i=0;i < bary.Nabins;i++) bary.z_bins[i]=z[i];
 }
+
+void set_bary_parameters_to_cowls_AGN()
+{
+	sprintf(bary.FILE_logPkR,"../cosmolike_core/logPkRatio/logPkRatio_cowls_AGN_Mseed800_WMAP7_L100N512.dat");
+	sprintf(bary.scenario,"cowls_AGN");
+	bary.isPkbary = 1 ;
+	bary.Nkbins = line_count(bary.FILE_logPkR)-1 ;
+	bary.Nabins = 15;		
+	double z[15] = {3.0,2.75,2.50,2.25,2.00,1.75,1.50,1.25,1.00,0.75,0.50,0.375,0.25,0.125,0.0};
+		
+	for (int i=0;i < bary.Nabins;i++) bary.z_bins[i]=z[i];
+}
+
+void set_bary_parameters_to_cowls_AGN_T8p5()
+{
+	sprintf(bary.FILE_logPkR,"../cosmolike_core/logPkRatio/logPkRatio_cowls_AGN_Mseed800_T8.5_WMAP7_L100N512.dat");
+	sprintf(bary.scenario,"cowls_AGN_T8p5");
+	bary.isPkbary = 1 ;
+	bary.Nkbins = line_count(bary.FILE_logPkR)-1 ;
+	bary.Nabins = 15;		
+	double z[15] = {3.0,2.75,2.50,2.25,2.00,1.75,1.50,1.25,1.00,0.75,0.50,0.375,0.25,0.125,0.0};
+		
+	for (int i=0;i < bary.Nabins;i++) bary.z_bins[i]=z[i];
+}
+
+void set_bary_parameters_to_cowls_AGN_T8p7()
+{
+	sprintf(bary.FILE_logPkR,"../cosmolike_core/logPkRatio/logPkRatio_cowls_AGN_Mseed800_T8.7_WMAP7_L100N512.dat");
+	sprintf(bary.scenario,"cowls_AGN_T8p7");
+	bary.isPkbary = 1 ;
+	bary.Nkbins = line_count(bary.FILE_logPkR)-1 ;
+	bary.Nabins = 15;		
+	double z[15] = {3.0,2.75,2.50,2.25,2.00,1.75,1.50,1.25,1.00,0.75,0.50,0.375,0.25,0.125,0.0};
+		
+	for (int i=0;i < bary.Nabins;i++) bary.z_bins[i]=z[i];
+}
+
+void set_bary_parameters_to_BAHAMAS()
+{
+	sprintf(bary.FILE_logPkR,"../cosmolike_core/logPkRatio/logPkRatio_BAHAMAS_nu0_WMAP9_L400N1024.dat");
+	sprintf(bary.scenario,"BAHAMAS");
+	bary.isPkbary = 1 ;
+	bary.Nkbins = line_count(bary.FILE_logPkR)-1 ;
+	bary.Nabins = 15;		
+	double z[15] = {3.0,2.75,2.50,2.25,2.00,1.75,1.50,1.25,1.00,0.75,0.50,0.375,0.25,0.125,0.0};
+		
+	for (int i=0;i < bary.Nabins;i++) bary.z_bins[i]=z[i];
+}
+
+void set_bary_parameters_to_BAHAMAS_T7p6()
+{
+	sprintf(bary.FILE_logPkR,"../cosmolike_core/logPkRatio/logPkRatio_BAHAMAS_T7.6_WMAP9_L400N1024.dat");
+	sprintf(bary.scenario,"BAHAMAS_T7p6");
+	bary.isPkbary = 1 ;
+	bary.Nkbins = line_count(bary.FILE_logPkR)-1 ;
+	bary.Nabins = 15;		
+	double z[15] = {3.0,2.75,2.50,2.25,2.00,1.75,1.50,1.25,1.00,0.75,0.50,0.375,0.25,0.125,0.0};
+		
+	for (int i=0;i < bary.Nabins;i++) bary.z_bins[i]=z[i];
+}
+
+void set_bary_parameters_to_BAHAMAS_T8p0()
+{
+	sprintf(bary.FILE_logPkR,"../cosmolike_core/logPkRatio/logPkRatio_BAHAMAS_T8.0_WMAP9_L400N1024.dat");
+	sprintf(bary.scenario,"BAHAMAS_T8p0");
+	bary.isPkbary = 1 ;
+	bary.Nkbins = line_count(bary.FILE_logPkR)-1 ;
+	bary.Nabins = 15;		
+	double z[15] = {3.0,2.75,2.50,2.25,2.00,1.75,1.50,1.25,1.00,0.75,0.50,0.375,0.25,0.125,0.0};
+		
+	for (int i=0;i < bary.Nabins;i++) bary.z_bins[i]=z[i];
+}
