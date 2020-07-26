@@ -23,44 +23,57 @@ double cov_NG_gk_ss(double l1,double l2, int zl, int zs1, int zs2);
 
 // Reads in the noise N_mv for mv quadratic estimator for d,
 // without reduction due to average over ell-bin.
-// Returns value at nearest upper ell
-// MANUWARNING: switch between expt, memory leak, scientific format
+// return interpolated N_kk(\ell)
 double kappa_reconstruction_noise(double l){
    
    static double *ell;
    static double *noise;
    static int nEll;
 
-   printf("run %s\n", cmb.name);
+   static double ellmin = .0, ellmax = .0;
+
    if (noise==0){
+      printf("run %s\n", cmb.name);
       // count lines
-      nEll = line_count(cmb.pathLensRecNoise)-1;
+      nEll = line_count(cmb.pathLensRecNoise);
       printf("Reading CMB lensing noise: %s\n", cmb.pathLensRecNoise);
 
       // allocate ell and Nlkk
       ell = create_double_vector(0, nEll-1);
       noise = create_double_vector(0, nEll-1);
-      
       // read each line
       FILE *file = fopen(cmb.pathLensRecNoise, "r");
       int iEll;
       for (iEll=0; iEll<nEll; iEll++) {
          fscanf(file, "%le %le", &ell[iEll], &noise[iEll]);
+         noise[iEll] = log(noise[iEll]);
       }
       fclose(file);
+      ellmax = ell[nEll-1];
+      ellmin = ell[0];
    }
    // if l is in the range
-   if ((l>=ell[0]) &&(l<=ell[nEll-1])){
-      // find value of ell just above l
+   double f1;
+   if (l<=0.) {
+      return 0;
+   } else if ((l>=ellmin) &&(l<=ellmax)){
       int iEll = 0;
       while (ell[iEll] < l) {
          iEll ++;
       }
+      f1 = exp((noise[iEll]-noise[iEll-1])/log(ell[iEll]/ell[iEll-1])*log(l/ell[iEll-1]) + noise[iEll-1]);
+      if (isnan(f1)){f1 = 0.;}
       // evaluate at that ell
       // C_ell^kk = l*(l+1)/4 * C_ell^dd
-      return noise[iEll];
+   } else{
+      f1 = 0.;
    }
-   return 0.;
+   // } else if(l<ellmin){
+   //    f1 = exp((noise[1]-noise[0])/log(ell[1]/ell[0])*log(l/ell[0]) + noise[0]);
+   // } else{
+   //    f1 = exp((noise[nEll-1]-noise[nEll-2])/log(ell[nEll-1]/ell[nEll-2])*log(l/ell[nEll-1]) + noise[nEll-1]);
+   // }
+   return f1;
 }
 
 

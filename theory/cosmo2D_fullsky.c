@@ -200,7 +200,7 @@ double xi_pm_fullsky(int pm, int nt, int ni, int nj) //shear tomography correlat
 
 				-l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
 				-l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-				+l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+				+l*(l-1.)/(2.*l+1)           * (Pmin[l+1]-Pmax[l+1])
 
 				+(4-l)   * (dPmin[l]-dPmax[l])
 				+(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
@@ -214,7 +214,7 @@ double xi_pm_fullsky(int pm, int nt, int ni, int nj) //shear tomography correlat
 
 				-l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
 				-l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-				+l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+				+l*(l-1.)/(2.*l+1)           * (Pmin[l+1]-Pmax[l+1])
 
 				+(4-l)   * (dPmin[l]-dPmax[l])
 				+(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
