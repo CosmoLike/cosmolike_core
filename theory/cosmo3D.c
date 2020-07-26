@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "../class/include/class.h"
-
+#ifndef CLASS_V29
+  #include "../class/include/class.h"
+#else
+  #include "../class_v29/include/class.h"
+#endif
 #include <gsl/gsl_odeiv.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_spline.h>
@@ -507,6 +510,15 @@ int run_class(
   }
   return 0;
 }
+double CLASS_sigma8(struct spectra *sp, struct nonlinear *nl){
+  #ifndef CLASS_V29
+    printf("sigma_8 = %.3f\n",sp->sigma8);
+    return sp->sigma8;
+  #else
+  printf("sigma_8 = %.3f\n",*nl->sigma8);
+    return  *nl->sigma8;
+  #endif
+}
 double get_class_s8(struct file_content *fc, int *status){
 //structures for class test run
     struct background ba;       // for cosmological background
@@ -533,7 +545,12 @@ double get_class_s8(struct file_content *fc, int *status){
     if (k_max_old >0){
       sprintf(fc->value[position_kmax],"%e",k_max_old);
     }
-    return sp.sigma8;
+    return CLASS_sigma8(&sp,&nl);
+/*    #ifndef CLASS_V29
+      return sp.sigma8;
+    #else
+      return  *nl.sigma8;
+    #endif*/
   }
 
   double get_class_As(struct file_content *fc, int position_As,double sigma8, int *status){
@@ -562,11 +579,11 @@ double get_class_s8(struct file_content *fc, int *status){
     sprintf(fc->value[position_As],"%e",A_s_guess);
 
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-    A_s_guess*=pow(sigma8/sp.sigma8,2.);
+    A_s_guess*=pow(sigma8/CLASS_sigma8(&sp,&nl),2.);
     printf("A_s_guess=%e\n",A_s_guess);
     sprintf(fc->value[position_As],"%e",A_s_guess);
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-    A_s_guess*=pow(sigma8/sp.sigma8,2.);
+    A_s_guess*=pow(sigma8/CLASS_sigma8(&sp,&nl),2.);
     printf("A_s_guess=%e\n",A_s_guess);
     if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
 
@@ -576,7 +593,7 @@ double get_class_s8(struct file_content *fc, int *status){
     return A_s_guess;
   }
 
-  int fill_class_parameters(struct file_content * fc,int parser_length){
+int fill_class_parameters(struct file_content * fc,int parser_length){
     int status =0;
  // basic CLASS configuration parameters
     strcpy(fc->name[0],"output");
@@ -664,7 +681,9 @@ double get_class_s8(struct file_content *fc, int *status){
     printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
   }
   strcpy(fc->name[1],"non linear");
-  strcpy(fc->value[1],"Halofit"); //to use Halofit within CLASS
+  strcpy(fc->value[1],"Halofit"); //to use Halofit within CLASS  HMcode
+//  strcpy(fc->value[1],"HMcode"); //to use HMCode within CLASS (only for >=v2.9)
+
   return status;
 }
 void fprint_parser(struct file_content * fc,int parser_length){
@@ -724,15 +743,15 @@ double p_class(double k_coverh0,double a, int NL, int *status){
      return 1;
    }
    parser_free(&fc);
-   double aa,norm, k_class,Pk,ic;
+   double aa,norm, k_class,Pk,Pknl, ic;
    int i,j,s;
    aa = limits.a_min;
    if (cosmology.A_s){
     norm = 3.*log(cosmology.h0/cosmology.coverH0);
-    cosmology.sigma_8 = sp.sigma8;
+    cosmology.sigma_8 = CLASS_sigma8(&sp,&nl);
   }
   else{
-    norm = log(pow(cosmology.sigma_8/sp.sigma8,2.)*pow(cosmology.h0/cosmology.coverH0,3.));
+    norm = log(pow(cosmology.sigma_8/CLASS_sigma8(&sp,&nl),2.)*pow(cosmology.h0/cosmology.coverH0,3.));
   }
     //printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/sp.sigma8,2.));
   if (*status ==0){
@@ -740,10 +759,15 @@ double p_class(double k_coverh0,double a, int NL, int *status){
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
         k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
-        s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
+        #ifndef CLASS_V29
+          s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
+          s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pknl);
+        #else
+          s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+          s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total,  &Pknl, &ic);
+        #endif
         table_P_L[i][j] = log(Pk) +norm;
-        s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
-        table_P_NL[i][j] = log(Pk) +norm;
+        table_P_NL[i][j] = log(Pknl) +norm;
       }
     }
     free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);

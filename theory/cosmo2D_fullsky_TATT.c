@@ -62,8 +62,10 @@ double int_for_C_shear_shear_IA_EE(double a, void *params){
 
   /*GG cosmic shear */
   res = wk1*wk2*Pdelta(k,a);
-	if (reduced_shear||source_clustering){
-		res += wk1*wk2*(reduced_shear*(wk1+wk2)+source_clustering*(ws1+ws2))*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+	if (reduced_shear)
+		res += reduced_shear*wk1*wk2*(wk1+wk2)*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+	if (source_clustering){
+		res += source_clustering*(wk1*W2_kappa(a,fK,ar[1])+wk2*W2_kappa(a,fK,ar[0]))*Delta_P_reduced_shear_tab(k,a)/fK/fK;
 	}
   if (C1 || C1_2 || C2 || C2_2){
   	/*II contribution */
@@ -130,10 +132,10 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   res += w_mag*wk*Pnl;
   /* (linear bias lens density + lens magnification) with TATT_GI terms*/
 	if (reduced_shear){
-		res += (b1*w_density+reduced_shear*w_mag)*wk*wk*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+		res += reduced_shear*(b1*w_density+w_mag)*wk*wk*Delta_P_reduced_shear_tab(k,a)/fK/fK;
 	}
 	if (source_clustering){
-		res += (b1*w_density+w_mag)*wk*ws*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+		res += source_clustering*(b1*w_density+w_mag)*W2_kappa(a,fK,ar[1])*Delta_P_reduced_shear_tab(k,a)/fK/fK;
 	}
 
   if (C1 || C2) res += (b1*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
