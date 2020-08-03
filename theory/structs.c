@@ -8,6 +8,7 @@ typedef struct {
   double vtmax;
   double vtmin;
   double *theta;
+  double *ell;
   double cosmax;
   double Rmin_bias;
   double Rmin_shear;
@@ -440,6 +441,9 @@ typedef struct {
     char ss[8]; /* Calculate shear-shear components */
     char ls[8]; /* Calculate shear-position components */
     char ll[8]; /* Calculate position-position components */
+    char lk[8]; /* Calculate position-kappa_cmb components */
+    char ks[8]; /* Calculate shear-kappa_cmb components */
+    char kk[8]; /* Calculate kappa_cmb-kappa_cmb components */
 } covpar;
 covpar covparams;
 

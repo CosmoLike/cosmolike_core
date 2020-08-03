@@ -178,6 +178,33 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       }
       continue;
     }
+    else if(strcmp(name, "lk")==0)
+    {
+      sprintf(covparams.lk,"%s",val);
+      if(output==1)
+      {
+        printf("lk %s \n",covparams.lk);
+      }
+      continue;
+    }
+    else if(strcmp(name, "ks")==0)
+    {
+      sprintf(covparams.ks,"%s",val);
+      if(output==1)
+      {
+        printf("ks %s \n",covparams.ks);
+      }
+      continue;
+    }
+    else if(strcmp(name, "kk")==0)
+    {
+      sprintf(covparams.kk,"%s",val);
+      if(output==1)
+      {
+        printf("kk %s \n",covparams.kk);
+      }
+      continue;
+    }
   }
 }
 
