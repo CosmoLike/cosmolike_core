@@ -32,6 +32,7 @@ typedef struct {
   char INV_FILE[500]; 
   char COV_FILE[500]; 
   char MASK_FILE[500]; 
+  char BARY_FILE[500];
   int shear_shear;
   int shear_pos;
   int pos_pos;
@@ -216,6 +217,7 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   cosmopara C;
 }FPTpara;
 FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7};
+
 typedef struct {
   double A_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3)
   double A_ia; //A IA see Joachimi2012
@@ -258,6 +260,7 @@ typedef struct {
   double cluster_MOR[10];
   int N_cluster_selection;
   double cluster_selection[10];
+  double bary[3];
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
@@ -266,7 +269,9 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.0134,
   .sigma_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}};
+  .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .bary = {0.0, 0.0, 0.0}
+};
 
 
 
@@ -318,12 +323,20 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double cluster_centering_alpha[2];
   double cluster_centering_sigma[2];
   double cluster_centering_M_pivot[2];
+  double bary_Q1[2];
+  double bary_Q2[2];
+  double bary_Q3[2];
 }priorpara;
-priorpara prior = {.shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+priorpara prior = {
+ .shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
-.bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}}};
+.bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.bary_Q1 = {0.,0.},
+.bary_Q2 = {0.,0.},
+.bary_Q3 = {0.,0.}
+};
 
 typedef struct{
   double HOD_rm[5][2];
@@ -393,6 +406,7 @@ typedef struct input_nuisance_params {
     double lf[6];
     double m_lambda[6];
     double cluster_c[4];
+    double bary[3];
 } input_nuisance_params;
 
 typedef struct input_nuisance_params_grs {
