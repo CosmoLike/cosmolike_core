@@ -22,70 +22,82 @@ double C_cl_HOD_wrapper(double l,int ni, int nj){
 /******************** all angles in radian! *******************/
 
 double w_tomo_exact(int nt, int ni, int nj){
-  static int LMAX = 100000;
-  static int NTHETA = 0;
-  static double ** Pl =0;
-  static double *Cl =0;
-  static double *w_vec =0;
-  static cosmopara C;
-  static nuisancepara N;
-  static galpara G;
-  int i,l,nz;
-  if (like.Ntheta ==0){
-    printf("cosmo2D_real.c:w_tomo_exact: like.Ntheta not initialized\nEXIT\n"); exit(1);
-  }
-  if (ni != nj){
-    printf("cosmo2D_real.c:w_tomo_exact: ni != nj tomography not supported\nEXIT\n"); exit(1);    
-  }
-  if (Pl ==0){
-    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
-    Cl = create_double_vector(0,LMAX-1);
-    w_vec = create_double_vector(0,tomo.clustering_Nbin*like.Ntheta-1);
-    NTHETA = like.Ntheta;
-    double *xmin, *xmax, *Pmin, *Pmax;
-    xmin= create_double_vector(0, like.Ntheta-1);
-    xmax= create_double_vector(0, like.Ntheta-1);
-    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
-    Pmin= create_double_vector(0, LMAX+1);
-    Pmax= create_double_vector(0, LMAX+1);
-    for(i=0; i<like.Ntheta ; i++){
-      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
-      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
-    }
+	static int LMAX = 100000;
+	static int NTHETA = 0;
+	static double ** Pl =0;
+	static double *Cl =0;
+	static double *w_vec =0;
+	static cosmopara C;
+	static nuisancepara N;
+	static galpara G;
+	int i,l,nz;
+	if (like.Ntheta ==0){
+		printf("cosmo2D_real.c:w_tomo_exact: like.Ntheta not initialized\nEXIT\n"); exit(1);
+	}
+	if (ni != nj){
+		printf("cosmo2D_real.c:w_tomo_exact: ni != nj tomography not supported\nEXIT\n"); exit(1);
+	}
+	if (Pl ==0){
+		Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+		Cl = create_double_vector(0,LMAX-1);
+		w_vec = create_double_vector(0,tomo.clustering_Nbin*like.Ntheta-1);
+		NTHETA = like.Ntheta;
+		double *xmin, *xmax, *Pmin, *Pmax;
+		xmin= create_double_vector(0, like.Ntheta-1);
+		xmax= create_double_vector(0, like.Ntheta-1);
+		double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+		Pmin= create_double_vector(0, LMAX+1);
+		Pmax= create_double_vector(0, LMAX+1);
 
-    for (i = 0; i<NTHETA; i ++){
-      printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
-      gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
-      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
-      for (int l = 1; l < LMAX; l ++){
-        //Pl[i][l] = (2*l+1.)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
-        Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
-      }
-    }
-    free_double_vector(xmin,0,like.Ntheta-1);
-    free_double_vector(xmax,0,like.Ntheta-1);
-    free_double_vector(Pmin,0,LMAX+1);
-    free_double_vector(Pmax,0,LMAX+1);
-    }
-    if (recompute_clustering(C,G,N,ni,nj)){
-      for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
-        for (l = 1; l < LMAX; l++){
-//          if (l < 20){Cl[l]=C_cl_tomo_nointerp(l,nz,nz);}
-          //else 
-            Cl[l]=C_cl_tomo(1.0*l,nz,nz);
-        }
-        for (i = 0; i < NTHETA; i++){
-          w_vec[nz*like.Ntheta+i] =0;
-          for (l = 1; l < LMAX; l++){
-            w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];
-          }
-        }
-      }
-    update_cosmopara(&C);
-    update_galpara(&G);
-    update_nuisance(&N);
-  }
-  return w_vec[ni*like.Ntheta+nt];  
+		// double *xmid, *Pmid;
+		double mythetamin, mythetamax;
+		// xmid= create_double_vector(0, like.Ntheta-1);
+		// Pmid= create_double_vector(0, LMAX+1);
+
+		for(i=0; i<like.Ntheta ; i++){
+			mythetamin = exp(log(like.vtmin)+(i+0.0)*logdt);
+			mythetamax = exp(log(like.vtmin)+(i+1.0)*logdt);
+			xmin[i]=cos(mythetamin);
+			xmax[i]=cos(mythetamax);
+			// xmid[i]= cos((2./3.) * (pow(mythetamax,3) - pow(mythetamin,3)) / (mythetamax*mythetamax - mythetamin*mythetamin));
+		}
+
+		for (i = 0; i<NTHETA; i ++){
+			// printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);
+			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
+			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+			// gsl_sf_legendre_Pl_array(LMAX, xmid[i],Pmid);
+
+			Pl[i][0] = 1.0;
+			for (int l = 1; l < LMAX; l ++){
+				Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+				// Pl[i][l] = (2.*l+1)/(4.*M_PI)*Pmid[l];
+				// printf("l,%ld\n", l);
+			}
+		}
+		free_double_vector(xmin,0,like.Ntheta-1);
+		free_double_vector(xmax,0,like.Ntheta-1);
+		free_double_vector(Pmin,0,LMAX+1);
+		free_double_vector(Pmax,0,LMAX+1);
+		}
+		if (recompute_clustering(C,G,N,ni,nj)){
+
+		for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
+			for (int l = 1; l < LMAX; l++){
+					Cl[l]=C_cl_tomo(1.0*l,nz,nz);
+			}
+			for (i = 0; i < NTHETA; i++){
+				w_vec[nz*like.Ntheta+i] =0;
+				for (l = 1; l < LMAX; l++){
+					w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];
+				}
+			}
+		}
+		update_cosmopara(&C);
+		update_galpara(&G);
+		update_nuisance(&N);
+	}
+	return w_vec[ni*like.Ntheta+nt];
 }
 
 double int_for_w(double l, void *params){
@@ -100,14 +112,14 @@ double w_clustering_tomo(double theta, int ni, int nj) // galaxy clustering tomo
   static cosmopara C;
   static nuisancepara N;
   static galpara G;
-  
+
   static double **table;
   static double dlogtheta, logthetamin, logthetamax;
   if (recompute_clustering(C,G,N,ni,nj)){
     double **tab;
     int i, j,k;
     tab   = create_double_matrix(0, 1, 0, Ntable.N_thetaH-1);
-    if (table==0) table   = create_double_matrix(0, tomo.clustering_Nbin*tomo.clustering_Nbin-1, 0, Ntable.N_thetaH-1);    
+    if (table==0) table   = create_double_matrix(0, tomo.clustering_Nbin*tomo.clustering_Nbin-1, 0, Ntable.N_thetaH-1);
     for (i = 0; i < tomo.clustering_Nbin; i++){
       for (j= i; j < tomo.clustering_Nbin; j++){
         twopoint_via_hankel(tab, &logthetamin, &logthetamax,&C_cl_tomo, i,j,0);
@@ -118,20 +130,20 @@ double w_clustering_tomo(double theta, int ni, int nj) // galaxy clustering tomo
         }
       }
     }
-    free_double_matrix(tab,0, 1, 0, Ntable.N_thetaH-1);   
+    free_double_matrix(tab,0, 1, 0, Ntable.N_thetaH-1);
     update_cosmopara(&C);
     update_galpara(&G);
     update_nuisance(&N);
   }
   return interpol(table[ni*tomo.clustering_Nbin+nj], Ntable.N_thetaH, logthetamin, logthetamax,dlogtheta, log(theta), 0.0, 0.0);
 }
-
+/*
 double w_gamma_t_tomo(double theta,int ni, int nj) //G-G lensing, lens bin ni, source bin nj
 {
   static cosmopara C;
   static nuisancepara N;
   static galpara G;
-  
+
   static double **table;
   static double dlogtheta, logthetamin, logthetamax;
   double res =0.;
@@ -163,7 +175,7 @@ double w_gamma_t_tomo(double theta,int ni, int nj) //G-G lensing, lens bin ni, s
 double xi_pm_tomo(int pm, double theta, int ni, int nj) //shear tomography correlation functions
 {
   static cosmopara C;
-  static nuisancepara N; 
+  static nuisancepara N;
   static double **table;
   static double dlogtheta, logthetamin, logthetamax;
   if (recompute_shear(C,N)){
@@ -196,7 +208,7 @@ double xi_pm_rebin(int pm, double thetamin_i, double thetamax_i, int ni,int nj){
   dti = (thetamax_i-thetamin_i)/(double)Nsub_G;
   for (ii = 0; ii < Nsub_G; ii++){
     ti = 2./3.*(pow(thetamin_i+(ii+1.)*dti,3.)-pow(thetamin_i+(ii+0.)*dti,3.))/(pow(thetamin_i+(ii+1.)*dti,2.)-pow(thetamin_i+(ii+0.)*dti,2.));
-    xi+=  xi_pm_tomo(pm, ti, ni, nj)*(pow(thetamin_i+(ii+1.)*dti,2.)-pow(thetamin_i+(ii+0.)*dti,2.));  
+    xi+=  xi_pm_tomo(pm, ti, ni, nj)*(pow(thetamin_i+(ii+1.)*dti,2.)-pow(thetamin_i+(ii+0.)*dti,2.));
   }
   return xi/(pow(thetamax_i,2.)-pow(thetamin_i,2.));
 }
@@ -242,7 +254,7 @@ double w_clustering_HOD(double theta, int ni) // HOD based galaxy clustering 2PC
     int i,k;
     tab   = create_double_matrix(0, 1, 0, Ntable.N_thetaH-1);
     if (table==0) table   = create_double_matrix(0, tomo.clustering_Nbin-1, 0, Ntable.N_thetaH-1);
-    
+
     for (i = 0; i < tomo.clustering_Nbin; i++){
         twopoint_via_hankel(tab, &logthetamin, &logthetamax,&C_cl_HOD_wrapper, i,i,0);
       dlogtheta = (logthetamax-logthetamin)/((double)Ntable.N_thetaH);
@@ -257,14 +269,14 @@ double w_clustering_HOD(double theta, int ni) // HOD based galaxy clustering 2PC
   }
   return interpol(table[ni], Ntable.N_thetaH, logthetamin, logthetamax,dlogtheta, log(theta), 0.0, 0.0);
 }
-
+*/
 /****************** hankel transformation routine *******************/
 void twopoint_via_hankel(double **xi, double *logthetamin, double *logthetamax, C_tomo_pointer C_tomo, int ni, int nj, int N_Bessel){
   const double l_min = 0.0001;
   const double l_max = 5.0e6;
   double loglmax, loglmin, dlnl, lnrc, arg[2];
   static int nc;
-  
+
   double        l, kk, *lP, t;
   fftw_plan     plan1,plan;
   fftw_complex *f_lP,*conv;
@@ -284,9 +296,9 @@ void twopoint_via_hankel(double **xi, double *logthetamin, double *logthetamax, 
   for(i=0; i<Ntable.N_thetaH; i++) {
     l     = exp(lnrc+(i-nc)*dlnl);
     lP[i] = l*C_tomo(l,ni,nj);
-    
+
   }
-  
+
   /* go to log-Fourier-space */
   fftw_execute(plan);
   arg[0] = 0;   /* bias */
@@ -307,8 +319,8 @@ void twopoint_via_hankel(double **xi, double *logthetamin, double *logthetamax, 
     t = exp((nc-i)*dlnl-lnrc);             /* theta=1/l */
     xi[0][Ntable.N_thetaH-i-1] = lP[i]/(t*2*constants.pi*Ntable.N_thetaH);
   }
-  
-  
+
+
   *logthetamin = (nc-Ntable.N_thetaH+1)*dlnl-lnrc;
   *logthetamax = nc*dlnl-lnrc;
   /* clean up */
@@ -325,7 +337,7 @@ void xipm_via_hankel(double **xi, double *logthetamin, double *logthetamax,  C_t
   const double l_max = 5.0e6;
   static double loglmax = -123.0, loglmin, dlnl,  lnrc, arg[2];
   static int nc;
-  
+
   double        l, kk, *lP, t;
   fftw_plan     plan1,plan;
   fftw_complex *f_lP,*conv;
@@ -370,7 +382,7 @@ void xipm_via_hankel(double **xi, double *logthetamin, double *logthetamax,  C_t
       xi[count][Ntable.N_thetaH-i-1] = lP[i]/(t*2*constants.pi*Ntable.N_thetaH);
     }
   }
-  
+
   *logthetamin = (nc-Ntable.N_thetaH+1)*dlnl-lnrc;
   *logthetamax = nc*dlnl-lnrc;
   /* clean up */
