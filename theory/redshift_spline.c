@@ -507,7 +507,24 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
     for (i = -1; i < tomo.shear_Nbin; i++){
       gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);
 //      printf("spline init shear %d, %e\n",i,gsl_spline_eval(photoz_splines[i+1],1.0,NULL));
+    }
+    // Start JX: print the ztrue distribution of each tomo bins
+    FILE *zdist_tomo_FILE;
+    char zdist_tomo_fname[500];
+    int tomo_i, zbin_j;
+    sprintf(zdist_tomo_fname, "%s_Ntomo%d", redshift.shear_REDSHIFT_FILE, tomo.shear_Nbin);
+    zdist_tomo_FILE = fopen(zdist_tomo_fname, "w");
+    if (zdist_tomo_FILE!=NULL){
+      fprintf(zdist_tomo_FILE,"# zmin=%.6f zmax=%.6f dz=%e\n# Ntomo=%d Nzbin=%d\n", tomo.shear_zmin[0], tomo.shear_zmax[tomo.shear_Nbin-1], da, tomo.shear_Nbin, zbins);
+      for (tomo_i=0; tomo_i<tomo.shear_Nbin+1; tomo_i++){
+        for (zbin_j=0; zbin_j<zbins; zbin_j++){
+          fprintf(zdist_tomo_FILE,"%e ",table[tomo_i][zbin_j]);
+        }
+        fprintf(zdist_tomo_FILE,"\n");
+      }
     } 
+    fclose(zdist_tomo_FILE);  
+    // End JX
   }
   if (j >= tomo.shear_Nbin){
     printf("redshift.c: zdistr_photoz(z,%d) outside tomo.shear_Nbin range\n", j);
