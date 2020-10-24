@@ -6,7 +6,7 @@ void init_bary(char *scenario){
     printf("-------------------------------\n");
     printf("Initializing baryonic Parameters\n");
     printf("-------------------------------\n");
-	
+	printf("Scenario %s initialized\n",scenario);
 	if(strcmp(scenario,"dmo")==0) bary.isPkbary = 0 ;  
 	
 	if(strcmp(scenario,"mb2")==0) set_bary_parameters_to_mb2();                // go to check parameters_bary.c
