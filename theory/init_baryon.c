@@ -24,4 +24,12 @@ void init_bary(char *scenario){
 	if(strcmp(scenario,"owls_WDENS")==0) set_bary_parameters_to_owls_WDENS();
 	if(strcmp(scenario,"owls_WML1V848")==0) set_bary_parameters_to_owls_WML1V848();
 	if(strcmp(scenario,"owls_WML4")==0) set_bary_parameters_to_owls_WML4();
+
+	if(strcmp(scenario,"cowls_AGN")==0) set_bary_parameters_to_cowls_AGN();           // vd19: powtable_C-OWLS_AGN_Mseed800_WMAP7_L100N512.dat
+	if(strcmp(scenario,"cowls_AGN_T8p5")==0) set_bary_parameters_to_cowls_AGN_T8p5(); // vd19: powtable_C-OWLS_AGN_Mseed800_Theat8.5_WMAP7_L100N512.dat
+	if(strcmp(scenario,"cowls_AGN_T8p7")==0) set_bary_parameters_to_cowls_AGN_T8p7(); // vd19: powtable_C-OWLS_AGN_Mseed800_Theat8.7_WMAP7_L100N512.dat
+	
+	if(strcmp(scenario,"BAHAMAS")==0) set_bary_parameters_to_BAHAMAS();               // vd19: powtable_BAHAMAS_nu0_WMAP9.dat
+	if(strcmp(scenario,"BAHAMAS_T7p6")==0) set_bary_parameters_to_BAHAMAS_T7p6();     // vd19: powtable_BAHAMAS_Theat7.6_nu0_WMAP9.dat
+	if(strcmp(scenario,"BAHAMAS_T8p0")==0) set_bary_parameters_to_BAHAMAS_T8p0();     // vd19: powtable_BAHAMAS_Theat8.0_nu0_WMAP9.dat
 }
