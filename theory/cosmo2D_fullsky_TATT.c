@@ -6,7 +6,7 @@ double C_BB_tab(double l, int ni, int nj);
 double C_ggl_TATT_tab(double l, int ni, int nj);
 double w_gamma_t_TATT(int nt,int ni, int nj); //G-G lensing, lens bin ni, source bin nj, including IA contamination if like.IA = 3
 double xi_pm_TATT(int pm, int nt, int ni, int nj); //shear tomography correlation functions, including IA contamination if like.IA = 3
-int reduced_shear = 1;
+int reduced_shear = 0;
 int source_clustering = 0;
 //ell_max for transform to angular correlation functions
 int LMAX = 100000;
