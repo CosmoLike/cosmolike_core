@@ -112,36 +112,36 @@ double int_for_C_kk(double a, void *params){
 // MANUWARNING: IAAAAA!
 
 // IA for kappa CMB x shear: gI + true (fast)
-// double int_for_C_ks_IA(double a, void *params)
-// {
-//    double res, ell, fK, k,ws1,ws2,wk1,wk2, norm;
-//    double *ar = (double *) params;
-//    ell       = ar[1]+0.5;
-//    fK     = f_K(chi(a));
-//    k      = ell/fK;
-//    ws1 = W_source(a,ar[0]);
-//    wk1 = W_kappa(a,fK,ar[0]);
-//    wk2 = W_k(a,fK);
-//    norm = A_IA_Joachimi(a)*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a);
-//    res= -ws1*wk2*norm + wk1*wk2;
-//    return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
-// }
+double int_for_C_ks_IA(double a, void *params)
+{
+   double res, ell, fK, k,ws1,ws2,wk1,wk2, norm;
+   double *ar = (double *) params;
+   ell       = ar[1]+0.5;
+   fK     = f_K(chi(a));
+   k      = ell/fK;
+   ws1 = W_source(a,ar[0]);
+   wk1 = W_kappa(a,fK,ar[0]);
+   wk2 = W_k(a,fK);
+   norm = A_IA_Joachimi(a)*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a);
+   res= -ws1*wk2*norm + wk1*wk2;
+   return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
+}
 
-// double int_for_C_ks_IA_Az(double a, void *params)
-// {
-//   double res, ell, fK, k,ws1,ws2,wk1,wk2, norm;
-//   double *ar = (double *) params;
-//   ell       = ar[1]+0.5;
-//   fK     = f_K(chi(a));
-//   k      = ell/fK;
-//   ws1 = W_source(a,ar[0])*nuisance.A_z[(int)ar[0]];
-//   wk1 = W_kappa(a,fK,ar[0]);
-//   wk2 = W_k(a,fK);
-//   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a);
-//   res= -ws1*wk2*norm + wk1*wk2;
+double int_for_C_ks_IA_Az(double a, void *params)
+{
+  double res, ell, fK, k,ws1,ws2,wk1,wk2, norm;
+  double *ar = (double *) params;
+  ell       = ar[1]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+  ws1 = W_source(a,ar[0])*nuisance.A_z[(int)ar[0]];
+  wk1 = W_kappa(a,fK,ar[0]);
+  wk2 = W_k(a,fK);
+  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a);
+  res= -ws1*wk2*norm + wk1*wk2;
   
-//   return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
-// }
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
+}
 
 double int_for_C_ks_IA_mpp(double a, void *params)
 { // for like.IA==4
@@ -161,8 +161,8 @@ double int_for_C_ks_IA_mpp(double a, void *params)
 double C_ks_IA(double s, int ni)
 {
    double array[2] = {(double) ni,s};
-   // if (like.IA==1) return int_gsl_integrate_medium_precision(int_for_C_ks_IA,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
-   // if (like.IA==3) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_Az,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
+   if (like.IA==1) return int_gsl_integrate_medium_precision(int_for_C_ks_IA,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
+   if (like.IA==3) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_Az,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
    if (like.IA==4) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_mpp,(void*)array,amin_source(ni),0.99999,NULL,1000);
    printf("CMBxLSS.c: C_ks_IA does not support like.IA = %d\nEXIT\n", like.IA);
   exit(1);
