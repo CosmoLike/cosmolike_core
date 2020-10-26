@@ -52,7 +52,7 @@ double b1_per_bin(double z, int ni){
   return gbias.b[ni];
 }
 double b1_per_bin_pass_evolv(double z, int ni){
-   double z_evolv_passiv = growfac (1./(z+1.))/growfac (1./(1.+0.5*(tomo.clustering_zmin[ni]+tomo.clustering_zmax[ni])));
+   double z_evolv_passiv = growfac (1./(z+1.))/growfac (1./(1.+zmean(ni)));
    return (gbias.b[ni]-1.)/z_evolv_passiv +1.;
 }
 double b1_growth_scaling(double z, int ni){
@@ -128,22 +128,22 @@ double int_mmean (double m, void *params){
 double ngal(int nz,double a){
   static cosmopara C;
   static galpara G;
-  
-  
+
+
   static double **table;
-  
+
   static double da = 0.0;
   double aa;
   int i,j;
   double array[2];
-  
+
   if (recompute_cosmo3D(C) || recompute_galaxies(G,nz))
     {
     if (table==0) {
       table   = create_double_matrix(0, tomo.clustering_Nbin-1, 0, Ntable.N_a_halo-1);
       da = (1./(redshift.clustering_zdistrpar_zmin+1.)-1./(redshift.clustering_zdistrpar_zmax+1.))/(Ntable.N_a_halo-1);
     }
-    
+
     for (j=0;j<=tomo.clustering_Nbin-1;j++) {
       array[1]=(double) j;
       aa = 1./(redshift.clustering_zdistrpar_zmax+1.);
@@ -162,22 +162,22 @@ double ngal(int nz,double a){
 double bgal(int nz,double a){
   static cosmopara C;
   static galpara G;
-  
-  
+
+
   static double **table;
-  
+
   static double da = 0.0;
   double aa;
   int i,j;
   double array[2];
-  
+
   if (recompute_cosmo3D(C) || recompute_galaxies(G,nz))
     {
     if (table==0) {
       table   = create_double_matrix(0, tomo.clustering_Nbin-1, 0, Ntable.N_a_halo-1);
       da = (1./(redshift.clustering_zdistrpar_zmin+1.)-1./(redshift.clustering_zdistrpar_zmax+1.))/(Ntable.N_a_halo-1);
     }
-    
+
     for (j=0;j<=tomo.clustering_Nbin-1;j++) {
       array[1]=(double) j;
       aa = 1./(redshift.clustering_zdistrpar_zmax+1.);
@@ -262,12 +262,12 @@ double P_gg (double k, double a,int nz){ //galaxy-galaxy power spectrum based on
   static int N_a = 15, N_k_nlin = 50, NZ = -1;
   static double M0 = 0.0;
   static cosmopara C;
-  
+
   static double **table_P_gg=0;
-  
+
   double klog,val,aa,kk;
   int i,j;
-  
+
   if (NZ != nz || M0 != gbias.hod[nz][0]|| recompute_cosmo3D(C)){ //extend this by halo model parameters if these are sampled independently of cosmology parameters
     M0 = gbias.hod[nz][0];
     NZ = nz;
@@ -304,12 +304,12 @@ double P_gm (double k, double a,int nz){//galaxy-matter power spectrum based on 
   static int N_a = 15, N_k_nlin = 50, NZ = -1;
   static double M0 = 0.0;
   static cosmopara C;
-  
+
   static double **table_P_gg=0;
-  
+
   double klog,val,aa,kk;
   int i,j;
-  
+
   if (NZ != nz || M0 != gbias.hod[nz][0]|| recompute_cosmo3D(C)){ //extend this by halo model parameters if these are sampled independently of cosmology parameters
     M0 = gbias.hod[nz][0];
     NZ = nz;
@@ -362,7 +362,7 @@ void set_HOD(int n){ //n >=0: set HOD parameters in redshift bin n; n = -1: unse
     }
     printf("unset HOD parameters; code uses non-linear matter power spectrum + linear bias\n");
     break;
-    
+
     case 0:
     gbias.hod[0][0] =13.17;
     gbias.hod[0][1] = 0.39;
@@ -373,7 +373,7 @@ void set_HOD(int n){ //n >=0: set HOD parameters in redshift bin n; n = -1: unse
     gbias.b[n] = bgal(n,1./(z+1));
     printf("HOD derived quantities in bin %d at <z> = %.2f: <n_g> = %e(h/Mpc)^3 <b_g> = %.2f lg(<M_h> h/M_sun) = %.3f f_sat = %.3f\n",n, z,ngal(n,1./(z+1))*pow(cosmology.coverH0,-3.0),gbias.b[n], log10(mmean(n,1./(z+1))), fsat(n,1./(z+1)));
     break;
-    
+
     case 1:
     gbias.hod[1][0] =13.18;
     gbias.hod[1][1] = 0.30;
@@ -384,7 +384,7 @@ void set_HOD(int n){ //n >=0: set HOD parameters in redshift bin n; n = -1: unse
     gbias.b[n] = bgal(n,1./(z+1));
     printf("HOD derived quantities in bin %d at <z> = %.2f: <n_g> = %e(h/Mpc)^3 <b_g> = %.2f lg(<M_h> h/M_sun) = %.3f f_sat = %.3f\n",n, z,ngal(n,1./(z+1))*pow(cosmology.coverH0,-3.0),gbias.b[n], log10(mmean(n,1./(z+1))), fsat(n,1./(z+1)));
     break;
-    
+
     case 2:
     gbias.hod[2][0] =12.96;
     gbias.hod[2][1] = 0.38;
@@ -404,9 +404,9 @@ void set_HOD(int n){ //n >=0: set HOD parameters in redshift bin n; n = -1: unse
     gbias.hod[3][5] = 1.00;
     gbias.b[n] = bgal(n,1./(z+1));
     printf("HOD derived quantities in bin %d at <z> = %.2f: <n_g> = %e(h/Mpc)^3 <b_g> = %.2f lg(<M_h> h/M_sun) = %.3f f_sat = %.3f\n",n, z,ngal(n,1./(z+1))*pow(cosmology.coverH0,-3.0),gbias.b[n], log10(mmean(n,1./(z+1))), fsat(n,1./(z+1)));
-    
+
     break;
-    
+
     case 4:
     //no information for higher redshift populations - copy 1<z<1.2 values
     gbias.hod[4][0] =12.80;
@@ -417,17 +417,15 @@ void set_HOD(int n){ //n >=0: set HOD parameters in redshift bin n; n = -1: unse
     gbias.hod[4][5] = 1.00;
     gbias.b[n] = bgal(n,1./(z+1));
     printf("HOD derived quantities in bin %d at <z> = %.2f: <n_g> = %e(h/Mpc)^3 <b_g> = %.2f lg(<M_h> h/M_sun) = %.3f f_sat = %.3f\n",n, z,ngal(n,1./(z+1))*pow(cosmology.coverH0,-3.0),gbias.b[n], log10(mmean(n,1./(z+1))), fsat(n,1./(z+1)));
-    
+
     break;
-    
+
     default:
     printf("no HOD parameters specified to initialize bin %d\n", n);
   }
-  
+
   /*for sparse lens populations, update angular galaxy density*/
   survey.n_lens = 2.0;
-  
+
   printf("\nUsing HOD model for lens population with n_lens = %.2f/arcmin^2.\nLens redshift distribution from redshift.clustering_REDSHIFT_FILE =%s\nSource distribution from redshift.shear_REDSHIFT_FILE =%s\n\n",survey.n_lens,redshift.clustering_REDSHIFT_FILE, redshift.shear_REDSHIFT_FILE);
 }
-
-

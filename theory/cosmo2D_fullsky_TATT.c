@@ -1,11 +1,12 @@
 double C1_TA(double a, double nz);
 double C2_TT(double a, double nz);
 double C_EE_tab(double l, int ni, int nj);
+double C_reduced_shear(double l, int ni, int nj);
 double C_BB_tab(double l, int ni, int nj);
 double C_ggl_TATT_tab(double l, int ni, int nj);
 double w_gamma_t_TATT(int nt,int ni, int nj); //G-G lensing, lens bin ni, source bin nj, including IA contamination if like.IA = 3
 double xi_pm_TATT(int pm, int nt, int ni, int nj); //shear tomography correlation functions, including IA contamination if like.IA = 3
-int reduced_shear = 0;
+int reduced_shear = 1;
 int source_clustering = 0;
 //ell_max for transform to angular correlation functions
 int LMAX = 100000;
@@ -13,7 +14,7 @@ int LMAX = 100000;
 int LMIN_tab =20;
 //number of grid point for C(ell) look-up tables
 int NTAB_TATT = 60;
-
+double C_source[4] ={-1.165,-0.641,-0.547,0.803};
 /* NLA/TA amplitude C1, nz argument only need if per-bin amplitude*/
 double C1_TA(double a, double nz){
 	// per-bin IA parameters
@@ -22,6 +23,8 @@ double C1_TA(double a, double nz){
 	}
 	//power law evolution
 	return -cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+	//observed A_0(z)<(L/L0)^beta>f_red(z)
+	//return A_IA_Joachimi(a)*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a);
 }
 /* TA source bias parameter, nz argument only need if per-bin amplitude*/
 double b_TA(double a, double nz){
@@ -65,7 +68,7 @@ double int_for_C_shear_shear_IA_EE(double a, void *params){
 	if (reduced_shear)
 		res += reduced_shear*wk1*wk2*(wk1+wk2)*Delta_P_reduced_shear_tab(k,a)/fK/fK;
 	if (source_clustering){
-		res += source_clustering*(wk1*W2_kappa(a,fK,ar[1])+wk2*W2_kappa(a,fK,ar[0]))*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+		res += source_clustering*(wk1*W2_kappa(a,fK,ar[1])*C_source[(int)ar[1]]+wk2*W2_kappa(a,fK,ar[0])*C_source[(int)ar[0]])*Delta_P_reduced_shear_tab(k,a)/fK/fK;
 	}
   if (C1 || C1_2 || C2 || C2_2){
   	/*II contribution */
@@ -73,6 +76,20 @@ double int_for_C_shear_shear_IA_EE(double a, void *params){
   	/*GI contribution */
   	res += ws1*wk2*TATT_GI_E(k,a,C1,C2,b_ta)+ws2*wk1*TATT_GI_E(k,a,C1_2,C2_2,b_ta_2);
   }
+  return res*dchi_da(a)/fK/fK;
+}
+
+double int_for_C_reduced_shear(double a, void *params){
+  double res=0., ell, fK, k,ws1,ws2,wk1,wk2, norm,C1,C1_2,C2,C2_2,b_ta,b_ta_2;
+  double *ar = (double *) params;
+  if (a >= 1.0) error("a>=1 in int_for_C_II");
+  ell       = ar[2]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+  wk1 = W_kappa(a,fK,ar[0]); /* radial lens efficiency for first source bin*/
+  wk2 = W_kappa(a,fK,ar[1]); /* radial lens efficiency for second source bin*/
+
+	res = wk1*wk2*(wk1+wk2)*Delta_P_reduced_shear_tab(k,a)/fK/fK;
   return res*dchi_da(a)/fK/fK;
 }
 
@@ -135,7 +152,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
 		res += reduced_shear*(b1*w_density+w_mag)*wk*wk*Delta_P_reduced_shear_tab(k,a)/fK/fK;
 	}
 	if (source_clustering){
-		res += source_clustering*(b1*w_density+w_mag)*W2_kappa(a,fK,ar[1])*Delta_P_reduced_shear_tab(k,a)/fK/fK;
+		res += source_clustering*(b1*w_density+w_mag)*W2_kappa(a,fK,ar[1])*C_source[(int)ar[1]]*Delta_P_reduced_shear_tab(k,a)/fK/fK;
 	}
 
   if (C1 || C2) res += (b1*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
@@ -151,6 +168,14 @@ double C_EE_TATT(double l, int ni,int  nj){
   return EE;
 }
 
+double C_reduced_shear(double l, int ni,int  nj){
+  double array[3] = {(double) ni, (double) nj, l};
+  // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
+  double EE = int_gsl_integrate_low_precision(int_for_C_reduced_shear,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.99999,NULL,1000);
+  // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.98,NULL,1000);
+  // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,0.95,0.99,NULL,1000);
+  return EE;
+}
 
 double C_BB_TATT(double l, int ni, int nj){
   double array[3] = {(double) ni, (double) nj, l};
