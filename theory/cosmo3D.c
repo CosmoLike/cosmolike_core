@@ -300,10 +300,10 @@ double sigma_r_sqr()
     update_cosmopara(&C);
 
   }
-  if (!(res>0.0)){
-    fprintf(stderr,"failed with sigma_r_sqr = %le\n", res);
-  }
-  assert(res>0.0);
+  // if (!(res>0.0)){
+  //   fprintf(stderr,"failed with sigma_r_sqr = %le\n", res);
+  // }
+  // assert(res>0.0);
   return res;
 }
 
@@ -1340,7 +1340,7 @@ double Delta_NL_emu_only(double k_NL,double a)
         table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog)*cosmology.h0, acc));
         //printf("emu used\n");
       }
-      if(klog>log(k_max_emu/cosmology.h0))  table_P_NL[i][j]=log(emu_max);
+      if(klog>log(k_max_emu/cosmology.h0)) table_P_NL[i][j]=log(emu_max);
       if(klog<log(k_min_emu/cosmology.h0)) table_P_NL[i][j]=log(emu_min);
         //printf("Halofit used: exceeded emu k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_emu/cosmology.h0,k_max_emu/cosmology.h0);
     }
