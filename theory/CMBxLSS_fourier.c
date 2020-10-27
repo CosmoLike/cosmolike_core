@@ -10,6 +10,7 @@
 // integrands for power spectra
 double W_k(double a, double fK); //lensing efficiency weightfunction for CMB lensing
 double beam_SPT(double l);
+double beam_cmb(double l, double fwhm_arcmin);
 double int_for_C_gk(double a, void *params);
 double int_for_C_ks(double a, void *params);
 double int_for_C_kk(double a, void *params);
@@ -29,6 +30,11 @@ double beam_SPT(double l){
   return exp(-0.5*l*l*sigma*sigma);
 }
 // integrands for power spectra
+
+double beam_cmb(double l, double fwhm_arcmin){
+  double sigma = fwhm_arcmin/sqrt(8.*log(2.0))*constants.arcmin;
+  return exp(-0.5*l*l*sigma*sigma);
+}
 
 //lensing efficiency weightfunction for CMB lensing
 double W_k(double a, double fK){
@@ -108,8 +114,6 @@ double int_for_C_kk(double a, void *params){
    return res;
 }
 
-
-// MANUWARNING: IAAAAA!
 
 // IA for kappa CMB x shear: gI + true (fast)
 double int_for_C_ks_IA(double a, void *params)

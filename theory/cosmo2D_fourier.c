@@ -192,13 +192,13 @@ double int_for_C_gl_tomo(double a, void *params) // Add RSD
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  double chi_0,chi_1,a_0,a_1;
-  chi_0 = f_K(ell/k);
-  chi_1 = f_K((ell+1.)/k);
-  if (chi_1 > chi(limits.a_min)){
-    return 0;}
-  a_0 = a_chi(chi_0);
-  a_1 = a_chi(chi_1);
+  // double chi_0,chi_1,a_0,a_1;
+  // chi_0 = f_K(ell/k);
+  // chi_1 = f_K((ell+1.)/k);
+  // if (chi_1 > chi(limits.a_min)){
+  //   return 0;}
+  // a_0 = a_chi(chi_0);
+  // a_1 = a_chi(chi_1);
 
   double wgal = W_gal(a,ar[0]);
   wgal += W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) ;
