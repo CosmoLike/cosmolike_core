@@ -647,13 +647,13 @@ int fill_class_parameters(struct file_content * fc,int parser_length){
 // pass neutrino parameters
   if (cosmology.M_nu > 1.e-5 || cosmology.Omega_nu >0.){
     strcpy(fc->name[14],"N_ncdm");
-    sprintf(fc->value[14],"%d",1);
+    sprintf(fc->value[14],"%d",3);
 
     if (cosmology.Omega_nu >0.)
     {
       strcpy(fc->name[15],"Omega_ncdm");
-//      sprintf(fc->value[15],"%e,%e,%e",cosmology.Omega_nu/3,cosmology.Omega_nu/3,cosmology.Omega_nu/3);
-      sprintf(fc->value[15],"%e",cosmology.Omega_nu);
+      sprintf(fc->value[15],"%e,%e,%e",cosmology.Omega_nu/3,cosmology.Omega_nu/3,cosmology.Omega_nu/3);
+//      sprintf(fc->value[15],"%e",cosmology.Omega_nu);
     }
     else{
       strcpy(fc->name[15],"m_ncdm"); //\Sigma(m_nu) in eV
@@ -661,7 +661,7 @@ int fill_class_parameters(struct file_content * fc,int parser_length){
       sprintf(fc->value[15],"%e,%e,%e",cosmology.M_nu/3,cosmology.M_nu/3,cosmology.M_nu/3);
     }
     strcpy(fc->name[16],"N_ur");
-    sprintf(fc->value[16],"%e",2.0328);//0.00641);
+    sprintf(fc->value[16],"%e",0.00641);
   }
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
   if (cosmology.A_s >0){
