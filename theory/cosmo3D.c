@@ -512,10 +512,10 @@ int run_class(
 }
 double CLASS_sigma8(struct spectra *sp, struct nonlinear *nl){
   #ifndef CLASS_V29
-    printf("sigma_8 = %.3f\n",sp->sigma8);
+    #printf("sigma_8 = %.3f\n",sp->sigma8);
     return sp->sigma8;
   #else
-  printf("sigma_8 = %.3f\n",*nl->sigma8);
+  #printf("sigma_8 = %.3f\n",*nl->sigma8);
     return  *nl->sigma8;
   #endif
 }
