@@ -4,6 +4,8 @@ double b1_per_bin_evolv(double z, int ni); //model b1 using one parameter per re
 double b1_per_bin_pass_evolv(double z, int ni); //model b1 using one parameter per redshift bin + passive evolution
 double b1_growth_scaling(double z, int ni); //model b1 assuming b1(z) = b_{1,0}*G(z)
 double bgal_z(double z, int ni); //bias evolution within redshift bin, used by clustering/G-G-lensing routines without HOD modeling
+double neutrino_bias(double z, int ni); //bias model using b1_per_bin with scaled power-spectrum ratio
+
 
 double b2_from_b1(double b1); //fitting function for b_2(b_1)
 double bs2_from_b1(double b1); //theory prediction for b_s2(b_1)
@@ -27,7 +29,7 @@ double G11 (double k, double a, int nz);
 double P_gg (double k, double a,int nz);//galaxy-galaxy power spectrum based on HOD model in bin nz
 double P_gm (double k, double a,int nz);//galaxy-matter power spectrum based on HOD model in bin nz
 void set_HOD(int n); //set HOD parameters
-
+double dlnn_ddcrit(double m, double a);
 
 /*********************** galaxy bias & HOD routines *********************************/
 //fitting formula from Lazeyras et al. 2016 (Eq. 5.2)
@@ -61,6 +63,28 @@ double b1_growth_scaling(double z, int ni){
 double b1_powerlaw(double z, int ni){
   return gbias.b[0]*pow(1+z,gbias.b[1]);
 }
+
+double dlnn_ddcrit(double m, double a){
+  double n = pow(nu(m,a),2);
+  double q = 1.795;
+  double a_factor = 0.788*pow(a,0.01);
+  double p = 0.807;
+  double d_crit = delta_c(a);
+
+  return (q-a_factor*n)/d_crit - (2*p/d_crit)/(1+pow(a_factor*n,p));
+
+
+}
+
+/*
+double neutrino_bias(double z, int ni){
+  double a = 1.0/(1.0+z);
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  return gbias.b[ni]* (1.0 + Pdelta_cluster(k,a)/Pdelta(k,a) * f_cb)/(1.0+f_cb);
+}*/
+
+
+
 double bgal_z(double z, int ni){ //bias evolution within redshift bin, used by clustering/G-G-lensing routines without HOD modeling
   //change this into desired redshift evolution as function of (z, z_pivot = gbias[ni][1]), with z_evolv(z_pivot) =1
   //e.g. z_evolv = pow((1+z)/(1+gbias[ni][1]),0.5);
@@ -280,7 +304,7 @@ double P_gg (double k, double a,int nz){ //galaxy-galaxy power spectrum based on
     da = (amax - amin)/(N_a-1.);
     logkmin = log(limits.k_min_cH0);
     logkmax = log(limits.k_max_cH0/10.);
-//    printf("tabulating P_gg %d, %e %e, %e %e\n", NZ,exp(logkmin),exp(logkmax), amin,amax);
+    printf("tabulating P_gg %d, %e %e, %e %e\n", NZ,exp(logkmin),exp(logkmax), amin,amax);
     dk = (logkmax - logkmin)/(N_k_nlin-1.);
     aa= amin;
     for (i=0; i<N_a; i++, aa +=da) {

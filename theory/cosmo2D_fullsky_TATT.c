@@ -6,6 +6,7 @@ double C_ggl_TATT_tab(double l, int ni, int nj);
 double w_gamma_t_TATT(int nt,int ni, int nj); //G-G lensing, lens bin ni, source bin nj, including IA contamination if like.IA = 3
 double xi_pm_TATT(int pm, int nt, int ni, int nj); //shear tomography correlation functions, including IA contamination if like.IA = 3
 
+double scaled_b1_bias(double z, int nz);
 //ell_max for transform to angular correlation functions
 int LMAX = 100000;
 //ell_min for switching from exact evalution of C(ell) to interpolated look-up table
@@ -60,7 +61,7 @@ double int_for_C_shear_shear_IA_EE(double a, void *params){
   C1_2 = C1_TA(a,ar[1]); b_ta_2 = b_TA(a,ar[1]); C2_2 = C2_TT(a,ar[1]);
 
   /*GG cosmic shear */
-  res = wk1*wk2*Pdelta_cluster(k,a);
+  res = wk1*wk2*Pdelta(k,a);
   if (C1 || C1_2 || C2 || C2_2){
   	/*II contribution */
   	res += ws1*ws2*TATT_II_EE(k,a,C1,C2,b_ta,C1_2,C2_2,b_ta_2);
@@ -109,7 +110,14 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   w_mag = W_mag(a,fK,ar[0])*gbias.b_mag[(int)ar[0]]; /* lens efficiency *b_mag for lens bin (for lens magnification)*/
 
   /* galaxy bias parameters for lens bin*/
-  b1 = gbias.b1_function(1./a-1.,(int)ar[0]);
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  b1 = gbias.b1_function(1./a-1.,(int)ar[0]);//* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  //printf("%.12lf\n", gbias.b1_function(1./a-1.,(int)ar[0]));
+  //FILE *biases;
+  //biases = fopen("./p_ks/b1_biases_P_lin_3_Nncdm_0.00083_simple_bias.txt", "a+");
+  //fprintf(biases,"%.12lf %.12lf \n", k, (1.0 + Pdelta_cluster(k,a)/Pdelta(k,a) * f_cb)/(1.0+f_cb) );
+  //fclose(biases);
+
   b2 = gbias.b2[(int)ar[0]];
   bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);

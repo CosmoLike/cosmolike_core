@@ -34,9 +34,17 @@ double int_for_C_cl_lin(double a, void *params)
 	
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
 	res= res*p_lin_cluster(k,a);
+	/*
+  	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  	double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  	double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  	res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_lin_cluster(k,a))+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p_lin(k,a)));
+  	res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_lin_cluster(k,a))+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p_lin(k,a)));
+  	res *= dchi_da(a)/fK/fK;
+  	*/
+  	//uncomment above lines to implement scale-dependent neutrino bias
 	return res;
 }
-
 
 double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj
 {
@@ -59,6 +67,17 @@ double int_for_C_cl_nl_rescale(double a, void *params)
 	// printf("Pdelta(k,1):%lg, Prescale(k,1):%lg\n", Pdelta(k,0.9999), Pdelta(k,0.9999)*growfac(1.)*growfac(1.)/growfac(1.)/growfac(1.));
 	// printf("Pdelta(k,0.5):%lg, Prescale(k,0.5):%lg\n", Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.5), Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.9999)*growfac(0.5)*growfac(0.5)/growfac(1.)/growfac(1.));
 	// exit(0);
+
+	/*
+	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  	double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  	double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  	res = (b1_k_0*W_HOD(a, ar[0])*sqrt(Pdelta_cluster(k,a))+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(Pdelta(k,a)));
+  	res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(Pdelta_cluster(k,a))+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(Pdelta(k,a)));
+  	res *= dchi_da(a)/fK/fK;
+  	*/
+
+  	//uncomment above lines to implement scale-dependent neutrino bias
 	return res;
 }
 double C_cl_nl_rescaled_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj

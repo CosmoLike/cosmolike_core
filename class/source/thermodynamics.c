@@ -1596,7 +1596,7 @@ int thermodynamics_helium_from_bbn(
 
   free(pvecback);
 
-  //  printf("Neff early = %g, Neff at bbn: %g\n",pba->Neff,Neff_bbn);
+    printf("Neff early = %g, Neff at bbn: %g\n",pba->Neff,Neff_bbn);
 
   /** - compute Delta N_eff as defined in bbn file, i.e. \f$ \Delta N_{eff}=0\f$ means \f$ N_{eff}=3.046\f$ */
   DeltaNeff = Neff_bbn - 3.046;

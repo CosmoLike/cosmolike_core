@@ -86,6 +86,7 @@ double int_for_C_cl_tomo_b2(double a, void *params)
   double b2 = gbias.b2[(int)ar[0]];
   double bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);
+
   if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");
   
   ell       = ar[2]+0.5;
@@ -93,11 +94,29 @@ double int_for_C_cl_tomo_b2(double a, void *params)
   k      = ell/fK;
   
   double s4 = 0.;//PT_sigma4(k);
+  
   res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;
   if(res){
     res= res*(b1*b1*Pdelta(k,a)+g4*(b1*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1*b3nl_from_b1(b1)*PT_d1d3(k)));
   }
   res += (W_gal( a, ar[0])*W_mag(a, fK,ar[1])+ W_gal( a, ar[1])*W_mag(a, fK,ar[0]))*dchi_da(a)/fK/fK*Pdelta(k,a);
+
+  /*
+  res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  if(res){
+    res= res*(b1_k_0*b1_k_0*Pdelta_cluster(k,a)+g4*(b1_k_0*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1_k_0*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1_k_0*b3nl_from_b1(b1_k_0)*PT_d1d3(k)));
+  }
+
+  double w_gal_0 = b1_k_0*W_HOD(a, ar[0]) * sqrt(Pdelta_cluster(k,a)) + gbias.b_mag[(int)ar[0]]*W_mag(a, fK,ar[0])*sqrt(Pdelta(k,a));
+  double w_gal_1 = b1_k_1*W_HOD(a, ar[1]) * sqrt(Pdelta_cluster(k,a)) + gbias.b_mag[(int)ar[1]]*W_mag(a, fK,ar[1])*sqrt(Pdelta(k,a));
+
+  res += (w_gal_0*W_mag(a, fK,ar[1])+ w_gal_1*W_mag(a, fK,ar[0]))*dchi_da(a)/fK/fK;
+  */
+
+
   return res;
 }
 
@@ -113,7 +132,20 @@ double int_for_C_cl_tomo(double a, void *params)
   
   res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
   res= res*Pdelta(k,a);
+
+  /*
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,ar[0])/p_lin(k,ar[0]) * f_cb)/(1.0+f_cb);
+  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,ar[0])/p_lin(k,ar[0]) * f_cb)/(1.0+f_cb);
+
+  res = (b1_k_0*W_HOD(a, ar[0])*sqrt(Pdelta_cluster(k,a))+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(Pdelta(k,a)));
+  res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(Pdelta_cluster(k,a))+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(Pdelta(k,a)));
+  res *= dchi_da(a)/fK/fK;
+  */
+  //uncomment above lines to implement scale-dependent neutrino bias
   return res;
+
+
 }
 
 double int_for_C_cl_tomo_RSD(double k, void *params)
@@ -131,6 +163,18 @@ double int_for_C_cl_tomo_RSD(double k, void *params)
 //  res=(W_gal(a_0,ar[0]))*(W_gal(a_0,ar[1]));
   res=(W_gal(a_0,ar[0])+W_RSD(ell,a_0,a_1,ar[0]))*(W_gal(a_0,ar[1])+W_RSD(ell,a_0,a_1,ar[1]));
   res= res*Pdelta(k,a_0);
+
+
+  /*
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  double b1_k_0 = gbias.b1_function(1./a_0-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a_0)/p_lin(k,a_0) * f_cb)/(1.0+f_cb);
+  res = (b1_k_0*W_HOD(a_0, ar[0])*sqrt(Pdelta_cluster(k,a_0))+gbias.b_mag[(int)ar[0]]*W_mag(a_0, chi_0, ar[0])*sqrt(Pdelta(k,a_0))+W_RSD(ell,a_0,a_1,ar[0])*sqrt(Pdelta_cluster(k,a_0)));
+  res *=(b1_k_0*W_HOD(a_0, ar[1])*sqrt(Pdelta_cluster(k,a_0))+gbias.b_mag[(int)ar[1]]*W_mag(a_0, chi_1, ar[1])*sqrt(Pdelta(k,a_0))+W_RSD(ell,a_0,a_1,ar[1])*sqrt(Pdelta_cluster(k,a_0)));
+  */
+  
+  //uncomment above lines to implement scale-dependent neutrino bias
+  
+
   return res;
 }
 
@@ -157,14 +201,23 @@ double int_for_C_gl_tomo_b2(double a, void *params)
   double bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);
   if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");
-  
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  
+
   res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
   res= res*(b1*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)));
   res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1*Pdelta(k,a);
+
+
+  /*
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  double b1_k = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
+  res= res*(b1_k*Pdelta_cluster(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1_k)*PT_d1d3(k)));
+  res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1*Pdelta(k,a);
+  */
   return res;
 }
 

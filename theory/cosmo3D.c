@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <class.h>
+#include "../class/include/class.h"
 
 #include <gsl/gsl_odeiv.h>
 #include <gsl/gsl_integration.h>
@@ -655,8 +655,8 @@ double get_class_s8(struct file_content *fc, int *status){
       if (cosmology.M_nu>0. || cosmology.Omega_nu>0.){ 
         
         double ncdm_mass_or_omega;
-        if (cosmology.Omega_nu>0.){ ncdm_mass_or_omega = cosmology.Omega_nu; strcpy(fc->name[15],"Omega_ncdm");}
-        else {ncdm_mass_or_omega = cosmology.M_nu; strcpy(fc->name[15],"m_ncdm");}
+        if (cosmology.M_nu>0.){ ncdm_mass_or_omega = cosmology.M_nu; strcpy(fc->name[15],"m_ncdm");}
+        else {ncdm_mass_or_omega = cosmology.Omega_nu; strcpy(fc->name[15],"Omega_ncdm");}
         switch(cosmology.N_ncdm){
           case 0:
 
@@ -679,24 +679,71 @@ double get_class_s8(struct file_content *fc, int *status){
             sprintf(fc->value[16],"%e",1.0196);
             cosmology.N_ur = 1.0196;
             sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega/2, ncdm_mass_or_omega/2);
+            if(cosmology.meff>0 && cosmology.M_nu>0) sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega, cosmology.meff);
+
+
+
             break;
           case 3:
             strcpy(fc->name[14],"N_ncdm");
             sprintf(fc->value[14],"%d",cosmology.N_ncdm);
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
-            sprintf(fc->value[16],"%e",0.00641);
-            cosmology.N_ur = 0.00641;
+            //sprintf(fc->value[16],"%e",0.00641);
+            //cosmology.N_ur = 0.00641;
             //cosmology.N_ur = 0.0328;
             //sprintf(fc->value[16],"%e",0.0328); 
             sprintf(fc->value[15],"%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3);
+            //strcpy(fc->name[27],"ncdm_psd_parameters");
+            //sprintf(fc->value[27],"%e,%e,%e",0.3 ,0.5, 0.05);
+            //strcpy(fc->name[28],"use_ncdm_psd_files");
+            //sprintf(fc->value[28],"%d,%d,%d",0,0,0);
+            strcpy(fc->name[24],"nonlinear_verbose");
+            sprintf(fc->value[24],"%d",5);
+            strcpy(fc->name[26],"background_verbose");
+            sprintf(fc->value[26],"%d",5);
+            strcpy(fc->name[25],"thermodynamics_verbose");
+            sprintf(fc->value[25],"%d",5);
+            //strcpy(fc->name[17],"N_idr");
+            //sprintf(fc->value[17],"%e",1.0);
+            break;
+          case 4:
+            strcpy(fc->name[14],"N_ncdm");
+            sprintf(fc->value[14],"%d",cosmology.N_ncdm);
+            //sprintf(fc->value[16],"%e",1.0);
+            //cosmology.N_ur = 1.0;
+            if (cosmology.Omega_nu>0.){
+              strcpy(fc->name[15],"Omega_ncdm");
+              if (cosmology.meff==0.0){sprintf(fc->value[15],"%e,%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3, 1.19522*pow(10,-05));}
+              else{sprintf(fc->value[15],"%e,%e,%e,%e",0.0,0.0,ncdm_mass_or_omega/93.14/cosmology.h0/cosmology.h0, cosmology.meff/94.1/cosmology.h0/cosmology.h0);}
+            }
+            else {sprintf(fc->value[15],"%e,%e,%e,%e",0.0,0.0,ncdm_mass_or_omega, cosmology.meff);}
+            
+            /*
+            if (cosmology.Omega_nu>0.){
+              if (cosmology.meff==0.0){sprintf(fc->value[15],"%e,%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3, 1.19522*pow(10,-05));}
+              else{sprintf(fc->value[15],"%e,%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3, cosmology.meff/94.1/cosmology.h0/cosmology.h0);}
+            }
+            else {sprintf(fc->value[15],"%e,%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3, cosmology.meff);}
+            */
+            //strcpy(fc->name[27],"ncdm_psd_parameters");
+            //sprintf(fc->value[27],"%e,%e,%e,%e",0.3 ,0.5, 0.05,0.0);
+            //strcpy(fc->name[28],"use_ncdm_psd_files");
+            //sprintf(fc->value[28],"%d,%d,%d,%d",0,0,0,0);
+            strcpy(fc->name[26],"background_verbose");
+            sprintf(fc->value[26],"%d",5);
+            strcpy(fc->name[25],"thermodynamics_verbose");
+            sprintf(fc->value[25],"%d",5);
+            //strcpy(fc->name[24],"ncdm_psd_filenames");
+            //sprintf(fc->value[24],"/home/paul/cosmolike_core/class/psd_FD_single.dat");
+            
             break;
           default:
             printf("Unsupported neutrino parameterization. Exiting\n");
             exit(1);
         }
       }
-      printf("%e\n", cosmology.N_ur);
+      printf("%e %e\n", cosmology.N_ur, cosmology.Omega_nu);
       //ultra-relativistic neutrinos have a very small energy density, should be taken into account when calculating Omega_cdm. 
       double Omega_ur = 0.0;
       //If there is NCDM, then we should calculate the contribution of Omega_ur. 
@@ -706,7 +753,8 @@ double get_class_s8(struct file_content *fc, int *status){
         Omega_ur = 7.0/8*cosmology.N_ur*pow(4.0/11, 4.0/3)*Omega_gammah2/cosmology.h0/cosmology.h0;
       //}
       strcpy(fc->name[7],"Omega_cdm");
-      sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb-cosmology.Omega_nu-Omega_ur);
+      if (cosmology.meff!=0.0)  sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb-cosmology.Omega_nu-cosmology.meff/94.1/cosmology.h0/cosmology.h0);
+      else  sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb-cosmology.Omega_nu);
 
     if(cosmology.xi_idr>0){
 
@@ -781,13 +829,17 @@ void fprint_parser(struct file_content * fc,int parser_length){
     fprintf(stderr, "%d %s %s\n",i, fc->name[i],fc->value[i]);
   }
 }
-double p_class(double k_coverh0,double a, int NL, int CLUSTERING, int *status){
+double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
+  //CLASS version 2.9 supports copmuting the total matter power spectrum and the CDM+Baryon power spectrum.
+  //To retrieve the CDM+Baryon power spectrum, set CLUSTERING=1, 0 for total matter power spectrum.
+  //To retrieve a power spectrum with non-linear components, set NL=1
+  //NOTE: When no ncdm is used, the CDM+Baryon and total matter spectra will be equivalent. 
 
   static cosmopara C;
   static double **table_P_L = 0;
-  static double **table_P_L_c = 0;
   static double **table_P_NL = 0;
-  static double **table_P_NL_c = 0;
+  static double **table_P_L_C = 0;
+  static double **table_P_NL_C = 0;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   static int class_status = 0;
   double val,klog;
@@ -796,6 +848,8 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING, int *status){
     if (table_P_L ==0){
       table_P_L = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
       table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
+      table_P_L_C = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
+      table_P_NL_C = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
       da = (1. - limits.a_min)/(Ntable.N_a-1.);
       logkmin = log(limits.k_min_mpc*cosmology.coverH0);
       logkmax = log(limits.k_max_mpc_class*cosmology.coverH0);
@@ -818,7 +872,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING, int *status){
   	int parser_length = 30;
   	if (parser_init(&fc,parser_length,"none",errmsg) == _FAILURE_){
      fprintf(stderr,"cosmo3D.c: CLASS parser init error:%s\n",errmsg);
-     *status = 1;
+     class_status = 1;
      return 0.;
    }
    for (int i =0; i < parser_length; i++){
@@ -826,10 +880,10 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING, int *status){
      strcpy(fc.value[i]," ");
    }
 
-   *status = fill_class_parameters(&fc,parser_length);
-   if(*status>0) return 1;
-   *status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-   if(*status>0) {
+   class_status = fill_class_parameters(&fc,parser_length);
+   if(class_status>0) return 1;
+   class_status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+   if(class_status>0) {
      fprint_parser(&fc,parser_length);
      parser_free(&fc);
      return 1;
@@ -846,45 +900,78 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING, int *status){
     norm = log(pow(cosmology.sigma_8/ *nl.sigma8,2.)*pow(cosmology.h0/cosmology.coverH0,3.));
   }
 //    printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/ *nl.sigma8,2.));
-  if (*status ==0){
-  //FILE *fp_lin;
-  //FILE *fp_non;
+  if (class_status ==0){
+  FILE *fp_lin;
+  FILE *fp_non;
+  FILE *fp_lin_c;
+  FILE *fp_non_c;
 
-   //fp_lin = fopen("./p_ks/P_lin_3_Nncdm_0.00083.txt", "w+");
-   //fp_non = fopen("./p_ks/P_non_3_Nncdm_0.00083.txt", "w+");
-    printf("%d %e %e, %d %e %e\n", Ntable.N_a, da, aa, Ntable.N_k_nlin, dk, klog);
-    
-    int index;
-    if (CLUSTERING==1) index = nl.index_pk_cluster;
-    else index = nl.index_pk_total;
+  char file_ending[50];
+  sprintf(file_ending, "_%d_Nncdm_%.5f_nonlinear_bias.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0));
+  if (cosmology.meff!=0.0){
+      sprintf(file_ending, "_%d_Nncdm_%.5f_nur_%.4f_meff_%.2f.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0), cosmology.N_ur,cosmology.meff);
 
+  }
+
+   char header[50];
+   char temp_name[100];
+   strcpy(temp_name,"");
+   strcpy(header,"./p_ks/P_lin");
+   strcat(temp_name, header);
+   strcat(temp_name, file_ending);
+   fp_lin = fopen(temp_name, "w+");
+   strcpy(temp_name,"");
+   strcpy(header,"./p_ks/P_non");
+   strcat(temp_name, header);
+   strcat(temp_name, file_ending);
+   fp_non = fopen(temp_name, "w+");
+   strcpy(temp_name,"");
+   strcpy(header,"./p_ks/P_lin_c");
+   strcat(temp_name, header);
+   strcat(temp_name, file_ending);
+   fp_lin_c = fopen(temp_name, "w+");
+   strcpy(temp_name,"");
+   strcpy(header,"./p_ks/P_non_c");
+   strcat(temp_name, header);
+   strcat(temp_name, file_ending);
+   fp_non_c = fopen(temp_name, "w+");
+
+   printf("%s\n", file_ending);
+
+   //printf("%d %e %e, %d %e %e\n", Ntable.N_a, da, aa, Ntable.N_k_nlin, dk, klog);
+   printf("norm %f\n", norm);
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
         k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
-        //s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
-        //if (cosmology.N_ncdm>0) s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk, &ic);
-        //else s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), index, &Pk, &ic);
-        table_P_L[i][j] = log(Pk) +norm;
 
-        //fprintf(fp_lin, "%f %f %f\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
-        //s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
-        //if (cosmology.N_ncdm>0) s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk, &ic);
-        //else s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
-        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), index, &Pk, &ic);
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+        table_P_L[i][j] = log(Pk) +norm;
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total,  &Pk, &ic);
         table_P_NL[i][j] = log(Pk) +norm;
-        //fprintf(fp_non, "%f %f %f\n", k_class, fmax(1./aa-1.,0.), table_P_NL[i][j]);
+        
+
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk, &ic);
+        table_P_L_C[i][j] = log(Pk) +norm;
+
+        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster,  &Pk, &ic);
+        table_P_NL_C[i][j] = log(Pk) +norm;
+
+        fprintf(fp_lin, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
+        fprintf(fp_non, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL[i][j]);
+        fprintf(fp_lin_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L_C[i][j]);
+        fprintf(fp_non_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL_C[i][j]);
+
+
 
       }
     }
 
-   //P_cm = sqrt(Pmm^2 - Pcc^2) 
-    //P_cm = sqrt(Pmm*Pcc)
 
-
-   //fclose(fp_lin);
-   //fclose(fp_non);
+   fclose(fp_lin);
+   fclose(fp_non);
+   fclose(fp_lin_c);
+   fclose(fp_non_c);
     free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
   }
   update_cosmopara(&C);
@@ -892,31 +979,43 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING, int *status){
 
 klog = log(k_coverh0);
 if (isnan(klog) || class_status) return 0.0;
-if (NL==1) val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.99), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
-else val = interpol2d_fitslope(table_P_L, Ntable.N_a, limits.a_min, 1., da, fmin(a,.99), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+
+if(NL==1){
+  if (CLUSTERING==1) val = interpol2d_fitslope(table_P_NL_C, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+  else val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+}
+else{
+  if (CLUSTERING==1) val = interpol2d_fitslope(table_P_L_C, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+  else val = interpol2d_fitslope(table_P_L, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+}
+
+
+
+
+
 if(isnan(val)) return 0.0;
 return exp(val);
 }
 
 double p_lin_cluster(double k,double a)
 {
-  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){ int status; return p_class(k,a,0, 1, &status);}
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){return p_class(k,a,0, 1);}
   return p_lin(k,a);
 }
 double Pdelta_cluster(double k,double a)
 {
-  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){ int status; return p_class(k,a,1, 1, &status);}
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){return p_class(k,a,1, 1);}
   return Pdelta(k,a);
 }
 
 double p_lin_cross_class(double k,double a)
 {
-  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){ int status; return sqrt(p_class(k,a,0, 1, &status)*p_class(k,a,0,0,&status));}
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){return sqrt(p_class(k,a,0, 1)*p_class(k,a,0,0));}
   return 0.0;
 }
 double Pdelta_cross_class(double k,double a)
 {
-  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){ int status; return sqrt(p_class(k,a,1, 1, &status)*p_class(k,a,1,0,&status));}
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0){return sqrt(p_class(k,a,1, 1)*p_class(k,a,1,0));}
   return 0.0;
 }
 
@@ -931,7 +1030,7 @@ double p_lin(double k,double a)
   static double **table_P_Lz = 0;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   int status;
-  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) return p_class(k,a,0, 0, &status);
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) return p_class(k,a,0, 0);
 
   double amp,ampsqr,grow0,aa,klog,val;
 
@@ -1616,7 +1715,7 @@ double Pdelta(double k_NL,double a)
     case 1: pdelta=2.0*constants.pi_sqr*Delta_NL_emu(kintern,a)/k_NL/k_NL/k_NL; break;
     case 2: pdelta=2.0*constants.pi_sqr*Delta_NL_emu_only(kintern,a)/k_NL/k_NL/k_NL; break;
     case 3: pdelta=p_lin(k_NL,a); break;
-    case 4: pdelta=p_class(k_NL,a,1, 0, &status); break;
+    case 4: pdelta=p_class(k_NL,a,1, 0); break;
     case 5: k_nonlin=nonlinear_scale_computation(a);
     if (kintern<0.01) pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
     else{

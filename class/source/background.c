@@ -1224,7 +1224,7 @@ int background_ncdm_distribution(
       *f0=0.0;
       for(i=0;i<3;i++){
 
-    	*f0 += mixing_matrix[i][n_ncdm]*1.0/pow(2*_PI_,3)*(1./(exp(q-pba->ksi_ncdm[i])+1.) +1./(exp(q+pba->ksi_ncdm[i])+1.));
+      *f0 += mixing_matrix[i][n_ncdm]*1.0/pow(2*_PI_,3)*(1./(exp(q-pba->ksi_ncdm[i])+1.) +1./(exp(q+pba->ksi_ncdm[i])+1.));
 
       }
     } /* end of region not used, but shown as an example */
@@ -1316,7 +1316,7 @@ int background_ncdm_init(
       for (row=0; row<pbadist.tablesize; row++){
         status = fscanf(psdfile,"%lf %lf",
                         &pbadist.q[row],&pbadist.f0[row]);
-        //		printf("(q,f0) = (%g,%g)\n",pbadist.q[row],pbadist.f0[row]);
+        //    printf("(q,f0) = (%g,%g)\n",pbadist.q[row],pbadist.f0[row]);
       }
       fclose(psdfile);
       /* Call spline interpolation: */
@@ -2088,7 +2088,7 @@ int background_initial_conditions(
         log(rho_rad*4./(3*pow(scf_lambda,2)-12))*pba->phi_ini_scf;
       if (3.*pow(scf_lambda,2)-12. < 0){
         /** - --> If there is no attractor solution for scf_lambda, assign some value. Otherwise would give a nan.*/
-    	pvecback_integration[pba->index_bi_phi_scf] = 1./scf_lambda;//seems to the work
+      pvecback_integration[pba->index_bi_phi_scf] = 1./scf_lambda;//seems to the work
         if (pba->background_verbose > 0)
           printf(" No attractor IC for lambda = %.3e ! \n ",scf_lambda);
       }
