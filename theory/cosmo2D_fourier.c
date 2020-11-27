@@ -133,15 +133,18 @@ double int_for_C_cl_tomo(double a, void *params)
   res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
   res= res*Pdelta(k,a);
 
-  /*
+  
+  double p_c = Pdelta_cluster(k,a);
+  double p = Pdelta(k,a);
+
   double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
   double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,ar[0])/p_lin(k,ar[0]) * f_cb)/(1.0+f_cb);
   double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,ar[0])/p_lin(k,ar[0]) * f_cb)/(1.0+f_cb);
 
-  res = (b1_k_0*W_HOD(a, ar[0])*sqrt(Pdelta_cluster(k,a))+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(Pdelta(k,a)));
-  res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(Pdelta_cluster(k,a))+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(Pdelta(k,a)));
+  res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
+  res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
   res *= dchi_da(a)/fK/fK;
-  */
+  
   //uncomment above lines to implement scale-dependent neutrino bias
   return res;
 
@@ -164,13 +167,14 @@ double int_for_C_cl_tomo_RSD(double k, void *params)
   res=(W_gal(a_0,ar[0])+W_RSD(ell,a_0,a_1,ar[0]))*(W_gal(a_0,ar[1])+W_RSD(ell,a_0,a_1,ar[1]));
   res= res*Pdelta(k,a_0);
 
-
-  /*
+  double p_c = Pdelta_cluster(k,a_0);
+  double p = Pdelta(k,a_0);
+  
   double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
   double b1_k_0 = gbias.b1_function(1./a_0-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a_0)/p_lin(k,a_0) * f_cb)/(1.0+f_cb);
-  res = (b1_k_0*W_HOD(a_0, ar[0])*sqrt(Pdelta_cluster(k,a_0))+gbias.b_mag[(int)ar[0]]*W_mag(a_0, chi_0, ar[0])*sqrt(Pdelta(k,a_0))+W_RSD(ell,a_0,a_1,ar[0])*sqrt(Pdelta_cluster(k,a_0)));
-  res *=(b1_k_0*W_HOD(a_0, ar[1])*sqrt(Pdelta_cluster(k,a_0))+gbias.b_mag[(int)ar[1]]*W_mag(a_0, chi_1, ar[1])*sqrt(Pdelta(k,a_0))+W_RSD(ell,a_0,a_1,ar[1])*sqrt(Pdelta_cluster(k,a_0)));
-  */
+  res = (b1_k_0*W_HOD(a_0, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a_0, chi_0, ar[0])*sqrt(p)+W_RSD(ell,a_0,a_1,ar[0])*sqrt(p_c));
+  res *=(b1_k_0*W_HOD(a_0, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a_0, chi_1, ar[1])*sqrt(p)+W_RSD(ell,a_0,a_1,ar[1])*sqrt(p_c));
+  
   
   //uncomment above lines to implement scale-dependent neutrino bias
   

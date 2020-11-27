@@ -906,15 +906,15 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
   FILE *fp_lin_c;
   FILE *fp_non_c;
 
-  char file_ending[50];
-  sprintf(file_ending, "_%d_Nncdm_%.5f_nonlinear_bias.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0));
+  char file_ending[100];
+  sprintf(file_ending, "_%d_Nncdm_%.5f_scaled_linear_bias_const_sigma8.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0));
   if (cosmology.meff!=0.0){
       sprintf(file_ending, "_%d_Nncdm_%.5f_nur_%.4f_meff_%.2f.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0), cosmology.N_ur,cosmology.meff);
 
   }
 
    char header[50];
-   char temp_name[100];
+   char temp_name[200];
    strcpy(temp_name,"");
    strcpy(header,"./p_ks/P_lin");
    strcat(temp_name, header);

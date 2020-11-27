@@ -111,7 +111,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
 
   /* galaxy bias parameters for lens bin*/
   double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-  b1 = gbias.b1_function(1./a-1.,(int)ar[0]);//* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  b1 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
   //printf("%.12lf\n", gbias.b1_function(1./a-1.,(int)ar[0]));
   //FILE *biases;
   //biases = fopen("./p_ks/b1_biases_P_lin_3_Nncdm_0.00083_simple_bias.txt", "a+");
