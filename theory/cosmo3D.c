@@ -35,6 +35,7 @@
 double omv_vareos(double a);
 static inline double hoverh0(double a);
 double growfac(double a);
+double growfac_cluster(double a);
 //int func_for_growfac(double a,const double y[],double f[],void *params);
 double Tsqr_EH_wiggle(double khoverMPC);
 //double int_for_sigma_r_sqr(double k, void * args);
@@ -184,6 +185,10 @@ double growfac(double a)
   gsl_interp_free(intf);
   return(res);
 }
+
+
+
+
 
 
 
@@ -687,6 +692,7 @@ double get_class_s8(struct file_content *fc, int *status){
           case 3:
             strcpy(fc->name[14],"N_ncdm");
             sprintf(fc->value[14],"%d",cosmology.N_ncdm);
+            printf("N_UR is %f\n", cosmology.N_ur);
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
             //sprintf(fc->value[16],"%e",0.00641);
@@ -907,7 +913,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
   FILE *fp_non_c;
 
   char file_ending[100];
-  sprintf(file_ending, "_%d_Nncdm_%.5f_scaled_linear_bias_const_sigma8.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0));
+  sprintf(file_ending, "_%d_Nncdm_%.5f_scaled_linear_bias_const_sigma8_efficient_ell_test_edits.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0));
   if (cosmology.meff!=0.0){
       sprintf(file_ending, "_%d_Nncdm_%.5f_nur_%.4f_meff_%.2f.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0), cosmology.N_ur,cosmology.meff);
 
@@ -1019,6 +1025,81 @@ double Pdelta_cross_class(double k,double a)
   return 0.0;
 }
 
+double growfac_cluster_from_class(double a){
+//  double k_small = limits.k_min_mpc*cosmology.coverH0*10.;
+  double k_small = 1.e-4*cosmology.coverH0;
+  return sqrt(Pdelta_cluster(k_small,a)/Pdelta_cluster(k_small,1.0));
+}
+
+double growfac_cluster(double a)
+{
+  const double MINA=1.e-8;
+  static cosmopara C;
+  static double *ai_cluster;
+  static double *table_cluster;
+  double res;
+
+  gsl_interp *intf=gsl_interp_alloc(gsl_interp_linear,Ntable.N_a);
+  gsl_interp_accel *acc=gsl_interp_accel_alloc();
+
+  if (recompute_expansion(C))
+  {
+
+    if(table_cluster!=0) free_double_vector(table_cluster,0, Ntable.N_a-1);
+    if(ai_cluster!=0) free_double_vector(ai_cluster,0, Ntable.N_a-1);
+    ai_cluster=create_double_vector(0, Ntable.N_a-1);
+    table_cluster=create_double_vector(0, Ntable.N_a-1);
+
+    int i;
+    //if using CLASS, calculate growth factor from low-k ratio of power spectrum at different redshifts
+    if ((strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) && cosmology.w0 == -1.0){
+      double da = (1. - limits.a_min)/(Ntable.N_a-1.);
+
+      for (i=0;i< Ntable.N_a-1;i++) {
+        ai_cluster[i]=limits.a_min+i*da;
+        table_cluster[i] = growfac_cluster_from_class(ai_cluster[i]);
+        //printf("growfac_class(%.3f)=%.3f\n",ai[i],table[i]);
+      }
+      ai_cluster[Ntable.N_a-1] = 1.0;
+      table_cluster[Ntable.N_a-1] = 1.0;
+      update_cosmopara(&C);
+    }
+    
+    //untested and not correct!!!!!!
+    else{
+      const gsl_odeiv_step_type *T=gsl_odeiv_step_rkf45;
+      gsl_odeiv_step *s=gsl_odeiv_step_alloc(T,2);
+      gsl_odeiv_control *c=gsl_odeiv_control_y_new(1.e-6,0.0);
+      gsl_odeiv_evolve *e=gsl_odeiv_evolve_alloc(2);
+
+      double t=MINA;            //start a
+      double t1=1.1;                //final a
+      double h=1.e-6;              //initial step size
+      double y[2]={MINA,MINA};   //initial conditions
+      double norm;
+      double par[0]={};
+      gsl_odeiv_system sys={func_for_growfac,NULL,2,&par};
+
+      for (i=1;i<=Ntable.N_a;i++) {
+        ai_cluster[i-1]=i*t1/(1.*Ntable.N_a);
+        while(t<ai_cluster[i-1])
+          gsl_odeiv_evolve_apply(e,c,s,&sys,&t,ai_cluster[i-1],&h,y);
+        if (i==1) norm=y[0]/ai_cluster[i-1];
+        table_cluster[i-1]=y[0]/norm;
+      }
+
+      gsl_odeiv_evolve_free(e);
+      gsl_odeiv_control_free(c);
+      gsl_odeiv_step_free(s);
+      update_cosmopara(&C);
+    }
+  }
+  gsl_interp_init(intf,ai_cluster,table_cluster,Ntable.N_a);
+  res=gsl_interp_eval(intf,ai_cluster,table_cluster,a,acc);
+  gsl_interp_accel_free(acc);
+  gsl_interp_free(intf);
+  return(res);
+}
 
 
 

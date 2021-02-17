@@ -29,7 +29,6 @@ double C_cl_tomo_nointerp(double l, int ni, int nj);
 //double C_shear_tomo_nointerp(double l, int ni, int nj);
 /**********************************************************/
 
-int scale_dep_bias = 0;//assign to 1 to turn on scale-dep linear bias
 
 double MG_Sigma(double a)
 {
@@ -115,17 +114,19 @@ double int_for_C_cl_tomo_b2(double a, void *params)
   }
   res += (W_gal( a, ar[0])*W_mag(a, fK,ar[1])+ W_gal( a, ar[1])*W_mag(a, fK,ar[0]))*dchi_da(a)/fK/fK*Pdelta(k,a);
 
-  if (scale_dep_bias){
+  if (gbias.neutrino_induced_sdb){
+  	double p = Pdelta(k,a);
+  	double p_c = Pdelta_cluster(k,a);
 	  res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;
 	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
 	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
 	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
 	  if(res){
-	    res= res*(b1_k_0*b1_k_0*Pdelta_cluster(k,a)+g4*(b1_k_0*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1_k_0*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1_k_0*b3nl_from_b1(b1_k_0)*PT_d1d3(k)));
+	    res= res*(b1_k_0*b1_k_0*Pdelta(k,a)+g4*(b1_k_0*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1_k_0*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1_k_0*b3nl_from_b1(b1_k_0)*PT_d1d3(k)));
 	  }
 
-	  double w_gal_0 = b1_k_0*W_HOD(a, ar[0]) * sqrt(Pdelta_cluster(k,a)) + gbias.b_mag[(int)ar[0]]*W_mag(a, fK,ar[0])*sqrt(Pdelta(k,a));
-	  double w_gal_1 = b1_k_1*W_HOD(a, ar[1]) * sqrt(Pdelta_cluster(k,a)) + gbias.b_mag[(int)ar[1]]*W_mag(a, fK,ar[1])*sqrt(Pdelta(k,a));
+	  double w_gal_0 = b1_k_0*W_HOD(a, ar[0]) * sqrt(p) + gbias.b_mag[(int)ar[0]]*W_mag(a, fK,ar[0])*sqrt(p);
+	  double w_gal_1 = b1_k_1*W_HOD(a, ar[1]) * sqrt(p) + gbias.b_mag[(int)ar[1]]*W_mag(a, fK,ar[1])*sqrt(p);
 
 	  res += (w_gal_0*W_mag(a, fK,ar[1])+ w_gal_1*W_mag(a, fK,ar[0]))*dchi_da(a)/fK/fK;
   }
@@ -147,16 +148,16 @@ double int_for_C_cl_tomo(double a, void *params)
   res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
   res= res*Pdelta(k,a);
 
-  if (scale_dep_bias){
+  if (gbias.neutrino_induced_sdb){
 	  double p_c = Pdelta_cluster(k,a);
 	  double p = Pdelta(k,a);
 
 	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,ar[0])/p_lin(k,ar[0]) * f_cb)/(1.0+f_cb);
-	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,ar[0])/p_lin(k,ar[0]) * f_cb)/(1.0+f_cb);
+	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms
+	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms
 
-	  res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
-	  res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
+	  res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
+	  res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
 	  res *= dchi_da(a)/fK/fK;
   }
   //uncomment above lines to implement scale-dependent neutrino bias
@@ -166,20 +167,6 @@ double int_for_C_cl_tomo(double a, void *params)
 }
 
 
-double int_for_C_cl_HOD(double a, void *params)
-{
-  double res,ell, fK, k;
-  double *ar = (double *) params;
-  if (a >= 1.0) error("a>=1 in int_for_p_2");
-  
-  ell       = ar[2]+0.5;
-  fK     = f_K(chi(a));
-  k      = ell/fK;
-  
-  res= W_HOD(a,ar[0])*W_HOD(a,ar[0])*dchi_da(a)/fK/fK;
-  if (res !=0){res= res*P_gg(k,a,(int)ar[0]);}
-  return res;
-}
 double int_for_C_gl_tomo_b2(double a, void *params)
 {
   double res,ell, fK, k;
@@ -199,11 +186,11 @@ double int_for_C_gl_tomo_b2(double a, void *params)
   res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1*Pdelta(k,a);
 
 
-  if (scale_dep_bias){
+  if (gbias.neutrino_induced_sdb){
 	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
 	  double b1_k = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
 	  res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
-	  res= res*(b1_k*Pdelta_cluster(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1_k)*PT_d1d3(k)));
+	  res= res*(b1_k*Pdelta(k,a)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1_k)*PT_d1d3(k))); 
 	  res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1*Pdelta(k,a);
   }
   return res;
@@ -230,7 +217,6 @@ double C_cl_tomo_nointerp(double l, int ni, int nj)  //galaxy clustering power s
     return int_gsl_integrate_medium_precision(int_for_C_cl_tomo_b2,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
   }
   else if (ni == nj){
-    if (gbias.hod[ni][0] > 10 && gbias.hod[ni][0] < 16) {return int_gsl_integrate_medium_precision(int_for_C_cl_HOD,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);}
     // return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
     return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(ni),0.999999,NULL,1000);
   }
@@ -287,10 +273,6 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
 
 
 /////////////////////
-double G_taper(double k){
-	double s_bao = 5.5/cosmology.coverH0;
-	return exp(-k*k*s_bao*s_bao);
-}
 double f_growth(double z){
 	double aa = 1./(1+z);
 	double gamma = 0.55;
@@ -308,9 +290,9 @@ double int_for_C_cl_lin(double a, void *params)
 	k      = ell/fK;
 	
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
-	res= res*p_lin_cluster(k,a);
+	res= res*p_lin(k,a);
 	
-	if (scale_dep_bias){
+	if (gbias.neutrino_induced_sdb){
 		double p_c = p_lin_cluster(k,a);
 		double p = p_lin(k,a);
 
@@ -318,8 +300,8 @@ double int_for_C_cl_lin(double a, void *params)
 	  	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
 	  	double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_c/p * f_cb)/(1.0+f_cb);
 	  	double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_c/p * f_cb)/(1.0+f_cb);
-	  	res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
-	  	res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
+	  	res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
+	  	res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
 	  	res *= dchi_da(a)/fK/fK;
   	}
   	//uncomment above lines to implement scale-dependent neutrino bias
@@ -418,13 +400,16 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
 	int Nell_block = 100, Nchi = 1000;
 	int ell_ar[Nell_block];
-	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
+	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar, **Fk1_RSD_ar, **Fk2_RSD_ar;
 	double **Fk1_Mag_ar, **Fk2_Mag_ar;
 
 	k1_ar = malloc(Nell_block * sizeof(double *));
 	k2_ar = malloc(Nell_block * sizeof(double *));
 	Fk1_ar = malloc(Nell_block * sizeof(double *));
 	Fk2_ar = malloc(Nell_block * sizeof(double *));
+
+	Fk1_RSD_ar = malloc(Nell_block * sizeof(double *));
+	Fk2_RSD_ar = malloc(Nell_block * sizeof(double *));
 
 	Fk1_Mag_ar = malloc(Nell_block * sizeof(double *));
 	Fk2_Mag_ar = malloc(Nell_block * sizeof(double *));
@@ -433,11 +418,15 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		k2_ar[i] = malloc(Nchi * sizeof(double));
 		Fk1_ar[i] = malloc(Nchi * sizeof(double));
 		Fk2_ar[i] = malloc(Nchi * sizeof(double));
+		Fk1_RSD_ar[i] = malloc(Nchi * sizeof(double));
+		Fk2_RSD_ar[i] = malloc(Nchi * sizeof(double));
 		Fk1_Mag_ar[i] = malloc(Nchi * sizeof(double));
 		Fk2_Mag_ar[i] = malloc(Nchi * sizeof(double));
 		for(j=0;j<Nchi;j++) {
 			Fk1_ar[i][j] = 0.;
 			Fk2_ar[i][j] = 0.;
+			Fk1_RSD_ar[i][j] = 0.;
+			Fk2_RSD_ar[i][j] = 0.;
 			Fk1_Mag_ar[i][j] = 0.;
 			Fk2_Mag_ar[i][j] = 0.;
 		}
@@ -494,7 +483,6 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	double ell_prefactor;
 	double k1_cH0;
 
-
 	while (fabs(dev) > tolerance){
 	// while(0){
 	// while (L<100){
@@ -503,9 +491,29 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);
 		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);}
+		double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
 
-		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_ar);
-		if(ni != nj) {cfftlog_ells_increment(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_ar);}
+		if (gbias.neutrino_induced_sdb){
+			double geff;
+			//call to increment in this for-loop after re-weighting of f(\chi)
+				//adjust f1_chi_ar for each chi in this for-loop with k-dep factor
+			for(j=0;j<Nchi;j++) {
+				//need to calculate a g_eff term for each representative redshift to approximate
+				//k-dependence in the incremeneted integral. This is the square root of 'growth factors',
+				//i.e. p_(k,z) = p_(k,z_bin)*geff(z,z_bin)^2, where geff^2= (G(z)/G(z_bin)*(k_dep_factor(k,z)/k_dep_factor(k,z_bin)))^2
+
+				geff = 1.0;//f_cb * growfac_cluster(a_chi(chi_ar[j] / real_coverH0))/growfac(a_chi(chi_ar[j] / real_coverH0))*growfac(1.)/growfac_cluster(1.);
+				
+				f1_chi_ar[j] *= geff;
+				if(ni != nj) {f2_chi_ar[j] *= geff;}
+			}
+			//cfftlog_ells_increment(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);
+			//if(ni != nj) {cfftlog_ells_increment(chi_ar, f2_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);}
+
+		}
+
+		cfftlog_ells(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_RSD_ar);
+		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_RSD_ar);}
 
 		// Add in lensing magnification contribution
 		cfftlog_ells(chi_ar, f1_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k1_ar, Fk1_Mag_ar);
@@ -513,8 +521,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		for(i=0;i<Nell_block;i++) {
 			ell_prefactor = ell_ar[i]*(ell_ar[i]+1.);
 			for(j=0;j<Nchi;j++) {
-				Fk1_ar[i][j]+= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j]) * (gbias.b_mag[ni]) *  Fk1_Mag_ar[i][j]);
-				if(ni != nj) {Fk2_ar[i][j]+= (ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* (gbias.b_mag[nj]) *  Fk2_Mag_ar[i][j]);}
+				Fk1_Mag_ar[i][j]= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j]) * (gbias.b_mag[ni]) *  Fk1_Mag_ar[i][j]);
+				if(ni != nj) {Fk2_Mag_ar[i][j]= (ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* (gbias.b_mag[nj]) *  Fk2_Mag_ar[i][j]);}
 			}
 		}
 
@@ -523,22 +531,23 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 			for(j=0;j<Nchi;j++) {
 				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
+				double plin = p_lin(k1_cH0,1.0);
+				double plin_cluster = p_lin_cluster(k1_cH0,1.0);
+				double factor = plin*(1+2*f_cb*(plin_cluster/plin) + f_cb*f_cb*(plin_cluster/plin)*(plin_cluster/plin))/(1+f_cb)/(1+f_cb);
+				//printf("%f\n", factor/plin);
 				if(ni == nj) {
-					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin_cluster(k1_cH0,1.0);
-					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *Pdelta(k1_cH0,0.9999);
-					// printf("plin,%lg, %lg\n", k1_ar[i][j],p_lin(k1_cH0,1.0));
+					cl_temp += ((Fk1_RSD_ar[i][j]) * (Fk1_RSD_ar[i][j]) + (Fk1_Mag_ar[i][j])*(Fk1_Mag_ar[i][j]))*k1_cH0*k1_cH0*k1_cH0 *plin;
+					if (gbias.neutrino_induced_sdb){cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *factor;}
+					else{cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *plin;}
 				}
 				else {
-					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin_cluster(k1_cH0,1.0);
+					cl_temp += ((Fk1_RSD_ar[i][j])*(Fk2_RSD_ar[i][j])+ (Fk1_Mag_ar[i][j])*(Fk2_Mag_ar[i][j])) *k1_cH0*k1_cH0*k1_cH0 *plin;
+					//cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *plin_cluster*plin_c
+					if (gbias.neutrino_induced_sdb){cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *factor;}
+					else{cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *plin;}
 				}
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
-			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;
-			// printf("cl_t/emp: %d, %lg\n", i, cl_temp);
-			// printf("%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
-			// fprintf(OUT, "%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));
-			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));
-			// fprintf(OUT, "%d %lg\n", ell_ar[i], Cl[ell_ar[i]]);
 		}
 
 		i_block++;
@@ -561,10 +570,12 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	for(i=0;i<Nell_block;i++) {
 		free(k1_ar[i]);free(k2_ar[i]);
 		free(Fk1_ar[i]);free(Fk2_ar[i]);
+		free(Fk1_RSD_ar[i]);free(Fk2_RSD_ar[i]);
 		free(Fk1_Mag_ar[i]);free(Fk2_Mag_ar[i]);
 	}
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);
+	free(Fk1_RSD_ar);free(Fk2_RSD_ar);
 	free(Fk1_Mag_ar);free(Fk2_Mag_ar);
 
 }
