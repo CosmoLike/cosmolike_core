@@ -1,4 +1,7 @@
-// fourier space 3x2pt Gaussian cov, without pure noise term
+// fourier space 3x2pt Gaussian cov, without and with pure noise term
+double func_for_cov_G_shear_noNN(double l, int *ar);
+double func_for_cov_G_cl_noNN(double l, int *ar);
+double func_for_cov_G_gl_noNN(double l, int *ar);
 double func_for_cov_G_shear(double l, int *ar);
 double func_for_cov_G_cl(double l, int *ar);
 double func_for_cov_G_gl(double l, int *ar);
@@ -69,6 +72,23 @@ void cov_kk_gl_mix_binned_fullsky(double **cov, double **covNG, int z3,int z4, i
 void cov_kk_cl_mix_binned_fullsky(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *theta, double *dtheta, double *ell);
 void cov_kk_gk_mix_binned_fullsky(double **cov, double **covNG, int zl, int FLAG_NG, double *theta, double *dtheta, double *ell);
 void cov_kk_ks_mix_binned_fullsky(double **cov, double **covNG, int zs, int FLAG_NG, double *theta, double *dtheta, double *ell);
+//
+// Fourier-space cov, template routine
+void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar, int FLAG_NG, double *ell);
+// Fourier-space covs band averaged
+void cov_shear_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
+void cov_gl_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
+void cov_cl_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
+void cov_cl_gl_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
+void cov_gl_gl_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
+void cov_cl_cl_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
+//
+void cov_kk_shear_fourier_binned(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *ell);
+void cov_kk_gl_fourier_binned(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *ell);
+void cov_kk_cl_fourier_binned(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *ell);
+void cov_kk_gk_fourier_binned(double **cov, double **covNG, int zl, int FLAG_NG, double *ell);
+void cov_kk_ks_fourier_binned(double **cov, double **covNG, int zs, int FLAG_NG, double *ell);
+void cov_kk_kk_fourier_binned(double **cov, double **covNG, int FLAG_NG, double *ell);
 
 //
 // double fsky_planck = 0.673;
@@ -261,7 +281,8 @@ double bin_cov_NG_shear_shear(double l1,double l2, int *z_ar){
   static char cov_type[] = "shear_shear";
   int z1,z2,z3,z4;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2]; z4=z_ar[3];
-
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
   int i,j;
   double res, llog1,llog2,ll1,ll2;
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 ){
@@ -286,6 +307,8 @@ double bin_cov_NG_gl_gl(double l1,double l2, int *z_ar){
   static char cov_type[] = "gl_gl";
   int z1,z2,z3,z4;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2]; z4=z_ar[3];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -310,6 +333,8 @@ double bin_cov_NG_cl_cl(double l1,double l2, int *z_ar){
   static char cov_type[] = "cl_cl";
   int z1,z2,z3,z4;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2]; z4=z_ar[3];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -334,6 +359,8 @@ double bin_cov_NG_cl_shear(double l1,double l2, int *z_ar){
   static char cov_type[] = "cl_shear";
   int z1,z2,z3,z4;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2]; z4=z_ar[3];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -358,6 +385,8 @@ double bin_cov_NG_cl_gl(double l1,double l2, int *z_ar){
   static char cov_type[] = "cl_gl";
   int z1,z2,z3,z4;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2]; z4=z_ar[3];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -383,6 +412,8 @@ double bin_cov_NG_gl_shear(double l1,double l2, int *z_ar){
   static char cov_type[] = "gl_shear";
   int z1,z2,z3,z4;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2]; z4=z_ar[3];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -408,6 +439,8 @@ double bin_cov_NG_gk_shear(double l1,double l2, int *z_ar){
   static char cov_type[] = "gk_shear";
   int z1,z2,z3;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -433,6 +466,8 @@ double bin_cov_NG_ks_shear(double l1,double l2, int *z_ar){
   static char cov_type[] = "ks_shear";
   int z1,z2,z3;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -458,6 +493,8 @@ double bin_cov_NG_gk_gl(double l1,double l2, int *z_ar){
   static char cov_type[] = "gk_gl";
   int z1,z2,z3;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -483,6 +520,8 @@ double bin_cov_NG_ks_gl(double l1,double l2, int *z_ar){
   static char cov_type[] = "ks_gl";
   int z1,z2,z3;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -508,6 +547,8 @@ double bin_cov_NG_gk_cl(double l1,double l2, int *z_ar){
   static char cov_type[] = "gk_cl";
   int z1,z2,z3;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -533,6 +574,8 @@ double bin_cov_NG_ks_cl(double l1,double l2, int *z_ar){
   static char cov_type[] = "ks_cl";
   int z1,z2,z3;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -558,6 +601,8 @@ double bin_cov_NG_gk_gk(double l1,double l2, int *z_ar){
   static char cov_type[] = "gk_gk";
   int z1,z2;
   z1=z_ar[0]; z2=z_ar[1];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -583,6 +628,8 @@ double bin_cov_NG_ks_gk(double l1,double l2, int *z_ar){
   static char cov_type[] = "ks_gk";
   int z1,z2;
   z1=z_ar[0]; z2=z_ar[1];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -608,6 +655,8 @@ double bin_cov_NG_ks_ks(double l1,double l2, int *z_ar){
   static char cov_type[] = "ks_ks";
   int z1,z2;
   z1=z_ar[0]; z2=z_ar[1];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -633,6 +682,8 @@ double bin_cov_NG_kk_shear(double l1,double l2, int *z_ar){
   static char cov_type[] = "kk_shear";
   int z1,z2;
   z1=z_ar[0]; z2=z_ar[1];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -658,6 +709,8 @@ double bin_cov_NG_kk_gl(double l1,double l2, int *z_ar){
   static char cov_type[] = "kk_gl";
   int z1,z2;
   z1=z_ar[0]; z2=z_ar[1];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -683,6 +736,8 @@ double bin_cov_NG_kk_cl(double l1,double l2, int *z_ar){
   static char cov_type[] = "kk_cl";
   int z1,z2;
   z1=z_ar[0]; z2=z_ar[1];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -708,6 +763,8 @@ double bin_cov_NG_kk_gk(double l1,double l2, int *z_ar){
   static char cov_type[] = "kk_gk";
   int z1;
   z1=z_ar[0];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -733,6 +790,8 @@ double bin_cov_NG_kk_ks(double l1,double l2, int *z_ar){
   static char cov_type[] = "kk_ks";
   int z1;
   z1=z_ar[0];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -758,6 +817,8 @@ double bin_cov_NG_kk_kk(double l1,double l2, int *z_ar){
   static char cov_type[] = "kk_kk";
   int z1;
   z1=z_ar[0];
+  logsmin = log(1.); logsmax = log(5.e+4);
+  ds = (logsmax - logsmin)/(Ntab - 1.);
 
   int i,j;
   double res, llog1,llog2,ll1,ll2;
@@ -1020,24 +1081,24 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
   double (*func_P2)(int, int);
 
   if(strcmp(realcov_type, "xi+_xi+")==0) {
-    func_for_cov_G  = &func_for_cov_G_shear;
+    func_for_cov_G  = &func_for_cov_G_shear_noNN;
     func_bin_cov_NG = &bin_cov_NG_shear_shear;
     func_P1 = &Glplus_tab;
     func_P2 = &Glplus_tab;
     pure_noise_xipm_xipm(z_ar, theta, dtheta, N); //C+- doesn't have the diagonal shot noise term
   } else if(strcmp(realcov_type, "xi-_xi-")==0) {
-    func_for_cov_G  = &func_for_cov_G_shear;
+    func_for_cov_G  = &func_for_cov_G_shear_noNN;
     func_bin_cov_NG = &bin_cov_NG_shear_shear;
     func_P1 = &Glminus_tab;
     func_P2 = &Glminus_tab;
     pure_noise_xipm_xipm(z_ar, theta, dtheta, N); //C+- doesn't have the diagonal shot noise term
   } else if(strcmp(realcov_type, "xi+_xi-")==0) {
-    func_for_cov_G  = &func_for_cov_G_shear;
+    func_for_cov_G  = &func_for_cov_G_shear_noNN;
     func_bin_cov_NG = &bin_cov_NG_shear_shear;
     func_P1 = &Glplus_tab;
     func_P2 = &Glminus_tab;
   } else if(strcmp(realcov_type, "xi-_xi+")==0) {
-    func_for_cov_G  = &func_for_cov_G_shear;
+    func_for_cov_G  = &func_for_cov_G_shear_noNN;
     func_bin_cov_NG = &bin_cov_NG_shear_shear;
     func_P1 = &Glminus_tab;
     func_P2 = &Glplus_tab;
@@ -1062,7 +1123,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
     func_P1 = &Pl_tab;
     func_P2 = &Glminus_tab;
   } else if(strcmp(realcov_type, "gl_gl")==0) {
-    func_for_cov_G  = &func_for_cov_G_gl;
+    func_for_cov_G  = &func_for_cov_G_gl_noNN;
     func_bin_cov_NG = &bin_cov_NG_gl_gl;
     func_P1 = &Pl2_tab;
     func_P2 = &Pl2_tab;
@@ -1073,7 +1134,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
     func_P1 = &Pl_tab;
     func_P2 = &Pl2_tab;
   } else if(strcmp(realcov_type, "cl_cl")==0) {
-    func_for_cov_G  = &func_for_cov_G_cl;
+    func_for_cov_G  = &func_for_cov_G_cl_noNN;
     func_bin_cov_NG = &bin_cov_NG_cl_cl;
     func_P1 = &Pl_tab;
     func_P2 = &Pl_tab;
@@ -1270,20 +1331,25 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
 
   double cov_g_l[LMAX];
     // printf("lmin,lmax, %d, %d\n", (int)floor(like.lmin),(int)ceil(like.lmax));
-  for(l1=(int)floor(like.lmin); l1<(int)ceil(like.lmax); l1++){
+  for(l1=(int)ceil(like.lmin); l1<(int)ceil(like.lmax)+1; l1++){
     cov_g_l[l1] = func_for_cov_G((double)l1, z_ar);
     // printf("cov_g_l: %d, %le\n", l1,cov_g_l[l1]);
   }
-
+  int l1_min, l1_max, l2_min, l2_max;
+  int N_l1, N_l2;
+    for(l1=l1_min; l1<=l1_max; l1++){
   for(i=0; i<like.Ncl; i++){
+    l1_min = (int)ceil(ell[i]);
+    l1_max = (int)ceil(ell[i+1])-1;
+    N_l1 = l1_max - l1_min + 1;
     for(j=0; j<like.Ntheta ; j++){
-      for(l1=(int)ceil(ell[i]); l1<ell[i+1]; l1++){
-        cov[i][j] += cov_g_l[l1] * func_P2(j,l1) / ((int)floor(ell[i+1])-(int)ceil(ell[i])+1); // rewrite as window function
+      for(l1=l1_min; l1<=l1_max; l1++){
+        cov[i][j] += cov_g_l[l1] * func_P2(j,l1) / N_l1; // rewrite as window function
         if(FLAG_NG){
           l1_double = (double)l1;
           for (l2 = 0; l2 < LMAX; l2++){
             tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
-            covNG[i][j] += tri * func_P2(j,l2);
+            covNG[i][j] += tri * func_P2(j,l2) / N_l1;
           }
         }
       }
@@ -1291,7 +1357,137 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
   }
 }
 
+// Template routine: fourier averaged band power
+void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar, int FLAG_NG, double *ell){
 
+  int i,j;
+  static int LMAX = 50000;
+
+  // double N[like.Ntheta];
+  // for(i=0;i<like.Ntheta;i++) {N[i] = 0.;}
+
+  double (*func_for_cov_G)(double, int*);
+  double (*func_bin_cov_NG)(double, double, int*);
+
+
+  if(strcmp(cov_type, "ss_ss")==0) {
+    func_for_cov_G  = &func_for_cov_G_shear;
+    func_bin_cov_NG = &bin_cov_NG_shear_shear;
+  } else if(strcmp(cov_type, "gl_ss")==0) {
+    func_for_cov_G  = &func_for_cov_G_gl_shear;
+    func_bin_cov_NG = &bin_cov_NG_gl_shear;
+  } else if(strcmp(cov_type, "cl_ss")==0) {
+    func_for_cov_G  = &func_for_cov_G_cl_shear;
+    func_bin_cov_NG = &bin_cov_NG_cl_shear;
+  } else if(strcmp(cov_type, "gl_gl")==0) {
+    func_for_cov_G  = &func_for_cov_G_gl;
+    func_bin_cov_NG = &bin_cov_NG_gl_gl;
+  } else if(strcmp(cov_type, "cl_gl")==0) {
+    func_for_cov_G  = &func_for_cov_G_cl_gl;
+    func_bin_cov_NG = &bin_cov_NG_cl_gl;
+  } else if(strcmp(cov_type, "cl_cl")==0) {
+    func_for_cov_G  = &func_for_cov_G_cl;
+    func_bin_cov_NG = &bin_cov_NG_cl_cl;
+  } else if(strcmp(cov_type, "gk_ss")==0) {
+    func_for_cov_G  = &func_for_cov_G_gk_shear;
+    func_bin_cov_NG = &bin_cov_NG_gk_shear;
+  } else if(strcmp(cov_type, "ks_ss")==0) {
+    func_for_cov_G  = &func_for_cov_G_ks_shear;
+    func_bin_cov_NG = &bin_cov_NG_ks_shear;
+  } else if(strcmp(cov_type, "gk_gl")==0) {
+    func_for_cov_G  = &func_for_cov_G_gk_gl;
+    func_bin_cov_NG = &bin_cov_NG_gk_gl;
+  } else if(strcmp(cov_type, "ks_gl")==0) {
+    func_for_cov_G  = &func_for_cov_G_ks_gl;
+    func_bin_cov_NG = &bin_cov_NG_ks_gl;
+  } else if(strcmp(cov_type, "gk_cl")==0) {
+    func_for_cov_G  = &func_for_cov_G_gk_cl;
+    func_bin_cov_NG = &bin_cov_NG_gk_cl;
+  } else if(strcmp(cov_type, "ks_cl")==0) {
+    func_for_cov_G  = &func_for_cov_G_ks_cl;
+    func_bin_cov_NG = &bin_cov_NG_ks_cl;
+  } else if(strcmp(cov_type, "gk_gk")==0) {
+    func_for_cov_G  = &func_for_cov_G_gk;
+    func_bin_cov_NG = &bin_cov_NG_gk_gk;
+  } else if(strcmp(cov_type, "ks_gk")==0) {
+    func_for_cov_G  = &func_for_cov_G_ks_gk;
+    func_bin_cov_NG = &bin_cov_NG_ks_gk;
+  } else if(strcmp(cov_type, "ks_ks")==0) {
+    func_for_cov_G  = &func_for_cov_G_ks;
+    func_bin_cov_NG = &bin_cov_NG_ks_ks;
+
+  } else if(strcmp(cov_type, "kk_ss")==0) {
+    func_for_cov_G  = &func_for_cov_G_kk_shear;
+    func_bin_cov_NG = &bin_cov_NG_kk_shear;
+  } else if(strcmp(cov_type, "kk_gl")==0) {
+    func_for_cov_G  = &func_for_cov_G_kk_gl;
+    func_bin_cov_NG = &bin_cov_NG_kk_gl;
+  } else if(strcmp(cov_type, "kk_cl")==0) {
+    func_for_cov_G  = &func_for_cov_G_kk_cl;
+    func_bin_cov_NG = &bin_cov_NG_kk_cl;
+  } else if(strcmp(cov_type, "kk_gk")==0) {
+    func_for_cov_G  = &func_for_cov_G_kk_gk;
+    func_bin_cov_NG = &bin_cov_NG_kk_gk;
+  } else if(strcmp(cov_type, "kk_ks")==0) {
+    func_for_cov_G  = &func_for_cov_G_kk_ks;
+    func_bin_cov_NG = &bin_cov_NG_kk_ks;
+
+  } else if(strcmp(cov_type, "kk_kk")==0) {
+    func_for_cov_G  = &func_for_cov_G_kk;
+    func_bin_cov_NG = &bin_cov_NG_kk_kk;
+
+  } else {
+    printf("cov_fourier_binned: cov_type \"%s\" not defined!\n", cov_type); exit(1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ncl ; i++){
+    for(j=0; j<like.Ncl ; j++){
+      cov[i][j] = 0.;
+      covNG[i][j] = 0.;
+    }
+  }
+
+  double triP;
+  double covGl1;
+
+  double cov_g_l[LMAX];
+    // printf("lmin,lmax, %d, %d\n", (int)floor(like.lmin),(int)ceil(like.lmax));
+  for(l1=(int)ceil(like.lmin); l1<(int)ceil(like.lmax)+1; l1++){
+    cov_g_l[l1] = func_for_cov_G((double)l1, z_ar);
+    // printf("cov_g_l: %d, %le\n", l1,cov_g_l[l1]);
+  }
+
+  int l1_min, l1_max, l2_min, l2_max;
+  int N_l1, N_l2;
+  for(i=0; i<like.Ncl; i++){
+    l1_min = (int)ceil(ell[i]);
+    l1_max = (int)ceil(ell[i+1])-1;
+    N_l1 = l1_max - l1_min + 1;
+    for(l1=l1_min; l1<=l1_max; l1++){
+      cov[i][i] += cov_g_l[l1];
+
+      if(FLAG_NG){
+        l1_double = (double)l1;
+        for(j=0; j<like.Ncl ; j++){
+          l2_min = (int)ceil(ell[j]);
+          l2_max = (int)ceil(ell[j+1])-1;
+          N_l2 = l2_max - l2_min + 1;
+          for (l2 = l2_min; l2 <= l2_max; l2++){
+            tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
+            covNG[i][j] += tri/(N_l2*N_l1);
+            // printf("here!!!%d, %d, %le\n", z_ar[0], z_ar[1], bin_cov_NG_shear_shear(3.366055e+01, 3.366055e+01,z_ar));
+          }
+          // covNG[i][j] /= (float)(N_l2);
+        }
+      }
+    }
+    cov[i][i] /= (float)(N_l1*N_l1);
+  }
+}
+
+// Real cov
 void cov_shear_shear_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,int z3,int z4,int pm1,int pm2, int FLAG_NG, double *theta, double *dtheta){
   static char xipp[]="xi+_xi+", xipm[]="xi+_xi-", ximp[]="xi-_xi+", ximm[]="xi-_xi-";
   char realcov_type[8];
@@ -1424,7 +1620,7 @@ void cov_ks_ks_real_binned_fullsky(double **cov, double **covNG, int z1,int z2, 
   cov_real_binned_fullsky(cov, covNG, realcov_type, z_ar, FLAG_NG, theta, dtheta);
 }
 ///// kk real
-// mixed cov 
+// real cov 
 void cov_kk_shear_real_binned_fullsky(double **cov, double **covNG, int z3,int z4,int pm, int FLAG_NG, double *theta, double *dtheta){
   static char xip[]="kk_xi+", xim[]="kk_xi-";
   char mixcov_type[8];
@@ -1513,9 +1709,163 @@ void cov_kk_ks_mix_binned_fullsky(double **cov, double **covNG, int zs, int FLAG
   cov_mix_binned_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, theta, dtheta, ell);
 }
 
+/// Full Fourier 6x2pt cov - band averaged
+
+
+// Real cov
+void cov_shear_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[]= "ss_ss";
+  int z_ar[4];
+  z_ar[0]=z1; z_ar[1]=z2; z_ar[2]=z3; z_ar[3]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_gl_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[]= "gl_ss";
+  int z_ar[4];
+  z_ar[0]=z1; z_ar[1]=z2; z_ar[2]=z3; z_ar[3]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_cl_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[]= "cl_ss";
+  int z_ar[4];
+  z_ar[0]=z1; z_ar[1]=z2; z_ar[2]=z3; z_ar[3]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_cl_gl_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "cl_gl";
+  int z_ar[4];
+  z_ar[0]=z1; z_ar[1]=z2; z_ar[2]=z3; z_ar[3]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_gl_gl_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "gl_gl";
+  int z_ar[4];
+  z_ar[0]=z1; z_ar[1]=z2; z_ar[2]=z3; z_ar[3]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_cl_cl_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "cl_cl";
+  int z_ar[4];
+  z_ar[0]=z1; z_ar[1]=z2; z_ar[2]=z3; z_ar[3]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+// CMB lensing
+void cov_ks_shear_fourier_binned(double **cov, double **covNG, int z1,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "ks_ss";
+  int z_ar[3];
+  z_ar[0]=z1; z_ar[1]=z3; z_ar[2]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_gk_shear_fourier_binned(double **cov, double **covNG, int z1,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "gk_ss";
+  int z_ar[3];
+  z_ar[0]=z1; z_ar[1]=z3; z_ar[2]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_gk_gl_fourier_binned(double **cov, double **covNG, int z1,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "gk_gl";
+  int z_ar[3];
+  z_ar[0]=z1; z_ar[1]=z3; z_ar[2]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_ks_gl_fourier_binned(double **cov, double **covNG, int z1,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "ks_gl";
+  int z_ar[3];
+  z_ar[0]=z1; z_ar[1]=z3; z_ar[2]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_gk_cl_fourier_binned(double **cov, double **covNG, int z1,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "gk_cl";
+  int z_ar[3];
+  z_ar[0]=z1; z_ar[1]=z3; z_ar[2]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_ks_cl_fourier_binned(double **cov, double **covNG, int z1,int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "ks_cl";
+  int z_ar[3];
+  z_ar[0]=z1; z_ar[1]=z3; z_ar[2]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_gk_gk_fourier_binned(double **cov, double **covNG, int z1,int z2, int FLAG_NG, double *ell){
+  char cov_type[] = "gk_gk";
+  int z_ar[2];
+  z_ar[0]=z1; z_ar[1]=z2;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_ks_gk_fourier_binned(double **cov, double **covNG, int z1,int z2, int FLAG_NG, double *ell){
+  char cov_type[] = "ks_gk";
+  int z_ar[2];
+  z_ar[0]=z1; z_ar[1]=z2;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_ks_ks_fourier_binned(double **cov, double **covNG, int z1,int z2, int FLAG_NG, double *ell){
+  char cov_type[] = "ks_ks";
+  int z_ar[2];
+  z_ar[0]=z1; z_ar[1]=z2;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+///// kk fourier
+void cov_kk_shear_fourier_binned(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "kk_ss";
+  int z_ar[2];
+  z_ar[0]=z3; z_ar[1]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_kk_gl_fourier_binned(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "kk_gl";
+  int z_ar[2];
+  z_ar[0]=z3; z_ar[1]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_kk_cl_fourier_binned(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *ell){
+  char cov_type[] = "kk_cl";
+  int z_ar[2];
+  z_ar[0]=z3; z_ar[1]=z4;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_kk_gk_fourier_binned(double **cov, double **covNG, int zl, int FLAG_NG, double *ell){
+  char cov_type[] = "kk_gk";
+  int z_ar[1];
+  z_ar[0]=zl;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_kk_ks_fourier_binned(double **cov, double **covNG, int zs, int FLAG_NG, double *ell){
+  char cov_type[] = "kk_ks";
+  int z_ar[1];
+  z_ar[0]=zs;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+void cov_kk_kk_fourier_binned(double **cov, double **covNG, int FLAG_NG, double *ell){
+  char cov_type[] = "kk_kk";
+  int z_ar[1];
+  z_ar[0]=-1;
+  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell);
+}
+
+
+
 
 /********** Functions for differnt covariances ***************************************/
-double func_for_cov_G_shear(double l, int *ar){
+double func_for_cov_G_shear_noNN(double l, int *ar){
   double C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
@@ -1533,7 +1883,25 @@ double func_for_cov_G_shear(double l, int *ar){
   return (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23)*4.*M_PI/(survey.area*survey.area_conversion_factor* (2.*l+1.));
 }
 
-double func_for_cov_G_cl(double l, int *ar){
+double func_for_cov_G_shear(double l, int *ar){
+  double C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
+  int n1,n2,n3,n4;
+  n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
+  // printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
+  C13 = C_shear_tomo(l,n1,n3);
+  C24 = C_shear_tomo(l,n2,n4);
+  C14 = C_shear_tomo(l,n1,n4);
+  C23 = C_shear_tomo(l,n2,n3);
+  
+  if (n1 == n3){N13= pow(survey.sigma_e,2.0)/(2.*nsource(n1)*survey.n_gal_conversion_factor);}
+  if (n1 == n4){N14= pow(survey.sigma_e,2.0)/(2.*nsource(n1)*survey.n_gal_conversion_factor);}
+  if (n2 == n3){N23= pow(survey.sigma_e,2.0)/(2.*nsource(n2)*survey.n_gal_conversion_factor);}
+  if (n2 == n4){N24= pow(survey.sigma_e,2.0)/(2.*nsource(n2)*survey.n_gal_conversion_factor);}
+  
+  return ((C13+N13)*(C24+N24) + (C14+N14)*(C23+N23))*4.*M_PI/(survey.area*survey.area_conversion_factor* (2.*l+1.));
+}
+
+double func_for_cov_G_cl_noNN(double l, int *ar){
   double C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
@@ -1550,7 +1918,23 @@ double func_for_cov_G_cl(double l, int *ar){
 
   return (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23)*4.*M_PI/(survey.area*survey.area_conversion_factor* (2.*l+1.));
 }
+double func_for_cov_G_cl(double l, int *ar){
+  double C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
+  int n1,n2,n3,n4;
+  n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
+  //printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
+  C13 = C_cl_tomo(l,n1,n3);
+  C24 = C_cl_tomo(l,n2,n4);
+  C14 = C_cl_tomo(l,n1,n4);
+  C23 = C_cl_tomo(l,n2,n3);
+  
+  if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
+  if (n1 == n4){N14= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
+  if (n2 == n3){N23= 1./(nlens(n2)*survey.n_gal_conversion_factor);}
+  if (n2 == n4){N24= 1./(nlens(n2)*survey.n_gal_conversion_factor);}
 
+  return ((C13+N13)*(C24+N24) + (C14+N14)*(C23+N23))*4.*M_PI/(survey.area*survey.area_conversion_factor* (2.*l+1.));
+}
 
 double func_for_cov_G_cl_gl(double l, int *ar){
   double C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
@@ -1581,7 +1965,7 @@ double func_for_cov_G_cl_shear(double l, int *ar){
   return (C13*C24+ C14*C23)*4.*M_PI/(survey.area*survey.area_conversion_factor* (2.*l+1.));
 }
 
-double func_for_cov_G_gl(double l, int *ar){
+double func_for_cov_G_gl_noNN(double l, int *ar){
   double C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
@@ -1595,6 +1979,21 @@ double func_for_cov_G_gl(double l, int *ar){
   if (n2 == n4){N24= pow(survey.sigma_e,2.0)/(2.0*nsource(n2)*survey.n_gal_conversion_factor);}
   
   return (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23)*4.*M_PI/(survey.area*survey.area_conversion_factor* (2.*l+1.));
+}
+double func_for_cov_G_gl(double l, int *ar){
+  double C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
+  int n1,n2,n3,n4;
+  n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
+  //printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
+  C13 = C_cl_tomo(l,n1,n3);
+  C24 = C_shear_tomo(l,n2,n4);
+  C14 = C_gl_tomo(l,n1,n4);
+  C23 = C_gl_tomo(l,n3,n2);
+  
+  if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
+  if (n2 == n4){N24= pow(survey.sigma_e,2.0)/(2.0*nsource(n2)*survey.n_gal_conversion_factor);}
+  
+  return ((C13+N13)*(C24+N24) + (C14+N14)*(C23+N23))*4.*M_PI/(survey.area*survey.area_conversion_factor* (2.*l+1.));
 }
 
 double func_for_cov_G_gl_shear(double l, int *ar){

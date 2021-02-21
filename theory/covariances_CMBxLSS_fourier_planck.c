@@ -113,7 +113,7 @@ double inner_project_tri_cov_gg_gk(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_gal(a,ar[3])*W_gal(a,ar[4])*W_k(a,fK)*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -156,7 +156,7 @@ double inner_project_tri_cov_gg_kk(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_gal(a,ar[3])*W_k(a,fK)*W_k(a,fK)*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,survey.area/41253.0,fsky_planck)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -198,7 +198,7 @@ double inner_project_tri_cov_gg_ks(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_gal(a,ar[3])*W_k(a,fK)*W_kappa(a,fK,ar[4])*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -245,7 +245,7 @@ double inner_project_tri_cov_gk_gk(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_k(a,fK)*W_gal(a,ar[3])*W_k(a,fK)*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -289,7 +289,7 @@ double inner_project_tri_cov_gk_gs(double a, void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_k(a,fK)*W_gal(a,ar[3])*W_kappa(a, fK, ar[4])*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -330,7 +330,7 @@ double inner_project_tri_cov_gk_kk(double a, void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*pow(W_k(a,fK), 3)*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,survey.area/41253.0,fsky_planck)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -370,7 +370,7 @@ double inner_project_tri_cov_gk_ks(double a, void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*pow(W_k(a,fK), 2)*W_kappa(a,fK,ar[3])*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -410,7 +410,7 @@ double inner_project_tri_cov_gk_ss(double a, void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_k(a,fK)*W_kappa(a, fK, ar[3])*W_kappa(a, fK, ar[4])*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -451,7 +451,7 @@ double inner_project_tri_cov_gs_kk(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_kappa(a,fK,ar[3])*pow(W_k(a,fK), 2)*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,fsky_planck)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -494,7 +494,7 @@ double inner_project_tri_cov_gs_ks(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_kappa(a,fK,ar[3])*W_k(a,fK)*W_kappa(a,fK,ar[4])*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -535,9 +535,9 @@ double inner_project_tri_cov_kk_kk(double a,void *params)
    weights = pow(W_k(a,fK), 4)*dchi_da(a);
    if (weights>0.){
 // MANUWARNING: put an if to switch between low-z and high-z cov?
-//      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+//      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
 //      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //SSC
-      res = tri_1h_cov(k1, k2, a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor); // T1h only
+      if (covparams.cng) {res = tri_1h_cov(k1, k2, a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);} // T1h only
       res += delPlin_SSC(k1, a)*delPlin_SSC(k2, a)*cross_survey_variance(a,fsky,fsky_planck)*pow(fK,-4.); //SSC for Plin
    }
    res *= weights;
@@ -576,7 +576,7 @@ double inner_project_tri_cov_kk_ks(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = pow(W_k(a,fK), 3) * W_kappa(a, fK, ar[2]) *dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,fsky_planck)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -614,7 +614,7 @@ double inner_project_tri_cov_kk_ss(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = pow(W_k(a,fK), 2)*W_kappa(a,fK,ar[2])*W_kappa(a,fK,ar[3])*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(area_planck*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,survey.area/41253.0,fsky_planck)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -659,7 +659,7 @@ double inner_project_tri_cov_ks_ks(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_kappa(a,fK,ar[2])*W_k(a,fK)*W_kappa(a,fK,ar[3])*W_k(a,fK)*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
@@ -707,7 +707,7 @@ double inner_project_tri_cov_ks_ss(double a,void *params)
    k2 = (ar[1]+0.5)/fK;
    weights = W_k(a,fK)*W_kappa(a,fK,ar[2])*W_kappa(a,fK,ar[3])*W_kappa(a,fK,ar[4])*dchi_da(a);
    if (weights >0.){
-      res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
       res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
