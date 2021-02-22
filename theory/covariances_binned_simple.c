@@ -91,7 +91,8 @@ void cov_kk_ks_fourier_binned(double **cov, double **covNG, int zs, int FLAG_NG,
 void cov_kk_kk_fourier_binned(double **cov, double **covNG, int FLAG_NG, double *ell);
 
 //
-// double fsky_planck = 0.673;
+// double fsky_cmb = 0.673;
+double fsky_cmb;
 /////////////////////////
 
 // bridge functions to unpack z_ar array to call the fourier cov routines
@@ -2164,7 +2165,7 @@ double func_for_cov_G_kk_shear(double l, int *ar){
   C23 = C13;
   C24 = C_ks(l, z2);
   C14 = C24;
-  return (C13*C24+C14*C23)/((2.*l+1.)*fsky_planck);
+  return (C13*C24+C14*C23)/((2.*l+1.)*fsky_cmb);
 }
 
 double func_for_cov_G_kk_gl(double l, int *ar){
@@ -2175,7 +2176,7 @@ double func_for_cov_G_kk_gl(double l, int *ar){
   C14 = C13;
   C24 = C_ks(l, zs);
   C23 = C24;
-  return (C13*C24+C14*C23)/((2.*l+1.)*fsky_planck);
+  return (C13*C24+C14*C23)/((2.*l+1.)*fsky_cmb);
 }
 
 double func_for_cov_G_kk_cl(double l, int *ar){
@@ -2186,7 +2187,7 @@ double func_for_cov_G_kk_cl(double l, int *ar){
   C24 = C_gk(l,n2);
   C14 = C13;
   C23 = C24;
-  return (C13*C24+C14*C23)/((2.*l+1.)*fsky_planck);
+  return (C13*C24+C14*C23)/((2.*l+1.)*fsky_cmb);
 }
 
 double func_for_cov_G_kk_gk(double l, int *ar){
@@ -2198,7 +2199,7 @@ double func_for_cov_G_kk_gk(double l, int *ar){
   C24 = C_kk(l);
   C23 = C24;
   double N = kappa_reconstruction_noise(l);
-  return (C13*(C24+N)+C14*(C23+N))/((2.*l+1.)*fsky_planck);
+  return (C13*(C24+N)+C14*(C23+N))/((2.*l+1.)*fsky_cmb);
 }
 
 double func_for_cov_G_kk_ks(double l, int *ar){
@@ -2210,7 +2211,7 @@ double func_for_cov_G_kk_ks(double l, int *ar){
   C14 = C_ks(l, zs);
   C24 = C14;
   double N = kappa_reconstruction_noise(l);
-  return ((C13+N)*C24+C14*(C23+N))/((2.*l+1.)*fsky_planck);
+  return ((C13+N)*C24+C14*(C23+N))/((2.*l+1.)*fsky_cmb);
 }
 
 
@@ -2218,5 +2219,5 @@ double func_for_cov_G_kk(double l, int *ar){
    double C, N;
    C = C_kk(l);
    N = kappa_reconstruction_noise(l);
-   return 2.*pow((C+N), 2) / ((2.*l+1.)*fsky_planck);
+   return 2.*pow((C+N), 2) / ((2.*l+1.)*fsky_cmb);
 }
