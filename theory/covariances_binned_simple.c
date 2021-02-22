@@ -1337,7 +1337,6 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
   }
   int l1_min, l1_max, l2_min, l2_max;
   int N_l1, N_l2;
-    for(l1=l1_min; l1<=l1_max; l1++){
   for(i=0; i<like.Ncl; i++){
     l1_min = (int)ceil(ell[i]);
     l1_max = (int)ceil(ell[i+1])-1;
