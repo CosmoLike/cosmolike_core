@@ -850,7 +850,7 @@ double get_class_s8(struct file_content *fc, int *status){
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
     //printf("%e\n", cosmology.A_s);
   if (cosmology.A_s >0){
-    printf("passing A_s=%e directly\n",cosmology.A_s);
+    //printf("passing A_s=%e directly\n",cosmology.A_s);
    strcpy(fc->name[parser_length-1],"A_s");
    sprintf(fc->value[parser_length-1],"%e",cosmology.A_s);
   }
