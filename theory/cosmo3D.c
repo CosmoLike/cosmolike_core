@@ -467,8 +467,8 @@ int run_class(
   }
   cosmology.theta_s = 100.*th->rs_rec/th->ra_rec;
   cosmology.h0 = ba->h;
-    printf("theta_* = %.5f\n",cosmology.theta_s);
-    printf("h_CLASS = %.3f\n\n", ba->h);
+    //printf("theta_* = %.5f\n",cosmology.theta_s);
+    //printf("h_CLASS = %.3f\n\n", ba->h);
   if (perturb_init(&pr,ba,th,pt) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS perturb:%s\n",pt->error_message);
     thermodynamics_free(th);
@@ -662,27 +662,69 @@ double get_class_s8(struct file_content *fc, int *status){
         double ncdm_mass_or_omega;
         if (cosmology.M_nu>0.){ ncdm_mass_or_omega = cosmology.M_nu; strcpy(fc->name[15],"m_ncdm");}
         else {ncdm_mass_or_omega = cosmology.Omega_nu; strcpy(fc->name[15],"Omega_ncdm");}
-        switch(cosmology.N_ncdm){
+        
+        //treatment of sterile neutrinos
+        //when varying sterile neutrino mass, we are interested in the active neutrino minimal mass model
+        //i.e. 2 massless and 1 massive active neutrinos at 0.06eV
+        //N_ncdm would be redefined to be 2, as there is an active and sterile massive ncdm component
+        if (cosmology.meff>0){
+          double sterile_part;
+          if (cosmology.M_nu>0) {
+            sterile_part = cosmology.meff;
+            sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega, sterile_part);
+          }
+          else {
+            sterile_part = cosmology.meff/94.1/cosmology.h0/cosmology.h0;
+            sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega-sterile_part, sterile_part);
+          }
+          cosmology.N_ncdm = 2;
+          strcpy(fc->name[14],"N_ncdm");
+          sprintf(fc->value[14],"%d",cosmology.N_ncdm);
+          
+            //printf("The two components are  %f %f \n", ncdm_mass_or_omega, sterile_part);
+
+          /*strcpy(fc->name[24],"nonlinear_verbose");
+          sprintf(fc->value[24],"%d",5);
+          strcpy(fc->name[26],"background_verbose");
+          sprintf(fc->value[26],"%d",5);
+          strcpy(fc->name[25],"thermodynamics_verbose");
+          sprintf(fc->value[25],"%d",5);*/
+
+
+        }
+
+
+
+        else {
+          //printf("N_UR is %f\n", cosmology.N_ur);
+          switch(cosmology.N_ncdm){
           case 0:
 
             sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
+            /*strcpy(fc->name[24],"nonlinear_verbose");
+            sprintf(fc->value[24],"%d",5);
+            strcpy(fc->name[26],"background_verbose");
+            sprintf(fc->value[26],"%d",5);
+            strcpy(fc->name[25],"thermodynamics_verbose");
+            sprintf(fc->value[25],"%d",5);*/
             break;
           case 1: 
             strcpy(fc->name[14],"N_ncdm");
             sprintf(fc->value[14],"%d",cosmology.N_ncdm);
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
-            sprintf(fc->value[16],"%e",2.0328);
-            cosmology.N_ur = 2.0328;
+            //sprintf(fc->value[16],"%e",2.0328);
+            //cosmology.N_ur = 2.0328;
             sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
+
             break;
           case 2:
             strcpy(fc->name[14],"N_ncdm");
             sprintf(fc->value[14],"%d",cosmology.N_ncdm);
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
-            sprintf(fc->value[16],"%e",1.0196);
-            cosmology.N_ur = 1.0196;
+            //sprintf(fc->value[16],"%e",1.0196);
+            //cosmology.N_ur = 1.0196;
             sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega/2, ncdm_mass_or_omega/2);
             if(cosmology.meff>0 && cosmology.M_nu>0) sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega, cosmology.meff);
 
@@ -692,7 +734,7 @@ double get_class_s8(struct file_content *fc, int *status){
           case 3:
             strcpy(fc->name[14],"N_ncdm");
             sprintf(fc->value[14],"%d",cosmology.N_ncdm);
-            printf("N_UR is %f\n", cosmology.N_ur);
+            //printf("N_UR is %f\n", cosmology.N_ur);
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
             //sprintf(fc->value[16],"%e",0.00641);
@@ -704,12 +746,12 @@ double get_class_s8(struct file_content *fc, int *status){
             //sprintf(fc->value[27],"%e,%e,%e",0.3 ,0.5, 0.05);
             //strcpy(fc->name[28],"use_ncdm_psd_files");
             //sprintf(fc->value[28],"%d,%d,%d",0,0,0);
-            strcpy(fc->name[24],"nonlinear_verbose");
-            sprintf(fc->value[24],"%d",5);
-            strcpy(fc->name[26],"background_verbose");
-            sprintf(fc->value[26],"%d",5);
-            strcpy(fc->name[25],"thermodynamics_verbose");
-            sprintf(fc->value[25],"%d",5);
+            //strcpy(fc->name[24],"nonlinear_verbose");
+            //sprintf(fc->value[24],"%d",5);
+            //strcpy(fc->name[26],"background_verbose");
+            //sprintf(fc->value[26],"%d",5);
+            //strcpy(fc->name[25],"thermodynamics_verbose");
+            //sprintf(fc->value[25],"%d",5);
             //strcpy(fc->name[17],"N_idr");
             //sprintf(fc->value[17],"%e",1.0);
             break;
@@ -736,10 +778,10 @@ double get_class_s8(struct file_content *fc, int *status){
             //sprintf(fc->value[27],"%e,%e,%e,%e",0.3 ,0.5, 0.05,0.0);
             //strcpy(fc->name[28],"use_ncdm_psd_files");
             //sprintf(fc->value[28],"%d,%d,%d,%d",0,0,0,0);
-            strcpy(fc->name[26],"background_verbose");
-            sprintf(fc->value[26],"%d",5);
-            strcpy(fc->name[25],"thermodynamics_verbose");
-            sprintf(fc->value[25],"%d",5);
+            //strcpy(fc->name[26],"background_verbose");
+            //sprintf(fc->value[26],"%d",5);
+            //strcpy(fc->name[25],"thermodynamics_verbose");
+            //sprintf(fc->value[25],"%d",5);
             //strcpy(fc->name[24],"ncdm_psd_filenames");
             //sprintf(fc->value[24],"/home/paul/cosmolike_core/class/psd_FD_single.dat");
             
@@ -747,20 +789,20 @@ double get_class_s8(struct file_content *fc, int *status){
           default:
             printf("Unsupported neutrino parameterization. Exiting\n");
             exit(1);
+          }
         }
       }
-      printf("%e %e\n", cosmology.N_ur, cosmology.Omega_nu);
+      //printf("%e %e\n", cosmology.N_ur, cosmology.Omega_nu);
       //ultra-relativistic neutrinos have a very small energy density, should be taken into account when calculating Omega_cdm. 
-      double Omega_ur = 0.0;
+      //double Omega_ur = 0.0;
       //If there is NCDM, then we should calculate the contribution of Omega_ur. 
       //Otherwise, Omega_nu is the user's definition for Omega_ur and should be passed as such.
       //if(cosmology.N_ncdm>0){
-        double Omega_gammah2 = 2.47*pow(10,-5); //From planck, need reference
-        Omega_ur = 7.0/8*cosmology.N_ur*pow(4.0/11, 4.0/3)*Omega_gammah2/cosmology.h0/cosmology.h0;
+        //double Omega_gammah2 = 2.47*pow(10,-5); //From planck, need reference
+        //Omega_ur = 7.0/8*cosmology.N_ur*pow(4.0/11, 4.0/3)*Omega_gammah2/cosmology.h0/cosmology.h0;
       //}
       strcpy(fc->name[7],"Omega_cdm");
-      if (cosmology.meff!=0.0)  sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb-cosmology.Omega_nu-cosmology.meff/94.1/cosmology.h0/cosmology.h0);
-      else  sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb-cosmology.Omega_nu);
+      sprintf(fc->value[7],"%e",cosmology.Omega_m-cosmology.omb-cosmology.Omega_nu);
 
     if(cosmology.xi_idr>0){
 
@@ -806,7 +848,7 @@ double get_class_s8(struct file_content *fc, int *status){
     }
 
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
-    printf("%e\n", cosmology.A_s);
+    //printf("%e\n", cosmology.A_s);
   if (cosmology.A_s >0){
     printf("passing A_s=%e directly\n",cosmology.A_s);
    strcpy(fc->name[parser_length-1],"A_s");
@@ -906,14 +948,14 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
     norm = log(pow(cosmology.sigma_8/ *nl.sigma8,2.)*pow(cosmology.h0/cosmology.coverH0,3.));
   }
 //    printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/ *nl.sigma8,2.));
-  if (class_status ==0){
+  /*if (class_status ==0){
   FILE *fp_lin;
   FILE *fp_non;
   FILE *fp_lin_c;
   FILE *fp_non_c;
 
   char file_ending[100];
-  sprintf(file_ending, "_%d_Nncdm_%.5f_scaled_linear_bias_const_sigma8_efficient_ell_test_edits.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0));
+  sprintf(file_ending, "_%d_Nncdm_%.5f_nonlinear_bias_const_As_efficient_ell_test_edits.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0));
   if (cosmology.meff!=0.0){
       sprintf(file_ending, "_%d_Nncdm_%.5f_nur_%.4f_meff_%.2f.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0), cosmology.N_ur,cosmology.meff);
 
@@ -945,7 +987,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
    printf("%s\n", file_ending);
 
    //printf("%d %e %e, %d %e %e\n", Ntable.N_a, da, aa, Ntable.N_k_nlin, dk, klog);
-   printf("norm %f\n", norm);
+   printf("norm %f\n", norm);*/
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
@@ -963,10 +1005,10 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
         s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster,  &Pk, &ic);
         table_P_NL_C[i][j] = log(Pk) +norm;
 
-        fprintf(fp_lin, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
+        /*fprintf(fp_lin, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
         fprintf(fp_non, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL[i][j]);
         fprintf(fp_lin_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L_C[i][j]);
-        fprintf(fp_non_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL_C[i][j]);
+        fprintf(fp_non_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL_C[i][j]);*/
 
 
 
@@ -974,12 +1016,12 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
     }
 
 
-   fclose(fp_lin);
+   /*fclose(fp_lin);
    fclose(fp_non);
    fclose(fp_lin_c);
-   fclose(fp_non_c);
+   fclose(fp_non_c);*/
     free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-  }
+  //}
   update_cosmopara(&C);
 }
 
