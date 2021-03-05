@@ -807,7 +807,7 @@ double get_class_s8(struct file_content *fc, int *status){
     if(cosmology.xi_idr>0){
 
       //Energy density due to idr. assumes spin and color degeneracies are both 2, fermionic idr
-  
+      double Omega_ur = 0.0;
 
       //double f_idm_dr=0.0001; //can alternatively define Omega_idm_dr. defines the fraction of total CDM that interacts with DR
       double m_idm = 1.0e11;//1.0e11eV by default, models not very sensitive to variations (1706.06870)
