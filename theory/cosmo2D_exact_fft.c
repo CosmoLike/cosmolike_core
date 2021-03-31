@@ -577,7 +577,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		// printf("i_block: %d\n", i_block);
 	}
 	L++;
-	printf("switching to Limber calculation at l = %d %d\n",L, ni);
+	//printf("switching to Limber calculation at l = %d %d\n",L, ni);
 	// for (l = 1; l < 50; l++){
 	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
 	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);

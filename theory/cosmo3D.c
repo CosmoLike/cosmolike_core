@@ -718,12 +718,12 @@ double get_class_s8(struct file_content *fc, int *status){
             sprintf(fc->value[16],"%e",2.0328 + (cosmology.N_eff - 3.046));
             //cosmology.N_ur = 2.0328;
             sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
-            strcpy(fc->name[24],"nonlinear_verbose");
-            sprintf(fc->value[24],"%d",5);
-            strcpy(fc->name[26],"background_verbose");
-            sprintf(fc->value[26],"%d",5);
-            strcpy(fc->name[25],"thermodynamics_verbose");
-            sprintf(fc->value[25],"%d",5);
+            //strcpy(fc->name[24],"nonlinear_verbose");
+            //sprintf(fc->value[24],"%d",5);
+            //strcpy(fc->name[26],"background_verbose");
+            //sprintf(fc->value[26],"%d",5);
+            //strcpy(fc->name[25],"thermodynamics_verbose");
+            //sprintf(fc->value[25],"%d",5);
             //strcpy(fc->name[27],"perturbations_verbose");
             //sprintf(fc->value[27],"%d",5);
             break;
@@ -777,7 +777,7 @@ double get_class_s8(struct file_content *fc, int *status){
               else{sprintf(fc->value[15],"%e,%e,%e,%e",0.0,0.0,ncdm_mass_or_omega/93.14/cosmology.h0/cosmology.h0, cosmology.meff/94.1/cosmology.h0/cosmology.h0);}
             }
             else {sprintf(fc->value[15],"%e,%e,%e,%e",0.0,0.0,ncdm_mass_or_omega, cosmology.meff);}
-            
+            module load gsl/2/2.5
             /*
             if (cosmology.Omega_nu>0.){
               if (cosmology.meff==0.0){sprintf(fc->value[15],"%e,%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3, 1.19522*pow(10,-05));}
