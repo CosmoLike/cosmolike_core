@@ -651,7 +651,7 @@ double get_class_s8(struct file_content *fc, int *status){
 
       //user could TEHCNICALLY pass N_ur or Omega_ur, but I think requiring only N_ur is OK
       strcpy(fc->name[16],"N_ur");
-      sprintf(fc->value[16],"%e",cosmology.N_ur);
+      sprintf(fc->value[16],"%e",cosmology.N_eff);
       //N_ur (N_eff) is affected by N_ncdm. These logic statements enforce N_ur based on common values of N_ncdm,
       // as N_ur should equal 3.046 in the early universe
       
@@ -697,7 +697,9 @@ double get_class_s8(struct file_content *fc, int *status){
 
         else {
           //printf("N_UR is %f\n", cosmology.N_ur);
-          switch(cosmology.N_ncdm){
+          strcpy(fc->name[17],"T_ncdm");
+          sprintf(fc->value[17],"%e", 0.71611); //default CLASS value to have nuetrino normalization to be 93.14eV
+          switch(cosmology.N_ncdm){//This switch case also handles Neff>=3.046
           case 0:
 
             sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
@@ -713,10 +715,17 @@ double get_class_s8(struct file_content *fc, int *status){
             sprintf(fc->value[14],"%d",cosmology.N_ncdm);
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
-            //sprintf(fc->value[16],"%e",2.0328);
+            sprintf(fc->value[16],"%e",2.0328 + (cosmology.N_eff - 3.046));
             //cosmology.N_ur = 2.0328;
             sprintf(fc->value[15],"%e",ncdm_mass_or_omega);
-
+            strcpy(fc->name[24],"nonlinear_verbose");
+            sprintf(fc->value[24],"%d",5);
+            strcpy(fc->name[26],"background_verbose");
+            sprintf(fc->value[26],"%d",5);
+            strcpy(fc->name[25],"thermodynamics_verbose");
+            sprintf(fc->value[25],"%d",5);
+            //strcpy(fc->name[27],"perturbations_verbose");
+            //sprintf(fc->value[27],"%d",5);
             break;
           case 2:
             strcpy(fc->name[14],"N_ncdm");
@@ -724,6 +733,7 @@ double get_class_s8(struct file_content *fc, int *status){
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
             //sprintf(fc->value[16],"%e",1.0196);
+            sprintf(fc->value[16],"%e",1.0196 + (cosmology.N_eff - 3.046));
             //cosmology.N_ur = 1.0196;
             sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega/2, ncdm_mass_or_omega/2);
             if(cosmology.meff>0 && cosmology.M_nu>0) sprintf(fc->value[15],"%e,%e",ncdm_mass_or_omega, cosmology.meff);
@@ -738,6 +748,7 @@ double get_class_s8(struct file_content *fc, int *status){
             //raise error here if N_ur is defined and not equal to value below
             //this means that Neff != 3.046 in early universe, must protect!
             //sprintf(fc->value[16],"%e",0.00641);
+            sprintf(fc->value[16],"%e",0.00641 + (cosmology.N_eff - 3.046));
             //cosmology.N_ur = 0.00641;
             //cosmology.N_ur = 0.0328;
             //sprintf(fc->value[16],"%e",0.0328); 
@@ -790,7 +801,12 @@ double get_class_s8(struct file_content *fc, int *status){
             printf("Unsupported neutrino parameterization. Exiting\n");
             exit(1);
           }
+            if(cosmology.N_eff<3.046){
+              sprintf(fc->value[16],"%e",(3.046 - 1.0132*cosmology.N_ncdm));
+              sprintf(fc->value[17],"%f",0.71611*pow((cosmology.N_eff-(3.046 - 1.0132*cosmology.N_ncdm))/(1.0132*cosmology.N_ncdm), 0.25));
+            }
         }
+
       }
       //printf("%e %e\n", cosmology.N_ur, cosmology.Omega_nu);
       //ultra-relativistic neutrinos have a very small energy density, should be taken into account when calculating Omega_cdm. 

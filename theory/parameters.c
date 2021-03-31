@@ -597,7 +597,7 @@ void set_cosmological_parameters_to_DES_Y3()
   cosmology.h0=0.69;
   //cosmology.coverH0= 2997.92458; 
   cosmology.Omega_nu = 0.00083/cosmology.h0/cosmology.h0;
-  cosmology.N_ur = 0.0328;
+  cosmology.N_eff = 3.046;
   cosmology.N_ncdm = 3;
   //cosmology.rho_crit = 7.4775e+21;
   printf("Cosmology set DES Y3\n");

@@ -71,10 +71,10 @@ typedef struct {
      double theta_s;
      int N_ncdm;
      double xi_idr;
-     double N_ur;
+     double N_eff;
      double meff;
 }cosmopara;
-cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.theta_s =0.0,.N_ncdm=0,.xi_idr=0.0,.N_ur=3.046,.meff=0.0};
+cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.theta_s =0.0,.N_ncdm=0,.xi_idr=0.0,.N_eff=3.046,.meff=0.0};
 
 typedef struct {
   int shear_Nbin; // number of tomography bins
