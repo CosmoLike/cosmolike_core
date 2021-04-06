@@ -650,14 +650,15 @@ double get_class_s8(struct file_content *fc, int *status){
 // pass neutrino parameters
 
       //user could TEHCNICALLY pass N_ur or Omega_ur, but I think requiring only N_ur is OK
-      strcpy(fc->name[16],"N_ur");
-      sprintf(fc->value[16],"%e",cosmology.N_eff);
+
       //N_ur (N_eff) is affected by N_ncdm. These logic statements enforce N_ur based on common values of N_ncdm,
       // as N_ur should equal 3.046 in the early universe
       
 
       //TODO implement different hierarchies
       if (cosmology.M_nu>0. || cosmology.Omega_nu>0.){ 
+              strcpy(fc->name[16],"N_ur");
+      sprintf(fc->value[16],"%e",cosmology.N_eff);
         
         double ncdm_mass_or_omega;
         if (cosmology.M_nu>0.){ ncdm_mass_or_omega = cosmology.M_nu; strcpy(fc->name[15],"m_ncdm");}
@@ -777,7 +778,6 @@ double get_class_s8(struct file_content *fc, int *status){
               else{sprintf(fc->value[15],"%e,%e,%e,%e",0.0,0.0,ncdm_mass_or_omega/93.14/cosmology.h0/cosmology.h0, cosmology.meff/94.1/cosmology.h0/cosmology.h0);}
             }
             else {sprintf(fc->value[15],"%e,%e,%e,%e",0.0,0.0,ncdm_mass_or_omega, cosmology.meff);}
-            module load gsl/2/2.5
             /*
             if (cosmology.Omega_nu>0.){
               if (cosmology.meff==0.0){sprintf(fc->value[15],"%e,%e,%e,%e",ncdm_mass_or_omega/3,ncdm_mass_or_omega/3,ncdm_mass_or_omega/3, 1.19522*pow(10,-05));}

@@ -6,7 +6,6 @@ double C_ggl_TATT_tab(double l, int ni, int nj);
 double w_gamma_t_TATT(int nt,int ni, int nj); //G-G lensing, lens bin ni, source bin nj, including IA contamination if like.IA = 3
 double xi_pm_TATT(int pm, int nt, int ni, int nj); //shear tomography correlation functions, including IA contamination if like.IA = 3
 
-double scaled_b1_bias(double z, int nz);
 //ell_max for transform to angular correlation functions
 int LMAX = 100000;
 //ell_min for switching from exact evalution of C(ell) to interpolated look-up table
@@ -125,6 +124,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);
   double Pnl = sqrt(Pdelta(k,a)*Pdelta_cluster(k,a));
+  //printf("Pnl diff %f\n", (Pnl-Pdelta(k,a))/Pdelta(k,a));
 
   double P_1loop =b1*Pnl;
   if (w_density*b2 !=0){
