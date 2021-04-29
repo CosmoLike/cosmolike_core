@@ -294,6 +294,12 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		}
 
 		i_block++;
+
+        if(L>=LMAX-Nell_block){ // break before memory leak in next iteration
+            printf("L>Lmax\n");
+            break;
+        } 
+
 		L = i_block*Nell_block -1 ;
 		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
 	   // printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
