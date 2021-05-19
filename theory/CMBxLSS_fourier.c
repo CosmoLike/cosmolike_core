@@ -38,7 +38,11 @@ double beam_cmb(double l, double fwhm_arcmin){
 
 //lensing efficiency weightfunction for CMB lensing
 double W_k(double a, double fK){
-  return 1.5*cosmology.Omega_m*fK/a*g_cmb(a);
+  double wk = 1.5*cosmology.Omega_m*fK/a*g_cmb(a);
+  if(cosmology.MGSigma != 0.){
+    wk *= (1.+MG_Sigma(a));
+  }
+  return wk;
 }
 
 // galaxy position x kappa CMB
