@@ -328,7 +328,7 @@ double int_for_C_II(double a, void *params)
 double C_II_nointerp(double s, int ni, int nj) 
 {
   if(ni!=nj && redshift.shear_photoz==0) return 0.0;
-  if (abs(ni-nj) >1 && redshift.shear_photoz==3) return 0.0;
+  if (abs(ni-nj) >1 && (redshift.shear_photoz==3||redshift.shear_photoz==5)   ) return 0.0;
 
   double array[3] = {(double) ni, (double) nj,s};
   int j,k;

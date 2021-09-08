@@ -274,6 +274,9 @@ typedef struct {
   double cluster_MOR[10];
   int N_cluster_selection;
   double cluster_selection[10];
+
+  double frac_lowz;
+  double frac_highz;
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
@@ -284,7 +287,9 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .sigma_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}};
+  .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .frac_lowz = 0.,
+  .frac_highz = 0.};
 
 
 

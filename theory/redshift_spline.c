@@ -64,7 +64,8 @@ double g_bg (double a, int nzlens);//no longer supported - declaration only to p
 double amin_source(int i){
   if (i == -1 || redshift.shear_photoz == 1 || redshift.shear_photoz == 2|| redshift.shear_photoz == 4){return 1./(redshift.shear_zdistrpar_zmax+1.);}
   if (redshift.shear_photoz == 0){ return 1./(1+tomo.shear_zmax[i]);}
-  return 1./(1+fmin(tomo.shear_zmax[i] + 5.*nuisance.sigma_zphot_shear[i] + fabs(nuisance.bias_zphot_shear[i]),redshift.shear_zdistrpar_zmax));
+  if (redshift.shear_photoz == 3) {return 1./(1+fmin(tomo.shear_zmax[i] + 5.*nuisance.sigma_zphot_shear[i] + fabs(nuisance.bias_zphot_shear[i]),redshift.shear_zdistrpar_zmax));}
+  return 1./(1+redshift.shear_zdistrpar_zmax);
 }
 double amax_source(int i){
 return 1./(1.+fmax(redshift.shear_zdistrpar_zmin,0.001));
@@ -79,6 +80,7 @@ double amin_lens(int i){
   if (i == -1 || redshift.clustering_photoz == 1 || redshift.clustering_photoz == 2){return 1./(redshift.clustering_zdistrpar_zmax+1.);}
   if (redshift.clustering_photoz == 0){ return 1./(1+tomo.clustering_zmax[i]);}
   if (redshift.clustering_photoz == 4){ return 1./(1+tomo.clustering_zmax[i]+2.*fabs(nuisance.bias_zphot_clustering[i]));}
+  if (redshift.shear_photoz == 5) {return 1./(1+redshift.clustering_zdistrpar_zmax);}
   return 1./(1+fmin(tomo.clustering_zmax[i] + 5.*nuisance.sigma_zphot_clustering[i] + fabs(nuisance.bias_zphot_clustering[i]),redshift.clustering_zdistrpar_zmax));
 }
 double amax_lens(int i){
@@ -107,7 +109,7 @@ int test_kmax(double l, int zl){ //test whether the (l,zl) bin is in the linear 
 int test_zoverlap(int zl, int zs){ //test whether source bin zs is behind lens bin zl
   // if (tomo.clustering_zmin[zl] >= tomo.shear_zmax[zs]) {return 0;}
   if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}
-  if (redshift.shear_photoz < 4 && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}
+  if ((redshift.shear_photoz < 4 || redshift.shear_photoz ==5 || redshift.shear_photoz ==6) && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}
   if (redshift.shear_photoz == 4 && redshift.clustering_photoz != 4 && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}
   if (redshift.shear_photoz == 4 && redshift.clustering_photoz == 4 && zmean(zl)+0.1 < zmean_source(zs)){return 1;}
   return 0;
@@ -363,16 +365,25 @@ double zdistr_histo_1(double z, void *params) //return nz(z) based on redshift f
   static double zhisto_max,zhisto_min,dz;
 
   if (tab==0){
-    double *z_v,space1,space2;
-    int i,zbins;
+    double *z_v,space1,space2,space3,space4;
+    int i,zbins,j;
     zbins = line_count(redshift.shear_REDSHIFT_FILE);
     tab=create_double_vector(0, zbins-1);
     z_v=create_double_vector(0, zbins-1);
     ein=fopen(redshift.shear_REDSHIFT_FILE,"r");
 
-    for (i=0;i<zbins;i++){
-      fscanf(ein,"%le %le %le %le\n",&z_v[i],&space1,&space2,&tab[i]);
-      if (i > 0 && z_v[i] < z_v[i-1]){break;}
+    if(redshift.shear_photoz == 5){
+      for (i=0;i<zbins;i++){
+        fscanf(ein,"%le %le %le %le %le %le",&z_v[i],&space1,&space2,&tab[i],&space3,&space4);
+        for (j=0;j<tomo.shear_Nbin;j++) {fscanf(ein,"%le", &space1);}
+        if (i > 0 && z_v[i] < z_v[i-1]){break;}
+      }
+    }
+    else{
+      for (i=0;i<zbins;i++){
+        fscanf(ein,"%le %le %le %le\n",&z_v[i],&space1,&space2,&tab[i]);
+        if (i > 0 && z_v[i] < z_v[i-1]){break;}
+      }
     }
     fclose(ein);
     dz = (z_v[i-1]-z_v[0])/(1.*i -1.);
@@ -405,12 +416,15 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   static gsl_spline * photoz_splines[11];
   static gsl_interp_accel * photoz_accel[11];
 
+  static double *nz_old=0, *nz_diag=0, *nz_ext=0;
+  static double **nz_ext_bin=0;
+
   if (redshift.shear_photoz == -1){return n_of_z(zz,j);}
   if ((redshift.shear_photoz != 4 && recompute_zphot_shear(N)) || table==0){
     update_nuisance(&N);
     if (table == 0){
       int zbins1 = line_count(redshift.shear_REDSHIFT_FILE);
-      if(redshift.shear_photoz !=4){zbins = zbins1*20;}
+      if(redshift.shear_photoz !=5 && redshift.shear_photoz !=4){zbins = zbins1*20;}
       else {zbins = zbins1;}
       table   = create_double_matrix(0, tomo.shear_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
@@ -434,6 +448,24 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
         redshift.shear_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(zbins1-1.);
         printf("redshift_spline.c %d %e %e\n", zbins,redshift.shear_zdistrpar_zmin,redshift.shear_zdistrpar_zmax);
       }
+      if (redshift.shear_photoz ==5){//if extreme outlier nz from simulation
+        nz_old = create_double_vector(0, zbins-1);
+        nz_diag = create_double_vector(0, zbins-1);
+        nz_ext = create_double_vector(0, zbins-1);
+        nz_ext_bin = create_double_matrix(0, tomo.shear_Nbin-1, 0, zbins-1);
+
+        FILE *ein;
+        double space1,space2;
+        int i,k;
+        ein=fopen(redshift.shear_REDSHIFT_FILE,"r");
+        for (i=0;i<zbins1;i++){
+          fscanf(ein,"%le %le %le %le %le %le",&z_v[i],&space1,&space2,&nz_old[i], &nz_diag[i],&nz_ext[i]);
+          for(k=0; k<tomo.shear_Nbin; k++) {fscanf(ein,"%le", &nz_ext_bin[k][i]);}
+          if (i > 0 && z_v[i] < z_v[i-1]){break;}
+        }
+        fclose(ein);
+      }
+
     }
 
     zhisto_max =redshift.shear_zdistrpar_zmax;
@@ -445,6 +477,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
     double array[4], NORM[11],norm,x1,x2,eta,outfrac;
     //the outlier fraction (outfrac) should be specified externally. This is a temporary hack.
     int i,k;
+    int z_index;
     for (i = 0; i< tomo.shear_Nbin; i++){
       array[0] =tomo.shear_zmin[i];
       array[1] =tomo.shear_zmax[i];
@@ -524,6 +557,83 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
           }
           for (k = 0;k<zbins; k++){table[i+1][k]/= norm;}
           break;
+
+        case 5: //Gaussian photo-zs + outlier probability matrix
+          norm = 0.;
+          if (sigma_zphot_shear(0.,i) == 0.){
+            printf("Source galaxy photo-z model underdetermined!\nredshift.shear_photoz =3, but nuisance.sigma_zphot_shear[%d] not set\nEXIT!\n", i);
+            exit(1);
+          }
+          for (k = 0;k<zbins; k++){
+            x1 =(array[0] -z_v[k] + bias_zphot_shear(z_v[k],i))/(sqrt(2.)*sigma_zphot_shear(z_v[k],i));
+            x2 = (array[1]-z_v[k] + bias_zphot_shear(z_v[k],i))/(sqrt(2.)*sigma_zphot_shear(z_v[k],i));
+            z_index = (int)floor((z_v[k]-zhisto_min)/da);
+            table[i+1][k] = nz_ext_bin[i][z_index] + 0.5*nz_diag[z_index]*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+            // table[i+1][k] = 0.5*nz_old[z_index]*(gsl_sf_erf(x2)-gsl_sf_erf(x1)); // test
+            // printf("%d %d %le %le\n",i,k, table[i+1][k], 0.5*nz_old[z_index]*(gsl_sf_erf(x2)-gsl_sf_erf(x1)));
+            norm += table[i+1][k]*da;
+          }
+          for (k = 0;k<zbins; k++){table[i+1][k]/= norm;}
+          break;
+
+        case 6: // simple outlier model: 2 islands + Gaussian photo-zs
+          norm = 0.;
+          if (sigma_zphot_shear(0.,i) == 0.){
+            printf("Source galaxy photo-z model underdetermined!\nredshift.shear_photoz =3, but nuisance.sigma_zphot_shear[%d] not set\nEXIT!\n", i);
+            exit(1);
+          }
+
+          double n_out=0.;
+          double zlow, zhigh, zi;
+          int zpart=0;
+          if(array[0]<0.5) {
+            zlow = array[0];
+            zhigh = (array[1]>=0.5? 0.5:array[1]);
+            zpart = 1; // denote low-z
+          }else if(array[1]>2.0) {
+            zhigh = array[1];
+            zlow = (array[0]<=2.0? 2.0:array[0]);
+            zpart = 2; // denote high-z
+          }
+          if(zpart>0) {
+            for (k = 0;k<zbins; k++){
+              zi = z_v[k];
+              if((zi>=zlow)&&(zi<=zhigh)){
+                n_out += zdistr_histo_1(zi,(void*)array);
+              }
+            }
+            if(zpart==1){n_out *= (nuisance.frac_lowz * da);}
+            if(zpart==2){n_out *= (nuisance.frac_highz * da);}
+          }
+
+          for (k = 0;k<zbins; k++){
+            x1 =(array[0] -z_v[k] + bias_zphot_shear(z_v[k],i))/(sqrt(2.)*sigma_zphot_shear(z_v[k],i));
+            x2 = (array[1]-z_v[k] + bias_zphot_shear(z_v[k],i))/(sqrt(2.)*sigma_zphot_shear(z_v[k],i));
+
+            if(zpart==0) {table[i+1][k] = 0.5*zdistr_histo_1(z_v[k],(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));}
+            if(zpart==1) {
+              if(z_v[k]<=0.5){
+                table[i+1][k] = 0.5*(1.-nuisance.frac_lowz)*zdistr_histo_1(z_v[k],(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }else if(z_v[k]>2.0){
+                table[i+1][k] = n_out/(3.5-2.0) + 0.5*(1.-nuisance.frac_highz)*zdistr_histo_1(z_v[k],(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }else{
+                table[i+1][k] = 0.5*zdistr_histo_1(z_v[k],(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }
+            }
+            if(zpart==2) {
+              if(z_v[k]<=0.5){
+                table[i+1][k] = n_out/(0.5) + 0.5*(1.-nuisance.frac_lowz)*zdistr_histo_1(z_v[k],(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }else if(z_v[k]>2.0){
+                table[i+1][k] = 0.5*(1.-nuisance.frac_highz)*zdistr_histo_1(z_v[k],(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }else{
+                table[i+1][k] = 0.5*zdistr_histo_1(z_v[k],(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }
+            }
+            norm += table[i+1][k]*da;
+          }
+          for (k = 0;k<zbins; k++){table[i+1][k]/= norm;}
+          break;
+
         default:
           printf("redshift.shear_photoz = %d not supported in this cosmolike version\n",redshift.shear_photoz);
           exit(1);
@@ -549,7 +659,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   }
   if (redshift.shear_photoz == 4){ zz = zz -nuisance.bias_zphot_shear[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
-  return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);
+  return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
 }
 
 
@@ -571,15 +681,25 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
   static double zhisto_max,zhisto_min,dz;
 
   if (tab==0){
-    double *z_v,space1,space2;
-    int i,zbins;
+    double *z_v,space1,space2,space3,space4;
+    int i,zbins,j;
     zbins = line_count(redshift.clustering_REDSHIFT_FILE);
     tab=create_double_vector(0, zbins-1);
     z_v=create_double_vector(0, zbins-1);
     ein=fopen(redshift.clustering_REDSHIFT_FILE,"r");
-    for (i=0;i<zbins;i++){
-      fscanf(ein,"%le %le %le %le\n",&z_v[i],&space1,&space2,&tab[i]);
-      if (i > 0 && z_v[i] < z_v[i-1]){break;}
+
+    if(redshift.clustering_photoz == 5){
+      for (i=0;i<zbins;i++){
+        fscanf(ein,"%le %le %le %le %le %le",&z_v[i],&space1,&space2, &tab[i],&space3,&space4);
+        for (j=0;j<tomo.clustering_Nbin;j++) {fscanf(ein,"%le", &space1);}
+        if (i > 0 && z_v[i] < z_v[i-1]){break;}
+      }
+    }
+    else{
+      for (i=0;i<zbins;i++){
+        fscanf(ein,"%le %le %le %le\n",&z_v[i],&space1,&space2,&tab[i]);
+        if (i > 0 && z_v[i] < z_v[i-1]){break;}
+      }
     }
     fclose(ein);
     dz = (z_v[i-1]-z_v[0])/(1.*i-1.);
@@ -665,12 +785,18 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   static gsl_spline * photoz_splines[11];
   static gsl_interp_accel * photoz_accel[11];
 
+  static double *nz_old=0, *nz_diag=0, *nz_ext=0;
+  static double **nz_ext_bin=0;
+
+  double zmin_file, zmax_file, dz_file; // values derived from the nz file
   if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}
     if ((redshift.clustering_photoz != 4 && recompute_zphot_clustering(N)) || table==0){
     update_nuisance(&N);
     if (table == 0){
       zbins = line_count(redshift.clustering_REDSHIFT_FILE);
-      if (redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model
+      if (redshift.clustering_photoz !=5 && redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model
+      pf_histo(0.5,NULL);
+
       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
       for (int i = 0; i < tomo.clustering_Nbin+1; i++){
@@ -691,6 +817,28 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
         redshift.clustering_zdistrpar_zmin = fmax(z_v[0],1.e-5);
         redshift.clustering_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(zbins-1.);
       }
+
+      if (redshift.clustering_photoz ==5){//if extreme outlier nz from simulation
+        nz_old = create_double_vector(0, zbins-1);
+        nz_diag = create_double_vector(0, zbins-1);
+        nz_ext = create_double_vector(0, zbins-1);
+        nz_ext_bin = create_double_matrix(0, tomo.clustering_Nbin-1, 0, zbins-1);
+
+        FILE *ein;
+        double space1,space2;
+        int i,k;
+        ein=fopen(redshift.clustering_REDSHIFT_FILE,"r");
+        for (i=0;i<zbins;i++){
+          fscanf(ein,"%le %le %le %le %le %le",&z_v[i],&space1,&space2,&nz_old[i], &nz_diag[i],&nz_ext[i]);
+          for(k=0; k<tomo.clustering_Nbin; k++) {fscanf(ein,"%le", &nz_ext_bin[k][i]);}
+          if (i > 0 && z_v[i] < z_v[i-1]){break;}
+        }
+        zmin_file = z_v[0];
+        dz_file = (z_v[i-1] - zmin_file)/(1.*i -1.);
+        zmax_file=z_v[i-1]+dz_file;
+        fclose(ein);
+      }
+
     }
     zhisto_max = redshift.clustering_zdistrpar_zmax;
     zhisto_min = redshift.clustering_zdistrpar_zmin;
@@ -702,6 +850,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     double array[4], NORM[11],norm,x1,x2,eta,outfrac,zi;
     //the outlier fraction (outfrac) should be specified externally. This is a temporary hack.
     int i,k;
+    int z_index;
 
     for (i = 0; i< tomo.clustering_Nbin; i++){
       array[0] =tomo.clustering_zmin[i];
@@ -780,6 +929,94 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
           }
           for (k = 0;k<zbins; k++){ table[i+1][k] = pf_histo_n(z_v[k],(void*)array)/norm;}
           break;
+        case 5: //Gaussian photo-zs + outlier probability matrix
+          if (sigma_zphot_clustering(0.,i) == 0.){
+            printf("Lens galaxy photo-z model underdetermined!\nredshift.clustering_photoz =5, but nuisance.sigma_zphot_clustering[%d] not set\nEXIT!\n", i);
+            exit(1);
+          }
+          norm = 0.;
+          for (k = 0;k<zbins; k++){
+            zi = z_v[k];
+            x1 =(array[0] -zi + bias_zphot_clustering(zi,i))/(sqrt(2.)*sigma_zphot_clustering(zi,i));
+            x2 = (array[1]-zi + bias_zphot_clustering(zi,i))/(sqrt(2.)*sigma_zphot_clustering(zi,i));
+            if ((zi>=zmin_file) &&(zi<zmax_file)) {
+              z_index = (int)floor((zi-zmin_file)/dz_file);
+              table[i+1][k] = nz_ext_bin[i][z_index] + 0.5*nz_diag[z_index]*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+            }else{
+              table[i+1][k] = 0.;
+            }
+
+            
+            // table[i+1][k] = nz_ext_bin[i][z_index] + 0.5*pf_histo(zi,(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+            // table[i+1][k] = 0.5*nz_old[z_index]*(gsl_sf_erf(x2)-gsl_sf_erf(x1)); //test
+            // printf("%le, %le\n", nz_ext_bin[i][z_index], nz_diag[z_index]);
+            // printf("table[%d+1][%d]: %le\n",i,k, table[i+1][k]);
+            norm += table[i+1][k]*da;
+          }
+          for (k = 0;k<zbins; k++){table[i+1][k]/= norm;}
+          break;
+
+        case 6: // simple outlier model: 2 islands + Gaussian photo-zs
+          norm = 0.;
+          if (sigma_zphot_clustering(0.,i) == 0.){
+            printf("Lens galaxy photo-z model underdetermined!\nredshift.clustering_photoz =5, but nuisance.sigma_zphot_clustering[%d] not set\nEXIT!\n", i);
+            exit(1);
+          }
+
+          double n_out=0.;
+          double zlow, zhigh;
+          int zpart=0;
+          if(array[0]<0.5) {
+            zlow = array[0];
+            zhigh = (array[1]>=0.5? 0.5:array[1]);
+            zpart = 1; // denote low-z
+          }else if(array[1]>2.0) {
+            zhigh = array[1];
+            zlow = (array[0]<=2.0? 2.0:array[0]);
+            zpart = 2; // denote high-z
+          }
+          if(zpart>0) {
+            for (k = 0;k<zbins; k++){
+              zi = z_v[k];
+              if((zi>=zlow)&&(zi<=zhigh)){
+                n_out += pf_histo(zi,(void*)array);
+              }
+            }
+            if(zpart==1){n_out *= (nuisance.frac_lowz * da);}
+            if(zpart==2){n_out *= (nuisance.frac_highz * da);}
+          }
+
+          for (k = 0;k<zbins; k++){
+            zi = z_v[k];
+            x1 =(array[0] -zi + bias_zphot_clustering(zi,i))/(sqrt(2.)*sigma_zphot_clustering(zi,i));
+            x2 = (array[1]-zi + bias_zphot_clustering(zi,i))/(sqrt(2.)*sigma_zphot_clustering(zi,i));
+
+            if(zpart==0) {table[i+1][k] = 0.5*pf_histo(zi,(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));}
+            if(zpart==1) {
+              if(zi<=0.5){
+                table[i+1][k] = 0.5*(1.-nuisance.frac_lowz)*pf_histo(zi,(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }else if(zi>2.0){
+                table[i+1][k] = n_out/(3.5-2.0) + 0.5*(1.-nuisance.frac_highz)*pf_histo(zi,(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }else{
+                table[i+1][k] = 0.5*pf_histo(zi,(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }
+            }
+            if(zpart==2) {
+              if(zi<=0.5){
+                table[i+1][k] = n_out/(0.5) + 0.5*(1.-nuisance.frac_lowz)*pf_histo(zi,(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }else if(zi>2.0){
+                table[i+1][k] = 0.5*(1.-nuisance.frac_highz)*pf_histo(zi,(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }else{
+                table[i+1][k] = 0.5*pf_histo(zi,(void*)array)*(gsl_sf_erf(x2)-gsl_sf_erf(x1));
+              }
+            }
+            // if(n_out!=0) {printf("nout: %le, %d, %d\n", n_out, i, k);}
+
+            norm += table[i+1][k]*da;
+          }
+          for (k = 0;k<zbins; k++){table[i+1][k]/= norm;}
+          break;
+
         default:
           printf("redshift.clustering_photoz = %d not supported in this cosmolike version\n",redshift.clustering_photoz);
           exit(1);
@@ -805,7 +1042,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   }
   if (redshift.clustering_photoz == 4){ zz = zz -nuisance.bias_zphot_clustering[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
-  return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);
+  return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
 }
 
 /*********** routines calculating the number of source and lens galaxies per bin ****************/
