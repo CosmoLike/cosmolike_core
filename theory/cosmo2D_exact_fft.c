@@ -324,7 +324,7 @@ double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power sp
 
 /////// Integrand for galaxy density
 void f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni){
-	double g0 =1./growfac(1.);
+	double g0 =1./growfac(1.);//(1+0.2));
 	double a, z;
 	int i;
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0; // unit Mpc
@@ -346,7 +346,7 @@ void f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni){
 
 // Integrand for galaxy density RSD
 void f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni){
-	double g0 =1./growfac(1.);
+	double g0 =1./growfac(1.);//(1+0.2));
 	double a, z;
 	int i;
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
@@ -368,7 +368,7 @@ void f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni
 
 // Integrand for lensing magnification of galaxy density
 void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni){
-	double g0 =1./growfac(1.);
+	double g0 =1./growfac(1.);//(1+0.2));
 	double a, z, fK;
 	int i;
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
@@ -531,7 +531,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				if(ni != nj) {Fk2_Mag_ar[i][j]= (ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* (gbias.b_mag[nj]) *  Fk2_Mag_ar[i][j]);}
 			}
 		}
-
+		//printf("%f\n", zmean(ni));
 		for(i=0;i<Nell_block;i++) {
 			cl_temp = 0.;
 			for(j=0;j<Nchi;j++) {
@@ -539,10 +539,14 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
 				double plin = p_lin(k1_cH0,1.0);
 				double plin_cluster = p_lin_cluster(k1_cH0,1.0);
-				double factor = plin_cluster*(1+2*f_cb*(plin_cluster/plin) + f_cb*f_cb*(plin_cluster/plin)*(plin_cluster/plin))/(1+f_cb)/(1+f_cb);
+				//double factor = plin_cluster*(1+2*f_cb*(plin_cluster/plin) + f_cb*f_cb*(plin_cluster/plin)*(plin_cluster/plin))/(1+f_cb)/(1+f_cb);
+				double cluster_a = 1.0/(1.0+zmean(ni));
+				double factor = plin_cluster * ((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a)/p_lin(k1_cH0, cluster_a)))/(1+f_cb))*((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a)/p_lin(k1_cH0, cluster_a)))/(1+f_cb));
+				double cluster_a_2  = 1.0/(1.0 + zmean(nj));
+				double factor_2 = plin_cluster * ((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a_2)/p_lin(k1_cH0, cluster_a_2)))/(1+f_cb))*((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a_2)/p_lin(k1_cH0, cluster_a_2)))/(1+f_cb));
 				double fk1;
 				double fk2;
-				//printf("%f\n", factor/plin);
+				//printf("%f %f\n", factor/plin, cluster_a);
 				if(ni == nj) {
 
 					if (gbias.neutrino_induced_sdb){fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(factor);}
@@ -555,7 +559,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				else {
 					if (gbias.neutrino_induced_sdb){
 						fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(factor);
-						fk2 = (Fk2_RSD_ar[i][j] +Fk2_Mag_ar[i][j])* sqrt(plin) + Fk2_ar[i][j]*sqrt(factor);
+						fk2 = (Fk2_RSD_ar[i][j] +Fk2_Mag_ar[i][j])* sqrt(plin) + Fk2_ar[i][j]*sqrt(factor_2);
 					}
 					else{
 						fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(plin_cluster);

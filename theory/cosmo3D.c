@@ -971,7 +971,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
    class_status = fill_class_parameters(&fc,parser_length);
    if(class_status>0) return 1;
    class_status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&sd);
-     fprint_parser(&fc, parser_length);
+     //fprint_parser(&fc, parser_length);
    if(class_status>0) {
      fprint_parser(&fc,parser_length);
      parser_free(&fc);
