@@ -28,6 +28,36 @@ double cov_G_gl_shear_real(double theta1, double theta2, double Dtheta, int zl,i
 double cov_G_gl_shear_real_rebin(double thetamin_i, double thetamax_i,double thetamin_j,double thetamax_j,int zl,int zs, int z3, int z4,int pm);
 
 
+double filter_cov_fourier(double l1, double l2, double lmax, double lpivot) {
+  long i,j;
+  double W;
+  double l_interval = lmax - lpivot;
+  if(l_interval<=0) {return 1.;}
+
+  if(l1<=lpivot){
+    W = 1.;
+  }
+  else if(l1>=lmax){
+    W = 0.;
+  }
+  else{
+    W = (lmax - l1) / l_interval - 1./(2.*M_PI) * sin(2.*(lmax - l1)*M_PI/l_interval);
+  }
+
+  if(l2<=lpivot){
+    W *= 1.;
+  }
+  else if(l2>=lmax){
+    W *= 0.;
+  }
+  else{
+    W *= (lmax - l2) / l_interval - 1./(2.*M_PI) * sin(2.*(lmax - l2)*M_PI/l_interval);
+  }
+  return W;
+}
+
+
+
 /************************* covariance routines for angular correlation functions *********************/
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 // Note the look-up tables for power spectrum covariances are recomputed if one the redshift bins changes

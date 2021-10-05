@@ -81,12 +81,48 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       }
       continue;
     }
+    if(strcmp(name, "lmin")==0)
+    {
+      sscanf(val, "%lf", &covparams.lmin);
+      if(output==1)
+      {
+        printf("lmin %f \n",covparams.lmin);
+      }
+      continue;
+    }
+    else if(strcmp(name, "lmax")==0)
+    {
+      sscanf(val, "%lf", &covparams.lmax);
+      if(output==1)
+      {
+        printf("lmax %f \n",covparams.lmax);
+      }
+      continue;
+    }
+    else if(strcmp(name, "ncl")==0)
+    {
+      sscanf(val, "%d", &covparams.ncl);
+      if(output==1)
+      {
+        printf("Ncl %d \n",covparams.ncl);
+      }
+      continue;
+    }
     else if(strcmp(name, "ng")==0)
     {
       sscanf(val, "%d", &covparams.ng);
       if(output==1)
       {
         printf("ng %d \n",covparams.ng);
+      }
+      continue;
+    }
+    else if(strcmp(name, "cng")==0)
+    {
+      sscanf(val, "%d", &covparams.cng);
+      if(output==1)
+      {
+        printf("cng %d \n",covparams.cng);
       }
       continue;
     }
@@ -150,6 +186,33 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       if(output==1)
       {
         printf("ll %s \n",covparams.ll);
+      }
+      continue;
+    }
+    else if(strcmp(name, "lk")==0)
+    {
+      sprintf(covparams.lk,"%s",val);
+      if(output==1)
+      {
+        printf("lk %s \n",covparams.lk);
+      }
+      continue;
+    }
+    else if(strcmp(name, "ks")==0)
+    {
+      sprintf(covparams.ks,"%s",val);
+      if(output==1)
+      {
+        printf("ks %s \n",covparams.ks);
+      }
+      continue;
+    }
+    else if(strcmp(name, "kk")==0)
+    {
+      sprintf(covparams.kk,"%s",val);
+      if(output==1)
+      {
+        printf("kk %s \n",covparams.kk);
       }
       continue;
     }
@@ -277,6 +340,15 @@ void set_cosmological_parameters_to_(char *cosmofile, int output)
       if(output==1)
       {
         printf("runmode %s \n",pdeltaparams.runmode);
+      }
+      continue;
+    }
+    else if(strcmp(name, "A_s")==0)
+    {
+      sscanf(val, "%lf", &cosmology.A_s);
+      if(output==1)
+      {
+        printf("f_NL %f \n",cosmology.A_s);
       }
       continue;
     }

@@ -3,7 +3,6 @@ void init_BAO_DES();
 void init_BAO_LSST();
 void init_BAO_WFIRST();
 void init_BAO_BOSS();
-void init_BAO_WFIRST_spectro();
 double dist_BAO(double z);
 
 
@@ -45,24 +44,7 @@ void init_BAO_WFIRST(){
   printf("BAO WFIRST initialized\n");
 }
 
-//derived from Spergel et al 2015 page 29, total values times sqrt(7) to account for the errors spread out across 7 bins
-void init_BAO_WFIRST_spectro(){
-  int i;
-  BAO.N = 8;
-  BAO.z[0] = 1.25;
-  BAO.z[1] = 1.5;
-  BAO.z[2] = 1.75;
-  BAO.z[3] = 2.0;
-  BAO.z[4] = 2.25;
-  BAO.z[5] = 2.5;
-  BAO.z[6] = 2.75;
-  BAO.z[7] = 3.0;
-  for(i = 0; i< BAO.N; i++){
-    BAO.data[i] = dist_BAO(BAO.z[i]);
-    BAO.sigma[i] = 0.008;
-  }
-  printf("BAO WFIRST initialized\n");
-}
+
 
 void init_BAO_LSST(){
   int i;

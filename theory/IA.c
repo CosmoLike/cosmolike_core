@@ -186,10 +186,6 @@ int check_LF(void){ //return 1 if combination of all + red galaxy LF parameters 
 /*=============  Intrinsic Alignment models  ==============*/
 /*=========================================================*/
 
-double W_source(double a, double nz){
-  return zdistr_photoz(1./a-1.,(int)nz)*hoverh0(a);
-}
-
 
 double A_IA_Joachimi(double a){
   double z, A_red, highz = 0.75;
@@ -332,7 +328,7 @@ double int_for_C_II(double a, void *params)
 double C_II_nointerp(double s, int ni, int nj) 
 {
   if(ni!=nj && redshift.shear_photoz==0) return 0.0;
-  if (abs(ni-nj) >1 && redshift.shear_photoz==3) return 0.0;
+  if (abs(ni-nj) >1 && (redshift.shear_photoz==3||redshift.shear_photoz==5)   ) return 0.0;
 
   double array[3] = {(double) ni, (double) nj,s};
   int j,k;
@@ -570,21 +566,99 @@ double int_for_C_ggl_IA_mpp(double a, void *params)
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_C_II");
 
-  double ell_prefactor = (ar[2]-1.)*(ar[2])*(ar[2]+1.)*(ar[2]+2.);
-  if(ell_prefactor<=0.) 
-    ell_prefactor=0.;
+  double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
   else
-    ell_prefactor=sqrt(ell_prefactor);
+    ell_prefactor2=sqrt(ell_prefactor2);
 
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
-  res= W_gal(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
-  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor/ell/ell;
+
+  double chi_0,chi_1,a_0,a_1;
+  chi_0 = f_K(ell/k);
+  chi_1 = f_K((ell+1.)/k);
+  if (chi_1 > chi(limits.a_min)){
+    return 0;}
+  a_0 = a_chi(chi_0);
+  a_1 = a_chi(chi_1);
+
+  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+  // res= W_gal(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
+  res= (W_gal(a,ar[0]) +W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.))*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
   
 //  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a)+P_gm_rm(k,a))*dchi_da(a)/fK/fK;
 }
+
+double int_for_C_ggl_IA_mpp_part1(double a, void *params)
+{
+  double res, ell, fK, k,norm;
+  double *ar = (double *) params;
+  if (a >= 1.0) error("a>=1 in int_for_C_II");
+
+  double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
+  else
+    ell_prefactor2=sqrt(ell_prefactor2);
+
+  ell       = ar[2]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+
+  double chi_0,chi_1,a_0,a_1;
+  chi_0 = f_K(ell/k);
+  chi_1 = f_K((ell+1.)/k);
+  if (chi_1 > chi(limits.a_min)){
+    return 0;}
+  a_0 = a_chi(chi_0);
+  a_1 = a_chi(chi_1);
+
+  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+  // res= W_gal(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
+  res= (W_gal(a,ar[0]) +W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.))*(W_kappa(a,fK,ar[1]));
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
+  
+//  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a)+P_gm_rm(k,a))*dchi_da(a)/fK/fK;
+}
+
+double int_for_C_ggl_IA_mpp_part2(double a, void *params)
+{
+  double res, ell, fK, k,norm;
+  double *ar = (double *) params;
+  if (a >= 1.0) error("a>=1 in int_for_C_II");
+
+  double ell_prefactor1 = (ar[2])*(ar[2]+1.);
+  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
+  else
+    ell_prefactor2=sqrt(ell_prefactor2);
+
+  ell       = ar[2]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+
+  double chi_0,chi_1,a_0,a_1;
+  chi_0 = f_K(ell/k);
+  chi_1 = f_K((ell+1.)/k);
+  if (chi_1 > chi(limits.a_min)){
+    return 0;}
+  a_0 = a_chi(chi_0);
+  a_1 = a_chi(chi_1);
+
+  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+  // res= W_gal(a,ar[0])*(W_kappa(a,fK,ar[1])-W_source(a,ar[1])*norm);
+  res= (W_gal(a,ar[0]) +W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.))*(-W_source(a,ar[1])*norm);
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
+  
+//  return res*(gbias.b1_function(1./a-1.,(int)ar[0])*Pdelta(k,a)+P_gm_rm(k,a))*dchi_da(a)/fK/fK;
+}
+
 
 double int_for_C_ggl_IA_mpp_b2(double a, void *params)
 {
@@ -662,6 +736,9 @@ double int_for_C_shear_shear_IA_mpp(double a, void *params)
   double res, ell, fK, k,ws1,ws2,wk1,wk2, norm;
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_C_II");
+
+  double ell_prefactor = (ar[2]-1.)*(ar[2])*(ar[2]+1.)*(ar[2]+2.);
+
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
@@ -669,10 +746,10 @@ double int_for_C_shear_shear_IA_mpp(double a, void *params)
   ws2 = W_source(a,ar[1]);
   wk1 = W_kappa(a,fK,ar[0]);
   wk2 = W_kappa(a,fK,ar[1]);
-  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
   res= ws1*ws2*norm*norm - (ws1*wk2+ws2*wk1)*norm+wk1*wk2;
   
-  return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor / pow(ell,4);
 }
 
 double C_shear_shear_IA(double s, int ni, int nj)
@@ -684,7 +761,7 @@ double C_shear_shear_IA(double s, int ni, int nj)
   switch(like.IA){
     case 1: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA,(void*)array,amin_source(j),amax_source(k),NULL,1000);
     case 3: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_Az,(void*)array,amin_source(j),amax_source(k),NULL,1000);
-    case 4: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_mpp,(void*)array,amin_source(j),amax_source(k),NULL,1000);
+    case 4: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_mpp,(void*)array,amin_source(j),0.99999,NULL,1000);
     default: { printf("IA.c: C_shear_shear_IA does not support like.IA = %d\nEXIT\n", like.IA);
                exit(1);
     }
@@ -699,7 +776,9 @@ double C_ggl_IA(double s, int nl, int ns)
     case 3: if (gbias.b2[nl]) return int_gsl_integrate_low_precision(int_for_C_ggl_IA_Az_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
             return int_gsl_integrate_low_precision(int_for_C_ggl_IA_Az,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
     case 4: if (gbias.b2[nl]) return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_b2,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
-            return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+            // return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+            return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp,(void*)array,amin_lens(nl),0.99999,NULL,1000);
+            // return int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_part1,(void*)array,amin_lens(nl),0.9999,NULL,1000)+int_gsl_integrate_medium_precision(int_for_C_ggl_IA_mpp_part2,(void*)array,amin_lens(nl),0.9999,NULL,1000);
     default: printf("IA.c: C_ggl_IA does not support like.IA = %d\nEXIT\n", like.IA); exit(1);
   }
 }

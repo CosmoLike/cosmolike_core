@@ -35,9 +35,9 @@ void cfftlog(double *x, double *fx, long N, config *config, int ell, double *y, 
 	double complex gl[halfN+1];
 	
 	switch(config->derivative) {
-		case 0: g_l((double)ell, config->nu, eta_m, gl, halfN+1); break;
-		case 1: g_l_1((double)ell, config->nu, eta_m, gl, halfN+1); break;
-		case 2: g_l_2((double)ell, config->nu, eta_m, gl, halfN+1); break;
+		case 0: g_l_cfft((double)ell, config->nu, eta_m, gl, halfN+1); break;
+		case 1: g_l_1_cfft((double)ell, config->nu, eta_m, gl, halfN+1); break;
+		case 2: g_l_2_cfft((double)ell, config->nu, eta_m, gl, halfN+1); break;
 		default: printf("Integral Not Supported! Please choose config->derivative from [0,1,2].\n");
 	}
 	// printf("g2[0]: %.15e+I*(%.15e)\n", creal(g2[0]),cimag(g2[0]));
@@ -64,7 +64,7 @@ void cfftlog(double *x, double *fx, long N, config *config, int ell, double *y, 
 
 	fftw_execute(plan_forward);
 
-	c_window(out, config->c_window_width, halfN);
+	c_window_cfft(out, config->c_window_width, halfN);
 	// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
 
 	for(i=0; i<=halfN; i++) {
@@ -122,21 +122,36 @@ void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long 
 		fb[N-1-i] = 0.;
 	}
 	double xi;
+	int sign;
 	if(N_extrap_low) {
+		if(fx[0]==0) {
+			printf("Can't log-extrapolate zero on the low side!\n");
+			exit(1);
+		}
+		else if(fx[0]>0) {sign = 1;}
+		else {sign=-1;}
+		if(fx[1]/fx[0]<=0) {printf("Log-extrapolation on the low side fails due to sign change!\n"); exit(1);}
 		double dlnf_low = log(fx[1]/fx[0]);
 		for(i=N_pad; i<N_pad+N_extrap_low; i++) {
 			xi = exp(log(x0) + (i-N_pad - N_extrap_low)*dlnx);
-			fb[i] = exp(log(fx[0]) + (i- N_pad - N_extrap_low)*dlnf_low) / pow(xi, config->nu);
+			fb[i] = sign * exp(log(fx[0]*sign) + (i- N_pad - N_extrap_low)*dlnf_low) / pow(xi, config->nu);
 		}
 	}
 	for(i=N_pad+N_extrap_low; i<N_pad+N_extrap_low+N_original; i++) {
 		fb[i] = fx[i-N_pad-N_extrap_low] / pow(x[i-N_pad-N_extrap_low], config->nu) ;
 	}
 	if(N_extrap_high) {
+		if(fx[N_original-1]==0) {
+			printf("Can't log-extrapolate zero on the high side!\n");
+			exit(1);
+		}
+		else if(fx[N_original-1]>0) {sign = 1;}
+		else {sign=-1;}
+		if(fx[N_original-1]/fx[N_original-2]<=0) {printf("Log-extrapolation on the high side fails due to sign change!\n"); exit(1);}
 		double dlnf_high = log(fx[N_original-1]/fx[N_original-2]);
 		for(i=N-N_pad-N_extrap_high; i<N-N_pad; i++) {
 			xi = exp(log(x[N_original-1]) + (i-N_pad - N_extrap_low- N_original)*dlnx);
-			fb[i] = exp(log(fx[N_original-1]) + (i- N_pad - N_extrap_low- N_original)*dlnf_high) / pow(xi, config->nu);
+			fb[i] = sign * exp(log(fx[N_original-1]*sign) + (i- N_pad - N_extrap_low- N_original)*dlnf_high) / pow(xi, config->nu);
 		}
 	}
 
@@ -147,7 +162,7 @@ void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long 
 	plan_forward = fftw_plan_dft_r2c_1d(N, fb, out, FFTW_ESTIMATE);
 	fftw_execute(plan_forward);
 
-	c_window(out, config->c_window_width, halfN);
+	c_window_cfft(out, config->c_window_width, halfN);
 	// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
 
 	double *out_ifft;
@@ -156,9 +171,9 @@ void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long 
 
 	for(j=0; j<Nell; j++){
 		switch(config->derivative) {
-			case 0: g_l((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
-			case 1: g_l_1((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
-			case 2: g_l_2((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 0: g_l_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 1: g_l_1_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 2: g_l_2_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
 			default: printf("Integral Not Supported! Please choose config->derivative from [0,1,2].\n");
 		}
 
@@ -217,21 +232,36 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 		fb[N-1-i] = 0.;
 	}
 	double xi;
+	int sign;
 	if(N_extrap_low) {
+		if(fx[0]==0) {
+			printf("Can't log-extrapolate zero on the low side!\n");
+			exit(1);
+		}
+		else if(fx[0]>0) {sign = 1;}
+		else {sign=-1;}
+		if(fx[1]/fx[0]<=0) {printf("Log-extrapolation on the low side fails due to sign change!\n"); exit(1);}
 		double dlnf_low = log(fx[1]/fx[0]);
 		for(i=N_pad; i<N_pad+N_extrap_low; i++) {
 			xi = exp(log(x0) + (i-N_pad - N_extrap_low)*dlnx);
-			fb[i] = exp(log(fx[0]) + (i- N_pad - N_extrap_low)*dlnf_low) / pow(xi, config->nu);
+			fb[i] = sign * exp(log(fx[0]*sign) + (i- N_pad - N_extrap_low)*dlnf_low) / pow(xi, config->nu);
 		}
 	}
 	for(i=N_pad+N_extrap_low; i<N_pad+N_extrap_low+N_original; i++) {
 		fb[i] = fx[i-N_pad-N_extrap_low] / pow(x[i-N_pad-N_extrap_low], config->nu) ;
 	}
 	if(N_extrap_high) {
+		if(fx[N_original-1]==0) {
+			printf("Can't log-extrapolate zero on the high side!\n");
+			exit(1);
+		}
+		else if(fx[N_original-1]>0) {sign = 1;}
+		else {sign=-1;}
+		if(fx[N_original-1]/fx[N_original-2]<=0) {printf("Log-extrapolation on the high side fails due to sign change!\n"); exit(1);}
 		double dlnf_high = log(fx[N_original-1]/fx[N_original-2]);
 		for(i=N-N_pad-N_extrap_high; i<N-N_pad; i++) {
 			xi = exp(log(x[N_original-1]) + (i-N_pad - N_extrap_low- N_original)*dlnx);
-			fb[i] = exp(log(fx[N_original-1]) + (i- N_pad - N_extrap_low- N_original)*dlnf_high) / pow(xi, config->nu);
+			fb[i] = sign * exp(log(fx[N_original-1]*sign) + (i- N_pad - N_extrap_low- N_original)*dlnf_high) / pow(xi, config->nu);
 		}
 	}
 
@@ -242,7 +272,7 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 	plan_forward = fftw_plan_dft_r2c_1d(N, fb, out, FFTW_ESTIMATE);
 	fftw_execute(plan_forward);
 
-	c_window(out, config->c_window_width, halfN);
+	c_window_cfft(out, config->c_window_width, halfN);
 	// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
 
 	double *out_ifft;
@@ -251,9 +281,9 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 
 	for(j=0; j<Nell; j++){
 		switch(config->derivative) {
-			case 0: g_l((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
-			case 1: g_l_1((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
-			case 2: g_l_2((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 0: g_l_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 1: g_l_1_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
+			case 2: g_l_2_cfft((double)ell[j], config->nu, eta_m, gl, halfN+1); break;
 			default: printf("Integral Not Supported! Please choose config->derivative from [0,1,2].\n");
 		}
 

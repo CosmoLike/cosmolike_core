@@ -193,6 +193,7 @@ void run_cov_clustering_real_bin(char *OUTFILE, char *PATH, double *theta, int N
   //  printf("\nN_cl_1 = %d \n", n1);
   z3 = n2; z4 = n2;
   printf("N_cl_1 = %d, N_cl_2 = %d\n", n1,n2);
+
   for (nl1 = 0; nl1 < Ntheta; nl1 ++){
   	double t1 = 2./3.*(pow(theta[nl1+1],3.)-pow(theta[nl1],3.))/(pow(theta[nl1+1],2.)-pow(theta[nl1],2.));
     for (nl2 = 0; nl2 < Ntheta; nl2 ++){
@@ -222,6 +223,7 @@ void run_cov_ggl_real_bin(char *OUTFILE, char *PATH, double *theta,int Ntheta, i
   printf("\nN_tomo_1 = %d (%d, %d)\n", n1,zl1,zs1);
   zl2 = ZL(n2); zs2 = ZS(n2);
   printf("N_tomo_2 = %d (%d, %d)\n", n2,zl2,zs2);
+
   for (nl1 = 0; nl1 < Ntheta; nl1 ++){
   	double t1 = 2./3.*(pow(theta[nl1+1],3.)-pow(theta[nl1],3.))/(pow(theta[nl1+1],2.)-pow(theta[nl1],2.));
     for (nl2 = 0; nl2 < Ntheta; nl2 ++){
@@ -247,6 +249,7 @@ void run_cov_shear_shear_real_bin(char *OUTFILE, char *PATH,double *theta, int N
   printf("N_shear2 = %d (%d, %d)\n",n2,z3,z4);
   sprintf(filename,"%s%s_%d",PATH,OUTFILE,start);
   F1 =fopen(filename,"w");
+
   for (nl1 = 0; nl1 < Ntheta; nl1 ++){
   	double t1 = 2./3.*(pow(theta[nl1+1],3.)-pow(theta[nl1],3.))/(pow(theta[nl1+1],2.)-pow(theta[nl1],2.));
     for (nl2 = 0; nl2 < Ntheta; nl2 ++){
@@ -257,7 +260,6 @@ void run_cov_shear_shear_real_bin(char *OUTFILE, char *PATH,double *theta, int N
       if(pm1==1 && pm2==1) fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*n1+nl1,Ntheta*(n2)+nl2, t1,t2,z1,z2,z3,z4,c_g,c_ng);
       if(pm1==0 && pm2==0) fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(tomo.shear_Npowerspectra+n1)+nl1,Ntheta*(tomo.shear_Npowerspectra+n2)+nl2,t1,t2,z1,z2,z3,z4,c_g,c_ng);
       if(pm1==1 && pm2==0) fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*n1+nl1,Ntheta*(tomo.shear_Npowerspectra+n2)+nl2,t1,t2,z1,z2,z3,z4,c_g,c_ng);  
-
     }
   }
   fclose(F1);
@@ -276,6 +278,7 @@ void run_cov_ggl_shear_real_bin(char *OUTFILE, char *PATH, double *theta, int Nt
   printf("\nN_ggl = %d (%d, %d)\n", n1,zl,zs);
   z3 = Z1(n2); z4 = Z2(n2);
   printf("N_shear = %d (%d, %d)\n", n2,z3,z4);
+
   for (nl1 = 0; nl1 < Ntheta; nl1 ++){
   	double t1 = 2./3.*(pow(theta[nl1+1],3.)-pow(theta[nl1],3.))/(pow(theta[nl1+1],2.)-pow(theta[nl1],2.));
     for (nl2 = 0; nl2 < Ntheta; nl2 ++){
@@ -302,6 +305,7 @@ void run_cov_clustering_shear_real_bin(char *OUTFILE, char *PATH, double *theta,
   printf("\nN_cl = %d \n", n1);
   z3 = Z1(n2); z4 = Z2(n2);
   printf("N_shear = %d (%d, %d)\n", n2,z3,z4);
+
   for (nl1 = 0; nl1 < Ntheta; nl1 ++){
   	double t1 = 2./3.*(pow(theta[nl1+1],3.)-pow(theta[nl1],3.))/(pow(theta[nl1+1],2.)-pow(theta[nl1],2.));
     for (nl2 = 0; nl2 < Ntheta; nl2 ++){
@@ -313,7 +317,7 @@ void run_cov_clustering_shear_real_bin(char *OUTFILE, char *PATH, double *theta,
       if(pm==0)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+n1)+nl1,Ntheta*(tomo.shear_Npowerspectra+n2)+nl2, t1,t2,z1,z2,z3,z4,c_g,c_ng);
     }
   }
-fclose(F1);
+  fclose(F1);
 }
 
 void run_cov_clustering_ggl_real_bin(char *OUTFILE, char *PATH, double *theta, int Ntheta, int n1, int n2, int start)
@@ -329,6 +333,7 @@ void run_cov_clustering_ggl_real_bin(char *OUTFILE, char *PATH, double *theta, i
   printf("\nN_cl_1 = %d \n", n1);
   zl = ZL(n2); zs = ZS(n2);
   printf("N_tomo_2 = %d (%d, %d)\n", n2,zl,zs);
+
   for (nl1 = 0; nl1 < Ntheta; nl1 ++){
   	double t1 = 2./3.*(pow(theta[nl1+1],3.)-pow(theta[nl1],3.))/(pow(theta[nl1+1],2.)-pow(theta[nl1],2.));
     for (nl2 = 0; nl2 < Ntheta; nl2 ++){

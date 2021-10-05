@@ -21,6 +21,37 @@ double cov_G_gl_shear_real_binned(double theta1_min, double theta1_max,double th
 double cov_NG_cl_shear_real_binned(double theta1_min, double theta1_max,double theta2_min, double theta2_max, int z1,int z2, int z3, int z4, int pm); //z1,z2 clustering bins; z3,z4 shear bins
 double cov_G_cl_shear_real_binned(double theta1_min, double theta1_max,double theta2_min, double theta2_max, int z1,int z2, int z3, int z4, int pm);
 
+
+
+double filter_cov_fourier(double l1, double l2, double lmax, double lpivot) {
+  long i,j;
+  double W;
+  double l_interval = lmax - lpivot;
+  if(l_interval<=0) {return 1.;}
+
+  if(l1<=lpivot){
+    W = 1.;
+  }
+  else if(l1>=lmax){
+    W = 0.;
+  }
+  else{
+    W = (lmax - l1) / l_interval - 1./(2.*M_PI) * sin(2.*(lmax - l1)*M_PI/l_interval);
+  }
+
+  if(l2<=lpivot){
+    W *= 1.;
+  }
+  else if(l2>=lmax){
+    W *= 0.;
+  }
+  else{
+    W *= (lmax - l2) / l_interval - 1./(2.*M_PI) * sin(2.*(lmax - l2)*M_PI/l_interval);
+  }
+  return W;
+}
+
+
 /************************* covariance routines for angular correlation functions *********************/
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 // Note the look-up tables for power spectrum covariances are recomputed if one the redshift bins changes
@@ -180,6 +211,7 @@ double bin_cov_NG_shear_shear_tomo(double l1,double l2, int z1, int z2, int z3, 
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
     res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res *= filter_cov_fourier(llog1, llog2, logsmax, log(4.e4));
   return res;
 }
 double bin_cov_NG_gl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -221,7 +253,7 @@ double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   static int Z2 = -42;
   static int Z3 = -42;
   static int Z4 = -42;
-  static int Ntab = 20;
+  static int Ntab = 40;
   static double **table=0;
   static double ds = .0, logsmin = .0, logsmax = .0;
   int i,j;
@@ -238,7 +270,7 @@ double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
       llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
-        table[i][j]=log(cov_NG_cl_cl_tomo(ll1,ll2,z1,z2,z3,z4));
+        table[i][j]=cov_NG_cl_cl_tomo(ll1,ll2,z1,z2,z3,z4);
       }
     }
     Z1=z1; Z2=z2; Z3=z3; Z4=z4;
@@ -247,7 +279,7 @@ double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
   return res;
 }
 double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -255,7 +287,7 @@ double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   static int Z2 = -42;
   static int Z3 = -42;
   static int Z4 = -42;
-  static int Ntab = 20;
+  static int Ntab = 40;
   static double **table=0;
   static double ds = .0, logsmin = .0, logsmax = .0;
   int i,j;
@@ -272,7 +304,8 @@ double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
       llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
-        table[i][j]=log(cov_NG_cl_shear_tomo(ll1,ll2,z1,z2,z3,z4));
+        table[i][j]=cov_NG_cl_shear_tomo(ll1,ll2,z1,z2,z3,z4);
+        // printf("cov_NG_cl_shear_tomo(%lg,%lg),%lg\n",ll1,ll2, table[i][j]); 
       }
     }
     Z1=z1; Z2=z2; Z3=z3; Z4=z4;
@@ -281,7 +314,7 @@ double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
   return res;
 }
 double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -289,7 +322,7 @@ double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   static int Z2 = -42;
   static int Z3 = -42;
   static int Z4 = -42;
-  static int Ntab = 20;
+  static int Ntab = 40;
   static double **table=0;
   static double ds = .0, logsmin = .0, logsmax = .0;
   int i,j;
@@ -306,7 +339,7 @@ double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
       llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
-        table[i][j]=log(cov_NG_cl_gl_tomo(ll1,ll2,z1,z2,z3,z4));
+        table[i][j]=cov_NG_cl_gl_tomo(ll1,ll2,z1,z2,z3,z4);
       }
     }
     Z1=z1; Z2=z2; Z3=z3; Z4=z4;
@@ -315,7 +348,7 @@ double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
   return res;
 }
 double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
@@ -323,7 +356,7 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   static int Z2 = -42;
   static int Z3 = -42;
   static int Z4 = -42;
-  static int Ntab = 20;
+  static int Ntab = 40;
   static double **table=0;
   static double ds = .0, logsmin = .0, logsmax = .0;
   int i,j;
@@ -340,7 +373,8 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
       llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
-        table[i][j]=log(cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4));
+        table[i][j]=cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4);
+        // printf("cov_NG_gl_shear_tomo(%lg,%lg),%lg\n",ll1,ll2, cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4)); 
       }
     }
     Z1=z1; Z2=z2; Z3=z3; Z4=z4;
@@ -349,30 +383,94 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
   return res;
 }
 
 /***************************************************/
 /************ shear shear NG, bin averaged *********/
 /***************************************************/
+
+// double int2_for_cov_NG_shear_binned_fullsky(double l2,void *params){
+//   double *ar = (double *) params;
+//   double l1,tri = 0.,res =0;
+//   int n1,n2,n3,n4,j0;
+//   l1= ar[0];
+  
+//   n1 = (int) ar[1];n2 = (int) ar[2];n3 = (int) ar[3];n4 = (int) ar[4];
+//   tri= bin_cov_NG_shear_shear_tomo(l1,l2,n1,n2,n3,n4);
+//   if (j0==1) res=(tri)*l2*J0_binned(l2,ar[7],ar[8]);
+//   if (j0==0) res=(tri)*l2*J4_binned(l2,ar[7],ar[8]);
+//   return res;
+// }
+// double int_for_cov_NG_shear_binned_fullsky(double l1, void *params){
+//   double *array = (double *) params,res=0.,result = 1.,res_fin = 0.;
+//   int j0;
+//   array[0] = l1;
+//   j0= (int)array[10];
+//   unsigned int n =1;
+//   double x2 =0, x1 = 20.; //x1 = l_min for NG Covariance integration
+//   while (x2 <= x1){ //find first root of J0/4(l*theta2) with l > 20
+//     if (j0==1) x2 = gsl_sf_bessel_zero_J0 (n)/array[7];
+//     if (j0==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/array[7];
+//     n++;
+//   }
+//   while (fabs(result) > 1.e-4*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+//     result=int_gsl_integrate_low_precision(int2_for_cov_NG_shear_binned,(void*)array, x1, x2 ,NULL,512);
+//     res = res+result;
+//     x1 = x2;
+//     if (j0==1) x2 = gsl_sf_bessel_zero_J0 (n)/array[7];
+//     if (j0==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/array[7];
+//     n+=2;
+//   }
+//   if ((int)array[9]==1) res_fin=res*l1*J0_binned(l1,array[5],array[6]);
+//   if ((int)array[9]==0) res_fin=res*l1*J4_binned(l1,array[5],array[6]);
+//   return res_fin;
+// }
+// double cov_NG_shear_shear_real_binned_fullsky(double theta1_min, double theta1_max,double theta2_min,double theta2_max, int z1,int z2,int z3,int z4,int pm1,int pm2){
+//  double array[11],res = 0., result =1.;
+//   array[1] = (double) z1; array[2] = (double) z2;array[3] = (double) z3;array[4] = (double) z4;  array[9] = (double) pm1;array[10] = (double) pm2;
+//   array[5] = theta1_min; array[6] = theta1_max;
+//   array[7] = theta2_min; array[8] = theta2_max;
+//   unsigned int n = 1;
+//   double x2 =0, x1 = 20.,t = (theta1_min+theta1_max)/2.; //x1 = l_min for Covariance integration, OK for typical angular scales of interest
+//   while (x2 <= x1){ //find first root of J0/4(l*theta1) with l > 10
+//     if (pm1==1) x2 = gsl_sf_bessel_zero_J0 (n)/t;
+//     if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/t;    
+//     n++;
+//   }
+//   while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){
+//     result=int_gsl_integrate_medium_precision(int_for_cov_NG_shear_binned,(void*)array, x1, x2 ,NULL,1000);
+//     res = res+result;
+//     x1 = x2;
+//     if (pm1==1) x2 = gsl_sf_bessel_zero_J0 (n)/t;
+//     if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/t;
+//     n+=2;
+//   }
+//   return res/(4.0*M_PI*M_PI);
+// }
+
+/*****************/
+
 double int2_for_cov_NG_shear_binned(double l2,void *params){
   double *ar = (double *) params;
   double l1,tri = 0.,res =0;
   int n1,n2,n3,n4,j0;
+  j0= (int)ar[10];
   l1= ar[0];
   
   n1 = (int) ar[1];n2 = (int) ar[2];n3 = (int) ar[3];n4 = (int) ar[4];
   tri= bin_cov_NG_shear_shear_tomo(l1,l2,n1,n2,n3,n4);
   if (j0==1) res=(tri)*l2*J0_binned(l2,ar[7],ar[8]);
   if (j0==0) res=(tri)*l2*J4_binned(l2,ar[7],ar[8]);
+  // printf("l2,J0,J4,%lg, %lg, %lg\n",l2, J0_binned(l2,ar[7],ar[8]),J4_binned(l2,ar[7],ar[8]));
   return res;
 }
 double int_for_cov_NG_shear_binned(double l1, void *params){
   double *array = (double *) params,res=0.,result = 1.,res_fin = 0.;
   int j0;
   array[0] = l1;
-  j0= (int)array[10];
+  j0= (int)array[9];
   unsigned int n =1;
   double x2 =0, x1 = 20.; //x1 = l_min for NG Covariance integration
   while (x2 <= x1){ //find first root of J0/4(l*theta2) with l > 20
@@ -380,7 +478,7 @@ double int_for_cov_NG_shear_binned(double l1, void *params){
     if (j0==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/array[7];
     n++;
   }
-  while (fabs(result) > 1.e-4*fabs(res) && x1<1.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
+  while (fabs(result) > 1.e-4*fabs(res) && x1<5.e+4){ //integrate up to l_max = 1.e+4, strongly shot noise dominated afterwards
     result=int_gsl_integrate_low_precision(int2_for_cov_NG_shear_binned,(void*)array, x1, x2 ,NULL,512);
     res = res+result;
     x1 = x2;
@@ -390,6 +488,7 @@ double int_for_cov_NG_shear_binned(double l1, void *params){
   }
   if ((int)array[9]==1) res_fin=res*l1*J0_binned(l1,array[5],array[6]);
   if ((int)array[9]==0) res_fin=res*l1*J4_binned(l1,array[5],array[6]);
+  // printf("res1,%lg\n", res_fin);
   return res_fin;
 }
 double cov_NG_shear_shear_real_binned(double theta1_min, double theta1_max,double theta2_min,double theta2_max, int z1,int z2,int z3,int z4,int pm1,int pm2){
@@ -412,8 +511,10 @@ double cov_NG_shear_shear_real_binned(double theta1_min, double theta1_max,doubl
     if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/t;
     n+=2;
   }
+  // printf("res2,%lg\n", res);
   return res/(4.0*M_PI*M_PI);
 }
+
 
 /*********** rebin routines for shear shear G**********/
 double int_for_cov_G_shear_binned(double l, void *params){
@@ -691,6 +792,19 @@ double cov_G_cl_cl_real_binned(double thetamin_i, double thetamax_i,double theta
   }
   return cov_G_cl_no_shot_noise_binned(thetamin_i,thetamax_i, thetamin_j,thetamax_j,z1,z2,z3,z4)+ N;
 }
+
+// double cov_G_cl_cl_fourier(double l, int z1, int z2, int z3, int z4){
+//   double C13, C14, C23, C24, N13=0.0, N14=0.0, N23=0.0, N24=0.0;
+//   double noshot;
+//   C13 = C_cl_tomo(l,z1,z3);C24 = C_cl_tomo(l,z2,z4);
+//   C14 = C_cl_tomo(l,z1,z4);C23 = C_cl_tomo(l,z2,z3);
+//   if (z1 == z3){N13= 1./(nlens(z1)*survey.n_gal_conversion_factor);}
+//   if (z1 == z4){N14= 1./(nlens(z1)*survey.n_gal_conversion_factor);}
+//   if (z2 == z3){N23= 1./(nlens(z2)*survey.n_gal_conversion_factor);}
+//   if (z2 == z4){N24= 1./(nlens(z2)*survey.n_gal_conversion_factor);}
+//   noshot = (C13*C24+C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23);
+  
+// }
 
 /*********************************************************/
 /************ clustering x shear NG, bin averaged ********/
@@ -977,4 +1091,598 @@ double cov_G_gl_shear_real_binned (double theta1_min,double theta1_max, double t
     n+=2;
   }
   return res/(2.0*M_PI*survey.area*survey.area_conversion_factor);
+}
+
+
+/////// full sky covs
+void cov_NG_shear_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm1,int pm2){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Glplus =0;
+  static double **Glminus =0;
+  if (Glplus ==0){
+    Glplus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Glminus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
+      // printf("xmax[%d]:%lg\n", i,xmax[i]);
+      for (int l = 3; l < LMAX; l ++){
+        /*double plm = gsl_sf_legendre_Plm(l,2,x);
+        double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
+        Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*((4-l+2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x-2)/(1-x*x));
+
+
+        Glminus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*(l,2,x)*((4-l-2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x+2)/(1-x*x));*/
+
+        Glplus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        +2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        -2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);           
+
+        Glminus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        -2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        +2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);
+        
+        // printf("Pmin[%d], Pmax[%d]:%lg, %lg\n", l,l, Pmin[l], Pmax[l]);
+        // printf("Glplus[%d][%d],%lg\n", i,l, Glplus[i][l]);
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  // printf("i,j:%d,%d\n", i,j);
+  double triGl1;
+  if(pm1>0 && pm2>0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      // printf("l1,%d\n", l1);
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glplus[i][l1];
+          // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glplus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else if(pm1>0 && pm2==0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glplus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else if(pm1==0 && pm2>0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glminus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glplus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else{
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_shear_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triGl1 = tri * Glminus[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triGl1 * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_gl_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Glplus =0;
+  static double **Glminus =0;
+  static double **Pl =0;
+  if (Glplus ==0){
+    Glplus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Glminus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
+      // printf("xmax[%d]:%lg\n", i,xmax[i]);
+      for (int l = 3; l < LMAX; l ++){
+        /*double plm = gsl_sf_legendre_Plm(l,2,x);
+        double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
+        Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*((4-l+2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x-2)/(1-x*x));
+
+
+        Glminus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*(l,2,x)*((4-l-2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x+2)/(1-x*x));*/
+
+        Glplus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        +2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        -2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);           
+
+        Glminus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        -2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        +2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);
+        
+        // printf("Pmin[%d], Pmax[%d]:%lg, %lg\n", l,l, Pmin[l], Pmax[l]);
+        // printf("Glplus[%d][%d],%lg\n", i,l, Glplus[i][l]);
+        Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
+        *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
+        +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  // printf("i,j:%d,%d\n", i,j);
+  double triP;
+  if(pm>0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      // printf("l1,%d\n", l1);
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_gl_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triP = tri * Pl[i][l1];
+          // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triP * Glplus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else{
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_gl_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triP = tri * Pl[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triP * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_cl_shear_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4,int pm){
+  
+  int i,j;
+  static int LMAX = 10000;
+  static double **Glplus =0;
+  static double **Glminus =0;
+  static double **Pl =0;
+  if (Glplus ==0){
+    Glplus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Glminus =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
+      gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
+      // printf("xmax[%d]:%lg\n", i,xmax[i]);
+      for (int l = 3; l < LMAX; l ++){
+        /*double plm = gsl_sf_legendre_Plm(l,2,x);
+        double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
+        Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*((4-l+2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x-2)/(1-x*x));
+
+
+        Glminus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
+        *(plm*(l,2,x)*((4-l-2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
+        +plm_1*(l-1,2,x)*(l+2)*(x+2)/(1-x*x));*/
+
+        Glplus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        +2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        -2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);           
+
+        Glminus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
+
+        -l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
+        -l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        +l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+
+        +(4-l)   * (dPmin[l]-dPmax[l])
+        +(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
+
+        -2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
+        +2*(l+2) * (dPmin[l-1]-dPmax[l-1])
+
+        )/(xmin[i]-xmax[i]);
+        
+        Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+        // printf("Pmin[%d], Pmax[%d]:%lg, %lg\n", l,l, Pmin[l], Pmax[l]);
+        // printf("Glplus[%d][%d],%lg\n", i,l, Glplus[i][l]);
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  // printf("i,j:%d,%d\n", i,j);
+  double triP;
+  if(pm>0){
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      // printf("l1,%d\n", l1);
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_cl_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        for(i=0; i<like.Ntheta ; i++){
+          triP = tri * Pl[i][l1];
+          // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triP * Glplus[j][l2];
+          }
+        }
+      }
+    }
+  }
+  else{
+    for (l1 = 3; l1 < LMAX; l1++){
+      l1_double = (double)l1;
+      for (l2 = 3; l2 < LMAX; l2++){
+        tri = bin_cov_NG_cl_shear_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+        // printf("tri:%lg\n", tri);
+        for(i=0; i<like.Ntheta ; i++){
+          triP = tri * Pl[i][l1];
+          for(j=0; j<like.Ntheta ; j++){
+            cov[i][j] += triP * Glminus[j][l2];
+          }
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_cl_gl_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Pl =0;
+  static double **Pl2=0;
+  if (Pl ==0){
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+    Pl2=create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
+      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+      for (int l = 2; l < LMAX; l ++){
+        Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+        Pl2[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
+        *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
+        +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  double triP;
+  for (l1 = 3; l1 < LMAX; l1++){
+    l1_double = (double)l1;
+    for (l2 = 3; l2 < LMAX; l2++){
+      tri = bin_cov_NG_cl_gl_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+      for(i=0; i<like.Ntheta ; i++){
+        triP = tri * Pl[i][l1];
+        for(j=0; j<like.Ntheta ; j++){
+          cov[i][j] += triP * Pl2[j][l2];
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_gl_gl_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Pl =0;
+  if (Pl ==0){
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
+      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+      for (int l = 2; l < LMAX; l ++){
+        Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))
+        *((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])
+        +(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
+        -2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  double triP;
+  for (l1 = 3; l1 < LMAX; l1++){
+    l1_double = (double)l1;
+    for (l2 = 3; l2 < LMAX; l2++){
+      tri = bin_cov_NG_gl_gl_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+      for(i=0; i<like.Ntheta ; i++){
+        triP = tri * Pl[i][l1];
+        for(j=0; j<like.Ntheta ; j++){
+          cov[i][j] += triP * Pl[j][l2];
+        }
+      }
+    }
+  }
+}
+
+void cov_NG_cl_cl_real_binned_fullsky(double **cov, int z1,int z2,int z3,int z4){
+  
+  int i,j;
+  static int LMAX = 50000;
+  static double **Pl =0;
+  if (Pl ==0){
+    Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);
+
+    double *xmin, *xmax, *Pmin, *Pmax, *dPmin, *dPmax;
+    xmin= create_double_vector(0, like.Ntheta-1);
+    xmax= create_double_vector(0, like.Ntheta-1);
+    double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;
+    // printf("like.vtmax,like.vtmin,like.Ntheta,%lg,%lg,%lg\n",like.vtmax,like.vtmin,like.Ntheta);
+    for(i=0; i<like.Ntheta ; i++){
+      xmin[i]=cos(exp(log(like.vtmin)+(i+0.0)*logdt));
+      xmax[i]=cos(exp(log(like.vtmin)+(i+1.0)*logdt));
+    }
+    Pmin= create_double_vector(0, LMAX+1);
+    Pmax= create_double_vector(0, LMAX+1);
+    dPmin= create_double_vector(0, LMAX+1);
+    dPmax= create_double_vector(0, LMAX+1);
+    for (i = 0; i<like.Ntheta; i ++){
+      double x = cos(like.theta[i]);
+      gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);
+      gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);
+      for (int l = 1; l < LMAX; l ++){
+        Pl[i][l] = 1./(4.*M_PI)*(Pmin[l+1]-Pmax[l+1]-Pmin[l-1]+Pmax[l-1])/(xmin[i]-xmax[i]);
+      }
+    }
+    free_double_vector(xmin,0,like.Ntheta-1);
+    free_double_vector(xmax,0,like.Ntheta-1);
+    free_double_vector(Pmin,0,LMAX+1);
+    free_double_vector(Pmax,0,LMAX+1);
+    free_double_vector(dPmin,0,LMAX+1);
+    free_double_vector(dPmax,0,LMAX+1);
+  }
+
+  double l1_double,tri;
+  int l1,l2;
+  for(i=0; i<like.Ntheta ; i++){
+    for(j=0; j<like.Ntheta ; j++){
+      cov[i][j] = 0.;
+    }
+  }
+
+  double triP;
+  for (l1 = 3; l1 < LMAX; l1++){
+    l1_double = (double)l1;
+    for (l2 = 3; l2 < LMAX; l2++){
+      tri = bin_cov_NG_cl_cl_tomo(l1_double,(double)l2,z1,z2,z3,z4);
+      for(i=0; i<like.Ntheta ; i++){
+        triP = tri * Pl[i][l1];
+        for(j=0; j<like.Ntheta ; j++){
+          cov[i][j] += triP * Pl[j][l2];
+        }
+      }
+    }
+  }
 }
