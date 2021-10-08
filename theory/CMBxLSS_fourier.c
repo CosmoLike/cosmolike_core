@@ -366,57 +366,158 @@ double C_kk(double l)
 // y related functions
 
 // efficiency weight function for Compton-y
-double W_y(double a, double fK){
-  return 0;
+double W_y(double a){ // SI units: sigma_Th /(m_e*c^2) / a^2 , see Eq.D9 of 2005.00009.
+  return 6.65246e-29 / 8.187106e-14 /a/a;
 }
 double int_for_C_gy(double a, void *params){
-  return 0;
+  double *ar = (double *) params;
+  double res,ell, fK, k;
+  if (a >= 1.0) error("a >1 in int_for_C_gy");
+  
+  ell       = ar[1]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+  res= W_gal(a,ar[0])*W_y(a)*dchi_da(a)/fK/fK ; //W_gal radial weight function for clustering, defined in cosmo2D_fourier.c
+  res= res*P_mP(k,a);
+  return res;
 }
-double int_for_C_ky(double a, void *params){
-  return 0;
-}
+
 double int_for_C_sy(double a, void *params){
-  return 0;
+  double *ar = (double *) params;
+  double res,ell, fK, k;
+  if (a >= 1.0) error("a >1 in int_for_C_sy");
+
+  double ell_prefactor2 = (ar[1]-1.)*ell_prefactor1*(ar[1]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
+  else
+    ell_prefactor2=sqrt(ell_prefactor2);
+  
+  ell       = ar[1]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+  res= W_kappa(a,fK,ar[0])*W_y(a)*dchi_da(a)/fK/fK *ell_prefactor2/ ell/ell;
+  res= res*P_mP(k,a);
+  return res;
 }
+
+// IA for y x shear
+double int_for_C_sy_IA(double a, void *params)
+{
+   double res, ell, fK, k,ws,wy,wk, norm;
+   double *ar = (double *) params;
+   ell       = ar[1]+0.5;
+   fK     = f_K(chi(a));
+   k      = ell/fK;
+   ws = W_source(a,ar[0]);
+   wk = W_kappa(a,fK,ar[0]);
+   norm = A_IA_Joachimi(a)*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a);
+   res= -ws*wy*norm + wk*wy;
+
+  double ell_prefactor2 = (ar[1]-1.)*ell_prefactor1*(ar[1]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
+  else
+    ell_prefactor2=sqrt(ell_prefactor2);
+
+  res *= dchi_da(a)/fK/fK *ell_prefactor2/ ell/ell;
+  res *= P_mP(k,a);
+  return res;
+}
+
+
+double int_for_C_ky(double a, void *params){
+  double *ar = (double *) params;
+  double res,ell, fK, k;
+  if (a >= 1.0) error("a >1 in int_for_C_ky");
+
+  double ell_prefactor1 = (ar[1])*(ar[1]+1.);
+  
+  ell       = ar[1]+0.5;
+  fK     = f_K(chi(a));
+  k      = ell/fK;
+  res= W_k(a,fK)*W_y(a)*dchi_da(a)/fK/fK * ell_prefactor1/ell/ell ; //W_gal radial weight function for clustering, defined in cosmo2D_fourier.c
+  res= res*P_mP(k,a);
+}
+
 double int_for_C_yy(double a, void *params){
-  return 0;
+   double *ar = (double *) params;
+   double res,ell, fK, k;
+   if (a > 1.0) error("a >1 in int_for_C_yy");
+
+   ell       = ar[0]+0.5;
+   fK     = f_K(chi(a));
+   k      = ell/fK;
+   res = pow(W_y(a), 2)*dchi_da(a)/fK/fK;
+   res = res*P_PP(k,a);
+   return res;
 }
 
 // power spectra - no look-up table
 //CMB y x galaxy position power spectrum, lens bin ni
 double C_gy_nointerp(double l, int ni){
-  return 0;
+   double array[2] = {(double)nl,l};
+   if (gbias.b2[nl] || gbias.b2[nl]) {
+    error("b2 not supported in C_gy_nointerp");
+    // return int_gsl_integrate_medium_precision(int_for_C_gy_b2 ,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+  }
+   // return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+   return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(nl),0.99999,NULL,1000);
+
+}
+
+
+double C_sy_IA(double s, int ni)
+{
+   double array[2] = {(double) ni,s};
+   if (like.IA==1) return int_gsl_integrate_medium_precision(int_for_C_sy_IA,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
+   // if (like.IA==3) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_Az,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
+   // if (like.IA==4) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_mpp,(void*)array,amin_source(ni),0.99999,NULL,1000);
+   printf("CMBxLSS.c: C_sy_IA does not support like.IA = %d\nEXIT\n", like.IA);
+  exit(1);
 }
 
 // CMB y x galaxy shear, for source z-bin ns
 double C_sy_nointerp(double l, int ns);
 {
-  return 0;
+  if (like.IA) return C_sy_IA(l,ns);
+  double array[2] = {(double) ns, l};
+  // return int_gsl_integrate_medium_precision(int_for_C_sy,(void*)array,amin_source(ns),amax_source(ns),NULL,1000);
+  return int_gsl_integrate_medium_precision(int_for_C_sy,(void*)array,amin_source(ns),0.99999,NULL,1000);
+
 }
 
 // CMB y x CMB kappa
 double C_ky_nointerp(double l);
 {
-  return 0;
+   double array[1] = {l};
+   return int_gsl_integrate_medium_precision(int_for_C_ky, (void*)array, limits.a_min*(1.+1.e-5), 1.-1.e-5, NULL, 1000);
+
 }
 
 double C_yy_nointerp(double l);
 {
-  return 0;
+   double array[1] = {l};
+   return int_gsl_integrate_medium_precision(int_for_C_yy, (void*)array, limits.a_min*(1.+1.e-5), 1.-1.e-5, NULL, 1000);
+
 }
 
 double C_gy(double l, int ni){
+  error("C_gy not implemented yet!");
   return 0;
 }
 
 double C_sy(double l, int ns){
+  error("C_sy not implemented yet!");
   return 0;
 }
 
 double C_ky(double l){
+  error("C_ky not implemented yet!");
   return 0;
 }
 
 double C_yy(double l){
+  error("C_yy not implemented yet!");
   return 0;
 }
