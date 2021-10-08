@@ -365,6 +365,15 @@ double C_kk(double l)
 //================================================================================================
 // y related functions
 
+double P_mP(double k, double a){
+  error("P_mP not implemented");
+  return 0;
+}
+double P_PP(double k, double a){
+  error("P_PP not implemented");
+  return 0;
+}
+
 // efficiency weight function for Compton-y
 double W_y(double a){ // SI units: sigma_Th /(m_e*c^2) / a^2 , see Eq.D9 of 2005.00009.
   return 6.65246e-29 / 8.187106e-14 /a/a;
@@ -467,9 +476,9 @@ double C_gy_nointerp(double l, int ni){
 }
 
 
-double C_sy_IA(double s, int ni)
+double C_sy_IA(double l, int ni)
 {
-   double array[2] = {(double) ni,s};
+   double array[2] = {(double) ni,l};
    if (like.IA==1) return int_gsl_integrate_medium_precision(int_for_C_sy_IA,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
    // if (like.IA==3) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_Az,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
    // if (like.IA==4) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_mpp,(void*)array,amin_source(ni),0.99999,NULL,1000);
