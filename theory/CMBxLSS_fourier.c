@@ -3,6 +3,7 @@
 // g = galaxy positions ("g" as in "galaxy")
 // k = kappa CMB ("k" as in "kappa")
 // s = kappa from source galaxies ("s" as in "shear")
+// y = Compton-y field from CMB
 // And alphabetical order
 
 //================================================================================================
@@ -20,8 +21,25 @@ double C_gk_nointerp(double l, int ni);  //CMB kappa x galaxy position power spe
 double C_ks_nointerp(double l, int ns); // CMB kappa x galaxy kappa power spectrum, for source z-bin ns
 double C_kk_nointerp(double l);
 double C_gk(double l, int ni);//CMB kappa x galaxy positions in clustering bin ni
-double C_ks(double s, int ni);
-double C_kk(double s);
+double C_ks(double l, int ni);
+double C_kk(double l);
+
+//======= y related power spectra
+double W_y(double a, double fK); // efficiency weight function for Compton-y
+double int_for_C_gy(double a, void *params);
+double int_for_C_ky(double a, void *params);
+double int_for_C_sy(double a, void *params);
+double int_for_C_yy(double a, void *params);
+
+// power spectra - no look-up table
+double C_gy_nointerp(double l, int ni);  //CMB y x galaxy position power spectrum, lens bin ni
+double C_sy_nointerp(double l, int ns); // CMB y x galaxy shear power spectrum, for source z-bin ns
+double C_ky_nointerp(double l); // CMB y x CMB kappa power spectrum
+double C_yy_nointerp(double l); // CMB y x y power spectrum
+double C_gy(double l, int ni);
+double C_sy(double l, int ns);
+double C_ky(double l);
+double C_yy(double l);
 
 //================================================================================================
 double beam_SPT(double l){
@@ -343,3 +361,62 @@ double C_kk(double l)
 }
 
 
+
+//================================================================================================
+// y related functions
+
+// efficiency weight function for Compton-y
+double W_y(double a, double fK){
+  return 0;
+}
+double int_for_C_gy(double a, void *params){
+  return 0;
+}
+double int_for_C_ky(double a, void *params){
+  return 0;
+}
+double int_for_C_sy(double a, void *params){
+  return 0;
+}
+double int_for_C_yy(double a, void *params){
+  return 0;
+}
+
+// power spectra - no look-up table
+//CMB y x galaxy position power spectrum, lens bin ni
+double C_gy_nointerp(double l, int ni){
+  return 0;
+}
+
+// CMB y x galaxy shear, for source z-bin ns
+double C_sy_nointerp(double l, int ns);
+{
+  return 0;
+}
+
+// CMB y x CMB kappa
+double C_ky_nointerp(double l);
+{
+  return 0;
+}
+
+double C_yy_nointerp(double l);
+{
+  return 0;
+}
+
+double C_gy(double l, int ni){
+  return 0;
+}
+
+double C_sy(double l, int ns){
+  return 0;
+}
+
+double C_ky(double l){
+  return 0;
+}
+
+double C_yy(double l){
+  return 0;
+}
