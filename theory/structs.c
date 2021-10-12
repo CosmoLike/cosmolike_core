@@ -280,13 +280,9 @@ typedef struct {
   double cluster_MOR[10];
   int N_cluster_selection;
   double cluster_selection[10];
-<<<<<<< HEAD
   double bary[3];
-=======
-
   double frac_lowz;
   double frac_highz;
->>>>>>> 0e3c2a816d75dbb2037a391e3e198699ece2b985
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
@@ -298,13 +294,9 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-<<<<<<< HEAD
-  .bary = {0.0, 0.0, 0.0}
-};
-=======
+  .bary = {0.0, 0.0, 0.0},
   .frac_lowz = 0.,
   .frac_highz = 0.};
->>>>>>> 0e3c2a816d75dbb2037a391e3e198699ece2b985
 
 
 
