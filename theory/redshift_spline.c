@@ -652,7 +652,8 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
       gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);
 //      printf("spline init shear %d, %e\n",i,gsl_spline_eval(photoz_splines[i+1],1.0,NULL));
     }
-<<<<<<< HEAD
+
+	#if 0
     // Start JX: print the ztrue distribution of each tomo bins
     FILE *zdist_tomo_FILE;
     char zdist_tomo_fname[500];
@@ -670,8 +671,9 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
     } 
     fclose(zdist_tomo_FILE);  
     // End JX
-=======
->>>>>>> 0e3c2a816d75dbb2037a391e3e198699ece2b985
+    #endif
+
+
   }
   if (j >= tomo.shear_Nbin){
     printf("redshift.c: zdistr_photoz(z,%d) outside tomo.shear_Nbin range\n", j);

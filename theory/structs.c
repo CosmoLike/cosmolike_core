@@ -33,8 +33,7 @@ typedef struct {
   char INV_FILE[500]; 
   char COV_FILE[500];
   char BARY_FILE[500]; 
-  char MASK_FILE[500]; 
-  char BARY_FILE[500];
+  char MASK_FILE[500];
   int shear_shear;
   int shear_pos;
   int pos_pos;
@@ -225,12 +224,8 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   char path[200];
   cosmopara C;
 }FPTpara;
-<<<<<<< HEAD
-FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7};
-
-=======
+//FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7};
 FPTpara FPT ={.k_min = 1.e-5, .k_max =1.e+3, .N = 800, .N_per_dec = 100, .N_AB = 7,.N_IA = 10};
->>>>>>> 0e3c2a816d75dbb2037a391e3e198699ece2b985
 typedef struct {
   //like.IA = 3: NLA, per bin
   //like.IA = 4: NLA, power law
@@ -351,10 +346,7 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double bary_Q1[2];
   double bary_Q2[2];
   double bary_Q3[2];
-<<<<<<< HEAD
-=======
   double theta_star[2];
->>>>>>> 0e3c2a816d75dbb2037a391e3e198699ece2b985
 }priorpara;
 priorpara prior = {
  .shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
@@ -437,10 +429,7 @@ typedef struct input_nuisance_params {
     double m_lambda[6];
     double cluster_c[4];
     double bary[3];
-<<<<<<< HEAD
-=======
     double b_mag[10];
->>>>>>> 0e3c2a816d75dbb2037a391e3e198699ece2b985
 } input_nuisance_params;
 
 typedef struct input_nuisance_params_grs {
