@@ -67,7 +67,7 @@ double w_gk_fullsky(int nt, int ni){
       for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
         for (l = 1; l < LMAX; l++){ 
 //          if (l < 20){Cl[l]=C_cl_RSD_nointerp(l,nz,nz);}
-          Cl[l]=C_gk_wrapper(1.0*l,nz)
+          Cl[l]=C_gk_wrapper(1.0*l,nz);
           // if (l < 20){Cl[l]=C_cl_tomo_nointerp(l,nz,nz);}
           // else Cl[l]=C_cl_tomo(1.0*l,nz,nz);
         }

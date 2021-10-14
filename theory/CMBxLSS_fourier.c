@@ -397,6 +397,7 @@ double int_for_C_sy(double a, void *params){
   double res,ell, fK, k;
   if (a >= 1.0) error("a >1 in int_for_C_sy");
 
+  double ell_prefactor1 = (ar[1])*(ar[1]+1.);
   double ell_prefactor2 = (ar[1]-1.)*ell_prefactor1*(ar[1]+2.);
   if(ell_prefactor2<=0.) 
     ell_prefactor2=0.;
@@ -423,7 +424,8 @@ double int_for_C_sy_IA(double a, void *params)
    wk = W_kappa(a,fK,ar[0]);
    norm = A_IA_Joachimi(a)*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a);
    res= -ws*wy*norm + wk*wy;
-
+  
+  double ell_prefactor1 = (ar[1])*(ar[1]+1.);
   double ell_prefactor2 = (ar[1]-1.)*ell_prefactor1*(ar[1]+2.);
   if(ell_prefactor2<=0.) 
     ell_prefactor2=0.;
@@ -466,13 +468,13 @@ double int_for_C_yy(double a, void *params){
 // power spectra - no look-up table
 //CMB y x galaxy position power spectrum, lens bin ni
 double C_gy_nointerp(double l, int ni){
-   double array[2] = {(double)nl,l};
-   if (gbias.b2[nl] || gbias.b2[nl]) {
+   double array[2] = {(double)ni,l};
+   if (gbias.b2[ni] || gbias.b2[ni]) {
     error("b2 not supported in C_gy_nointerp");
-    // return int_gsl_integrate_medium_precision(int_for_C_gy_b2 ,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+    // return int_gsl_integrate_medium_precision(int_for_C_gy_b2 ,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
   }
-   // return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
-   return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(nl),0.99999,NULL,1000);
+   // return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
+   return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(ni),0.99999,NULL,1000);
 
 }
 
@@ -488,7 +490,7 @@ double C_sy_IA(double l, int ni)
 }
 
 // CMB y x galaxy shear, for source z-bin ns
-double C_sy_nointerp(double l, int ns);
+double C_sy_nointerp(double l, int ns)
 {
   if (like.IA) return C_sy_IA(l,ns);
   double array[2] = {(double) ns, l};
@@ -498,14 +500,14 @@ double C_sy_nointerp(double l, int ns);
 }
 
 // CMB y x CMB kappa
-double C_ky_nointerp(double l);
+double C_ky_nointerp(double l)
 {
    double array[1] = {l};
    return int_gsl_integrate_medium_precision(int_for_C_ky, (void*)array, limits.a_min*(1.+1.e-5), 1.-1.e-5, NULL, 1000);
 
 }
 
-double C_yy_nointerp(double l);
+double C_yy_nointerp(double l)
 {
    double array[1] = {l};
    return int_gsl_integrate_medium_precision(int_for_C_yy, (void*)array, limits.a_min*(1.+1.e-5), 1.-1.e-5, NULL, 1000);
