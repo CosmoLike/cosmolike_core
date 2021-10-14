@@ -25,7 +25,8 @@ double C_ks(double l, int ni);
 double C_kk(double l);
 
 //======= y related power spectra
-double W_y(double a, double fK); // efficiency weight function for Compton-y
+//double W_y(double a, double fK); // efficiency weight function for Compton-y
+double W_y(double a); // efficiency weight function for Compton-y
 double int_for_C_gy(double a, void *params);
 double int_for_C_ky(double a, void *params);
 double int_for_C_sy(double a, void *params);
