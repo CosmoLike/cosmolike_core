@@ -817,7 +817,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     if (table == 0){
       zbins = line_count(redshift.clustering_REDSHIFT_FILE);
       if (redshift.clustering_photoz !=5 && redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model
-      pf_histo(0.5,NULL);
+      //pf_histo(0.5,NULL);
 
       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
