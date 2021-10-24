@@ -1,5 +1,7 @@
 void set_cosmological_parameters_to_Planck_WP();
 void set_cosmological_parameters_to_Planck_15_TT_TE_EE_lowP();
+void set_cosmological_parameters_to_Planck_15_TT_TE_EE_lowP_DEu95CPL();
+void set_cosmological_parameters_to_Planck_15_TT_TE_EE_lowP_DEl95CPL();
 void set_cosmological_parameters_to_Coyote();
 void set_cosmological_parameters_to_WMAP_7years_BAO_SN();
 void set_cosmological_parameters_to_SATO();
@@ -650,6 +652,46 @@ void set_cosmological_parameters_to_Planck_15_TT_TE_EE_lowP()
 
   cosmology.rho_crit = 7.4775e+21;
   printf("Cosmology set to Planck_15\n");
+  cosmology.f_NL = 0.0;
+}
+
+void set_cosmological_parameters_to_Planck_15_TT_TE_EE_lowP_DEu95CPL()
+{
+  // All parameters except wo and wa, are from Plank 15
+  // wo and wa are u95 limit in Plank 18 (Fig 30)
+  cosmology.Omega_m   = 0.3156;
+  cosmology.Omega_v   = 0.6844;
+  cosmology.sigma_8   = 0.831;
+  cosmology.n_spec    = 0.9645;
+  
+  cosmology.w0=-1.249;
+  cosmology.wa=0.59;
+  cosmology.omb=0.0491685;
+  cosmology.h0=0.6727;
+  cosmology.coverH0= 2997.92458; 
+
+  cosmology.rho_crit = 7.4775e+21;
+  printf("Cosmology set to Planck_15 DEu95CPL\n");
+  cosmology.f_NL = 0.0;
+}
+
+void set_cosmological_parameters_to_Planck_15_TT_TE_EE_lowP_DEl95CPL()
+{
+  // All parameters except wo and wa, are from Plank 15
+  // wo and wa are l95 limit in Plank 18 (Fig 30)
+  cosmology.Omega_m   = 0.3156;
+  cosmology.Omega_v   = 0.6844;
+  cosmology.sigma_8   = 0.831;
+  cosmology.n_spec    = 0.9645;
+  
+  cosmology.w0=-0.289;
+  cosmology.wa=-2.21;
+  cosmology.omb=0.0491685;
+  cosmology.h0=0.6727;
+  cosmology.coverH0= 2997.92458; 
+
+  cosmology.rho_crit = 7.4775e+21;
+  printf("Cosmology set to Planck_15 DEl95CPL\n");
   cosmology.f_NL = 0.0;
 }
 

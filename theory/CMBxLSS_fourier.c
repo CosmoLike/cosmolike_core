@@ -466,15 +466,15 @@ double int_for_C_yy(double a, void *params){
 }
 
 // power spectra - no look-up table
-//CMB y x galaxy position power spectrum, lens bin nl
-double C_gy_nointerp(double l, int nl){
-   double array[2] = {(double)nl,l};
-   if (gbias.b2[nl] || gbias.b2[nl]) {
+//CMB y x galaxy position power spectrum, lens bin ni
+double C_gy_nointerp(double l, int ni){
+   double array[2] = {(double)ni,l};
+   if (gbias.b2[ni] || gbias.b2[ni]) {
     error("b2 not supported in C_gy_nointerp");
-    // return int_gsl_integrate_medium_precision(int_for_C_gy_b2 ,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+    // return int_gsl_integrate_medium_precision(int_for_C_gy_b2 ,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
   }
-   // return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
-   return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(nl),0.99999,NULL,1000);
+   // return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
+   return int_gsl_integrate_medium_precision(int_for_C_gy,(void*)array,amin_lens(ni),0.99999,NULL,1000);
 
 }
 

@@ -652,6 +652,28 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
       gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);
 //      printf("spline init shear %d, %e\n",i,gsl_spline_eval(photoz_splines[i+1],1.0,NULL));
     }
+
+	#if 0
+    // Start JX: print the ztrue distribution of each tomo bins
+    FILE *zdist_tomo_FILE;
+    char zdist_tomo_fname[500];
+    int tomo_i, zbin_j;
+    sprintf(zdist_tomo_fname, "%s_Ntomo%d", redshift.shear_REDSHIFT_FILE, tomo.shear_Nbin);
+    zdist_tomo_FILE = fopen(zdist_tomo_fname, "w");
+    if (zdist_tomo_FILE!=NULL){
+      fprintf(zdist_tomo_FILE,"# zmin=%.6f zmax=%.6f dz=%e\n# Ntomo=%d Nzbin=%d\n", tomo.shear_zmin[0], tomo.shear_zmax[tomo.shear_Nbin-1], da, tomo.shear_Nbin, zbins);
+      for (tomo_i=0; tomo_i<tomo.shear_Nbin+1; tomo_i++){
+        for (zbin_j=0; zbin_j<zbins; zbin_j++){
+          fprintf(zdist_tomo_FILE,"%e ",table[tomo_i][zbin_j]);
+        }
+        fprintf(zdist_tomo_FILE,"\n");
+      }
+    } 
+    fclose(zdist_tomo_FILE);  
+    // End JX
+    #endif
+
+
   }
   if (j >= tomo.shear_Nbin){
     printf("redshift.c: zdistr_photoz(z,%d) outside tomo.shear_Nbin range\n", j);
@@ -795,7 +817,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     if (table == 0){
       zbins = line_count(redshift.clustering_REDSHIFT_FILE);
       if (redshift.clustering_photoz !=5 && redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model
-      pf_histo(0.5,NULL);
+      //pf_histo(0.5,NULL);
 
       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);

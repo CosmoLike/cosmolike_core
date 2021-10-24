@@ -33,7 +33,7 @@ typedef struct {
   char INV_FILE[500]; 
   char COV_FILE[500];
   char BARY_FILE[500]; 
-  char MASK_FILE[500]; 
+  char MASK_FILE[500];
   int shear_shear;
   int shear_pos;
   int pos_pos;
@@ -224,6 +224,7 @@ typedef struct { // parameters for power spectrum passed to FASTPT
   char path[200];
   cosmopara C;
 }FPTpara;
+//FPTpara FPT ={.k_min = 1.e-4, .k_max =1.e+3, .N = 70, .N_per_dec = 10, .N_AB = 7};
 FPTpara FPT ={.k_min = 1.e-5, .k_max =1.e+3, .N = 800, .N_per_dec = 100, .N_AB = 7,.N_IA = 10};
 typedef struct {
   //like.IA = 3: NLA, per bin
@@ -274,7 +275,7 @@ typedef struct {
   double cluster_MOR[10];
   int N_cluster_selection;
   double cluster_selection[10];
-
+  double bary[3];
   double frac_lowz;
   double frac_highz;
 }
@@ -288,6 +289,7 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .bary = {0.0, 0.0, 0.0},
   .frac_lowz = 0.,
   .frac_highz = 0.};
 
@@ -346,11 +348,16 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double bary_Q3[2];
   double theta_star[2];
 }priorpara;
-priorpara prior = {.shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+priorpara prior = {
+ .shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
-.bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}}};
+.bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.bary_Q1 = {0.,0.},
+.bary_Q2 = {0.,0.},
+.bary_Q3 = {0.,0.}
+};
 
 typedef struct{
   double HOD_rm[5][2];
