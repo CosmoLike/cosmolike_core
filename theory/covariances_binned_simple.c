@@ -1,11 +1,11 @@
-// This new file aims to rewrite the bin-averaged real-space fullsky 3x2pt covariances
+/* This new file aims to rewrite the bin-averaged real-space fullsky 3x2pt covariances
 // in covariances_real_binned_fullsky.c
 // but also provide bin-averaged mixed/real(fullsky)/fourier space 6x2pt cov
 // in a unified way
 // Current status: binned-Fourier-space still needs testing;
 // real-space: good
 // mixed-space: not sure!
-// -- Xiao Fang
+// -- Xiao Fang */
 
 // fourier space 3x2pt Gaussian cov, without and with pure noise term
 double func_for_cov_G_shear_noNN(double l, int *ar);

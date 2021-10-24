@@ -1,3 +1,8 @@
+/* You shouldn't use this file!
+// This file contains non-bin-aveaged flatsky real-space 3x2pt covariances
+// flatsky fourier->real space Bessel transforms are done with quadrature
+// May be deprecated, but keep it now in case it's used by some old repos
+// - Xiao Fang */
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 // Note the look-up tables for power spectrum covariances are recomputed if one the redshift bins changes
 //      Loop over theta1, theta2 first, before computing the next combination of redshift bins

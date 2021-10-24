@@ -1,3 +1,6 @@
+/* This file contains binned flatsky real-space 3x2pt covariances
+// flatsky fourier->real space Bessel transforms are done with quadrature
+// 2DFFTLog method see CosmoCov repo - Xiao Fang */
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 // Note the look-up tables for power spectrum covariances are recomputed if one the redshift bins changes
 //      Loop over theta1, theta2 first, before computing the next combination of redshift bins

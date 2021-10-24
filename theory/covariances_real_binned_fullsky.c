@@ -1,3 +1,8 @@
+/* This file contains bin-averaged fullsky real-space 3x2pt covariances
+// used by LSST_real, DES projects (the exact version is in CosmoCov)
+// This file is extended in and should be replaced by covariances_binned_simple.c
+// Keep it for now in case other projects require it.
+// - Xiao Fang, Oct.24,2021 */
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 // Note the look-up tables for power spectrum covariances are recomputed if one the redshift bins changes
 //      Loop over theta1, theta2 first, before computing the next combination of redshift bins
