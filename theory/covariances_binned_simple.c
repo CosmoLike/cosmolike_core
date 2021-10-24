@@ -1,3 +1,4 @@
+#include <math.h>
 // fourier space 3x2pt Gaussian cov, without and with pure noise term
 double func_for_cov_G_shear_noNN(double l, int *ar);
 double func_for_cov_G_cl_noNN(double l, int *ar);
@@ -1330,10 +1331,10 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
   double covGl1;
 
   double cov_g_l[LMAX];
-    // printf("lmin,lmax, %d, %d\n", (int)floor(like.lmin),(int)ceil(like.lmax));
+  //printf("lmin,lmax, %d, %d\n", (int)floor(like.lmin),(int)ceil(like.lmax));
   for(l1=(int)ceil(like.lmin); l1<(int)ceil(like.lmax)+1; l1++){
     cov_g_l[l1] = func_for_cov_G((double)l1, z_ar);
-    // printf("cov_g_l: %d, %le\n", l1,cov_g_l[l1]);
+    //printf("cov_g_l: %d, %le\n", l1,cov_g_l[l1]);
   }
   int l1_min, l1_max, l2_min, l2_max;
   int N_l1, N_l2;
@@ -1343,6 +1344,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
     N_l1 = l1_max - l1_min + 1;
     for(j=0; j<like.Ntheta ; j++){
       for(l1=l1_min; l1<=l1_max; l1++){
+        if(l1>=(int)ceil(like.lmax)+1){printf("ALERT! l1 = %d beyond %d! cov_g_l = %e\n", l1, (int)ceil(like.lmax)+1, cov_g_l[l1]);}
         cov[i][j] += cov_g_l[l1] * func_P2(j,l1) / N_l1; // rewrite as window function
         if(FLAG_NG){
           l1_double = (double)l1;
@@ -2210,7 +2212,14 @@ double func_for_cov_G_kk_ks(double l, int *ar){
   C14 = C_ks(l, zs);
   C24 = C14;
   double N = kappa_reconstruction_noise(l);
-  return ((C13+N)*C24+C14*(C23+N))/((2.*l+1.)*cmb.fsky);
+  double ans = ( (C13+N)*C24 + C14*(C23+N) )/( (2.*l+1.)*cmb.fsky );
+  if(isfinite(ans)){return ans;}
+  else{
+    printf("cov_G_kk_ks non finite!\n");
+    printf("C13=%e C23=%e C14=%e C24=%e N=%e fsky=%e\n",C13, C23, C14, C24, N, cmb.fsky);
+	return 0.0;
+  }
+  //return ( (C13+N)*C24 + C14*(C23+N) )/( (2.*l+1.)*cmb.fsky );
 }
 
 

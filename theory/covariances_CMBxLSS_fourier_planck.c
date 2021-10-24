@@ -52,6 +52,7 @@ double kappa_reconstruction_noise(double l){
       int iEll;
       for (iEll=0; iEll<nEll; iEll++) {
          fscanf(file, "%le %le", &ell[iEll], &noise[iEll]);
+		 //printf("ell = %e, noise = %e\n", ell[iEll], noise[iEll]);
          noise[iEll] = log(noise[iEll]);
       }
       fclose(file);
@@ -68,7 +69,7 @@ double kappa_reconstruction_noise(double l){
          iEll ++;
       }
       f1 = exp((noise[iEll]-noise[iEll-1])/log(ell[iEll]/ell[iEll-1])*log(l/ell[iEll-1]) + noise[iEll-1]);
-      if (isnan(f1)){f1 = 0.;}
+      if (isnan(f1)){printf("CMB Noise non-finite! ell = %e, noise = %e\n", l, noise[iEll]);f1 = 0.;}
       // evaluate at that ell
       // C_ell^kk = l*(l+1)/4 * C_ell^dd
    } else{
