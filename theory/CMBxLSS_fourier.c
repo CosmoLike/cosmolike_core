@@ -25,7 +25,7 @@ double C_ks(double l, int ni);
 double C_kk(double l);
 
 //======= y related power spectra
-double W_y(double a, double fK); // efficiency weight function for Compton-y
+double W_y(double a); // efficiency weight function for Compton-y
 double int_for_C_gy(double a, void *params);
 double int_for_C_ky(double a, void *params);
 double int_for_C_sy(double a, void *params);
@@ -396,6 +396,7 @@ double int_for_C_sy(double a, void *params){
   double res,ell, fK, k;
   if (a >= 1.0) error("a >1 in int_for_C_sy");
 
+  double ell_prefactor1 = (ar[1])*(ar[1]+1.);
   double ell_prefactor2 = (ar[1]-1.)*ell_prefactor1*(ar[1]+2.);
   if(ell_prefactor2<=0.) 
     ell_prefactor2=0.;
@@ -423,6 +424,7 @@ double int_for_C_sy_IA(double a, void *params)
    norm = A_IA_Joachimi(a)*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a);
    res= -ws*wy*norm + wk*wy;
 
+  double ell_prefactor1 = (ar[1])*(ar[1]+1.);
   double ell_prefactor2 = (ar[1]-1.)*ell_prefactor1*(ar[1]+2.);
   if(ell_prefactor2<=0.) 
     ell_prefactor2=0.;
@@ -447,6 +449,7 @@ double int_for_C_ky(double a, void *params){
   k      = ell/fK;
   res= W_k(a,fK)*W_y(a)*dchi_da(a)/fK/fK * ell_prefactor1/ell/ell ; //W_gal radial weight function for clustering, defined in cosmo2D_fourier.c
   res= res*P_mP(k,a);
+  return res;
 }
 
 double int_for_C_yy(double a, void *params){
@@ -463,8 +466,8 @@ double int_for_C_yy(double a, void *params){
 }
 
 // power spectra - no look-up table
-//CMB y x galaxy position power spectrum, lens bin ni
-double C_gy_nointerp(double l, int ni){
+//CMB y x galaxy position power spectrum, lens bin nl
+double C_gy_nointerp(double l, int nl){
    double array[2] = {(double)nl,l};
    if (gbias.b2[nl] || gbias.b2[nl]) {
     error("b2 not supported in C_gy_nointerp");
@@ -487,7 +490,7 @@ double C_sy_IA(double l, int ni)
 }
 
 // CMB y x galaxy shear, for source z-bin ns
-double C_sy_nointerp(double l, int ns);
+double C_sy_nointerp(double l, int ns)
 {
   if (like.IA) return C_sy_IA(l,ns);
   double array[2] = {(double) ns, l};
@@ -497,14 +500,14 @@ double C_sy_nointerp(double l, int ns);
 }
 
 // CMB y x CMB kappa
-double C_ky_nointerp(double l);
+double C_ky_nointerp(double l)
 {
    double array[1] = {l};
    return int_gsl_integrate_medium_precision(int_for_C_ky, (void*)array, limits.a_min*(1.+1.e-5), 1.-1.e-5, NULL, 1000);
 
 }
 
-double C_yy_nointerp(double l);
+double C_yy_nointerp(double l)
 {
    double array[1] = {l};
    return int_gsl_integrate_medium_precision(int_for_C_yy, (void*)array, limits.a_min*(1.+1.e-5), 1.-1.e-5, NULL, 1000);
