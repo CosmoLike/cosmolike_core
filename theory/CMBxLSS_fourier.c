@@ -25,7 +25,6 @@ double C_ks(double l, int ni);
 double C_kk(double l);
 
 //======= y related power spectra
-//double W_y(double a, double fK); // efficiency weight function for Compton-y
 double W_y(double a); // efficiency weight function for Compton-y
 double int_for_C_gy(double a, void *params);
 double int_for_C_ky(double a, void *params);
@@ -424,7 +423,7 @@ double int_for_C_sy_IA(double a, void *params)
    wk = W_kappa(a,fK,ar[0]);
    norm = A_IA_Joachimi(a)*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a);
    res= -ws*wy*norm + wk*wy;
-  
+
   double ell_prefactor1 = (ar[1])*(ar[1]+1.);
   double ell_prefactor2 = (ar[1]-1.)*ell_prefactor1*(ar[1]+2.);
   if(ell_prefactor2<=0.) 
@@ -450,6 +449,7 @@ double int_for_C_ky(double a, void *params){
   k      = ell/fK;
   res= W_k(a,fK)*W_y(a)*dchi_da(a)/fK/fK * ell_prefactor1/ell/ell ; //W_gal radial weight function for clustering, defined in cosmo2D_fourier.c
   res= res*P_mP(k,a);
+  return res;
 }
 
 double int_for_C_yy(double a, void *params){

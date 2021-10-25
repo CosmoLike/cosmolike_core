@@ -133,11 +133,13 @@ double cov_NG_gg_gk(double l1, double l2, int n1, int n2, int n3){
 
 double cov_G_gg_kk(double l, double delta_l, int n1, int n2){
    double C13, C14, C23, C24;
-   double fsky = survey.area/41253.0;
    C13 = C_gk_nointerp(l,n1);
    C24 = C_gk_nointerp(l,n2);
    C14 = C13;
    C23 = C24;
+   double fsky = survey.area/41253.0;
+   if(cmb.fsky>fsky) {fsky = cmb.fsky;} // CMB fully covers galaxy survey
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    return (C13*C24+C14*C23)/((2.*l+1.)*delta_l*fsky);
 }
 
@@ -149,9 +151,16 @@ double inner_project_tri_cov_gg_kk(double a,void *params)
    k1 = (ar[0]+0.5)/fK;
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_gal(a,ar[3])*W_k(a,fK)*W_k(a,fK)*dchi_da(a);
+   double fsky = survey.area/41253.0;
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    if (weights >0.){
-      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
+      if (cmb.fsky>fsky) {
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+      }
+      else{
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+      }
    }
    res *= weights;
    return res;
@@ -312,6 +321,8 @@ double cov_G_gk_kk(double l, double delta_l, int zl){
    C24 = C_kk_nointerp(l);
    C23 = C24;
    double N = kappa_reconstruction_noise(l);
+   if(cmb.fsky>fsky) {fsky = cmb.fsky;} // CMB fully covers galaxy survey
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    return (C13*(C24+N)+C14*(C23+N))/((2.*l+1.)*delta_l*fsky);
 }
 
@@ -323,9 +334,16 @@ double inner_project_tri_cov_gk_kk(double a, void *params)
    k1 = (ar[0]+0.5)/fK;
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*pow(W_k(a,fK), 3)*dchi_da(a);
+   double fsky = survey.area/41253.0;
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    if (weights >0.){
-      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
+      if (cmb.fsky>fsky) {
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+      }
+      else{
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+      }
    }
    res *= weights;
    return res;
@@ -432,6 +450,8 @@ double cov_G_gs_kk(double l, double delta_l, int zl, int zs){
    C14 = C13;
    C24 = C_ks_nointerp(l, zs);
    C23 = C24;
+   if(cmb.fsky>fsky) {fsky = cmb.fsky;} // CMB fully covers galaxy survey
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    return (C13*C24+C14*C23)/((2.*l+1.)*delta_l*fsky);
 }
 
@@ -444,9 +464,15 @@ double inner_project_tri_cov_gs_kk(double a,void *params)
    k1 = (ar[0]+0.5)/fK;
    k2 = (ar[1]+0.5)/fK;
    weights = W_gal(a,ar[2])*W_kappa(a,fK,ar[3])*pow(W_k(a,fK), 2)*dchi_da(a);
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    if (weights >0.){
-      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
+      if (cmb.fsky>fsky) {
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+      }
+      else{
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+      }
    }
    res *= weights;
    return res;
@@ -515,12 +541,13 @@ double cov_G_kk_kk(double l, double delta_l){
    C = C_kk_nointerp(l);
    N = kappa_reconstruction_noise(l);
 //   printf("l, C, N = %le, %le, %le\n", l, C, N);
+   if(cmb.fsky>fsky) {fsky = cmb.fsky;} // CMB fully covers galaxy survey
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    return 2.*pow((C+N), 2) / ((2.*l+1.)*delta_l*fsky);
 }
 
 double inner_project_tri_cov_kk_kk(double a,void *params)
 {
-   double fsky = survey.area/41253.0;
    double k1,k2,fK,weights,res = 0.;
    double *ar = (double *) params;
    fK = f_K(chi(a));
@@ -529,10 +556,10 @@ double inner_project_tri_cov_kk_kk(double a,void *params)
    weights = pow(W_k(a,fK), 4)*dchi_da(a);
    if (weights>0.){
 // MANUWARNING: put an if to switch between low-z and high-z cov?
-//      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-//      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //SSC
-      if (covparams.cng) {res = tri_1h_cov(k1, k2, a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);} // T1h only
-      res += delPlin_SSC(k1, a)*delPlin_SSC(k2, a)*survey_variance(a,fsky)*pow(fK,-4.); //SSC for Plin
+//      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
+//      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,cmb.fsky)*pow(fK,-4.); //SSC
+      if (covparams.cng) {res = tri_1h_cov(k1, k2, a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);} // T1h only
+      res += delPlin_SSC(k1, a)*delPlin_SSC(k2, a)*survey_variance(a,cmb.fsky)*pow(fK,-4.); //SSC for Plin
    }
    res *= weights;
    return res;
@@ -557,6 +584,8 @@ double cov_G_kk_ks(double l, double delta_l, int zs){
    C14 = C_ks_nointerp(l, zs);
    C24 = C14;
    double N = kappa_reconstruction_noise(l);
+   if(cmb.fsky>fsky) {fsky = cmb.fsky;} // CMB fully covers galaxy survey
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    return ((C13+N)*C24+C14*(C23+N))/((2.*l+1.)*delta_l*fsky);
 }
 
@@ -569,9 +598,15 @@ double inner_project_tri_cov_kk_ks(double a,void *params)
    k1 = (ar[0]+0.5)/fK;
    k2 = (ar[1]+0.5)/fK;
    weights = pow(W_k(a,fK), 3) * W_kappa(a, fK, ar[2]) *dchi_da(a);
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    if (weights >0.){
-      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
+      if (cmb.fsky>fsky) {
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+      }
+      else{
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+      }
    }
    res *= weights;
    return res;
@@ -596,6 +631,8 @@ double cov_G_kk_ss(double l, double delta_l, int z1, int z2){
    C23 = C13;
    C24 = C_ks_nointerp(l, z2);
    C14 = C24;
+   if(cmb.fsky>fsky) {fsky = cmb.fsky;} // CMB fully covers galaxy survey
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    return (C13*C24+C14*C23)/((2.*l+1.)*delta_l*fsky);
 }
 
@@ -607,9 +644,16 @@ double inner_project_tri_cov_kk_ss(double a,void *params)
    k1 = (ar[0]+0.5)/fK;
    k2 = (ar[1]+0.5)/fK;
    weights = pow(W_k(a,fK), 2)*W_kappa(a,fK,ar[2])*W_kappa(a,fK,ar[3])*dchi_da(a);
+   double fsky = survey.area/41253.0;
+   if(cmb.fsky<fsky) {printf("covariance_CMBxLSS_fourier.c: cmb.fsky<fsky not supported!\n"); exit(1);}
    if (weights >0.){
-      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
+      if (cmb.fsky>fsky) {
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+      }
+      else{
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+      }
    }
    res *= weights;
    return res;
