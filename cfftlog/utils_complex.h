@@ -11,3 +11,4 @@ void c_window_cfft(double complex *out, double c_window_width, long halfN);
 
 double complex gamma_lanczos_cfft(double complex z);
 double complex lngamma_lanczos_cfft(double complex z);
+double complex ln_g_m_vals(double mu, double complex q);
