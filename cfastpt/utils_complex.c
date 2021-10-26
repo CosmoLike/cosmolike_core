@@ -71,7 +71,7 @@ void g_m_vals(double mu, double q_real, double *q_imag, double complex *gm, long
 	for(i=0; i<N; i++) {
 		plus = (mu+1.+q_real+I*q_imag[i])/2.;
 		minus= (mu+1.-q_real-I*q_imag[i])/2.;
-		if(fabs(q_imag[i])<10000){
+		if(fabs(q_imag[i])<200){
 			gm[i] = cexp(lngamma_lanczos(plus) - lngamma_lanczos(minus));
 		}else{
 			gm[i] = cexp((plus-0.5)*clog(plus) - (minus-0.5)*clog(minus) - q_real - I*q_imag[i] \
