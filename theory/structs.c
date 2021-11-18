@@ -504,3 +504,11 @@ typedef struct {
   int Nchi;
 } fft_optimize;
 fft_optimize fft_int;
+
+typedef struct {
+  double Gamma_KS; // Gamma in K-S profile
+  double beta_bnd; // beta: mass scaling index in bound gas fraction
+  double M0; // critical halo mass, below which gas ejection is significant
+}gaspara;
+gaspara gas;
+
