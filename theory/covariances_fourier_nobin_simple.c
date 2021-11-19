@@ -1,35 +1,9 @@
 /* 
-// but also provide non-binned fourier space-only 10x2pt cov
+// non-binned fourier space-only 10x2pt cov
 // in a unified way
 // -- Xiao Fang */
 
-// fourier space 3x2pt Gaussian cov, without and with pure noise term
-double func_for_cov_G_shear_noNN(double l, int *ar);
-double func_for_cov_G_cl_noNN(double l, int *ar);
-double func_for_cov_G_gl_noNN(double l, int *ar);
-double func_for_cov_G_shear(double l, int *ar);
-double func_for_cov_G_cl(double l, int *ar);
-double func_for_cov_G_gl(double l, int *ar);
-double func_for_cov_G_cl_shear(double l, int *ar);
-double func_for_cov_G_cl_gl(double l, int *ar);
-double func_for_cov_G_gl_shear(double l, int *ar);
-// fourier space Gaussian cov with CMB lensing, pure noise included
-double func_for_cov_G_gk(double l, int *ar);
-double func_for_cov_G_ks(double l, int *ar);
-double func_for_cov_G_gk_shear(double l, int *ar);
-double func_for_cov_G_gk_gl(double l, int *ar);
-double func_for_cov_G_gk_cl(double l, int *ar);
-double func_for_cov_G_ks_shear(double l, int *ar);
-double func_for_cov_G_ks_gl(double l, int *ar);
-double func_for_cov_G_ks_cl(double l, int *ar);
-double func_for_cov_G_ks_gk(double l, int *ar);
-double func_for_cov_G_kk_shear(double l, int *ar);
-double func_for_cov_G_kk_gl(double l, int *ar);
-double func_for_cov_G_kk_cl(double l, int *ar);
-double func_for_cov_G_kk_gk(double l, int *ar);
-double func_for_cov_G_kk_ks(double l, int *ar);
-//
-double func_for_cov_G_kk(double l, int *ar);
+
 // fourier space NG cov look-up tables
 double bin_cov_NG_shear_shear(double l1,double l2, int *z_ar);
 double bin_cov_NG_gl_gl(double l1,double l2, int *z_ar);
@@ -46,51 +20,6 @@ double cov_NG_cl_shear_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_gl_shear_bridge(double ll1, double ll2, int *z_ar);
 // tabulate fourier covNG
 void tabulate_covNG(char *cov_type, int *z_ar, int Ntab, double **table);
-
-// 3x2pt Gaussian cov pure noise term on the diagonal, without masking effect
-// void pure_noise_xipm_xipm(int *z_ar, double *theta, double *dtheta, double *N);
-// void pure_noise_gl_gl(int *z_ar, double *theta, double *dtheta, double *N);
-// void pure_noise_cl_cl(int *z_ar, double *theta, double *dtheta, double *N);
-
-// fullsky real-space cov, template routine
-void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, int *z_ar, int FLAG_NG, double *theta, double *dtheta);
-// fullsky real-space covs
-void cov_shear_shear_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,int z3,int z4,int pm1,int pm2, int FLAG_NG, double *theta, double *dtheta);
-void cov_gl_shear_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,int z3,int z4,int pm, int FLAG_NG, double *theta, double *dtheta);
-void cov_cl_shear_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,int z3,int z4,int pm, int FLAG_NG, double *theta, double *dtheta);
-void cov_cl_gl_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *theta, double *dtheta);
-void cov_gl_gl_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *theta, double *dtheta);
-void cov_cl_cl_real_binned_fullsky(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *theta, double *dtheta);
-//
-void cov_kk_shear_real_binned_fullsky(double **cov, double **covNG, int z3,int z4,int pm, int FLAG_NG, double *theta, double *dtheta);
-void cov_kk_gl_real_binned_fullsky(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *theta, double *dtheta);
-void cov_kk_cl_real_binned_fullsky(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *theta, double *dtheta);
-void cov_kk_gk_real_binned_fullsky(double **cov, double **covNG, int zl, int FLAG_NG, double *theta, double *dtheta);
-void cov_kk_ks_real_binned_fullsky(double **cov, double **covNG, int zs, int FLAG_NG, double *theta, double *dtheta);
-void cov_kk_kk_real_binned_fullsky(double **cov, double **covNG, int FLAG_NG, double *theta, double *dtheta);
-// mixed cov 
-void cov_kk_shear_mix_binned_fullsky(double **cov, double **covNG, int z3,int z4,int pm, int FLAG_NG, double *theta, double *dtheta, double *ell);
-void cov_kk_gl_mix_binned_fullsky(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *theta, double *dtheta, double *ell);
-void cov_kk_cl_mix_binned_fullsky(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *theta, double *dtheta, double *ell);
-void cov_kk_gk_mix_binned_fullsky(double **cov, double **covNG, int zl, int FLAG_NG, double *theta, double *dtheta, double *ell);
-void cov_kk_ks_mix_binned_fullsky(double **cov, double **covNG, int zs, int FLAG_NG, double *theta, double *dtheta, double *ell);
-//
-// Fourier-space cov, template routine
-void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar, int FLAG_NG, double *ell);
-// Fourier-space covs band averaged
-void cov_shear_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
-void cov_gl_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
-void cov_cl_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
-void cov_cl_gl_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
-void cov_gl_gl_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
-void cov_cl_cl_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell);
-//
-void cov_kk_shear_fourier_binned(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *ell);
-void cov_kk_gl_fourier_binned(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *ell);
-void cov_kk_cl_fourier_binned(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *ell);
-void cov_kk_gk_fourier_binned(double **cov, double **covNG, int zl, int FLAG_NG, double *ell);
-void cov_kk_ks_fourier_binned(double **cov, double **covNG, int zs, int FLAG_NG, double *ell);
-void cov_kk_kk_fourier_binned(double **cov, double **covNG, int FLAG_NG, double *ell);
 
 //
 // double cmb.fsky = 0.673;
