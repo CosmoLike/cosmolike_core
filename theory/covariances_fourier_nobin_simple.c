@@ -10,6 +10,105 @@ double inner_project_tri_cov_AB_CD(double a,void *params);
 double cov_NG_AB_CD(char ABCD[2][4], double l1,double l2, int z_ar[4], int is_ls[4]);
 double tab_cov_NG_AB_CD(char ABCD[2][4], double l1, double l2, int z_ar[4], int is_ls[4]);
 
+// utility routines
+
+// Reads in the noise N_mv for mv quadratic estimator for d,
+// without reduction due to average over ell-bin.
+// return interpolated N_kk(\ell)
+double kappa_reconstruction_noise(double l){
+   
+   static double *ell;
+   static double *noise;
+   static int nEll;
+
+   static double ellmin = .0, ellmax = .0;
+
+   if (noise==0){
+      printf("run %s\n", cmb.name);
+      // count lines
+      nEll = line_count(cmb.pathLensRecNoise);
+      printf("Reading CMB lensing noise: %s\n", cmb.pathLensRecNoise);
+
+      // allocate ell and Nlkk
+      ell = create_double_vector(0, nEll-1);
+      noise = create_double_vector(0, nEll-1);
+      // read each line
+      FILE *file = fopen(cmb.pathLensRecNoise, "r");
+      int iEll;
+      for (iEll=0; iEll<nEll; iEll++) {
+         fscanf(file, "%le %le", &ell[iEll], &noise[iEll]);
+         noise[iEll] = log(noise[iEll]);
+      }
+      fclose(file);
+      ellmax = ell[nEll-1];
+      ellmin = ell[0];
+   }
+   // if l is in the range
+   double f1;
+   if (l<=0.) {
+      return 0;
+   } else if ((l>=ellmin) &&(l<=ellmax)){
+      int iEll = 0;
+      while (ell[iEll] < l) {
+         iEll ++;
+      }
+      f1 = exp((noise[iEll]-noise[iEll-1])/log(ell[iEll]/ell[iEll-1])*log(l/ell[iEll-1]) + noise[iEll-1]);
+      if (isnan(f1)){f1 = 0.;}
+      // evaluate at that ell
+      // C_ell^kk = l*(l+1)/4 * C_ell^dd
+   } else{
+      f1 = 0.;
+   }
+   // } else if(l<ellmin){
+   //    f1 = exp((noise[1]-noise[0])/log(ell[1]/ell[0])*log(l/ell[0]) + noise[0]);
+   // } else{
+   //    f1 = exp((noise[nEll-1]-noise[nEll-2])/log(ell[nEll-1]/ell[nEll-2])*log(l/ell[nEll-1]) + noise[nEll-1]);
+   // }
+   return f1;
+}
+
+double y_reconstruction_noise(double l){
+   
+   static double *ell;
+   static double *noise;
+   static int nEll;
+
+   static double ellmin = .0, ellmax = .0;
+
+   if (noise==0){
+      printf("run %s\n", cmb.name);
+      // count lines
+      nEll = line_count(cmb.path_yNoise);
+      printf("Reading tSZ y noise: %s\n", cmb.path_yNoise);
+
+      // allocate ell and Nlkk
+      ell = create_double_vector(0, nEll-1);
+      noise = create_double_vector(0, nEll-1);
+      // read each line
+      FILE *file = fopen(cmb.path_yNoise, "r");
+      int iEll;
+      for (iEll=0; iEll<nEll; iEll++) {
+         fscanf(file, "%le %le", &ell[iEll], &noise[iEll]);
+         noise[iEll] = log(noise[iEll]);
+      }
+      fclose(file);
+      ellmax = ell[nEll-1];
+      ellmin = ell[0];
+   }
+   // if l is in the range
+   double f1;
+    if ((l>=ellmin) &&(l<=ellmax)){
+      int iEll = 0;
+      while (ell[iEll] < l) {
+         iEll ++;
+      }
+      f1 = exp((noise[iEll]-noise[iEll-1])/log(ell[iEll]/ell[iEll-1])*log(l/ell[iEll-1]) + noise[iEll-1]);
+      if (isnan(f1)){f1 = 0.;}
+    } else{
+      f1 = 0.;
+    }
+   return f1;
+}
 
 
 int func_for_Cl_Nl(double *Cij, double *Nij, double l, int ni, int nj, int is_lsi, int is_lsj){

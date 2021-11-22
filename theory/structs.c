@@ -146,6 +146,7 @@ typedef struct {
    double fwhm;   // beam fwhm in rad
    double sensitivity;  // white noise level in muK*rad
    char * pathLensRecNoise;   // path to precomputed noise on reconstructed kappa
+   char * path_yNoise;
    double fsky;
 }Cmb;
 Cmb cmb;
@@ -511,4 +512,3 @@ typedef struct {
   double M0; // critical halo mass, below which gas ejection is significant
 }gaspara;
 gaspara gas;
-
