@@ -117,7 +117,7 @@ int func_for_Cl_Nl(double *Cij, double *Nij, double l, int ni, int nj, int is_ls
     if(ni==nj) {*Nij = 1./(nlens(ni)*survey.n_gal_conversion_factor);}
     return 0;
   }
-  if(is_lsi*ls_lsj==-1){ // case: ls, need to determine lens and src bins
+  if(is_lsi*is_lsj==-1){ // case: ls, need to determine lens and src bins
     if(is_lsi==1){*Cij = C_gl_tomo_nointerp(l,ni,nj);}
     else{*Cij = C_gl_tomo_nointerp(l,nj,ni);}
     return 0;
@@ -191,11 +191,11 @@ double inner_project_tri_cov_AB_CD(double a,void *params)
     if(ar[i]==-1.){
       weights *= W_k(a,fK);
     }else if(ar[i]==-2.){
-      weights *= W_y(a,fK);
+      weights *= W_y(a);
       printf("NG cov for y is not yet supported!\n"); exit(1);
-    }else if(is_ls[4+i]==1.){
+    }else if(ar[4+i]==1.){ // i.e. is_ls==1 -> gal density field
       weights *= W_gal(a,ar[i]);
-    }else{
+    }else{ // i.e. is_ls==-1 -> gal shear field
       weights *= W_kappa(a,fK,ar[i]);
     }
   }
@@ -219,7 +219,7 @@ double inner_project_tri_cov_AB_CD(double a,void *params)
   fsky_larger = (fsky1>fsky2 ? fsky1 : fsky2);
 
   if(weights >0.){
-    if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(fsky_larger*41253.0*survey.area_conversion_factor);}
+    if (covparams.cng) {res = tri_matter_cov(k[0],k[1],a)*pow(fK,-6.)/(fsky_larger*41253.0*survey.area_conversion_factor);}
     // printf("res cNG:%lg , ", res);
     res += ssc[0]*ssc[1]*sig_b*pow(fK,-4.); //SSC
   }
@@ -234,7 +234,7 @@ double cov_NG_AB_CD(char ABCD[2][4], double l1,double l2, int z_ar[4], int is_ls
   int i;
   int fsky[2];
 
-  fsky_gal = survey.area/41253.0;
+  double fsky_gal = survey.area/41253.0;
   for(i=0;i<2;i++){
     if(strcmp(ABCD[i], "ss")==0){
       zmin = (z_ar[2*i] < z_ar[2*i+1] ? z_ar[2*i] : z_ar[2*i+1]);
@@ -310,10 +310,13 @@ double tab_cov_NG_AB_CD(char ABCD[2][4], double l1, double l2, int z_ar[4], int 
     if (table==0) {
       table = (double***)malloc(N_covtype * sizeof(double**));
       for(i=0;i<N_covtype;i++){
-        table[i] = create_double_matrix(0, Ntab-1, 0, Ntab-1);
+        table[i] = NULL;
       }
     }
-
+    if(table[i_covtype]==NULL){
+      table[i_covtype] = create_double_matrix(0, Ntab-1, 0, Ntab-1);
+    }
+    
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
@@ -333,6 +336,6 @@ double tab_cov_NG_AB_CD(char ABCD[2][4], double l1, double l2, int z_ar[4], int 
   llog1=log(l1);
   llog2=log(l2);
   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
+    res = interpol2d(table[i_covtype], Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
   return res;
 }
