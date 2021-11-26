@@ -232,7 +232,7 @@ double cov_NG_AB_CD(char ABCD[2][4], double l1,double l2, int z_ar[4], int is_ls
   double amin[2], amax[2], a1,a2,array[12];
   int zmin, zmax, zlen, zs;
   int i;
-  int fsky[2];
+  double fsky[2];
 
   double fsky_gal = survey.area/41253.0;
   for(i=0;i<2;i++){
@@ -269,73 +269,73 @@ double cov_NG_AB_CD(char ABCD[2][4], double l1,double l2, int z_ar[4], int is_ls
 }
 
 
-double tab_cov_NG_AB_CD(char ABCD[2][4], double l1, double l2, int z_ar[4], int is_ls[4]){
-  static int Z[4] = {-42,-42,-42,-42};
-  static int is_ls_local[4] = {-42,-42,-42,-42};
-  static int Ntab = 40;
-  static double ***table=0;
-  static double ds = .0, logsmin = .0, logsmax = .0;
-  logsmin = log(1.); logsmax = log(5.e+4);
-  ds = (logsmax - logsmin)/(Ntab - 1.);
+// double tab_cov_NG_AB_CD(char ABCD[2][4], double l1, double l2, int z_ar[4], int is_ls[4]){
+//   static int Z[4] = {-42,-42,-42,-42};
+//   static int is_ls_local[4] = {-42,-42,-42,-42};
+//   static int Ntab = 40;
+//   static double ***table=0;
+//   static double ds = .0, logsmin = .0, logsmax = .0;
+//   logsmin = log(1.); logsmax = log(5.e+4);
+//   ds = (logsmax - logsmin)/(Ntab - 1.);
 
-  const char *probes[10] = {"ss", "ls", "ll", "lk", "ks", "kk",\
-                            "ly", "sy", "ky", "yy"};
-  int N_covtype = 55;
-  int i_covtype = 0;
+//   const char *probes[10] = {"ss", "ls", "ll", "lk", "ks", "kk",\
+//                             "ly", "sy", "ky", "yy"};
+//   int N_covtype = 55;
+//   int i_covtype = 0;
 
-  int i,j;
-  double res, llog1,llog2,ll1,ll2;
+//   int i,j;
+//   double res, llog1,llog2,ll1,ll2;
 
-  int COMPUTE = 0;
-  for(i=0;i<4;i++){
-    COMPUTE = (Z[i]!=z_ar[i] || COMPUTE);
-    COMPUTE = (is_ls_local[i]!=is_ls[i] || COMPUTE);
-    if(COMPUTE) {break;}
-  }
+//   int COMPUTE = 0;
+//   for(i=0;i<4;i++){
+//     COMPUTE = (Z[i]!=z_ar[i] || COMPUTE);
+//     COMPUTE = (is_ls_local[i]!=is_ls[i] || COMPUTE);
+//     if(COMPUTE) {break;}
+//   }
 
-  int isAB;
-  // Determine i_covtype: the first index in the table, corresponding to the cov type
-  for(i=0;i<10;i++){
-    isAB = (strcmp(ABCD[0], probes[i])==0);
-    for(j=0;j<=i;j++){
-      if(isAB && strcmp(ABCD[1], probes[j])==0){
-        i=10; j=10; // break out double for-loop
-        break;
-      }
-      i_covtype++;
-    }
-  }
+//   int isAB;
+//   // Determine i_covtype: the first index in the table, corresponding to the cov type
+//   for(i=0;i<10;i++){
+//     isAB = (strcmp(ABCD[0], probes[i])==0);
+//     for(j=0;j<=i;j++){
+//       if(isAB && strcmp(ABCD[1], probes[j])==0){
+//         i=10; j=10; // break out double for-loop
+//         break;
+//       }
+//       i_covtype++;
+//     }
+//   }
 
-  if (COMPUTE){
-    if (table==0) {
-      table = (double***)malloc(N_covtype * sizeof(double**));
-      for(i=0;i<N_covtype;i++){
-        table[i] = NULL;
-      }
-    }
-    if(table[i_covtype]==NULL){
-      table[i_covtype] = create_double_matrix(0, Ntab-1, 0, Ntab-1);
-    }
+//   if (COMPUTE){
+//     if (table==0) {
+//       table = (double***)malloc(N_covtype * sizeof(double**));
+//       for(i=0;i<N_covtype;i++){
+//         table[i] = NULL;
+//       }
+//     }
+//     if(table[i_covtype]==NULL){
+//       table[i_covtype] = create_double_matrix(0, Ntab-1, 0, Ntab-1);
+//     }
+
+//     llog1 = logsmin;
+//     for (i=0; i<Ntab; i++, llog1+=ds) {
+//       ll1 = exp(llog1);
+//       llog2 = logsmin;
+//       for (j=0; j<Ntab; j++, llog2+=ds) {
+//         ll2 = exp(llog2);
+//         table[i_covtype][i][j]=cov_NG_AB_CD(ABCD, ll1, ll2, z_ar, is_ls);
+//       }
+//     }
     
-    llog1 = logsmin;
-    for (i=0; i<Ntab; i++, llog1+=ds) {
-      ll1 = exp(llog1);
-      llog2 = logsmin;
-      for (j=0; j<Ntab; j++, llog2+=ds) {
-        ll2 = exp(llog2);
-        table[i_covtype][i][j]=cov_NG_AB_CD(ABCD, l1, l2, z_ar, is_ls);
-      }
-    }
-    
-    for(i=0;i<4;i++){
-      Z[i]=z_ar[i]; is_ls_local[i]=is_ls[i];
-    }
-  }
-  res = 0.;
-  if(l1<=1e-10 || l2<=1e-10) {return 0;}
-  llog1=log(l1);
-  llog2=log(l2);
-  if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
-    res = interpol2d(table[i_covtype], Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
-  return res;
-}
+//     for(i=0;i<4;i++){
+//       Z[i]=z_ar[i]; is_ls_local[i]=is_ls[i];
+//     }
+//   }
+//   res = 0.;
+//   if(l1<=1e-10 || l2<=1e-10) {return 0;}
+//   llog1=log(l1);
+//   llog2=log(l2);
+//   if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
+//     res = interpol2d(table[i_covtype], Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
+//   return res;
+// }
