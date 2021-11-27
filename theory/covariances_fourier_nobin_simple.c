@@ -242,7 +242,7 @@ double cov_NG_AB_CD(char ABCD[2][4], double l1,double l2, int z_ar[4], int is_ls
     }else if(strcmp(ABCD[i], "ls")==0 || strcmp(ABCD[i], "lk")==0 || strcmp(ABCD[i], "ly")==0){
       if(is_ls[2*i]==1){zlen = z_ar[2*i];}
       else{zlen = z_ar[2*i+1];}
-      amin[i] = amin_lens(zlen); a2 = amax_lens(zlen); fsky[i]=fsky_gal;
+      amin[i] = amin_lens(zlen); amax[i] = amax_lens(zlen); fsky[i]=fsky_gal;
     }else if(strcmp(ABCD[i], "ll")==0){
       zmin = (z_ar[2*i] < z_ar[2*i+1] ? z_ar[2*i] : z_ar[2*i+1]);
       zmax = (z_ar[2*i] > z_ar[2*i+1] ? z_ar[2*i] : z_ar[2*i+1]);
