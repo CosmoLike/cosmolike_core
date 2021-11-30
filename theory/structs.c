@@ -508,7 +508,16 @@ fft_optimize fft_int;
 
 typedef struct {
   double Gamma_KS; // Gamma in K-S profile
-  double beta_bnd; // beta: mass scaling index in bound gas fraction
+  double beta; // beta: mass scaling index in bound gas fraction
   double M0; // critical halo mass, below which gas ejection is significant
+  double alpha;
+  double A_star;
+  double M_star;
+  double sigma_star;
+  double T_w;
+  double mu_p;
+  double mu_e;
+  double eps1;
+  double eps2;
 }gaspara;
 gaspara gas;
