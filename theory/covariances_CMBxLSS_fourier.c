@@ -35,8 +35,8 @@ double kappa_reconstruction_noise(double l){
    if (noise==0){
       printf("run %s\n", cmb.name);
       // count lines
-      nEll = line_count(cmb.pathLensRecNoise);
       printf("Reading CMB lensing noise: %s\n", cmb.pathLensRecNoise);
+      nEll = line_count(cmb.pathLensRecNoise);
 
       // allocate ell and Nlkk
       ell = create_double_vector(0, nEll-1);

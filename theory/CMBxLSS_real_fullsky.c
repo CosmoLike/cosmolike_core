@@ -3,7 +3,7 @@ double w_gk_planck(double theta,int ni); //angular CMB lensing x positions corre
 double w_ks_planck(double theta, int ni);//angular CMB lensing x galaxy shear correlation function in tomography bin ni
 
 double beam_planck(double l){ // TO BE UPDATED!!!!
-  double fwhm_arcmin =5.4;
+  double fwhm_arcmin =7;// 5.4 arcmin
   double sigma = fwhm_arcmin/sqrt(8.*log(2.0))*constants.arcmin;
   return exp(-0.5*l*l*sigma*sigma);
 }
