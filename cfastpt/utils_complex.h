@@ -1,9 +1,6 @@
 #include <complex.h>
 #include <fftw3.h>
 void f_z(double z_real, double *z_imag, double complex *fz, long N);
-void g_l(double l, double nu, double *eta, double complex *gl, long N);
-void g_l_1(double l, double nu, double *eta, double complex *gl1, long N);
-void g_l_2(double l, double nu, double *eta, double complex *gl2, long N);
 
 void c_window(double complex *out, double c_window_width, long halfN);
 
@@ -11,9 +8,6 @@ void c_window(double complex *out, double c_window_width, long halfN);
 
 double complex gamma_lanczos(double complex z);
 double complex lngamma_lanczos(double complex z);
-
-void gamma_ratios(double l, double nu, double *eta, double complex *gl, long N);
-
 
 void g_m_vals(double mu, double q_real, double *q_imag, double complex *gm, long N);
 

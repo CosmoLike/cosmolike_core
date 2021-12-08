@@ -146,6 +146,7 @@ typedef struct {
    double fwhm;   // beam fwhm in rad
    double sensitivity;  // white noise level in muK*rad
    char * pathLensRecNoise;   // path to precomputed noise on reconstructed kappa
+   char * path_yNoise;
    double fsky;
 }Cmb;
 Cmb cmb;
@@ -504,3 +505,19 @@ typedef struct {
   int Nchi;
 } fft_optimize;
 fft_optimize fft_int;
+
+typedef struct {
+  double Gamma_KS; // Gamma in K-S profile
+  double beta; // beta: mass scaling index in bound gas fraction
+  double M0; // critical halo mass, below which gas ejection is significant
+  double alpha;
+  double A_star;
+  double M_star;
+  double sigma_star;
+  double T_w;
+  double mu_p;
+  double mu_e;
+  double eps1;
+  double eps2;
+}gaspara;
+gaspara gas;
