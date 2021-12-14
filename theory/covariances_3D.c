@@ -378,6 +378,10 @@ double tri_2h_22_cov (double k1, double k2, double a){
 double tri_1h_cov(double k1, double k2, double a){
   return I0j(4,k1,k1,k2,k2,a);
 }
+double tri_1h_y_cov(double k1, double k2, double a, int ni[4]){
+  // return I0j_y(4,k1,k1,k2,k2,a,ni);
+  printf("tri_1h_y_cov Not supported!\n"); exit(1);
+}
 double tri_2h_cov (double k1,double k2,double a){
   return tri_2h_22_cov(k1,k2, a)+ tri_2h_13_cov(k1,k2, a);
 }
