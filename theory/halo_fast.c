@@ -15,6 +15,7 @@ double u_nfw(double c,double k, double m, double a);   // Fourier transform of N
 // use this routine in inner I[0-1]j and modify int_rho_nfw if to work with different halo profiles, e.g. to include adiabatic contraction, AGN feedback, etc.
 /*halo model building blocks */
 double I0j (int j, double k1, double k2, double k3, double k4, double a);
+double I0j_y (int j, double k1, double k2, double k3, double k4, double a, int is_y[4]);
 double I_11 (double k,double a);
 double I1j (int j, double k1, double k2, double k3, double a);
 /*halo model matter power spectrum, bispectrum, trispectrum*/
@@ -346,6 +347,7 @@ double frac_bnd(double m){
 }
 double frac_ejc(double m){
   double frac_star = gas.A_star * exp(-0.5* pow(log10(m / gas.M_star)/gas.sigma_star,2));
+  if(m>gas.M0 && frac_star<gas.A_star/3.) {frac_star = gas.A_star/3.;}
   return cosmology.omb / cosmology.Omega_m / (1.+ pow(gas.M0/m, -gas.beta)) - frac_star;
 }
 
@@ -381,6 +383,30 @@ double I0j (int j, double k1, double k2, double k3, double k4,double a){
   double array[7] = {k1,k2,k3,k4,0.,(double)j,a};
   return int_gsl_integrate_medium_precision(inner_I0j,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000);
 }
+
+double inner_I0j_y (double logm, void *para){
+  double *array = (double *) para;
+  double m = exp(logm);
+  long double u = 1.0;
+  double a= array[6];
+  double c = conc(m,a);
+  int l;
+  int j = (int)(array[5]);
+  for (l = 0; l< j; l++){
+    if(array[7+l]==-2.){ // ni=-2: y-field
+      u *= u_y_bnd(c,array[l],m,a);
+    }else{
+      u *= u_nfw_c(c,array[l],m,a);
+    }
+  }
+  return massfunc(m,a)*m*pow(m/(cosmology.rho_crit*cosmology.Omega_m),(double)j)*u;
+}
+
+double I0j_y (int j, double k1, double k2, double k3, double k4,double a, int ni[4]){
+  double array[11] = {k1,k2,k3,k4,0.,(double)j,a,(double)ni[0],(double)ni[1],(double)ni[2],(double)ni[3]};
+  return int_gsl_integrate_medium_precision(inner_I0j_y,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000);
+}
+
 
 double inner_I1j (double logm, void *para){
   double *array = (double *) para;
@@ -444,6 +470,11 @@ double I1j (int j, double k1, double k2, double k3,double a){
 double p_1h(double k, double a)
 {
   return I0j(2,k,k,0.,0.,a);
+}
+
+double p_1h_y(double k, double a)
+{
+  // return I0j_y(2,k,k,0.,0.,a);
 }
 
 /*++++++++++++++++++++++++++++++++++++++++*

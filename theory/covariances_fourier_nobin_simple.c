@@ -179,20 +179,22 @@ double bgal_a(double a, double nz){
 }
 double inner_project_tri_cov_AB_CD(double a,void *params)
 {
-  double k[2],fK,weights,res = 0.;
+  double k[2],fK,weights,tri,res = 0.;
   double *ar = (double *) params;
   int i,j;
   fK = f_K(chi(a));
   k[0] = (ar[0]+0.5)/fK;
   k[1] = (ar[1]+0.5)/fK;
+  int FLAG_y = 0, ni[4];
 
   weights = dchi_da(a);
   for(i=2;i<6;i++){
+    ni[i-2] = ar[i];
     if(ar[i]==-1.){
       weights *= W_k(a,fK);
     }else if(ar[i]==-2.){
       weights *= W_y(a);
-      printf("NG cov for y is not yet supported!\n"); exit(1);
+      FLAG_y = 1;
     }else if(ar[4+i]==1.){ // i.e. is_ls==1 -> gal density field
       weights *= W_gal(a,ar[i]);
     }else{ // i.e. is_ls==-1 -> gal shear field
@@ -219,7 +221,10 @@ double inner_project_tri_cov_AB_CD(double a,void *params)
   fsky_larger = (fsky1>fsky2 ? fsky1 : fsky2);
 
   if(weights >0.){
-    if (covparams.cng) {res = tri_matter_cov(k[0],k[1],a)*pow(fK,-6.)/(fsky_larger*41253.0*survey.area_conversion_factor);}
+    if (covparams.cng) {
+      if(FLAG_y==1){tri = tri_1h_y_cov(k[0],k[1],a,ni);}
+      else{tri = tri_matter_cov(k[0],k[1],a);}
+      res = tri*pow(fK,-6.)/(fsky_larger*4*M_PI);}
     // printf("res cNG:%lg , ", res);
     res += ssc[0]*ssc[1]*sig_b*pow(fK,-4.); //SSC
   }
