@@ -55,6 +55,8 @@ double Pl_tab(int itheta, int ell);
 double Pl2_tab(int itheta, int ell);
 double Glplus_tab(int itheta, int ell);
 double Glminus_tab(int itheta, int ell);
+// CMB beam smoothing kernel
+double GaussianBeam(double fwhm, int ell, double ell_min, double ell_max);
 // 3x2pt Gaussian cov pure noise term on the diagonal, without masking effect
 void pure_noise_xipm_xipm(int *z_ar, double *theta, double *dtheta, double *N);
 void pure_noise_gl_gl(int *z_ar, double *theta, double *dtheta, double *N);
@@ -1032,6 +1034,34 @@ double Pl2_tab(int itheta, int ell) {
   return Pl2[itheta][ell];
 }
 
+/*  Calculate Gaussian Beam Kernel
+    
+    F(ell) = B(ell)H(ell - ell_min)H(ell_max - ell)
+    where B(ell) is the Gaussian kernel
+    B(ell) = exp( -ell*(ell+1)/ell_beam^2 )
+    and ell_beam = sqrt(16*ln(2)) / theta_FWHM
+    H(ell) is the Heaviside step function
+
+    Inputs:
+    -------
+    theta_fwhm: FWHM of the CMB Gaussian beam, in units of rad
+    ell:        angular mode ell where the beam kernel is evaluated
+    ell_min:    large-scale cut
+    ell_max:    small-scale cut
+
+    Outputs:
+    --------
+    BeamKernel: The Gaussian kernel
+*/
+double GaussianBeam(double theta_fwhm, int ell, double ell_min, double ell_max){
+  double ell_beam = sqrt(16*log(2)) / theta_fwhm;
+  double BeamKernel = exp(-1*ell*(ell+1) / (ell*ell));
+  if(ell<ell_min || ell>ell_max){
+    BeamKernel = 0.;
+  }
+  return BeamKernel;
+}
+
 // Pure noise term in Gaussian cov
 void pure_noise_xipm_xipm(int *z_ar, double *theta, double *dtheta, double *N) {
   int z1,z2,z3,z4;
@@ -1080,6 +1110,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
 
   int i,j;
   static int LMAX = 50000;
+  int CMB_smooth_1 = 0, CMB_smooth_2 = 0; // flag for CMB smoothing kernel
 
   double N[like.Ntheta];
   for(i=0;i<like.Ntheta;i++) {N[i] = 0.;}
@@ -1153,93 +1184,127 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
     func_bin_cov_NG = &bin_cov_NG_gk_shear;
     func_P1 = &Pl_tab;
     func_P2 = &Glplus_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "gk_xi-")==0) {
     func_for_cov_G  = &func_for_cov_G_gk_shear;
     func_bin_cov_NG = &bin_cov_NG_gk_shear;
     func_P1 = &Pl_tab;
     func_P2 = &Glminus_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "ks_xi+")==0) {
     func_for_cov_G  = &func_for_cov_G_ks_shear;
     func_bin_cov_NG = &bin_cov_NG_ks_shear;
     func_P1 = &Pl2_tab;
     func_P2 = &Glplus_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "ks_xi-")==0) {
     func_for_cov_G  = &func_for_cov_G_ks_shear;
     func_bin_cov_NG = &bin_cov_NG_ks_shear;
     func_P1 = &Pl2_tab;
     func_P2 = &Glminus_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "gk_gl")==0) {
     func_for_cov_G  = &func_for_cov_G_gk_gl;
     func_bin_cov_NG = &bin_cov_NG_gk_gl;
     func_P1 = &Pl_tab;
     func_P2 = &Pl2_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "ks_gl")==0) {
     func_for_cov_G  = &func_for_cov_G_ks_gl;
     func_bin_cov_NG = &bin_cov_NG_ks_gl;
     func_P1 = &Pl2_tab;
     func_P2 = &Pl2_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "gk_cl")==0) {
     func_for_cov_G  = &func_for_cov_G_gk_cl;
     func_bin_cov_NG = &bin_cov_NG_gk_cl;
     func_P1 = &Pl_tab;
     func_P2 = &Pl_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "ks_cl")==0) {
     func_for_cov_G  = &func_for_cov_G_ks_cl;
     func_bin_cov_NG = &bin_cov_NG_ks_cl;
     func_P1 = &Pl2_tab;
     func_P2 = &Pl_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "gk_gk")==0) {
     func_for_cov_G  = &func_for_cov_G_gk;
     func_bin_cov_NG = &bin_cov_NG_gk_gk;
     func_P1 = &Pl_tab;
     func_P2 = &Pl_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 1;
   } else if(strcmp(realcov_type, "ks_gk")==0) {
     func_for_cov_G  = &func_for_cov_G_ks_gk;
     func_bin_cov_NG = &bin_cov_NG_ks_gk;
     func_P1 = &Pl2_tab;
     func_P2 = &Pl_tab;
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 1;
   } else if(strcmp(realcov_type, "ks_ks")==0) {
     func_for_cov_G  = &func_for_cov_G_ks;
     func_bin_cov_NG = &bin_cov_NG_ks_ks;
     func_P1 = &Pl2_tab;
     func_P2 = &Pl2_tab;
-
+    CMB_smooth_1 = 1;
+    CMB_smooth_2 = 1;
   } else if(strcmp(realcov_type, "kk_xi+")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_shear;
     func_bin_cov_NG = &bin_cov_NG_kk_shear;
     func_P1 = &Pl_tab;
     func_P2 = &Glplus_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "kk_xi-")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_shear;
     func_bin_cov_NG = &bin_cov_NG_kk_shear;
     func_P1 = &Pl_tab;
     func_P2 = &Glminus_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "kk_gl")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_gl;
     func_bin_cov_NG = &bin_cov_NG_kk_gl;
     func_P1 = &Pl_tab;
     func_P2 = &Pl2_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "kk_cl")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_cl;
     func_bin_cov_NG = &bin_cov_NG_kk_cl;
     func_P1 = &Pl_tab;
     func_P2 = &Pl_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "kk_gk")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_gk;
     func_bin_cov_NG = &bin_cov_NG_kk_gk;
     func_P1 = &Pl_tab;
     func_P2 = &Pl_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 1;
   } else if(strcmp(realcov_type, "kk_ks")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_ks;
     func_bin_cov_NG = &bin_cov_NG_kk_ks;
     func_P1 = &Pl_tab;
     func_P2 = &Pl2_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 1;
   } else if(strcmp(realcov_type, "kk_kk")==0) {
     func_for_cov_G  = &func_for_cov_G_kk;
     func_bin_cov_NG = &bin_cov_NG_kk_kk;
     func_P1 = &Pl_tab;
     func_P2 = &Pl_tab;
-
+    CMB_smooth_2 = 0;
+    CMB_smooth_2 = 0;
   } else {
     printf("cov_real_binned_fullsky: realcov_type \"%s\" not defined!\n", realcov_type); exit(1);
   }
@@ -1261,10 +1326,12 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
     // printf("l1,%d\n", l1);
     cov_g_l = func_for_cov_G(l1_double, z_ar);
     for(i=0; i<like.Ntheta ; i++){
-      covGl1 = cov_g_l * func_P1(i,l1);
+      covGl1 = cov_g_l * func_P1(i,l1) * \
+        pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
       // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
       for(j=0; j<like.Ntheta ; j++){
-        cov[i][j] += covGl1 * func_P2(j,l1);
+        cov[i][j] += covGl1 * func_P2(j,l1) * \
+          pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_2);
       }
     }
 
@@ -1272,10 +1339,12 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
       for (l2 = 0; l2 < LMAX; l2++){
         tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
         for(i=0; i<like.Ntheta ; i++){
-          triP = tri * func_P1(i,l1);
+          triP = tri * func_P1(i,l1) * \
+            pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
           // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
           for(j=0; j<like.Ntheta ; j++){
-            covNG[i][j] += triP * func_P2(j,l2);
+            covNG[i][j] += triP * func_P2(j,l2) * \
+              pow(GaussianBeam(cmb.fwhm, l2, covparams.lmin, covparams.lmax), CMB_smooth_2);
           }
         }
       }
@@ -1290,6 +1359,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
 
   int i,j;
   static int LMAX = 50000;
+  int CMB_smooth_1 = 0, CMB_smooth_2 = 0; // flag for CMB smoothing kernel
 
   // double N[like.Ntheta];
   // for(i=0;i<like.Ntheta;i++) {N[i] = 0.;}
@@ -1302,26 +1372,38 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
     func_for_cov_G  = &func_for_cov_G_kk_shear;
     func_bin_cov_NG = &bin_cov_NG_kk_shear;
     func_P2 = &Glplus_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 0;
   } else if(strcmp(mixcov_type, "kk_xi-")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_shear;
     func_bin_cov_NG = &bin_cov_NG_kk_shear;
     func_P2 = &Glminus_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 0;
   } else if(strcmp(mixcov_type, "kk_gl")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_gl;
     func_bin_cov_NG = &bin_cov_NG_kk_gl;
     func_P2 = &Pl2_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 0;
   } else if(strcmp(mixcov_type, "kk_cl")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_cl;
     func_bin_cov_NG = &bin_cov_NG_kk_cl;
     func_P2 = &Pl_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 0;
   } else if(strcmp(mixcov_type, "kk_gk")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_gk;
     func_bin_cov_NG = &bin_cov_NG_kk_gk;
     func_P2 = &Pl_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 1;
   } else if(strcmp(mixcov_type, "kk_ks")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_ks;
     func_bin_cov_NG = &bin_cov_NG_kk_ks;
     func_P2 = &Pl2_tab;
+    CMB_smooth_1 = 0;
+    CMB_smooth_2 = 1;
   } else {
     printf("cov_mix_binned_fullsky: mixcov_type \"%s\" not defined!\n", mixcov_type); exit(1);
   }
@@ -1352,12 +1434,16 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
     N_l1 = l1_max - l1_min + 1;
     for(j=0; j<like.Ntheta ; j++){
       for(l1=l1_min; l1<=l1_max; l1++){
-        cov[i][j] += cov_g_l[l1] * func_P2(j,l1) / N_l1; // rewrite as window function
+        cov[i][j] += cov_g_l[l1] * func_P2(j,l1) / N_l1 * \
+        pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1 + CMB_smooth_2); // rewrite as window function
+        
         if(FLAG_NG){
           l1_double = (double)l1;
           for (l2 = 0; l2 < LMAX; l2++){
-            tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
-            covNG[i][j] += tri * func_P2(j,l2) / N_l1;
+            tri = func_bin_cov_NG(l1_double,(double)l2,z_ar) * \
+              pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
+            covNG[i][j] += tri * func_P2(j,l2) / N_l1 * \
+              pow(GaussianBeam(cmb.fwhm, l2, covparams.lmin, covparams.lmax), CMB_smooth_2);
           }
         }
       }
@@ -1365,11 +1451,12 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
   }
 }
 
-// Template routine: fourier averaged band power
+// Template routine: Fourier averaged band power
 void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar, int FLAG_NG, double *ell){
 
   int i,j;
   static int LMAX = 50000;
+  // Did not implement Gaussian smoothing since this one is a theoretical study.
 
   // double N[like.Ntheta];
   // for(i=0;i<like.Ntheta;i++) {N[i] = 0.;}
