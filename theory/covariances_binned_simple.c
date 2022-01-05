@@ -1320,31 +1320,49 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
 
   double triP;
   double covGl1, cov_g_l;
+  double beam1, beam2;
 
   for (l1 = 0; l1 < LMAX; l1++){
     l1_double = (double)l1;
+	
+	beam1 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
+	if (beam1<0){
+	  printf("ERROR: negative gaussian beam %e %e %d %e %e %d\n", 
+				beam1, cmb.fwhm, l1, covparams.lmin, covparams.lmax, CMB_smooth_1); 
+	  exit(-1);
+	}
+
     // printf("l1,%d\n", l1);
     cov_g_l = func_for_cov_G(l1_double, z_ar);
     for(i=0; i<like.Ntheta ; i++){
-      covGl1 = cov_g_l * func_P1(i,l1) * \
-        pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
+      covGl1 = cov_g_l * func_P1(i,l1) * beam1;
       // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
       for(j=0; j<like.Ntheta ; j++){
-        cov[i][j] += covGl1 * func_P2(j,l1) * \
-          pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_2);
+		beam2 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_2);
+	    if (beam2<0){
+		  printf("ERROR: negative gaussian beam %e %e %d %e %e %d\n", 
+				beam2, cmb.fwhm, l1, covparams.lmin, covparams.lmax, CMB_smooth_2); 
+		  exit(-1);
+	    }
+        cov[i][j] += covGl1 * func_P2(j,l1) * beam2;
       }
     }
 
     if(FLAG_NG){
       for (l2 = 0; l2 < LMAX; l2++){
         tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
+		beam2 = pow( GaussianBeam(cmb.fwhm, l2, covparams.lmin, covparams.lmax), CMB_smooth_2);
+		if (beam2<0){
+		  printf("ERROR: negative gaussian beam %e %e %d %e %e %d\n", 
+				beam2, cmb.fwhm, l2, covparams.lmin, covparams.lmax, CMB_smooth_2); 
+		  exit(-1);
+	  	}
+
         for(i=0; i<like.Ntheta ; i++){
-          triP = tri * func_P1(i,l1) * \
-            pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
+          triP = tri * func_P1(i,l1) * beam1;
           // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
           for(j=0; j<like.Ntheta ; j++){
-            covNG[i][j] += triP * func_P2(j,l2) * \
-              pow(GaussianBeam(cmb.fwhm, l2, covparams.lmin, covparams.lmax), CMB_smooth_2);
+            covNG[i][j] += triP * func_P2(j,l2) * beam2;
           }
         }
       }
@@ -1410,6 +1428,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
 
   double l1_double,tri;
   int l1,l2;
+  double beam1, beam2;
   for(i=0; i<like.Ncl ; i++){
     for(j=0; j<like.Ntheta ; j++){
       cov[i][j] = 0.;
@@ -1434,16 +1453,25 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
     N_l1 = l1_max - l1_min + 1;
     for(j=0; j<like.Ntheta ; j++){
       for(l1=l1_min; l1<=l1_max; l1++){
-        cov[i][j] += cov_g_l[l1] * func_P2(j,l1) / N_l1 * \
-        pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1 + CMB_smooth_2); // rewrite as window function
+		beam1 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1 + CMB_smooth_2);
+		if(beam1 < 0.){
+		  printf("ERROR: negative beam kernel: %e %e %d %e %e %d\n", beam1, cmb.fwhm, l1, covparams.lmin, covparams.lmax, CMB_smooth_1+CMB_smooth_2);
+		  exit(-1);
+		}
+
+        cov[i][j] += cov_g_l[l1] * func_P2(j,l1) / N_l1 * beam1;
         
         if(FLAG_NG){
           l1_double = (double)l1;
           for (l2 = 0; l2 < LMAX; l2++){
-            tri = func_bin_cov_NG(l1_double,(double)l2,z_ar) * \
-              pow(GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
-            covNG[i][j] += tri * func_P2(j,l2) / N_l1 * \
-              pow(GaussianBeam(cmb.fwhm, l2, covparams.lmin, covparams.lmax), CMB_smooth_2);
+			beam1 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
+			beam2 = pow( GaussianBeam(cmb.fwhm, l2, covparams.lmin, covparams.lmax), CMB_smooth_2);
+			if (beam1 < 0. || beam2 < 0.){
+				printf("ERROR: negative beam kernel\n");
+				exit(-1);
+			}
+            tri = func_bin_cov_NG(l1_double,(double)l2,z_ar) * beam1;
+            covNG[i][j] += tri * func_P2(j,l2) / N_l1 * beam2;
           }
         }
       }
