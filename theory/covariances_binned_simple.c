@@ -1054,11 +1054,16 @@ double Pl2_tab(int itheta, int ell) {
     BeamKernel: The Gaussian kernel
 */
 double GaussianBeam(double theta_fwhm, int ell, double ell_min, double ell_max){
-  double ell_beam = sqrt(16*log(2)) / theta_fwhm;
-  double BeamKernel = exp(-1*ell*(ell+1) / (ell_beam * ell_beam));
-  if(ell<ell_min || ell>ell_max){
-    BeamKernel = 0.;
+  // Turn-On Gaussian Beam Smoothing
+  if(theta_fwhm > 0.0){
+    double ell_beam = sqrt(16.0 * log(2.0)) / theta_fwhm;
+    double BeamKernel = exp(-1.*ell*(ell+1.) / (ell_beam * ell_beam));
+    if(ell<ell_min || ell>ell_max){
+      BeamKernel = 0.;
+    }
   }
+  // Turn-Off Gaussian Beam Smoothing
+  else{BeamKernel = 1.0;}
   return BeamKernel;
 }
 
