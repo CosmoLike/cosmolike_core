@@ -2,10 +2,13 @@
 double w_gk_planck(double theta,int ni); //angular CMB lensing x positions correlation function in tomography bin ni
 double w_ks_planck(double theta, int ni);//angular CMB lensing x galaxy shear correlation function in tomography bin ni
 
-double beam_planck(double l){ // TO BE UPDATED!!!!
-  double fwhm_arcmin =5.4;
-  double sigma = fwhm_arcmin/sqrt(8.*log(2.0))*constants.arcmin;
-  return exp(-0.5*l*l*sigma*sigma);
+double beam_planck(double ell){ // TO BE UPDATED!!!!
+  double ell_beam = sqrt(16.0*log(2.0)) / cmb.fwhm; // cmb.fwhm in radians
+  double BeamKernel = exp(-1.0*ell*(ell+1.0) / (ell_beam * ell_beam));
+  if(ell<covparams.lmin || ell>covparams.lmax){
+    BeamKernel = 0.;
+  }
+  return BeamKernel;
 }
 
 //================================================================================================

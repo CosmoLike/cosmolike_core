@@ -137,7 +137,7 @@ double w_clustering_tomo(double theta, int ni, int nj) // galaxy clustering tomo
   }
   return interpol(table[ni*tomo.clustering_Nbin+nj], Ntable.N_thetaH, logthetamin, logthetamax,dlogtheta, log(theta), 0.0, 0.0);
 }
-/*
+
 double w_gamma_t_tomo(double theta,int ni, int nj) //G-G lensing, lens bin ni, source bin nj
 {
   static cosmopara C;
@@ -268,7 +268,7 @@ double w_clustering_HOD(double theta, int ni) // HOD based galaxy clustering 2PC
     update_nuisance(&N);
   }
   return interpol(table[ni], Ntable.N_thetaH, logthetamin, logthetamax,dlogtheta, log(theta), 0.0, 0.0);
-}
+}/*
 */
 /****************** hankel transformation routine *******************/
 void twopoint_via_hankel(double **xi, double *logthetamin, double *logthetamax, C_tomo_pointer C_tomo, int ni, int nj, int N_Bessel){
