@@ -379,6 +379,7 @@ double tri_1h_cov(double k1, double k2, double a){
   return I0j(4,k1,k1,k2,k2,a);
 }
 double tri_1h_y_cov(double k1, double k2, double a, int ni[4]){
+  if(a<limits.a_min_hm) return 0.;
   return I0j_y(4,k1,k1,k2,k2,a,ni);
   // printf("tri_1h_y_cov Not supported!\n"); exit(1);
 }

@@ -74,6 +74,7 @@ double y_reconstruction_noise(double l){
    static int nEll;
 
    static double ellmin = .0, ellmax = .0;
+   double dummy;
 
    if (noise==0){
       printf("run %s\n", cmb.name);
@@ -88,7 +89,7 @@ double y_reconstruction_noise(double l){
       FILE *file = fopen(cmb.path_yNoise, "r");
       int iEll;
       for (iEll=0; iEll<nEll; iEll++) {
-         fscanf(file, "%le %le", &ell[iEll], &noise[iEll]);
+         fscanf(file, "%le %le %le %le", &ell[iEll], &noise[iEll], &dummy, &dummy);
          noise[iEll] = log(noise[iEll]);
       }
       fclose(file);
@@ -274,6 +275,10 @@ double cov_NG_AB_CD(char ABCD[2][4], double l1,double l2, int z_ar[4], int is_ls
       amin[i] = amin_source(zs); amax[i] = amax_source(zs); fsky[i]=fsky_gal;
     }else if(strcmp(ABCD[i], "kk")==0 || strcmp(ABCD[i], "ky")==0 || strcmp(ABCD[i], "yy")==0){
       amin[i] = limits.a_min*(1.+1.e-5); amax[i] = 1.-1.e-5; fsky[i]=cmb.fsky;
+    }
+
+    if(strcmp(ABCD[i], "kk")!=0 && amin[i] < limits.a_min_hm) {
+      amin[i] = limits.a_min_hm; // limit LOS integration up to a_min_hm as NG cov uses halomodel except for kcmb-kcmb
     }
   }
   a1 = (amin[0]>amin[1] ? amin[0] : amin[1]);

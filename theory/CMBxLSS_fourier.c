@@ -369,8 +369,8 @@ double C_kk(double l)
 double W_y(double a){ // sigma_Th /(m_e*c^2) / a^2 , see Eq.D9 of 2005.00009.
   static double real_coverH0, sigma_Th, E_e;
   real_coverH0 = cosmology.coverH0 / cosmology.h0; // unit Mpc
-  sigma_Th = 6.9868492e-74 / (real_coverH0*real_coverH0); // unit convert from Mpc^2 to (c/H0)^2
-  E_e = 0.511*cosmology.h0/4.57e11; // unit convert from MeV to [G(M_solar/h)^2/(c/H0)]
+  sigma_Th = 7.012e-74 / (real_coverH0*real_coverH0); // unit convert from Mpc^2 to (c/H0)^2
+  E_e = 0.511*cosmology.h0*5.6131e-38; // unit convert from MeV to [G(M_solar/h)^2/(c/H0)]
   return sigma_Th / E_e /a/a; // dim=[comoving L]^2 / [Energy], units = [c/H0]^2 / [G(M_solar/h)^2/(c/H0)]
 }
 

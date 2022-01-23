@@ -96,6 +96,7 @@ pre precision= {
 
 typedef struct {
      double a_min;
+     double a_min_hm;
      double k_min_mpc;
      double k_max_mpc;
      double k_max_mpc_class;
@@ -116,6 +117,7 @@ typedef struct {
 lim limits = {
 //	0.19, //a_min (in order to compute z=4 WFIRST)
     1./(1.+10.), //a_min (z=10, needed for CMB lensing)
+    1./(1.+4.), //a_min_hm (z=4 for halo model)
 	6.667e-6, //k_min_mpc
 	1.e3, //k_max_mpc
 	50., //k_max_mpc_class 
