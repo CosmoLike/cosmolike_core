@@ -12,3 +12,5 @@ void cfftlog(double *x, double *fx, long N, config *config, int ell, double *y, 
 void cfftlog_ells(double *x, double *fx, long N, config *config, int* ell, long Nell, double **y, double **Fy);
 
 void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* ell, long Nell, double **y, double **Fy);
+
+void cfftlog_multiple(double *x, double **fx, long N, long Nf, config *config, int ell, double *y, double **Fy);

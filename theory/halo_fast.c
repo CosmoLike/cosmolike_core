@@ -383,6 +383,41 @@ double F_KS(double c, double kr_s){
   double array[1] ={kr_s};
   return int_gsl_integrate_medium_precision(int_F_KS, (void*)array, 0,c,NULL, 5000);
 }
+
+#ifdef RUN_FFT
+void fft_F_KS(double *c_arr, int Nc, double *krs_arr, int Nx, double **F) {
+  config fftconfig;
+  fftconfig.nu = 1.1;
+  fftconfig.c_window_width = 0.25;
+  fftconfig.derivative = 0;
+  fftconfig.N_pad = 50;
+  fftconfig.N_extrap_low = 100;
+  fftconfig.N_extrap_high = 0;
+
+  double ell=0.; // spherical bessel order
+  double x[Nx];
+  int i,j;
+  for(i=0;i<Nx;i++){
+    x[i] = (ell+1.)/krs_arr[Nx-1-i]; // determine the integrand sampling x-grid, y[::1] = (ell+1)/x[:] is defined in cfftlog
+  }
+  double **fx;
+  fx = malloc(Nc * sizeof(double *));
+
+  for(j=0;j<Nc;j++){
+    fx[j] = malloc(Nx * sizeof(double));
+    for(i=0;i<Nx;i++){
+      fx[j][i] = x[i]>c_arr[j] ? 0 : pow(x[i],3)*pow(log(1.+x[i])/x[i], gas.Gamma_KS/(gas.Gamma_KS-1.));
+      // printf("c, x, fx %le %le %le\n", c_arr[j], x[i], fx[j][i]);
+    }
+  }
+  // exit(0);
+
+  cfftlog_multiple(x, fx, Nx, Nc, &fftconfig, ell, krs_arr, F);
+  for(j=0;j<Nc;j++){ free(fx[j]); }
+  free(fx);
+}
+#endif
+
 double int_F_KS_norm(double x, void *params){
   return x*x * pow(log(1.+x)/x, 1/(gas.Gamma_KS-1.));
 }
@@ -409,6 +444,10 @@ double u_KS_normalized_interp(double c,double k, double rv){
 
   double F0;
 
+#ifdef RUN_FFT
+  N_x=512; // for efficient fft
+#endif
+
   if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
     update_cosmopara(&C);
     if (table==0) table = create_double_matrix(0, N_c-1, 0, N_x-1);
@@ -416,6 +455,23 @@ double u_KS_normalized_interp(double c,double k, double rv){
     dx = (logxmax - logxmin)/(N_x-1.); dc = (cmax - cmin)/(N_c-1.);
     
     cc = cmin;
+
+#ifdef RUN_FFT
+    double c_arr[N_c], krs_arr[N_x];
+
+    for (i=0; i<N_c; i++, cc +=dc) { c_arr[i]=cc; }
+    xlog  = logxmin;
+    for (j=0; j<N_x; j++, xlog += dx) { krs_arr[j]=exp(xlog); }
+
+    fft_F_KS(c_arr, N_c, krs_arr, N_x, table);
+    for (i=0; i<N_c; i++, cc +=dc) {
+      xlog  = logxmin;
+      F0 = F_KS_norm(cc);
+      for (j=0; j<N_x; j++, xlog += dx) {
+        table[i][j] /= F0;
+      }
+    }
+#else
     for (i=0; i<N_c; i++, cc +=dc) {
       xlog  = logxmin;
       F0 = F_KS_norm(cc);
@@ -425,6 +481,7 @@ double u_KS_normalized_interp(double c,double k, double rv){
         // printf("%le %le %le %le \n", cc, xx, F0, table[i][j]);
       }
     }
+#endif
     // exit(0);
   }
   // printf("c, x = %le, %le\n",c,x);
