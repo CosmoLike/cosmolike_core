@@ -309,3 +309,94 @@ void cfftlog_ells_increment(double *x, double *fx, long N, config *config, int* 
 	free(out_ifft);
 	free(fb);
 }
+
+
+// same ell but multiple integrands with same x-range
+void cfftlog_multiple(double *x, double **fx, long N, long Nf, config *config, int ell, double *y, double **Fy) {
+
+	long N_original = N;
+	long N_pad = config->N_pad;
+	N += 2*N_pad;
+
+	if(N % 2) {printf("Please use even number of x !\n"); exit(0);}
+	long halfN = N/2;
+
+	double x0, y0;
+	x0 = x[0];
+
+	double dlnx;
+	dlnx = log(x[1]/x0);
+
+	// Only calculate the m>=0 part
+	double eta_m[halfN+1];
+	long i, j;
+	for(i=0; i<=halfN; i++) {eta_m[i] = 2*M_PI / dlnx / N * i;}
+
+	double complex gl[halfN+1];
+	
+	switch(config->derivative) {
+		case 0: g_l_cfft((double)ell, config->nu, eta_m, gl, halfN+1); break;
+		case 1: g_l_1_cfft((double)ell, config->nu, eta_m, gl, halfN+1); break;
+		case 2: g_l_2_cfft((double)ell, config->nu, eta_m, gl, halfN+1); break;
+		default: printf("Integral Not Supported! Please choose config->derivative from [0,1,2].\n");
+	}
+	// printf("g2[0]: %.15e+I*(%.15e)\n", creal(g2[0]),cimag(g2[0]));
+
+	// calculate y arrays
+	for(i=0; i<N_original; i++) {y[i] = (ell+1.) / x[N_original-1-i];}
+	y0 = y[0];
+
+	// biased input func
+	double **fb;
+	fb = malloc(Nf* sizeof(double*));
+	for(j=0; j<Nf; j++) {
+		fb[j] = malloc(N* sizeof(double));
+
+		for(i=0; i<N_pad; i++) {
+			fb[j][i] = 0.;
+			fb[j][N-1-i] = 0.;
+		}
+		for(i=N_pad; i<N_pad+N_original; i++) {
+			fb[j][i] = fx[j][i-N_pad] / pow(x[i-N_pad], config->nu) ;
+		}
+	}
+
+	fftw_complex *out;
+	fftw_plan plan_forward, plan_backward;
+	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (halfN+1) );
+	double *in_fb;
+	in_fb = malloc(sizeof(double) * N );
+	plan_forward = fftw_plan_dft_r2c_1d(N, in_fb, out, FFTW_ESTIMATE);
+
+	double *out_ifft;
+	out_ifft = malloc(sizeof(double) * N );
+	plan_backward = fftw_plan_dft_c2r_1d(N, out, out_ifft, FFTW_ESTIMATE);
+
+	for(j=0; j<Nf; j++){
+		for(i=0; i<N; i++) { in_fb[i] = fb[j][i];}
+		fftw_execute(plan_forward);
+
+		c_window_cfft(out, config->c_window_width, halfN);
+		// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
+
+		for(i=0; i<=halfN; i++) {
+			out[i] *= cpow(x0*y0/exp(2*N_pad*dlnx), -I*eta_m[i]) * gl[i] ;
+			out[i] = conj(out[i]);
+		}
+		// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
+
+		fftw_execute(plan_backward);
+
+		for(i=0; i<N_original; i++) {
+			Fy[j][i] = out_ifft[i-N_pad] * sqrt(M_PI) / (4.*N * pow(y[i], config->nu));
+		}
+	}
+
+	fftw_destroy_plan(plan_forward);
+	fftw_destroy_plan(plan_backward);
+	fftw_free(out);
+	free(out_ifft);
+	free(in_fb);
+	for(j=0; j<Nf; j++) { free(fb[j]); }
+	free(fb);
+}

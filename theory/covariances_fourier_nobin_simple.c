@@ -74,6 +74,7 @@ double y_reconstruction_noise(double l){
    static int nEll;
 
    static double ellmin = .0, ellmax = .0;
+   double dummy;
 
    if (noise==0){
       printf("run %s\n", cmb.name);
@@ -88,7 +89,7 @@ double y_reconstruction_noise(double l){
       FILE *file = fopen(cmb.path_yNoise, "r");
       int iEll;
       for (iEll=0; iEll<nEll; iEll++) {
-         fscanf(file, "%le %le", &ell[iEll], &noise[iEll]);
+         fscanf(file, "%le %le %le %le", &ell[iEll], &noise[iEll], &dummy, &dummy);
          noise[iEll] = log(noise[iEll]);
       }
       fclose(file);
@@ -202,14 +203,30 @@ double inner_project_tri_cov_AB_CD(double a,void *params)
     }
   }
 
-  double ssc[2];
+  double ssc[2], P_AB=0.;
   double sig_b, fsky1, fsky2, fsky_larger;
   fsky1 = ar[10]; fsky2 = ar[11];
 
+  double (*func_for_delP_SSC)(double, double);
+
   for(i=0;i<2;i++){
-    ssc[i]=delP_SSC(k[i],a); // no galaxy density field
-    for(j=0;j<2;j++){// if galaxy density field, rescale wrt mean, Eq(A12) in CosmoLike paper
-      if(ar[6+2*i+j]==1){ssc[i] -= bgal_a(a,ar[2+2*i+j])*Pdelta(k[i],a);}
+    func_for_delP_SSC = &delP_SSC; // set delP_SSC as for matter field by default
+    if(strcmp(pdeltaparams.runmode,"halomodel") ==0){func_for_delP_SSC = &delP_SSC_halo;} // use halo model version
+
+    if(ar[2+2*i]==-2 && ar[2+2*i+1]==-2){ // if both A,B are y-fields
+      P_AB = P_yy(k[i],a);
+      func_for_delP_SSC = &delP_SSC_yy;
+    }else if(ar[2+2*i]!=-2 && ar[2+2*i+1]!=-2){// if neither A,B is y-field
+      P_AB = Pdelta(k[i],a);
+    }else{ // if one of A,B is y-field, but the other is not.
+      P_AB = P_my(k[i],a);
+      func_for_delP_SSC = &delP_SSC_my;
+    }
+
+    ssc[i]=func_for_delP_SSC(k[i],a); // no galaxy density field
+
+    for(j=0;j<2;j++){// if delta_g field, rescale wrt mean, Eq(A12,A13) in CosmoLike paper
+      if(ar[6+2*i+j]==1){ssc[i] -= bgal_a(a,ar[2+2*i+j])*P_AB;}
     }
   }
 
@@ -258,6 +275,10 @@ double cov_NG_AB_CD(char ABCD[2][4], double l1,double l2, int z_ar[4], int is_ls
       amin[i] = amin_source(zs); amax[i] = amax_source(zs); fsky[i]=fsky_gal;
     }else if(strcmp(ABCD[i], "kk")==0 || strcmp(ABCD[i], "ky")==0 || strcmp(ABCD[i], "yy")==0){
       amin[i] = limits.a_min*(1.+1.e-5); amax[i] = 1.-1.e-5; fsky[i]=cmb.fsky;
+    }
+
+    if(strcmp(ABCD[i], "kk")!=0 && amin[i] < limits.a_min_hm) {
+      amin[i] = limits.a_min_hm; // limit LOS integration up to a_min_hm as NG cov uses halomodel except for kcmb-kcmb
     }
   }
   a1 = (amin[0]>amin[1] ? amin[0] : amin[1]);

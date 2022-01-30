@@ -14,6 +14,7 @@ typedef struct {
   double Rmin_shear;
   double lmax_shear;
   double lmax_kappacmb;
+  double lmax_y;
   int baryons;
   int IA;
   int bias;
@@ -41,16 +42,20 @@ typedef struct {
   int clusterWL;
   int clusterCG;
   int clusterCC;
- // MANUWARNING: added "int gk, kk, ks;"
   int gk;
   int kk;
   int ks;
+  int gy;
+  int sy;
+  int ky;
+  int yy;
   char probes[500];
   char ext_data[500];
   int theta_s;
   int Ytransform; //whether do Y transform or not
+  int feedback_on;
 }likepara;
-likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .BAO = 0, .SN_WFIRST = 0, .GRS = 0, .SRD = 0, .Planck15_BAO_H070p6_JLA_w0wa = 0, .Planck18_BAO_Riess18_Pantheon_w0wa = 0, .Planck18_BAO_w0wa = 0, .Planck18_w0 = 0,.theta_s =0, .Ytransform=0};
+likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .BAO = 0, .SN_WFIRST = 0, .GRS = 0, .SRD = 0, .Planck15_BAO_H070p6_JLA_w0wa = 0, .Planck18_BAO_Riess18_Pantheon_w0wa = 0, .Planck18_BAO_w0wa = 0, .Planck18_w0 = 0,.theta_s =0, .Ytransform=0, .feedback_on=0};
 
 typedef struct {
      double Omega_m;  /* matter density parameter                       */
@@ -509,14 +514,13 @@ fft_optimize fft_int;
 typedef struct {
   double Gamma_KS; // Gamma in K-S profile
   double beta; // beta: mass scaling index in bound gas fraction
-  double M0; // critical halo mass, below which gas ejection is significant
+  double lgM0; // critical halo mass, below which gas ejection is significant
   double alpha;
   double A_star;
-  double M_star;
+  double lgM_star;
   double sigma_star;
-  double T_w;
-  double mu_p;
-  double mu_e;
+  double lgT_w;
+  double f_H;
   double eps1;
   double eps2;
 }gaspara;

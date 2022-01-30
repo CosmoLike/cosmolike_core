@@ -1445,7 +1445,7 @@ double PkRatio_baryons(double kintern,double a){
 }
 
 
-
+double Pdelta_halo(double k_NL, double a); //  declare first, defined in halo_fast.c
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 //Pdelta is called with k in units H0/c since the comoving distance chi is in units c/H0. Upstream Pdelta all routines are in h/mpc
 double Pdelta(double k_NL,double a)
@@ -1460,6 +1460,7 @@ double Pdelta(double k_NL,double a)
     if (strcmp(pdeltaparams.runmode,"CLASS")==0) P_type = 4;
     if (strcmp(pdeltaparams.runmode,"class")==0) P_type = 4;
     if (strcmp(pdeltaparams.runmode,"cosmo_sim_test") ==0) P_type = 5;
+    if (strcmp(pdeltaparams.runmode,"halomodel") ==0) P_type = 6;
 
   }
 
@@ -1479,6 +1480,7 @@ double Pdelta(double k_NL,double a)
       pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)*(1.0+error)/k_NL/k_NL/k_NL;
     }
     break;
+    case 6: pdelta=Pdelta_halo(k_NL,a); break;
     default:
     printf("cosmo3D:Pdelta: %s Pdelta runmode not defined\n",pdeltaparams.runmode);
     printf("using Halofit (standard)\n");

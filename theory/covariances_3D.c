@@ -379,8 +379,9 @@ double tri_1h_cov(double k1, double k2, double a){
   return I0j(4,k1,k1,k2,k2,a);
 }
 double tri_1h_y_cov(double k1, double k2, double a, int ni[4]){
-  // return I0j_y(4,k1,k1,k2,k2,a,ni);
-  printf("tri_1h_y_cov Not supported!\n"); exit(1);
+  if(a<limits.a_min_hm) return 0.;
+  return I0j_y(4,k1,k1,k2,k2,a,ni);
+  // printf("tri_1h_y_cov Not supported!\n"); exit(1);
 }
 double tri_2h_cov (double k1,double k2,double a){
   return tri_2h_22_cov(k1,k2, a)+ tri_2h_13_cov(k1,k2, a);
@@ -451,6 +452,15 @@ double delP_SSC(double k, double a){
 //  return (68./21.+LD_term(k))*p_2h(k,a)+ I12_SSC(k,a);
 }
 
+double delP_SSC_halo(double k, double a){
+ return (68./21.+LD_term(k))*p_2h(k,a)+ I12_SSC(k,a);
+}
+double delP_SSC_yy(double k, double a){
+ return (68./21.+LD_term(k))*p_2h_yy(k,a)+ I12_SSC_yy(k,a);
+}
+double delP_SSC_my(double k, double a){
+ return (68./21.+LD_term(k))*p_2h_my(k,a)+ I12_SSC_my(k,a);
+}
 
 /*********************** super-sample covariance: linear term only ***********************/
 
