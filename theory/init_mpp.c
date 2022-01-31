@@ -2,7 +2,7 @@
 void init_probes_5x2pt(char *probes);
 void init_probes_real_mpp(char *probes);
 void init_source_sample_mpp(char *multihisto_file, int Ntomo);
-void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *b1, double *b2, double ggl_cut);
+void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *b1, double *b2, double ggl_cut);
 void init_binning_mpp(int Ntheta,double theta_min_arcmin, double theta_max_arcmin);
 void init_IA_mpp(int N);
 
@@ -202,14 +202,16 @@ void init_ggl_tomo(){
   printf("%d GGL Powerspectra\n",tomo.ggl_Npowerspectra);
 }
 
-void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *b1, double *b2, double ggl_cut)
+void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *b1, double *b2, double ggl_cut)
 {
   sprintf(redshift.clustering_REDSHIFT_FILE,"%s",multihisto_file);
-  redshift.clustering_photoz=4;
+  redshift.clustering_photoz=5;
   tomo.clustering_Nbin = Ntomo;
   tomo.clustering_Npowerspectra = tomo.clustering_Nbin;
   if (ggl_cut >0){ survey.ggl_overlap_cut = ggl_cut;}
   printf("Lens redshifts: multi-histo file %s, containing %d tomography bins\n",multihisto_file,tomo.clustering_Nbin);
+    //for (int i=0;i<tomo.clustering_Nbin; i++){nuisance.bias_zphot_stretch[i] = stretch[i];}
+
   pf_photoz(0.1,0);
   for (int i=0;i<tomo.clustering_Nbin; i++)
   {

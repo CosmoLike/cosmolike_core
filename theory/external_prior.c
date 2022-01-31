@@ -698,7 +698,7 @@ double log_L_clphotoz()
     }
     log_L -= pow((nuisance.bias_zphot_clustering[i] - prior.bias_zphot_clustering[i][0])/ prior.bias_zphot_clustering[i][1],2.0);
   }
-  if(redshift.clustering_photoz!=4) {
+  if(redshift.clustering_photoz!=4 && redshift.clustering_photoz != 5) {
     if (prior.sigma_zphot_clustering[0][1] == 0.){
       printf("external_prior.c: called log_L_clphotoz while prior.sigma_zphot_clustering[0][1] not set.\nEXIT\n");
       exit(1);

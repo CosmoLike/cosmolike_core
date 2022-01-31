@@ -377,16 +377,17 @@ void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni
 		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0
 		z = 1./a - 1.;
 		fK = f_K(chi_ar[i]/real_coverH0);
+
 		if( (z>tomo.clustering_zmax[ni]) )
 		{
 			f_chi_Mag_ar[i] = 0.;
 		}
 		else
 		{
-			// printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);
+			//printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);
 			wmag = W_mag(a, fK, (double)ni);
 			window_M = wmag/ fK / (real_coverH0*real_coverH0);
-			// printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);
+			//printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);
 			// pf = (pf_photoz(z,ni)<0.)? 0:pf_photoz(z,ni); // get rid of unphysical negatives
 			// f_chi_Mag_ar[i] = chi_ar[i]/a * window_M*growfac(a)*g0;
 			f_chi_Mag_ar[i] = window_M*growfac(a)*g0; // unit [Mpc^-2]
@@ -459,7 +460,6 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 	f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, ni);
 	if(ni != nj) {f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f2_chi_Mag_ar, nj);}
-
 
 	i_block = 0;
 	double cl_temp;
@@ -682,6 +682,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 				}
 			}
 		}
+
 		update_cosmopara(&C);
 		update_galpara(&G);
 		update_nuisance(&N);

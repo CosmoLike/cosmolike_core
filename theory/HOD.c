@@ -96,7 +96,7 @@ double bgal_z(double z, int ni){ //bias evolution within redshift bin, used by c
   if ((gbias.b1_function) && (gbias.b1_function != &bgal_z)){return gbias.b1_function(z,ni);}
   //**********old options, for backward compatability********
   // very broad redshift distribution -> no bias evolution model
-  if (redshift.clustering_photoz == 4) return gbias.b[ni];
+  if (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5) return gbias.b[ni];
   //HOD parameters specified -> use HOD-derived bias for large-scale bias
   else if (gbias.hod[ni][0] > 10 && gbias.hod[ni][0] < 16){ return bgal(ni,1./(1+z));}
   // old default: passive evolution

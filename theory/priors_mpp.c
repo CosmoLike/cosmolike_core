@@ -1,6 +1,7 @@
 void set_shear_priors_mpp(double *mean_m,double *sigma_m);
 void set_wlphotoz_priors_mpp(double *bias_photoz_s,double *sigma_photoz_s);
 void set_clphotoz_priors_mpp(double *bias_photoz_l,double *sigma_photoz_l);
+void set_stretch_priors_mpp(double *mean_m,double *sigma_m);
 
 void set_ia_priors_mpp(double A_min, double A_max);
 void set_b1_priors_mpp(double b1_min, double b1_max);
@@ -35,6 +36,22 @@ void set_shear_priors_mpp(double *mean_m,double *sigma_m)
   }
   printf("\n");
 }
+
+
+void set_stretch_priors_mpp(double *mean_m,double *sigma_m)
+{
+  printf("Setting Gaussian Priors on stretch calibration\n");
+  for (int i=0;i<10; i++){
+    prior.bias_zphot_stretch[i][0] = mean_m[i];
+    prior.bias_zphot_stretch[i][1] = sigma_m[i];
+    if (sigma_m[i]){
+      printf("zn = %d (mean,sigma) = (%e, %e)\n",i, prior.bias_zphot_stretch[i][0],prior.bias_zphot_stretch[i][1]);
+      like.stretchcalib=1;
+    } 
+  }
+  printf("\n");
+}
+
 
 void set_wlphotoz_priors_mpp(double *bias_photoz_s,double *sigma_b_photoz_s){
   printf("Setting Gaussian Priors on source n(z) bias\n");
