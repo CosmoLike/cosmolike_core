@@ -89,8 +89,9 @@ double y_reconstruction_noise(double l){
       FILE *file = fopen(cmb.path_yNoise, "r");
       int iEll;
       for (iEll=0; iEll<nEll; iEll++) {
-         fscanf(file, "%le %le %le %le", &ell[iEll], &noise[iEll], &dummy, &dummy);
+         fscanf(file, "%le %le %le %le %le", &ell[iEll], &noise[iEll], &dummy, &dummy, &dummy);
          noise[iEll] = log(noise[iEll]);
+         // printf("iELL, ell, noise, %d, %le, %le\n", iEll, ell[iEll], noise[iEll]);
       }
       fclose(file);
       ellmax = ell[nEll-1];
