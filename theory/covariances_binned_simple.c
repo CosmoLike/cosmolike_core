@@ -56,7 +56,9 @@ double Pl2_tab(int itheta, int ell);
 double Glplus_tab(int itheta, int ell);
 double Glminus_tab(int itheta, int ell);
 // CMB beam smoothing kernel
-double GaussianBeam(double fwhm, int ell, double ell_min, double ell_max);
+double GaussianBeam(double fwhm, int ell, double ell_left, double ell_right);
+double GaussianBeam_test(double theta_fwhm, int ell_1, int ell_2, double ell_min, double ell_max, 
+						int power_index_1, int power_index_2);
 // 3x2pt Gaussian cov pure noise term on the diagonal, without masking effect
 void pure_noise_xipm_xipm(int *z_ar, double *theta, double *dtheta, double *N);
 void pure_noise_gl_gl(int *z_ar, double *theta, double *dtheta, double *N);
@@ -1053,13 +1055,50 @@ double Pl2_tab(int itheta, int ell) {
     --------
     BeamKernel: The Gaussian kernel
 */
-double GaussianBeam(double theta_fwhm, int ell, double ell_min, double ell_max){
-  double ell_beam = sqrt(16*log(2)) / theta_fwhm;
-  double BeamKernel = exp(-1*ell*(ell+1) / (ell_beam * ell_beam));
-  if(ell<ell_min || ell>ell_max){
-    BeamKernel = 0.;
+double GaussianBeam(double theta_fwhm, int ell, double ell_left, double ell_right){
+  double ell_min = ell_left - 10;
+  double ell_max = ell_right + 50;
+  double ell_beam = sqrt(16.0 * log(2.0)) / theta_fwhm;
+  double BeamKernel, window_func, u=0;
+  // Turn-On Gaussian Beam Smoothing
+  if(theta_fwhm > 0.0){
+	// smooth kernel
+    BeamKernel = exp(-1.*ell*(ell+1.) / (ell_beam * ell_beam));
+    // window function
+    if((ell<ell_min) || (ell>ell_max)){
+      window_func = 0.;
+    }
+    // tapering the edges
+    else if((ell_min <= ell) && (ell<ell_left)){
+      u = (ell - ell_min)/(ell_left - ell_min);
+      window_func = u - sin( constants.twopi * u) / constants.twopi;
+    }
+    else if ((ell_right < ell) && (ell <= ell_max)){
+      u = (ell_max - ell)/(ell_max - ell_right);
+      window_func = u - sin( constants.twopi * u) / constants.twopi; 
+    }
+    else{
+      window_func = 1.0;
+    }
+    BeamKernel *= window_func;
   }
+  // Turn-Off Gaussian Beam Smoothing
+  else{BeamKernel = 1.0;}
   return BeamKernel;
+}
+
+double GaussianBeam_test(double theta_fwhm, int ell_1, int ell_2, double ell_min, double ell_max, 
+						int power_index_1, int power_index_2){
+    double ell_beam = sqrt(16.0 * log(2.0)) / theta_fwhm;
+    double BeamKernel;
+    
+    if( ((power_index_1==0) && (power_index_2==0)) || (theta_fwhm<=0.0) ){BeamKernel = 1.0;}
+    else{
+		double ell2 = (double)power_index_1*ell_1*(ell_1+1.0) + power_index_2*ell_2*(ell_2+1.0);
+        BeamKernel = exp( -1.*ell2 / (ell_beam * ell_beam) );
+        if(ell_1<ell_min || ell_1>ell_max || ell_2<ell_min || ell_2>ell_max){BeamKernel = 0.;}
+    }
+    return BeamKernel;
 }
 
 // Pure noise term in Gaussian cov
@@ -1321,30 +1360,23 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
   double triP;
   double covGl1, cov_g_l;
   double beam1, beam2;
+  //double  beam;
 
   for (l1 = 0; l1 < LMAX; l1++){
     l1_double = (double)l1;
 	
 	beam1 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
-	if (beam1<0){
-	  printf("ERROR: negative gaussian beam %e %e %d %e %e %d\n", 
-				beam1, cmb.fwhm, l1, covparams.lmin, covparams.lmax, CMB_smooth_1); 
-	  exit(-1);
-	}
+	//beam1 = GaussianBeam_test(cmb.fwhm, l1, covparams.lmin, covparams.lmax, CMB_smooth_1);
 
     // printf("l1,%d\n", l1);
     cov_g_l = func_for_cov_G(l1_double, z_ar);
     for(i=0; i<like.Ntheta ; i++){
-      covGl1 = cov_g_l * func_P1(i,l1) * beam1;
+      covGl1 = cov_g_l * func_P1(i,l1);
       // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
       for(j=0; j<like.Ntheta ; j++){
 		beam2 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_2);
-	    if (beam2<0){
-		  printf("ERROR: negative gaussian beam %e %e %d %e %e %d\n", 
-				beam2, cmb.fwhm, l1, covparams.lmin, covparams.lmax, CMB_smooth_2); 
-		  exit(-1);
-	    }
-        cov[i][j] += covGl1 * func_P2(j,l1) * beam2;
+		//beam = GaussianBeam_test(cmb.fwhm, l1, l1, covparams.lmin, covparams.lmax, CMB_smooth_1, CMB_smooth_2);
+        cov[i][j] += covGl1 * func_P2(j,l1) * beam1 * beam2;
       }
     }
 
@@ -1352,17 +1384,13 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
       for (l2 = 0; l2 < LMAX; l2++){
         tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
 		beam2 = pow( GaussianBeam(cmb.fwhm, l2, covparams.lmin, covparams.lmax), CMB_smooth_2);
-		if (beam2<0){
-		  printf("ERROR: negative gaussian beam %e %e %d %e %e %d\n", 
-				beam2, cmb.fwhm, l2, covparams.lmin, covparams.lmax, CMB_smooth_2); 
-		  exit(-1);
-	  	}
+		//beam = GaussianBeam_test(cmb.fwhm, l1, l2, covparams.lmin, covparams.lmax, CMB_smooth_1, CMB_smooth_2);
 
         for(i=0; i<like.Ntheta ; i++){
-          triP = tri * func_P1(i,l1) * beam1;
+          triP = tri * func_P1(i,l1);
           // printf("Glplus[%d][%d],%lg\n", i,l1, Glplus[i][l1]);
           for(j=0; j<like.Ntheta ; j++){
-            covNG[i][j] += triP * func_P2(j,l2) * beam2;
+            covNG[i][j] += triP * func_P2(j,l2) * beam1 * beam2;
           }
         }
       }
@@ -1429,6 +1457,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
   double l1_double,tri;
   int l1,l2;
   double beam1, beam2;
+  //double beam;
   for(i=0; i<like.Ncl ; i++){
     for(j=0; j<like.Ntheta ; j++){
       cov[i][j] = 0.;
@@ -1454,10 +1483,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
     for(j=0; j<like.Ntheta ; j++){
       for(l1=l1_min; l1<=l1_max; l1++){
 		beam1 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1 + CMB_smooth_2);
-		if(beam1 < 0.){
-		  printf("ERROR: negative beam kernel: %e %e %d %e %e %d\n", beam1, cmb.fwhm, l1, covparams.lmin, covparams.lmax, CMB_smooth_1+CMB_smooth_2);
-		  exit(-1);
-		}
+		//beam = GaussianBeam_test(cmb.fwhm, l1, l1, covparams.lmin, covparams.lmax, CMB_smooth_1, CMB_smooth_2);
 
         cov[i][j] += cov_g_l[l1] * func_P2(j,l1) / N_l1 * beam1;
         
@@ -1465,13 +1491,12 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
           l1_double = (double)l1;
           for (l2 = 0; l2 < LMAX; l2++){
 			beam1 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
+			//beam1 = GaussianBeam_test(cmb.fwhm, l1, covparams.lmin, covparams.lmax, CMB_smooth_1);
 			beam2 = pow( GaussianBeam(cmb.fwhm, l2, covparams.lmin, covparams.lmax), CMB_smooth_2);
-			if (beam1 < 0. || beam2 < 0.){
-				printf("ERROR: negative beam kernel\n");
-				exit(-1);
-			}
-            tri = func_bin_cov_NG(l1_double,(double)l2,z_ar) * beam1;
-            covNG[i][j] += tri * func_P2(j,l2) / N_l1 * beam2;
+			//beam = GaussianBeam_test(cmb.fwhm, l1, l2, covparams.lmin, covparams.lmax, CMB_smooth_1, CMB_smooth_2);
+	
+            tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
+            covNG[i][j] += tri * func_P2(j,l2) / N_l1 * beam1 * beam2;
           }
         }
       }
