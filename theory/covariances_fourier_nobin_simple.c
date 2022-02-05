@@ -242,7 +242,8 @@ double inner_project_tri_cov_AB_CD(double a,void *params)
     if (covparams.cng) {
       if(FLAG_y==1){tri = tri_1h_y_cov(k[0],k[1],a,ni);}
       else{tri = tri_matter_cov(k[0],k[1],a);}
-      res = tri*pow(fK,-6.)/(fsky_larger*4*M_PI);}
+      res = tri*pow(fK,-6.)/(fsky_larger*4*M_PI);
+    }
     // printf("res cNG:%lg , ", res);
     res += ssc[0]*ssc[1]*sig_b*pow(fK,-4.); //SSC
   }
@@ -270,7 +271,7 @@ double cov_NG_AB_CD(char ABCD[2][4], double l1,double l2, int z_ar[4], int is_ls
       zmin = (z_ar[2*i] < z_ar[2*i+1] ? z_ar[2*i] : z_ar[2*i+1]);
       zmax = (z_ar[2*i] > z_ar[2*i+1] ? z_ar[2*i] : z_ar[2*i+1]);
       amin[i] = amin_lens(zmax); amax[i] = amax_lens(zmin); fsky[i]=fsky_gal;
-    }else if(strcmp(ABCD[i], "ks")==0){
+    }else if(strcmp(ABCD[i], "ks")==0 || strcmp(ABCD[i], "sy")==0){
       if(is_ls[2*i]==-1){zs = z_ar[2*i];}
       else{zs = z_ar[2*i+1];}
       amin[i] = amin_source(zs); amax[i] = amax_source(zs); fsky[i]=fsky_gal;
@@ -281,6 +282,7 @@ double cov_NG_AB_CD(char ABCD[2][4], double l1,double l2, int z_ar[4], int is_ls
     if(strcmp(ABCD[i], "kk")!=0 && amin[i] < limits.a_min_hm) {
       amin[i] = limits.a_min_hm; // limit LOS integration up to a_min_hm as NG cov uses halomodel except for kcmb-kcmb
     }
+    if(fsky[i]<=0.) {printf("fsky[%d]=%le is not set correctly!\n", i, fsky[i]); exit(1);}
   }
   a1 = (amin[0]>amin[1] ? amin[0] : amin[1]);
   a2 = (amax[0]<amax[1] ? amax[0] : amax[1]);
