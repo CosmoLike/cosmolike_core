@@ -52,7 +52,17 @@ void set_cov_parameters_to_(char *covparamfile, int output)
     if(line[0] == '#') continue;
 
     sscanf(line, "%128s : %128s", name, val);
-    if(strcmp(name, "tmin")==0)
+    if(strcmp(name, "lin_bins")==0)
+    {
+      sscanf(val, "%d", &covparams.lin_bins);
+      if(output==1)
+      {
+        if(covparams.lin_bins){printf("Use linear angular binning, lin_bins=1\n");}
+        else{printf("Use (default) logarithmic angular binning.\n");}
+      }
+      continue;
+    }
+    else if(strcmp(name, "tmin")==0)
     {
       sscanf(val, "%lf", &covparams.tmin);
       covparams.tmin*=constants.arcmin;

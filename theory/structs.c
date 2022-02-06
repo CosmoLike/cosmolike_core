@@ -448,6 +448,7 @@ typedef struct input_nuisance_params_grs {
 
 
 typedef struct {
+    int lin_bins;/* switch between log-binning (lin_bins = 0, default) and linear binning (lin_bins =1)*/
     double tmin; /* Theta min (arcmin) */
     double tmax; /* Theta max (arcmin) */
     int ntheta;/* number of theta bins */
@@ -466,7 +467,7 @@ typedef struct {
     char ks[8]; /* Calculate shear-kappa_cmb components */
     char kk[8]; /* Calculate kappa_cmb-kappa_cmb components */
 } covpar;
-covpar covparams;
+covpar covparams = {.lin_bins = 0};
 
 typedef struct{
    int N_z;
