@@ -547,11 +547,21 @@ double inner_I0j (double logm, void *para){
   int l;
   int j = (int)(array[5]);
   for (l = 0; l< j; l++){
+#ifdef SLOW
+    u = u*u_nfw_c(c,array[l],m,a);
+#else
     u = u*u_nfw_c_interp(c,array[l],m,a);
+#endif
   }
   return massfunc(m,a)*m*pow(m/(cosmology.rho_crit*cosmology.Omega_m),(double)j)*u;
 }
 
+#ifdef SLOW
+double I0j (int j, double k1, double k2, double k3, double k4,double a){
+  double array[7] = {k1,k2,k3,k4,0.,(double)j,a};
+  return int_gsl_integrate_medium_precision(inner_I0j,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000);
+}
+#else
 double I0j (int j, double k1, double k2, double k3, double k4,double a){
   double array[7] = {k1,k2,k3,k4,0.,(double)j,a};
   double result=0., logm;
@@ -562,10 +572,7 @@ double I0j (int j, double k1, double k2, double k3, double k4,double a){
   }
   return result*dlogm;
 }
-// double I0j (int j, double k1, double k2, double k3, double k4,double a){
-//   double array[7] = {k1,k2,k3,k4,0.,(double)j,a};
-//   return int_gsl_integrate_medium_precision(inner_I0j,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000);
-// }
+#endif
 
 double inner_I0j_y (double logm, void *para){
   double *array = (double *) para;
@@ -611,11 +618,58 @@ double inner_I1j (double logm, void *para){
   int l;
   int j = (int)(array[5]);
   for (l = 0; l< j; l++){
+#ifdef SLOW
+    u = u*u_nfw_c(c,array[l],m,a);
+#else
     u = u*u_nfw_c_interp(c,array[l],m,a);
+#endif
   }
   return massfunc(m,a)*m*pow(m/(cosmology.rho_crit*cosmology.Omega_m),(double)j)*u*B1_normalized(m,a);
 }
 
+// double I_11 (double k,double a){//look-up table for I11 integral
+//   double array[7];
+//   array[0]=k;
+//   array[5]=1.0;
+//   array[6]=a;
+//   return int_gsl_integrate_medium_precision(inner_I1j,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000);
+// }
+#ifdef SLOW
+double I_11 (double k,double a){//look-up table for I11 integral
+  static cosmopara C;
+  static double amin = 0, amax = 0,logkmin = 0., logkmax = 0., dk = 0., da = 0.;
+  
+  static double **table_I1=0;
+  
+  double aa,klog;
+  int i,j;
+  
+  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
+    update_cosmopara(&C);
+    if (table_I1==0) table_I1 = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
+    double array[7];
+    array[5]=1.0;
+    
+    amin = limits.a_min;
+    amax = 1.;
+    da = (amax - amin)/(Ntable.N_a);
+    aa = amin;
+    logkmin = log(limits.k_min_cH0);
+    logkmax = log(limits.k_max_cH0);
+    dk = (logkmax - logkmin)/(Ntable.N_k_nlin);
+    for (i=0; i<Ntable.N_a; i++, aa +=da) {
+      array[6] = fmin(aa,0.999);
+      klog  = logkmin;
+      for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
+        array[0]= exp(klog);
+        table_I1[i][j] = log(int_gsl_integrate_medium_precision(inner_I1j,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000));
+      }
+    }
+  }
+  aa = fmin(a,amax-1.1*da);//to avoid interpolation errors near z=0
+  return exp(interpol2d(table_I1, Ntable.N_a, amin, amax, da, aa, Ntable.N_k_nlin, logkmin, logkmax, dk, log(k), 1.0, 1.0));
+}
+#else
 double I_11 (double k,double a){
   double array[7];
   array[0]=k;
@@ -629,49 +683,15 @@ double I_11 (double k,double a){
   }
   return result*dlogm;
 }
-// double I_11 (double k,double a){//look-up table for I11 integral
-//   double array[7];
-//   array[0]=k;
-//   array[5]=1.0;
-//   array[6]=a;
-//   return int_gsl_integrate_medium_precision(inner_I1j,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000);
-// }
-// double I_11 (double k,double a){//look-up table for I11 integral
-//   static cosmopara C;
-//   static double amin = 0, amax = 0,logkmin = 0., logkmax = 0., dk = 0., da = 0.;
-  
-//   static double **table_I1=0;
-  
-//   double aa,klog;
-//   int i,j;
-  
-//   if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-//     update_cosmopara(&C);
-//     if (table_I1==0) table_I1 = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
-//     double array[7];
-//     array[5]=1.0;
-    
-//     amin = limits.a_min;
-//     amax = 1.;
-//     da = (amax - amin)/(Ntable.N_a);
-//     aa = amin;
-//     logkmin = log(limits.k_min_cH0);
-//     logkmax = log(limits.k_max_cH0);
-//     dk = (logkmax - logkmin)/(Ntable.N_k_nlin);
-//     for (i=0; i<Ntable.N_a; i++, aa +=da) {
-//       array[6] = fmin(aa,0.999);
-//       klog  = logkmin;
-//       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
-//         array[0]= exp(klog);
-//         table_I1[i][j] = log(int_gsl_integrate_medium_precision(inner_I1j,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000));
-//       }
-//     }
-//   }
-//   aa = fmin(a,amax-1.1*da);//to avoid interpolation errors near z=0
-//   return exp(interpol2d(table_I1, Ntable.N_a, amin, amax, da, aa, Ntable.N_k_nlin, logkmin, logkmax, dk, log(k), 1.0, 1.0));
-// }
+#endif
 
-
+#ifdef SLOW
+double I1j (int j, double k1, double k2, double k3,double a){
+  if (j ==1) {return I_11(k1,a);}
+  double array[7] = {k1,k2,k3,0.,0.,(double)j,a};
+  return int_gsl_integrate_medium_precision(inner_I1j,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000);
+}
+#else
 double I1j (int j, double k1, double k2, double k3,double a){
   if (j ==1) {return I_11(k1,a);}
   double array[7] = {k1,k2,k3,0.,0.,(double)j,a};
@@ -683,12 +703,7 @@ double I1j (int j, double k1, double k2, double k3,double a){
   }
   return result*dlogm;
 }
-// double I1j (int j, double k1, double k2, double k3,double a){
-//   if (j ==1) {return I_11(k1,a);}
-//   double array[7] = {k1,k2,k3,0.,0.,(double)j,a};
-//   return int_gsl_integrate_medium_precision(inner_I1j,(void*)array,log(limits.M_min),log(limits.M_max),NULL, 2000);
-// }
-
+#endif
 
 double inner_I1j_y (double logm, void *para){
   double *array = (double *) para;
