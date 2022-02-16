@@ -210,7 +210,7 @@ void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, dou
   tomo.clustering_Npowerspectra = tomo.clustering_Nbin;
   if (ggl_cut >0){ survey.ggl_overlap_cut = ggl_cut;}
   printf("Lens redshifts: multi-histo file %s, containing %d tomography bins\n",multihisto_file,tomo.clustering_Nbin);
-    //for (int i=0;i<tomo.clustering_Nbin; i++){nuisance.bias_zphot_stretch[i] = stretch[i];}
+    for (int i=0;i<tomo.clustering_Nbin; i++){nuisance.bias_zphot_stretch[i] = stretch[i];}
 
   pf_photoz(0.1,0);
   for (int i=0;i<tomo.clustering_Nbin; i++)

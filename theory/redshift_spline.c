@@ -29,7 +29,7 @@ double nsource(int j); //returns n_gal for shear tomography bin j, works only wi
 double nlens(int j); //returns n_gal for clustering tomography bin j, works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j
 double zmean(int j);//mean true redshift of (clustering/lens) galaxies within redshift bin j
 double zmean_source(int j); //mean true redshift of source galaxies in tomography bin j
-double zmean_stretch(int j);
+//double zmean_stretch(int j);
   double int_for_zmean_stretch(double z, void *params);
   double norm_for_zmean_stretch(double z, void *params);
 /***** redshift integration boundaries **********/
@@ -59,7 +59,7 @@ void write_gglensing_zbins(char *surveyname);
 double ggl_efficiency(int zl, int zs);
 ///
 double g_bg (double a, int nzlens);//no longer supported - declaration only to prevent compile errors
-
+static double **zmean_stretch = 0;
 
 /********** integration boundary routines *************/
 double amin_source(int i){
@@ -668,7 +668,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   static int zbins = -1;
   static gsl_spline * photoz_splines[11];
   static gsl_interp_accel * photoz_accel[11];
-  static double **zmean_stretch = 0;
+  
 
   //printf("%f %f %d at beginning\n", nuisance.bias_zphot_stretch[j], j, j);
   if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}
@@ -846,9 +846,9 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
 
   if (redshift.clustering_photoz == 4){ zz = zz -nuisance.bias_zphot_clustering[j];}
   if (redshift.clustering_photoz == 5 && j>=0){
-    //printf("%f %f %f\n", zz, nuisance.bias_zphot_stretch[j], zmean_stretch[j][0]);
+    //printf("%f %f %f %f\n", zz, nuisance.bias_zphot_stretch[j], zmean_stretch[j][0], gbias.b[j]);
     zz = nuisance.bias_zphot_stretch[j]*(zz -nuisance.bias_zphot_clustering[j] - zmean_stretch[j][0]) + zmean_stretch[j][0];}
-    //printf("%f\n", zz);}
+    //printf("%f %f\n", zz, nuisance.bias_zphot_stretch[j]);}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
   if (redshift.clustering_photoz == 5 && j>=0){
     //printf("%f %f\n", nuisance.bias_zphot_stretch[j], zz);
@@ -943,7 +943,9 @@ double nlens(int j) //returns n_gal for clustering tomography bin j, works only 
 
 double int_for_zmean(double z, void *params){
   double *array = (double*)params;
-  return z*pf_photoz(z,(int)array[0]);
+  int j = (int)array[0];
+  //if (redshift.clustering_photoz == 5){return (nuisance.bias_zphot_stretch[j]*(z -nuisance.bias_zphot_clustering[j] - zmean_stretch[j][0]) + zmean_stretch[j][0])*pf_photoz(z,j);} 
+  return z*pf_photoz(z,j);
 }
 
 double norm_for_zmean(double z, void *params){
