@@ -387,14 +387,14 @@ double F_KS(double c, double kr_s){
 #ifdef RUN_FFT
 void fft_F_KS(double *c_arr, int Nc, double *krs_arr, int Nx, double **F) {
   config fftconfig;
-  fftconfig.nu = 1.1;
+  fftconfig.nu = 1.01;
   fftconfig.c_window_width = 0.25;
   fftconfig.derivative = 0;
-  fftconfig.N_pad = 50;
-  fftconfig.N_extrap_low = 100;
+  fftconfig.N_pad = 0;
+  fftconfig.N_extrap_low = 0;
   fftconfig.N_extrap_high = 0;
 
-  double ell=0.; // spherical bessel order
+  int ell=0; // spherical bessel order
   double x[Nx];
   int i,j;
   for(i=0;i<Nx;i++){
@@ -403,13 +403,18 @@ void fft_F_KS(double *c_arr, int Nc, double *krs_arr, int Nx, double **F) {
   double **fx;
   fx = malloc(Nc * sizeof(double *));
 
+  // FILE *output;
+  // output = fopen("xfx.txt", "w");
+  // fprintf(output, "# c, x, fx\n");
+
   for(j=0;j<Nc;j++){
     fx[j] = malloc(Nx * sizeof(double));
     for(i=0;i<Nx;i++){
       fx[j][i] = x[i]>c_arr[j] ? 0 : pow(x[i],3)*pow(log(1.+x[i])/x[i], gas.Gamma_KS/(gas.Gamma_KS-1.));
-      // printf("c, x, fx %le %le %le\n", c_arr[j], x[i], fx[j][i]);
+      // fprintf(output, "%le %le %le\n", c_arr[j], x[i], fx[j][i]);
     }
   }
+  // fclose(output);
   // exit(0);
 
   cfftlog_multiple(x, fx, Nx, Nc, &fftconfig, ell, krs_arr, F);
@@ -429,8 +434,8 @@ double F_KS_norm(double c){
 double u_KS_normalized_interp(double c,double k, double rv){
   static cosmopara C;
 
-  static int N_c = 20, N_x = 80;
-  static double cmin = 1., cmax = 15.;
+  static int N_c = 20, N_x = 200;
+  static double cmin = 0.1, cmax = 15.;
   static double xmin = 1e-10, xmax = 5e3; // full range of possible k*R_200/c in the code
   static double logxmin = 0., logxmax=0., dx=0., dc=0.;
    
@@ -445,7 +450,7 @@ double u_KS_normalized_interp(double c,double k, double rv){
   double F0;
 
 #ifdef RUN_FFT
-  N_x=512; // for efficient fft
+  N_x=1024; // for efficient fft
 #endif
 
   if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
@@ -464,10 +469,9 @@ double u_KS_normalized_interp(double c,double k, double rv){
     for (j=0; j<N_x; j++, xlog += dx) { krs_arr[j]=exp(xlog); }
 
     fft_F_KS(c_arr, N_c, krs_arr, N_x, table);
-    for (i=0; i<N_c; i++, cc +=dc) {
-      xlog  = logxmin;
-      F0 = F_KS_norm(cc);
-      for (j=0; j<N_x; j++, xlog += dx) {
+    for (i=0; i<N_c; i++) {
+      F0 = F_KS_norm(c_arr[i]);
+      for (j=0; j<N_x; j++) {
         table[i][j] /= F0;
       }
     }
@@ -842,23 +846,25 @@ double p_2h_my(double k, double a)
 }
 
 /******* halomodel power without tabulation********/
-// double Pdelta_halo(double k,double a){
-//   return p_1h(k,a) + p_2h(k,a);
-// }
-// double P_yy(double k,double a){
-//   return p_1h_y(k,a,-2,-2) + p_2h_yy(k,a);
-// }
-// double P_my(double k,double a){
-//   return p_1h_y(k,a,-2,0) + p_2h_my(k,a);
-// }
+#ifdef NOTAB
+double Pdelta_halo(double k,double a){
+  return p_1h(k,a) + p_2h(k,a);
+}
+double P_yy(double k,double a){
+  return p_1h_y(k,a,-2,-2) + p_2h_yy(k,a);
+}
+double P_my(double k,double a){
+  return p_1h_y(k,a,-2,0) + p_2h_my(k,a);
+}
 
+#else
 /*********** Look-up table for halomodel matter power spectrum ************/
 double Pdelta_halo(double k,double a)
 {
   static cosmopara C;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
 
-  static int N_a = 50, N_k_nlin = 100;
+  static int N_a = 20, N_k_nlin = 100;
 
   static double **table_P_NL=0;
   
@@ -913,7 +919,7 @@ double P_yy(double k,double a)
   static cosmopara C;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
 
-  static int N_a = 50, N_k_nlin = 100;
+  static int N_a = 20, N_k_nlin = 100;
 
   static double **table_P_NL=0;
   
@@ -956,7 +962,7 @@ double P_my(double k,double a)
   static cosmopara C;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   
-  static int N_a = 50, N_k_nlin = 100;
+  static int N_a = 20, N_k_nlin = 100;
 
   static double **table_P_NL=0;
   
@@ -996,6 +1002,7 @@ double P_my(double k,double a)
   val = interpol2d(table_P_NL, N_a, limits.a_min_hm, 0.999, da, a, N_k_nlin, logkmin, logkmax, dk, klog, 0.0, 0.0);
   return (val);
 }
+#endif
 
 /****************** Lookup table for 1-halo term super-sample covariance/halo sample variance term**********/
 double I12_SSC (double k,double a){//one-halo term contribution to super sample covariance
