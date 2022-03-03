@@ -379,10 +379,12 @@ typedef struct input_cosmo_params_mpp {
 typedef struct input_cosmo_params {
     double omega_m;
     double sigma_8;
+    double A_s;
     double n_s;
     double w0;
     double wa;
     double omega_b;
+    double omega_nuh2;
     double h0;
     double MGSigma;
     double MGmu;

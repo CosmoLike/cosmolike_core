@@ -110,7 +110,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
 
   /* galaxy bias parameters for lens bin*/
   b1 = gbias.b1_function(1./a-1.,(int)ar[0]);
-  if (gbias.neutrino_induced_sdb){
+  if (gbias.neutrino_induced_sdb>0.0){
   	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
 	b1*= (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
   }

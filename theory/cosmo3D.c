@@ -1029,23 +1029,26 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
 
    //printf("%d %e %e, %d %e %e\n", Ntable.N_a, da, aa, Ntable.N_k_nlin, dk, klog);
    printf("norm %f\n", norm);*/
+
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
         k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
 
-        s = fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_linear, k_class,fmax(1./aa-1.,0.), fo.index_pk_total, &Pk, &ic);
+        s=fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_linear, k_class,fmax(1./aa-1.,0.), fo.index_pk_total, &Pk, &ic);
         table_P_L[i][j] = log(Pk) +norm;
-        s = fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_nonlinear, k_class,fmax(1./aa-1.,0.), fo.index_pk_total,  &Pk, &ic);
+        s=fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_nonlinear, k_class,fmax(1./aa-1.,0.), fo.index_pk_total,  &Pk, &ic);
         table_P_NL[i][j] = log(Pk) +norm;
         
 
-        s = fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_linear, k_class,fmax(1./aa-1.,0.), fo.index_pk_cluster, &Pk, &ic);
+        s=fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_linear, k_class,fmax(1./aa-1.,0.), fo.index_pk_cluster, &Pk, &ic);
         table_P_L_C[i][j] = log(Pk) +norm;
 
-        s = fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_nonlinear, k_class,fmax(1./aa-1.,0.), fo.index_pk_cluster,  &Pk, &ic);
+        s=fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_nonlinear, k_class,fmax(1./aa-1.,0.), fo.index_pk_cluster,  &Pk, &ic);
         table_P_NL_C[i][j] = log(Pk) +norm;
 
+        //printf("%d %d\n", i, j);
+        //printf("%f\n", table_P_NL_C[i][j]);
         /*fprintf(fp_lin, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
         fprintf(fp_non, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL[i][j]);
         fprintf(fp_lin_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L_C[i][j]);
@@ -1055,6 +1058,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
 
       }
     }
+  //printf("%d %d %f %f\n", Ntable.N_a-1, Ntable.N_k_nlin-1, table_P_L_C[Ntable.N_a-1][Ntable.N_k_nlin-1], table_P_NL_C[0][0]);
 
 
    /*fclose(fp_lin);

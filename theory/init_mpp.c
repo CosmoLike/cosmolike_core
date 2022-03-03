@@ -2,7 +2,7 @@
 void init_probes_5x2pt(char *probes);
 void init_probes_real_mpp(char *probes);
 void init_source_sample_mpp(char *multihisto_file, int Ntomo);
-void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *b1, double *b2, double ggl_cut);
+void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *lens_bias, double *b1, double *b2, double ggl_cut);
 void init_binning_mpp(int Ntheta,double theta_min_arcmin, double theta_max_arcmin);
 void init_IA_mpp(int N);
 
@@ -202,7 +202,7 @@ void init_ggl_tomo(){
   printf("%d GGL Powerspectra\n",tomo.ggl_Npowerspectra);
 }
 
-void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *b1, double *b2, double ggl_cut)
+void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *lens_bias, double *b1, double *b2, double ggl_cut)
 {
   sprintf(redshift.clustering_REDSHIFT_FILE,"%s",multihisto_file);
   redshift.clustering_photoz=5;
@@ -219,7 +219,7 @@ void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, dou
  //   tomo.n_lens[i]= n_lens[i];
     gbias.b[i] = b1[i];
     gbias.b2[i] = b2[i];
-    nuisance.bias_zphot_clustering[i]=0.0;
+    nuisance.bias_zphot_clustering[i]=lens_bias[i];
  //   printf("bin %d: <z_l>=%.3f, b_1=%.3f, b_2=%.3f\n",i,zmean(i),gbias.b[i],gbias.b2[i]);
   }
   init_ggl_tomo();

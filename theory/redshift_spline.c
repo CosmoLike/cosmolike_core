@@ -841,20 +841,20 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
 
 
   }
-        //for (int i =0; i < tomo.clustering_Nbin; i++){printf("%f %d %d\n",nuisance.bias_zphot_stretch[i], i, j);}
+  //for (int i =0; i < tomo.clustering_Nbin; i++){printf("%f %d %d\n",nuisance.bias_zphot_stretch[i], i, j);}
 
-
+  //update_nuisance(&N);
   if (redshift.clustering_photoz == 4){ zz = zz -nuisance.bias_zphot_clustering[j];}
   if (redshift.clustering_photoz == 5 && j>=0){
-    //printf("%f %f %f %f\n", zz, nuisance.bias_zphot_stretch[j], zmean_stretch[j][0], gbias.b[j]);
-    zz = nuisance.bias_zphot_stretch[j]*(zz -nuisance.bias_zphot_clustering[j] - zmean_stretch[j][0]) + zmean_stretch[j][0];}
+    //printf("%f %f %f %f %f\n", zz, nuisance.bias_zphot_stretch[j], nuisance.bias_zphot_clustering[j], zmean_stretch[j][0], gbias.b[j]);
+    zz = (zz -nuisance.bias_zphot_clustering[j] - zmean_stretch[j][0])/nuisance.bias_zphot_stretch[j] + zmean_stretch[j][0];}
     //printf("%f %f\n", zz, nuisance.bias_zphot_stretch[j]);}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
   if (redshift.clustering_photoz == 5 && j>=0){
     //printf("%f %f\n", nuisance.bias_zphot_stretch[j], zz);
-    //  printf("%f\n", gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
+      //printf("%f\n", gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
 
-    return nuisance.bias_zphot_stretch[j]*gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);}
+    return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1])/nuisance.bias_zphot_stretch[j];}
   return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);
 }
 
