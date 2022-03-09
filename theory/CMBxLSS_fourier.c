@@ -511,14 +511,14 @@ double C_sy_nointerp(double l, int ns)
 double C_ky_nointerp(double l)
 {
    double array[1] = {l};
-   return int_gsl_integrate_medium_precision(int_for_C_ky, (void*)array, limits.a_min*(1.+1.e-5), 1.-1.e-5, NULL, 1000);
+   return int_gsl_integrate_medium_precision(int_for_C_ky, (void*)array, limits.a_min_hm, 1.-1.e-5, NULL, 1000);
 
 }
 
 double C_yy_nointerp(double l)
 {
    double array[1] = {l};
-   return int_gsl_integrate_medium_precision(int_for_C_yy, (void*)array, limits.a_min*(1.+1.e-5), 1.-1.e-5, NULL, 1000);
+   return int_gsl_integrate_medium_precision(int_for_C_yy, (void*)array, limits.a_min_hm, 1.-1.e-5, NULL, 1000);
 
 }
 

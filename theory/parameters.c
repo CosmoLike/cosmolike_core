@@ -52,7 +52,17 @@ void set_cov_parameters_to_(char *covparamfile, int output)
     if(line[0] == '#') continue;
 
     sscanf(line, "%128s : %128s", name, val);
-    if(strcmp(name, "tmin")==0)
+    if(strcmp(name, "lin_bins")==0)
+    {
+      sscanf(val, "%d", &covparams.lin_bins);
+      if(output==1)
+      {
+        if(covparams.lin_bins){printf("Use linear angular binning, lin_bins=1\n");}
+        else{printf("Use (default) logarithmic angular binning.\n");}
+      }
+      continue;
+    }
+    else if(strcmp(name, "tmin")==0)
     {
       sscanf(val, "%lf", &covparams.tmin);
       covparams.tmin*=constants.arcmin;
@@ -1065,3 +1075,19 @@ void set_HOD_redmagic()
   
 }
 
+void set_halomodel_parameters_to_HMCode20_fiducial()
+{
+  gas.Gamma_KS=1.17;
+  gas.beta=0.6;
+  gas.lgM0=14.;
+  gas.alpha=1.;
+  gas.A_star=0.03;
+  gas.lgM_star=12.5;
+  gas.sigma_star=1.2;
+  gas.lgT_w=6.5;
+  gas.f_H=0.752;
+  gas.eps1=0.;
+  gas.eps2=0.;
+
+  printf("halo model and gas profile set to HMCode20_fiducial\n");
+}
