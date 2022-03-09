@@ -354,7 +354,7 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
     }
   }
   double f1 = exp(interpol_fitslope(table[j], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
-  if (isnan(f1)){f1 = 0.;}
+  if (isnan(f1)){f1 = 0.;printf("[C_cl_tomo] WARNING: f1 NaN\n");}
   return f1;
 }
 
@@ -392,7 +392,7 @@ double C_cl_HOD(double l, int ni)  //galaxy clustering power spectrum of galaxie
   }
 
   double f1 = exp(interpol(table[ni], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));
-  if (isnan(f1)){f1 = 0.;}
+  if (isnan(f1)){f1 = 0.;printf("[C_cl_HOD] WARNING: f1 NaN\n");}
   return f1;
 }
 double C_gl_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, lens bin ni, source bin nj
@@ -430,7 +430,7 @@ double C_gl_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, lens b
 
   }
   if(test_zoverlap(ni,nj)){f1 = exp(interpol_fitslope(table[N_ggl(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));}
-  if (isnan(f1)){f1 = 0;}
+  if (isnan(f1)){f1 = 0;printf("[C_gl_tomo] WARNING: f1 NaN\n");}
   return f1;
 }
 
@@ -470,7 +470,7 @@ double C_gl_HOD_tomo(double l, int ni, int nj)  //G-G lensing power spectrum, le
 
   }
   if(test_zoverlap(ni,nj)){f1 = exp(interpol(table[N_ggl(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.,1.));}
-  if (isnan(f1)){f1 = 0;}
+  if (isnan(f1)){f1 = 0;printf("[C_gl_HOD_tomo] WARNING: f1 NaN\n");}
   return f1;
 }
 
@@ -509,7 +509,7 @@ double C_shear_tomo(double l, int ni, int nj)  //shear power spectrum of source 
     update_cosmopara(&C); update_nuisance(&N);
   }
   double f1 = exp(interpol_fitslope(table[N_shear(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
-  if (isnan(f1)){f1 = 0.;}
+  if (isnan(f1)){f1 = 0.;printf("[C_shear_tomo] WARNING: f1 NaN\n");}
   // printf("%le %d %d %le\n", l, ni, nj, f1);
   return f1;
 }

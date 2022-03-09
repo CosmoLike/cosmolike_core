@@ -321,6 +321,8 @@ double Delta_L_wiggle(double k)
 
   if (k < limits.k_min_mpc || k > limits.k_max_mpc){
     norm=cosmology.sigma_8*cosmology.sigma_8/sigma_r_sqr();
+    //printf("norm = %e; n_spec = %e; alpha_s = %e\n", 
+    //  norm, cosmology.n_spec, cosmology.alpha_s);
 
     return norm*pow(k,cosmology.n_spec+ 0.5*cosmology.alpha_s*log(k/0.05)+3.0)*Tsqr_EH_wiggle(k);
     //printf("outside Delta_L_tab\n");
@@ -333,7 +335,7 @@ double Delta_L_wiggle(double k)
       }
       update_cosmopara(&C);
       norm=cosmology.sigma_8*cosmology.sigma_8/sigma_r_sqr();
-
+      //printf("norm = %e\n", norm);
       if(table_P!=0) free_double_vector(table_P,0, Ntable.N_k_lin-1);
       table_P=create_double_vector(0, Ntable.N_k_lin-1);
 
@@ -949,6 +951,7 @@ void Delta_halofit(double **table_P_NL,double logkmin, double logkmax, double dk
       rk=exp(klog);
       P_delta_Lin=amp*amp*Delta_L_wiggle(rk);
       P_delta=Halofit(rk, amp, omm, omv, w_z, R_NL, neff, Curv, P_delta_Lin);
+      //printf("P_delta_Lin = %e\n", P_delta_Lin);
       table_P_NL[i][j]=log(P_delta);
     }
   }
@@ -977,6 +980,7 @@ double Delta_NL_Halofit(double k_NL, double a)
   }
   klog = log(k_NL);
   val = interpol2d(table_P_NL, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec, 0.0);
+  //printf("val = %e\n", val);
   return exp(val);
   // returns the dimensionless power spectrum as a function of scale factor a and k
 }

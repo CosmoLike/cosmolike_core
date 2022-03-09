@@ -396,10 +396,10 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
       // while (fabs(dev) > tolerance){
       while (L<=90){
         //Cl[L] = C_cl_RSD(L,nz,nz);
-        printf("nz: %d\n", nz);
+        //printf("nz: %d\n", nz);
         Cl[L] = C_cl_non_Limber(L,nz,nz);
         dev = Cl[L]/C_cl_tomo_nointerp((double)L,nz,nz)-1.;
-       printf("%d %lg %lg %lg\n", L, Cl[L], C_cl_tomo_nointerp(1.*L,nz,nz), C_cl_lin_nointerp(1.*L,nz,nz));
+        //printf("%d %lg %lg %lg\n", L, Cl[L], C_cl_tomo_nointerp(1.*L,nz,nz), C_cl_lin_nointerp(1.*L,nz,nz));
         fprintf(OUT, "%d %lg %lg %lg\n", L, Cl[L], C_cl_tomo_nointerp(1.*L,nz,nz), C_cl_lin_nointerp(1.*L,nz,nz));
         L = L+1;
       }
@@ -522,7 +522,7 @@ double C_gl_non_Limber(double l, int ni, int nj){ //includes RSD too!
   int ar[3] ={(int)l,ni,nj};
   double res;
   if (2*l+5 > GSL_SF_DOUBLEFACT_NMAX){
-    printf("cosmo2D_exact.c:C_gl_non_Limber: l = %d too large for stable evaluation of Bessel functions\nSwitching to Limber approximation\n", l);
+    printf("cosmo2D_exact.c:C_gl_non_Limber: l = %.1f too large for stable evaluation of Bessel functions\nSwitching to Limber approximation\n", l);
     return C_gl_tomo_nointerp(1.*l,ni,nj);
   }
   // gsl_set_error_handler_off ();
@@ -544,7 +544,7 @@ double C_gl_withIA_non_Limber(double l, int ni, int nj){ //includes RSD too!
   int ar[3] ={(int)l,ni,nj};
   double res;
   if (2*l+5 > GSL_SF_DOUBLEFACT_NMAX){
-    printf("cosmo2D_exact.c:C_gl_non_Limber: l = %d too large for stable evaluation of Bessel functions\nSwitching to Limber approximation\n", l);
+    printf("cosmo2D_exact.c:C_gl_non_Limber: l = %.1f too large for stable evaluation of Bessel functions\nSwitching to Limber approximation\n", l);
     return C_ggl_IA(1.*l,ni,nj);
   }
   // gsl_set_error_handler_off ();

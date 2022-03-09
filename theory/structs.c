@@ -14,6 +14,7 @@ typedef struct {
   double Rmin_shear;
   double lmax_shear;
   double lmax_kappacmb;
+  double lmin_kappacmb;
   double lmax_y;
   int baryons;
   int IA;
