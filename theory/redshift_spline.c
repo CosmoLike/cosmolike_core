@@ -1359,6 +1359,13 @@ double g_cmb (double a){
     chi_cmb = int_gsl_integrate_medium_precision(int_for_chi,(void*)array, 1./(1091.), 1.,NULL,2000);
     update_cosmopara(&C);
   }
+/*
+  if (fabs(a-0.3)<1e-5)
+  {
+    printf("\x1b[90m{%s}\x1b[0m: test g_cmb\n\t - chi_CMB(z=1090) = {%.4e}\n\t - chi(a=0.3) = {%.4e}\n\t - chi_CMB-chi_a = {%.4e}\n\t - fK(chi_CMB-chi_a) = {%.4e}\n\t - fK(chi_CMB) = {%.4e}\n",
+    "g_cmb", chi_cmb, chi(a), chi_cmb - chi(a), f_K(chi_cmb-chi(a)), f_K(chi_cmb));
+  }
+*/
   return f_K(chi_cmb-chi(a))/f_K(chi_cmb);
 }
 

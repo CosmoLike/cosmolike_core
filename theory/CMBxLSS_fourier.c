@@ -7,7 +7,7 @@
 // And alphabetical order
 
 //================================================================================================
-
+//#include "halo_fast.c"
 // integrands for power spectra
 double W_k(double a, double fK); //lensing efficiency weightfunction for CMB lensing
 double beam_SPT(double l);
@@ -133,6 +133,17 @@ double int_for_C_kk(double a, void *params){
    k      = ell/fK;
    res = pow(W_k(a,fK), 2)*dchi_da(a)/fK/fK * ell_prefactor1*ell_prefactor1/pow(ell,4);
    res = res*Pdelta(k,a);
+/*
+   if ( (fabs(a-0.3)<1e-5) && (fabs(ell-1000)<1) ){
+      printf("\x1b[90m{%s}\x1b[0m: test integrand:\n\t - f_K = {%.4e}\n\t - k = {%.4e}\n\t - W_k = {%.4e}\n\t - dchida = {%.4e}\n\t - Pdelta = {%.4e}\n\t - Om = {%.4e}\n", "int_for_C_kk", 
+        fK, k, W_k(a, fK), dchi_da(a), Pdelta(k,a), cosmology.Omega_m);
+      double WK2overfK2 = pow( W_k(a, fK)/fK, 2);
+      double ell_factors_combine = pow( ell_prefactor1/ell/ell , 2 );
+      double Pdelta_times_dchida = Pdelta(k,a) * dchi_da(a);
+      printf("\x1b[90m{%s}\x1b[0m: test integrand\n\t - (W_k/f_K)^2 = {%.4e}\n\t - (l*(l+1)/(l+0.5)^2)^2 = {%.4e}\n\t - Pdelta*dchida = {%.4e}\n",
+              "int_for_C_kk", WK2overfK2, ell_factors_combine, Pdelta_times_dchida );
+   }
+*/
    return res;
 }
 
@@ -264,7 +275,7 @@ double C_gk(double l, int ni)
    }
 
    double f1 = exp(interpol(table[ni], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));
-   if (isnan(f1)){f1 = 0.;}
+   if (isnan(f1)){f1 = 0.;printf("[C_gk] WARNING: f1 NaN\n");}
    return f1;
 }
 
@@ -322,7 +333,7 @@ double C_ks(double l, int ni)
    if(osc[ni] ==1 ){f1 = interpol_fitslope(table[ni], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.);}
 
    // if(osc[k] ==0) {f1 = exp(interpol(table[ni], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));}
-   if (isnan(f1)){f1 = 0.;}
+   if (isnan(f1)){f1 = 0.;printf("[C_ks] WARNING: f1 NaN\n");}
    return f1;
 }
 
@@ -356,7 +367,7 @@ double C_kk(double l)
    }
    
    double f1 = exp(interpol(table, Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));
-   if (isnan(f1)){f1 = 0.;}
+   if (isnan(f1)){f1 = 0.;printf("[C_kk] WARNING: f1 NaN\n");}
    return f1;
 }
 

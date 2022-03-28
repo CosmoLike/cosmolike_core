@@ -46,8 +46,14 @@ void run_cov_gk_shear_real_bin(char *OUTFILE, char *PATH, double *theta, double 
       // if (test_zoverlap_cov(z1,z3)*test_zoverlap_cov(z1,z4) && NG){ c_ng = cov_NG_cl_shear_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,z3,z4,pm);}
       if (test_zoverlap(z1, z3)*test_zoverlap(z1, z4) && covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
-      if(pm==1)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      if(pm==0)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+n1)+nl1,Ntheta*(tomo.shear_Npowerspectra+n2)+nl2, t1,t2,z1,zk,z3,z4,c_g,c_ng);
+      if(pm==1)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(n2) + nl2,
+        t1,t2,z1,zk,z3,z4,c_g,c_ng);
+      if(pm==0)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(tomo.shear_Npowerspectra + n2) + nl2,
+        t1,t2,z1,zk,z3,z4,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -85,8 +91,14 @@ void run_cov_ks_shear_real_bin(char *OUTFILE, char *PATH, double *theta, double 
       // if (test_zoverlap_cov(z1,z3)*test_zoverlap_cov(z1,z4) && NG){ c_ng = cov_NG_cl_shear_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,z3,z4,pm);}
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
-      if(pm==1)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      if(pm==0)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(tomo.shear_Npowerspectra+n2)+nl2, t1,t2,z1,zk,z3,z4,c_g,c_ng);
+      if(pm==1)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(n2)+nl2,
+        t1,t2,z1,zk,z3,z4,c_g,c_ng);
+      if(pm==0)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(tomo.shear_Npowerspectra + n2) + nl2,
+        t1,t2,z1,zk,z3,z4,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -124,7 +136,10 @@ void run_cov_gk_ggl_real_bin(char *OUTFILE, char *PATH, double *theta, double *d
       c_g = cov_fullsky_G[nl1][nl2];
       // if (z1 == zl && NG && test_zoverlap_cov(z1,zs)*test_zoverlap_cov(zl,zs)){c_ng = cov_NG_cl_gl_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,zl,zs);}
       if (z1 == zl && covparams.ng){c_ng = cov_fullsky_NG[nl1][nl2];}
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+n2)+nl2,t1,t2,z1,zk,zl,zs,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + n2) + nl2,
+        t1,t2,z1,zk,zl,zs,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -164,7 +179,10 @@ void run_cov_ks_ggl_real_bin(char *OUTFILE, char *PATH, double *theta, double *d
       // if (z1 == zl && NG && test_zoverlap_cov(z1,zs)*test_zoverlap_cov(zl,zs)){c_ng = cov_NG_cl_gl_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,zl,zs);}
       if (covparams.ng && test_zoverlap_cov(z1,zl)){c_ng = cov_fullsky_NG[nl1][nl2];}
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+n2)+nl2,t1,t2,z1,z2,zl,zs,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+n2)+nl2,t1,t2,z1,zk,zl,zs,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + n2) + nl2,
+        t1,t2,z1,zk,zl,zs,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -203,7 +221,10 @@ void run_cov_gk_clustering_real_bin(char *OUTFILE, char *PATH, double *theta, do
       // if (z1 == zl && NG && test_zoverlap_cov(z1,zs)*test_zoverlap_cov(zl,zs)){c_ng = cov_NG_cl_gl_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,zl,zs);}
       if (z1 == z2 && covparams.ng){c_ng = cov_fullsky_NG[nl1][nl2];}
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+n2)+nl2,t1,t2,z1,z2,zl,zs,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+n2)+nl2,t1,t2,z1,zk,z2,z3,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + n2) + nl2,
+        t1,t2,z1,zk,z2,z3,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -242,7 +263,10 @@ void run_cov_ks_clustering_real_bin(char *OUTFILE, char *PATH, double *theta, do
       // if (z1 == zl && NG && test_zoverlap_cov(z1,zs)*test_zoverlap_cov(zl,zs)){c_ng = cov_NG_cl_gl_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,zl,zs);}
       if (covparams.ng && test_zoverlap_cov(z1,zs)){c_ng = cov_fullsky_NG[nl1][nl2];}
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+n2)+nl2,t1,t2,z1,z2,zl,zs,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+n2)+nl2,t1,t2,zs,zk,z1,z2,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + n2) + nl2,
+        t1,t2,zs,zk,z1,z2,c_g,c_ng);
 
     }
   }
@@ -280,7 +304,10 @@ void run_cov_gk_gk_real_bin(char *OUTFILE, char *PATH, double *theta, double *dt
       c_g = cov_fullsky_G[nl1][nl2];
       // if (z1 == zl && NG && test_zoverlap_cov(z1,zs)*test_zoverlap_cov(zl,zs)){c_ng = cov_NG_cl_gl_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,zl,zs);}
       if (z1 == z2 && covparams.ng){c_ng = cov_fullsky_NG[nl1][nl2];}
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+n2)+nl2,t1,t2,z1,zk,z2,zk,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + n2) + nl2,
+        t1,t2,z1,zk,z2,zk,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -318,7 +345,10 @@ void run_cov_ks_gk_real_bin(char *OUTFILE, char *PATH, double *theta, double *dt
       c_g = cov_fullsky_G[nl1][nl2];
       // if (z1 == zl && NG && test_zoverlap_cov(z1,zs)*test_zoverlap_cov(zl,zs)){c_ng = cov_NG_cl_gl_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,zl,zs);}
       if (covparams.ng && test_zoverlap_cov(zl,zs)){c_ng = cov_fullsky_NG[nl1][nl2];}
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+n2)+nl2,t1,t2,zs,zk,zl,zk,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + n2) + nl2,
+        t1,t2,zs,zk,zl,zk,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -357,7 +387,10 @@ void run_cov_ks_ks_real_bin(char *OUTFILE, char *PATH, double *theta, double *dt
       c_g = cov_fullsky_G[nl1][nl2];
       // if (z1 == zl && NG && test_zoverlap_cov(z1,zs)*test_zoverlap_cov(zl,zs)){c_ng = cov_NG_cl_gl_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,zl,zs);}
       if (covparams.ng){c_ng = cov_fullsky_NG[nl1][nl2];}
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n2)+nl2,t1,t2,z1,zk,z2,zk,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + n1) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + n2) + nl2,
+        t1,t2,z1,zk,z2,zk,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -394,8 +427,14 @@ void run_cov_kk_shear_mix_bin(char *OUTFILE, char *PATH, double *theta, double *
       // if (test_zoverlap_cov(z1,z3)*test_zoverlap_cov(z1,z4) && NG){ c_ng = cov_NG_cl_shear_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,z3,z4,pm);}
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
-      if(pm==1)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(n2)+nl2,t1,t2,zk,zk,z3,z4,c_g,c_ng);
-      if(pm==0)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(tomo.shear_Npowerspectra+n2)+nl2, t1,t2,zk,zk,z3,z4,c_g,c_ng);
+      if(pm==1)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(n2)+nl2,
+        t1,t2,zk,zk,z3,z4,c_g,c_ng);
+      if(pm==0)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(tomo.shear_Npowerspectra+n2)+nl2, 
+        t1,t2,zk,zk,z3,z4,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ncl-1, 0, like.Ntheta-1);
@@ -432,7 +471,10 @@ void run_cov_kk_ggl_mix_bin(char *OUTFILE, char *PATH, double *theta, double *dt
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+n2)+nl2,t1,t2,zk,zk,z3,z4,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + n2)+nl2,
+        t1,t2,zk,zk,z3,z4,c_g,c_ng);
 
     }
   }
@@ -470,7 +512,10 @@ void run_cov_kk_clustering_mix_bin(char *OUTFILE, char *PATH, double *theta, dou
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+n2)+nl2,t1,t2,zk,zk,z3,z4,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + n2) + nl2,
+        t1,t2,zk,zk,z3,z4,c_g,c_ng);
 
     }
   }
@@ -508,7 +553,10 @@ void run_cov_kk_gk_mix_bin(char *OUTFILE, char *PATH, double *theta, double *dth
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+n2)+nl2,t1,t2,zk,zk,z3,zk,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + n2) + nl2,
+        t1,t2,zk,zk,z3,zk,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ncl-1, 0, like.Ntheta-1);
@@ -545,7 +593,10 @@ void run_cov_kk_ks_mix_bin(char *OUTFILE, char *PATH, double *theta, double *dth
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n2)+nl2,t1,t2,zk,zk,z3,zk,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + n2) + nl2,
+        t1,t2,zk,zk,z3,zk,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ncl-1, 0, like.Ntheta-1);
@@ -617,8 +668,14 @@ void run_cov_kk_shear_real_bin(char *OUTFILE, char *PATH, double *theta, double 
       // if (test_zoverlap_cov(z1,z3)*test_zoverlap_cov(z1,z4) && NG){ c_ng = cov_NG_cl_shear_real_binned(theta[nl1],theta[nl1+1],theta[nl2],theta[nl2+1],z1,z2,z3,z4,pm);}
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
-      if(pm==1)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(n2)+nl2,t1,t2,zk,zk,z3,z4,c_g,c_ng);
-      if(pm==0)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(tomo.shear_Npowerspectra+n2)+nl2, t1,t2,zk,zk,z3,z4,c_g,c_ng);
+      if(pm==1)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(n2)+nl2,
+        t1,t2,zk,zk,z3,z4,c_g,c_ng);
+      if(pm==0)fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(tomo.shear_Npowerspectra + n2) + nl2, 
+        t1,t2,zk,zk,z3,z4,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -655,7 +712,10 @@ void run_cov_kk_ggl_real_bin(char *OUTFILE, char *PATH, double *theta, double *d
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+n2)+nl2,t1,t2,zk,zk,z3,z4,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + n2) + nl2,
+        t1,t2,zk,zk,z3,z4,c_g,c_ng);
 
     }
   }
@@ -693,7 +753,10 @@ void run_cov_kk_clustering_real_bin(char *OUTFILE, char *PATH, double *theta, do
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+n2)+nl2,t1,t2,zk,zk,z3,z4,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + n2) + nl2,
+        t1,t2,zk,zk,z3,z4,c_g,c_ng);
 
     }
   }
@@ -731,7 +794,10 @@ void run_cov_kk_gk_real_bin(char *OUTFILE, char *PATH, double *theta, double *dt
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+n2)+nl2,t1,t2,zk,zk,z3,zk,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + n2) + nl2,
+        t1,t2,zk,zk,z3,zk,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);
@@ -768,7 +834,10 @@ void run_cov_kk_ks_real_bin(char *OUTFILE, char *PATH, double *theta, double *dt
       if (covparams.ng){ c_ng = cov_fullsky_NG[nl1][nl2];}
       c_g = cov_fullsky_G[nl1][nl2];
       // fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n1)+nl1,Ntheta*(n2)+nl2,t1,t2,z1,zk,z3,z4,c_g,c_ng);
-      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1,Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+n2)+nl2,t1,t2,zk,zk,z3,zk,c_g,c_ng);
+      fprintf(F1,"%d %d %e %e %d %d %d %d %e %e\n", 
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + tomo.shear_Nbin) + nl1,
+        Ntheta*(2*tomo.shear_Npowerspectra + tomo.ggl_Npowerspectra + tomo.clustering_Nbin + tomo.clustering_Nbin + n2) + nl2,
+        t1,t2,zk,zk,z3,zk,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Ntheta-1, 0, like.Ntheta-1);

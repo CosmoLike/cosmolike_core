@@ -754,10 +754,9 @@ double int_for_C_shear_shear_IA_mpp(double a, void *params)
 
 double C_shear_shear_IA(double s, int ni, int nj)
 {
- double array[3] = {(double) ni, (double) nj,s};
+  double array[3] = {(double) ni, (double) nj,s};
   int j,k;
   if (ni <= nj){j =nj; k = ni;}
-
   switch(like.IA){
     case 1: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA,(void*)array,amin_source(j),amax_source(k),NULL,1000);
     case 3: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_Az,(void*)array,amin_source(j),amax_source(k),NULL,1000);
@@ -854,7 +853,6 @@ double C_shear_shear_IA_tab(double l, int ni, int nj)  //shear power spectrum of
   }
   
   if (recompute_shear(C,N)){
-    //printf("calculating C_shear_shear_IA_tab  %e %e %e %e %e\n", nuisance.A_z[0], nuisance.A_z[1], nuisance.A_z[2], nuisance.A_z[3], nuisance.A_z[4]);
     if (table==0) {
       table   = create_double_matrix(0, tomo.shear_Npowerspectra-1, 0, Ntable.N_ell-1);
       logsmin = log(limits.P_2_s_min);
@@ -875,6 +873,5 @@ double C_shear_shear_IA_tab(double l, int ni, int nj)  //shear power spectrum of
   }
   double f1 = exp(interpol_fitslope(table[N_shear(ni,nj)], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));
   if (isnan(f1)){f1 = 0.;}
-  // printf("%le %d %d %le\n", l, ni, nj, f1);
   return f1;
 }

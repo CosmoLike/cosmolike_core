@@ -1,6 +1,6 @@
-
+#ifndef __HALO_FAST__
+#define __HALO_FAST__
 #include <time.h>
-
 /*relations for converting mass -> radius, using \Delta = 200 \rho_m for consistency with mass & bias function */
 double m_Delta(double r, double a);
 double r_Delta(double m, double a);
@@ -25,6 +25,7 @@ double I1j (int j, double k1, double k2, double k3, double a);
 double p_1h(double k, double a);
 double p_2h(double k, double a);
 double Pdelta_halo(double k, double a);
+double P_my(double k,double a);
 /*look up table for 1-h halo sample variance term */
 double I12_SSC (double k,double a);
 /* simple abundance matching routines for source galaxies */
@@ -1193,3 +1194,4 @@ double b_source(double a){ //lookup table for b1 of source galaxies
   }
   return interpol(table_b, Ntable.N_a, amin, amax, da,a, 1.0,1.0 );
 }
+#endif

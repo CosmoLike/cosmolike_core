@@ -358,7 +358,7 @@ void set_cosmological_parameters_to_(char *cosmofile, int output)
       sscanf(val, "%lf", &cosmology.A_s);
       if(output==1)
       {
-        printf("f_NL %f \n",cosmology.A_s);
+        printf("A_s %f \n",cosmology.A_s);
       }
       continue;
     }

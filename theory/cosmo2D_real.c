@@ -188,10 +188,10 @@ double xi_pm_tomo(int pm, double theta, int ni, int nj) //shear tomography corre
     tab   = create_double_matrix(0, 1, 0, Ntable.N_thetaH-1);
     if (table==0) table   = create_double_matrix(0, 2*tomo.shear_Npowerspectra-1, 0, Ntable.N_thetaH-1);
     for (i = 0; i < tomo.shear_Npowerspectra; i++){
-    	xipm_via_hankel(tab, &logthetamin, &logthetamax,C_pointer, Z1(i),Z2(i));
+      xipm_via_hankel(tab, &logthetamin, &logthetamax,C_pointer, Z1(i),Z2(i));
       for (k = 0; k < Ntable.N_thetaH; k++){
         table[2*i][k] = tab[0][k];
-          table[2*i+1][k] = tab[1][k];
+        table[2*i+1][k] = tab[1][k];
       }
     }
     dlogtheta = (logthetamax-logthetamin)/((double)Ntable.N_thetaH);

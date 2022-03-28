@@ -5,7 +5,7 @@ double w_ks_planck(double theta, int ni);//angular CMB lensing x galaxy shear co
 double beam_planck(double ell){ // TO BE UPDATED!!!!
   double ell_beam = sqrt(16.0*log(2.0)) / cmb.fwhm; // cmb.fwhm in radians
   double BeamKernel = exp(-1.0*ell*(ell+1.0) / (ell_beam * ell_beam));
-  if(ell<covparams.lmin || ell>covparams.lmax){
+  if(ell < like.lmin_kappacmb|| ell > like.lmax_kappacmb){
     BeamKernel = 0.;
   }
   return BeamKernel;
