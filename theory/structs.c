@@ -517,13 +517,19 @@ typedef struct {
   double Gamma_KS; // Gamma in K-S profile
   double beta; // beta: mass scaling index in bound gas fraction
   double lgM0; // critical halo mass, below which gas ejection is significant
+  double eps1;
+  double eps2;
+
+  double beta_v2; // beta: mass scaling index in bound gas fraction
+  double lgM0_v2; // critical halo mass, below which gas ejection is significant
+  double eps1_v2;
+  double eps2_v2;
+
   double alpha;
   double A_star;
   double lgM_star;
   double sigma_star;
   double lgT_w;
   double f_H;
-  double eps1;
-  double eps2;
 }gaspara;
 gaspara gas;

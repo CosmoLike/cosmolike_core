@@ -64,10 +64,10 @@ double r_Delta(double m, double a) //calculate r_Delta in c/H0 given m in (solar
   return pow(3./(4.*M_PI)*(m/rho_Delta(a)),1./3.);
 }
 
-double r_s(double m, double a)
-{
-  return r_Delta(m,a)/conc(m,a);
-}
+// double r_s(double m, double a)
+// {
+//   return r_Delta(m,a)/conc(m,a);
+// }
 
 double radius(double m)
 {
@@ -278,16 +278,29 @@ double B1_normalized (double m,double a){ //divide by bias norm only in matter s
 }
 /***************** halo profiles ***************/
 /******** mass-concentration relation **********/
-double conc(double m, double a)
+double conc(double m, double a) // for matter
 {
   double result;
   double M0=pow(10,gas.lgM0);
-  result = 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2013, Delta = 200 rho_{mean} (Table 2)
-  //result = 10.14*pow(m/2.e+12,-0.081)*pow(a,1.01); //Duffy et al. 2008 (Delta = 200 mean)
+  // result = 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2013, Delta = 200 rho_{mean} (Table 2)
+  result = 10.14*pow(m/2.e+12,-0.081)*pow(a,1.01); //Duffy et al. 2008 (Delta = 200 mean)
   if(like.feedback_on == 1){
     result *= (1.+gas.eps1 + (gas.eps2 - gas.eps1)/(1.+pow(M0/m, gas.beta)) );
   }
 	return result;
+}
+
+double conc_y(double m, double a) // for y field, with a separate set of gas parameters lgM0,beta,eps1,eps2.
+// ONLY USED FOR TEST_CALIB
+{
+  double result;
+  double M0=pow(10,gas.lgM0_v2);
+  // result = 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2013, Delta = 200 rho_{mean} (Table 2)
+  result = 10.14*pow(m/2.e+12,-0.081)*pow(a,1.01); //Duffy et al. 2008 (Delta = 200 mean)
+  if(like.feedback_on == 1){
+    result *= (1.+gas.eps1_v2 + (gas.eps2_v2 - gas.eps1_v2)/(1.+pow(M0/m, gas.beta_v2)) );
+  }
+  return result;
 }
 
 /***********  FT of NFW Profile **************/
@@ -585,6 +598,14 @@ double inner_I0j_y (double logm, void *para){
   long double u = 1.0;
   double a= array[6];
   double c = conc(m,a);
+
+  double c_y;
+#ifdef TEST_CALIB
+  c_y = conc_y(m,a);
+#else
+  c_y = c;
+#endif
+
   int l;
   int j = (int)(array[5]);
   double vol = m/(cosmology.rho_crit*cosmology.Omega_m); //rho_crit: [density]=[Msun/h*(H0/c)^3], m: [Msun/h]
@@ -592,7 +613,7 @@ double inner_I0j_y (double logm, void *para){
     if(array[7+l]==-2.){ // ni=-2: y-field
       u *= u_y_bnd(c,array[l],m,a);
     }else{
-      u *= vol*u_nfw_c(c,array[l],m,a);
+      u *= vol*u_nfw_c(c_y,array[l],m,a);
     } // u_(kappa|g): [volume]=[(c/H0)^3], u_y: [energy]=[G(Msun/h)^2 / (c/H0)]
   } // massfunc*m: [1/volume]=[(c/H0)^-3]
   return massfunc(m,a)*m*u;
@@ -716,14 +737,22 @@ double inner_I1j_y (double logm, void *para){
   long double u = 1.0;
   double a= array[6];
   double c = conc(m,a);
+
+  double c_y;
+#ifdef TEST_CALIB
+  c_y = conc_y(m,a);
+#else
+  c_y = c;
+#endif
+
   int l;
   int j = (int)(array[5]);
   double vol = m/(cosmology.rho_crit*cosmology.Omega_m);
   for (l = 0; l< j; l++){
     if(array[7+l]==-2.){ // ni=-2: y-field
-      if(j==1){u *= (u_y_bnd(c,array[l],m,a)+u_y_ejc(m));}
+      if(j==1){u *= (u_y_bnd(c_y,array[l],m,a)+u_y_ejc(m));}
       // if(j==1){u *= (u_y_bnd(c,array[l],m,a));}
-      else{u *= u_y_bnd(c,array[l],m,a);}
+      else{u *= u_y_bnd(c_y,array[l],m,a);}
     }else{
       u *= vol*u_nfw_c_interp(c,array[l],m,a);
     }
