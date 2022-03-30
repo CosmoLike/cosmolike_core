@@ -487,6 +487,10 @@ typedef struct {
     char lk[8]; /* Calculate position-kappa_cmb components */
     char ks[8]; /* Calculate shear-kappa_cmb components */
     char kk[8]; /* Calculate kappa_cmb-kappa_cmb components */
+    char ly[8]; /* Calculate position-y components */
+    char sy[8]; /* Calculate shear-y components */
+    char ky[8]; /* Calculate kappa_cmb-y components */
+    char yy[8]; /* Calculate y-y components */
 } covpar;
 covpar covparams = {.lin_bins = 0};
 
