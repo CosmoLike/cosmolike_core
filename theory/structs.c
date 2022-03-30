@@ -285,6 +285,24 @@ typedef struct {
   double bary[3];
   double frac_lowz;
   double frac_highz;
+
+  double gas_Gamma_KS; // Gamma in K-S profile
+  double gas_beta; // beta: mass scaling index in bound gas fraction
+  double gas_lgM0; // critical halo mass, below which gas ejection is significant
+  double gas_eps1;
+  double gas_eps2;
+
+  double gas_beta_v2; // beta: mass scaling index in bound gas fraction
+  double gas_lgM0_v2; // critical halo mass, below which gas ejection is significant
+  double gas_eps1_v2;
+  double gas_eps2_v2;
+
+  double gas_alpha;
+  double gas_A_star;
+  double gas_lgM_star;
+  double gas_sigma_star;
+  double gas_lgT_w;
+  double gas_f_H;
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
@@ -298,7 +316,9 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bary = {0.0, 0.0, 0.0},
   .frac_lowz = 0.,
-  .frac_highz = 0.};
+  .frac_highz = 0.,
+  .gas_beta_v2=0., .gas_lgM0_v2=0., .gas_eps1_v2=0., .gas_eps2_v2=0., .gas_eps1=0., .gas_eps2=0.
+};
 
 
 
@@ -512,24 +532,3 @@ typedef struct {
   int Nchi;
 } fft_optimize;
 fft_optimize fft_int;
-
-typedef struct {
-  double Gamma_KS; // Gamma in K-S profile
-  double beta; // beta: mass scaling index in bound gas fraction
-  double lgM0; // critical halo mass, below which gas ejection is significant
-  double eps1;
-  double eps2;
-
-  double beta_v2; // beta: mass scaling index in bound gas fraction
-  double lgM0_v2; // critical halo mass, below which gas ejection is significant
-  double eps1_v2;
-  double eps2_v2;
-
-  double alpha;
-  double A_star;
-  double lgM_star;
-  double sigma_star;
-  double lgT_w;
-  double f_H;
-}gaspara;
-gaspara gas;

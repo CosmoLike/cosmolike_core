@@ -253,7 +253,7 @@ double C_gk(double l, int ni)
       printf("Bin %d outside tomo.clustering_Nbin range\nEXIT\n",ni); exit(1);
    }
    
-   if (recompute_clustering(C,G,N,ni,ni))
+   if (recompute_gk(C,G,N,ni))
    {
       if (table==0) {
          table   = create_double_matrix(0, tomo.clustering_Nbin-1, 0, Ntable.N_ell-1);
@@ -293,7 +293,7 @@ double C_ks(double l, int ni)
       printf("Bin %d outside tomo.clustering_Nbin range\nEXIT\n",ni); exit(1);
    }
 
-   if (recompute_shear(C,N))
+   if (recompute_ks(C,N))
    {
       if (table==0) {
          table   = create_double_matrix(0, tomo.shear_Nbin-1, 0, Ntable.N_ell-1);
@@ -342,11 +342,12 @@ double C_ks(double l, int ni)
 double C_kk(double l)
 {
    static cosmopara C;
+   static nuisancepara N;
    
    static double *table;
    static double ds = .0, logsmin = .0, logsmax = .0;
    
-   if (recompute_cosmo3D(C))
+   if (recompute_kk(C,N))
    {
       if (table==0) {
          table   = create_double_vector(0, Ntable.N_ell-1);
@@ -363,7 +364,7 @@ double C_kk(double l)
          table[i]= log(C_kk_nointerp(exp(llog)));
       }
 
-      update_cosmopara(&C); 
+      update_cosmopara(&C); update_nuisance(&N);
    }
    
    double f1 = exp(interpol(table, Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));
