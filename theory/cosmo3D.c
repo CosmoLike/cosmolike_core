@@ -1034,7 +1034,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
         k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
-
+        
         s=fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_linear, k_class,fmax(1./aa-1.,0.), fo.index_pk_total, &Pk, &ic);
         table_P_L[i][j] = log(Pk) +norm;
         s=fourier_pk_at_k_and_z(&ba, &pm, &fo, pk_nonlinear, k_class,fmax(1./aa-1.,0.), fo.index_pk_total,  &Pk, &ic);

@@ -92,6 +92,83 @@ double int_for_C_shear_shear_IA_BB(double a, void *params){
 }
 
 
+
+double bias_factor_mult(int nl, double k){
+  	double k_temp, factor;
+  	k_temp = k/cosmology.coverH0*cosmology.h0;
+  	printf("%f %d\n", k_temp, nl);
+		static double *b_of_k= 0;
+		static gsl_spline *bias_spline[4];
+  	static double *b_limits;
+  	gsl_interp_accel *acc
+	      = gsl_interp_accel_alloc ();
+		if (b_of_k==0){
+			b_of_k = create_double_vector(0, 40);
+			
+			b_limits = create_double_vector(0,4); 
+			double *ks= 0;
+			ks = create_double_vector(0, 40);
+			FILE *ein;
+			ein = fopen("/home/paul/RelicFast/output/z_0.292_spline", "r");
+
+	    
+	    for (int i = 0; i < tomo.clustering_Nbin+1; i++){
+
+	    	bias_spline[i] =  gsl_spline_alloc (gsl_interp_cspline, 40);
+			//printf("%f %f %f %f\n\n\n\n\n", ks[0], ks[39], b_of_k_ni[0], b_of_k_ni[39]);
+	    
+			//printf("%f\n", zmean(ni));
+			switch(i){
+					case 0: 
+						ein = fopen("/home/paul/RelicFast/output/z_0.292_spline", "r");
+						break;
+					case 1: 
+						ein = fopen("/home/paul/RelicFast/output/z_0.457_spline", "r");
+						break;
+					case 2: 
+						ein = fopen("/home/paul/RelicFast/output/z_0.621_spline", "r");
+						break;
+					case 3: 
+						ein = fopen("/home/paul/RelicFast/output/z_0.769_spline", "r");
+						break;
+				}
+			for (int k = 0; k < 40; k++ ){
+			   for (int j = 0; j < 2; j++ ){
+			      if (j==0){
+			      	printf("%f\n", b_of_k[k]);
+			      	fscanf(ein, "%lf", &b_of_k[k]);
+			      	printf("%f\n", b_of_k[i]); 
+			      }
+			      else{
+			      	fscanf(ein, "%lf", &ks[k]); 
+			      }
+			      }
+			   }
+			   fclose(ein);
+			   gsl_spline_init (bias_spline[i], ks, b_of_k, 40);
+			   b_limits[i] = b_of_k[39];
+
+			//free_double_vector(b_of_k_ni, 0, 40);
+			//free_double_vector(ks_ni,0,40);
+		}
+		}
+		//#gsl_interp_accel_free(acc);
+		//gsl_spline_free(bias_spline_ni);
+		if (k_temp>1.5){
+			factor = b_limits[nl];
+			//factor_2 = plin_cluster * b_of_k_nj[39];
+			//printf("%d %f\n", factor==0, b_of_k_ni[39]);
+
+		}
+		else{
+			factor = gsl_spline_eval (bias_spline[nl],k_temp, acc);
+			//factor_2 = plin_cluster * gsl_spline_eval (bias_spline_nj,k1_ar[i][j], acc);
+			//printf("%d %f\n", factor==0, b_of_k_ni[39]);
+		}
+		return factor;
+
+}
+
 double int_for_C_ggl_IA_TATT(double a, void *params){
   double res, ell, fK, k,w_density,w_mag, ws,wk, b1,b2,bs2,C1,C2,b_ta;
   double *ar = (double *) params;
@@ -112,7 +189,14 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   b1 = gbias.b1_function(1./a-1.,(int)ar[0]);
   if (gbias.neutrino_induced_sdb>0.0){
   	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	b1*= (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  	double cluster_a = 1.0/(1.0+zmean((int)ar[0]));
+		b1*= (1.0 + p_lin_cluster(k,cluster_a)/p_lin(k,cluster_a) * f_cb)/(1.0+f_cb);
+
+
+		//b1*=bias_factor_mult((int)ar[0], k);
+
+
+
   }
   //printf("%.12lf\n", gbias.b1_function(1./a-1.,(int)ar[0]));
   //FILE *biases;

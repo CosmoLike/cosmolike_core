@@ -1,0 +1,1203 @@
+[1mdiff --git a/theory/cosmo2D_exact_fft.c b/theory/cosmo2D_exact_fft.c[m
+[1mold mode 100644[m
+[1mnew mode 100755[m
+[1mindex 76b01a3..90a0f41[m
+[1m--- a/theory/cosmo2D_exact_fft.c[m
+[1m+++ b/theory/cosmo2D_exact_fft.c[m
+[36m@@ -10,12 +10,273 @@[m [mvoid f_chi_for_Psi_sh_IA(double* chi_ar, int Nchi, double* f_chi_IA_ar, int nz);[m
+ void C_gl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance);[m
+ double w_gamma_t_nonLimber(int nt, int ni, int nj);[m
+ [m
+[32m+[m[32m//#include "pt.c"[m
+ [m
+[31m-/////////////////////[m
+[31m-double G_taper(double k){[m
+[31m-	double s_bao = 5.5/cosmology.coverH0;[m
+[31m-	return exp(-k*k*s_bao*s_bao);[m
+[32m+[m[32mdouble W_kappa(double a, double fK, double nz);//complete lens efficiency weight[m
+[32m+[m[32mdouble W_source(double a, double nz); //source redshift distribution (radial weight for IA,source clustering)[m
+[32m+[m[32mdouble W_gal(double a, double nz); //complete weight for galaxy statistics[m
+[32m+[m[32mdouble W_HOD(double a, double nz); //galaxy weigth without bias factor (for projecting P_gg instead of P_nl)[m
+[32m+[m
+[32m+[m[32mdouble C_cl_tomo(double l, int ni, int nj);  //galaxy clustering power spectrum of galaxies in bins ni, nj[m
+[32m+[m[32mdouble C_cl_tomo_nointerp(double l, int ni, int nj);[m
+[32m+[m[32m//double C_cl_HOD(double l, int ni);  //galaxy clustering power spectrum of galaxies in bin ni, using HOD model[m
+[32m+[m
+[32m+[m[32m//double C_gl_tomo(double l, int ni, int nj);  //G-G lensing power spectrum, lens bin ni, source bin nj[m
+[32m+[m[32m//double C_gl_tomo_nointerp(double l, int ni, int nj);[m
+[32m+[m[32m//double C_gl_HOD_tomo(double l, int ni, int nj);  //G-G lensing power spectrum from HOD model, lens bin ni, source bin nj[m
+[32m+[m
+[32m+[m[32m//double C_shear_tomo(double l, int ni, int nj); //shear tomography power spectra[m
+[32m+[m[32m//double C_shear_tomo_nointerp(double l, int ni, int nj);[m
+[32m+[m[32m/**********************************************************/[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdouble MG_Sigma(double a)[m
+[32m+[m[32m{[m
+[32m+[m[32m//  double aa=a*a;[m
+[32m+[m[32m//  double omegam=cosmology.Omega_m/(aa*a);[m
+[32m+[m[32m  double omegav=omv_vareos(a);[m
+[32m+[m[32m  double hub=hoverh0(a);[m
+[32m+[m[32m  hub = hub*hub;[m
+[32m+[m[41m [m
+[32m+[m[32m  return cosmology.MGSigma*omegav/hub/cosmology.Omega_v;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mdouble dchi_da(double a){[m
+[32m+[m[32m  return 1./(a*a*hoverh0(a));[m
+[32m+[m[32m}[m
+[32m+[m[32mdouble W_kappa(double a, double fK, double nz){[m
+[32m+[m[32m  double wkappa = 1.5*cosmology.Omega_m*fK/a*g_tomo(a,(int)nz);[m
+[32m+[m[32m  if(cosmology.MGSigma != 0.){[m
+[32m+[m[32m    wkappa *= (1.+MG_Sigma(a));[m
+[32m+[m[32m  }[m
+[32m+[m[32m  return wkappa;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mdouble W_mag(double a, double fK, double nz){[m
+[32m+[m[32m  double wmag = 1.5*cosmology.Omega_m*fK/a*g_lens(a,(int)nz);[m
+[32m+[m[32m  if(cosmology.MGSigma != 0.){[m
+[32m+[m[32m    wmag *= (1.+MG_Sigma(a));[m
+[32m+[m[32m  }[m
+[32m+[m[32m  return wmag;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mdouble W_gal(double a, double nz){[m
+[32m+[m[32m  double wgal = gbias.b1_function(1./a-1.,(int)nz)*pf_photoz(1./a-1.,(int)nz)*hoverh0(a);[m
+[32m+[m[32m  double wmag = gbias.b_mag[(int)nz]*1.5*cosmology.Omega_m*f_K(chi(a))/a*g_lens(a,(int)nz);[m
+[32m+[m[32m  if(cosmology.MGSigma != 0.){[m
+[32m+[m[32m    wmag *= (1.+MG_Sigma(a));[m
+[32m+[m[32m  }[m
+[32m+[m[32m  return wgal + wmag;[m
+[32m+[m[32m  // return wgal;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mdouble W_source(double a, double nz){[m
+[32m+[m[32m  return zdistr_photoz(1./a-1.,(int)nz)*hoverh0(a);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mdouble f_rsd (double aa){[m
+[32m+[m[32m  double gamma = 0.55;[m
+[32m+[m[32m  return pow(cosmology.Omega_m /(cosmology.Omega_m +omv_vareos(aa) *aa*aa*aa),gamma);[m
+[32m+[m[32m}[m
+[32m+[m[32mdouble W_RSD(double l, double a0, double a1, double nz){[m
+[32m+[m[32m  double w = (1+8.*l)/((2*l+1)*(2*l+1))*pf_photoz(1./a0-1.,(int)nz)*hoverh0(a0)*f_rsd(a0);[m
+[32m+[m[32m  w -= 4./(2*l+3)*sqrt((2*l+1.)/(2*l+3.))*pf_photoz(1./a1-1.,(int)nz)*hoverh0(a1)*f_rsd(a1);[m
+[32m+[m[32m  return w;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mdouble W_HOD(double a, double nz){[m
+[32m+[m[32m  return pf_photoz(1./a-1.,(int)nz)*hoverh0(a);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/*********** Limber approximation integrands for angular power spectra *************/[m
+[32m+[m[32m// use W_i W_j/fK^2 dchi_da(a) as Limber weight for power spectra[m
+[32m+[m
+[32m+[m[32mdouble int_for_C_cl_tomo_b2(double a, void *params)[m
+[32m+[m[32m{[m
+[32m+[m[32m  double res,ell, fK, k;[m
+[32m+[m[32m  double *ar = (double *) params;[m
+[32m+[m[32m  double b1 = gbias.b1_function(1./a-1.,(int)ar[0]);[m
+[32m+[m[32m  double b2 = gbias.b2[(int)ar[0]];[m
+[32m+[m[32m  double bs2 = gbias.bs2[(int)ar[0]];[m
+[32m+[m[32m  double g4 = pow(growfac(a)/growfac(1.0),4.);[m
+[32m+[m
+[32m+[m[32m  if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");[m
+[32m+[m[41m  [m
+[32m+[m[32m  ell       = ar[2]+0.5;[m
+[32m+[m[32m  fK     = f_K(chi(a));[m
+[32m+[m[32m  k      = ell/fK;[m
+[32m+[m[41m  [m
+[32m+[m[32m  double s4 = 0.;//PT_sigma4(k);[m
+[32m+[m[32m  double p = Pdelta(k,a);[m
+[32m+[m[32m  double p_c = Pdelta_cluster(k,a);[m
+[32m+[m[32m  res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;[m
+[32m+[m[32m  if(res){[m
+[32m+[m[32m    res= res*(b1*b1*p_c+g4*(b1*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1*b3nl_from_b1(b1)*PT_d1d3(k)));[m
+[32m+[m[32m  }[m
+[32m+[m[32m  double w_gal_0 = b1*W_HOD(a, ar[0]) * sqrt(p_c) + gbias.b_mag[(int)ar[0]]*W_mag(a, fK,ar[0])*sqrt(p);[m
+[32m+[m[32m  double w_gal_1 = b1*W_HOD(a, ar[1]) * sqrt(p_c) + gbias.b_mag[(int)ar[1]]*W_mag(a, fK,ar[1])*sqrt(p);[m
+[32m+[m[32m  res += (w_gal_0*W_mag(a, fK,ar[1])+ w_gal_1*W_mag(a, fK,ar[0]))*dchi_da(a)/fK/fK*sqrt(p);[m
+[32m+[m
+[32m+[m[32m  if (gbias.neutrino_induced_sdb>0.0){[m
+[32m+[m
+[32m+[m	[32m  res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;[m
+[32m+[m	[32m  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;[m
+[32m+[m	[32m  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);[m
+[32m+[m	[32m  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);[m
+[32m+[m	[32m  if(res){[m
+[32m+[m	[32m    res= res*(b1_k_0*b1_k_0*p_c+g4*(b1_k_0*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1_k_0*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1_k_0*b3nl_from_b1(b1_k_0)*PT_d1d3(k)));[m
+[32m+[m	[32m  }[m
+[32m+[m
+[32m+[m	[32m  w_gal_0 = b1_k_0*W_HOD(a, ar[0]) * sqrt(p_c) + gbias.b_mag[(int)ar[0]]*W_mag(a, fK,ar[0])*sqrt(p);[m
+[32m+[m	[32m  w_gal_1 = b1_k_1*W_HOD(a, ar[1]) * sqrt(p_c) + gbias.b_mag[(int)ar[1]]*W_mag(a, fK,ar[1])*sqrt(p);[m
+[32m+[m
+[32m+[m	[32m  res += (w_gal_0*W_mag(a, fK,ar[1])+ w_gal_1*W_mag(a, fK,ar[0]))*dchi_da(a)/fK/fK*sqrt(p);[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m
+[32m+[m[32m  return res;[m
+ }[m
+[32m+[m
+[32m+[m[32mdouble int_for_C_cl_tomo(double a, void *params)[m
+[32m+[m[32m{[m
+[32m+[m[32m  double res,ell, fK, k;[m
+[32m+[m[32m  double *ar = (double *) params;[m
+[32m+[m[32m  if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");[m
+[32m+[m[41m  [m
+[32m+[m[32m  ell       = ar[2]+0.5;[m
+[32m+[m[32m  fK     = f_K(chi(a));[m
+[32m+[m[32m  k      = ell/fK;[m
+[32m+[m[32m  double p_c = Pdelta_cluster(k,a);[m
+[32m+[m[32m  double p = Pdelta(k,a);[m
+[32m+[m[32m  res = (gbias.b1_function(1./a-1.,(int)ar[0])*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));[m
+[32m+[m[32m  res *=(gbias.b1_function(1./a-1.,(int)ar[1])*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));[m
+[32m+[m[32m  res *= dchi_da(a)/fK/fK;[m
+[32m+[m
+[32m+[m[32m  if (gbias.neutrino_induced_sdb>0.0){[m
+[32m+[m
+[32m+[m
+[32m+[m	[32m  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;[m
+[32m+[m	[32m  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms[m
+[32m+[m	[32m  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms[m
+[32m+[m
+[32m+[m	[32m  res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));[m
+[32m+[m	[32m  res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));[m
+[32m+[m	[32m  res *= dchi_da(a)/fK/fK;[m
+[32m+[m[32m  }[m
+[32m+[m[32m  return res;[m
+[32m+[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdouble int_for_C_gl_tomo_b2(double a, void *params)[m
+[32m+[m[32m{[m
+[32m+[m[32m  double res,ell, fK, k;[m
+[32m+[m[32m  double *ar = (double *) params;[m
+[32m+[m[32m  double b1 = gbias.b1_function(1./a-1.,(int)ar[0]);[m
+[32m+[m[32m  double b2 = gbias.b2[(int)ar[0]];[m
+[32m+[m[32m  double bs2 = gbias.bs2[(int)ar[0]];[m
+[32m+[m[32m  double g4 = pow(growfac(a)/growfac(1.0),4.);[m
+[32m+[m[32m  if (a >= 1.0) error("a>=1 in int_for_C_cl_tomo");[m
+[32m+[m
+[32m+[m[32m  ell       = ar[2]+0.5;[m
+[32m+[m[32m  fK     = f_K(chi(a));[m
+[32m+[m[32m  k      = ell/fK;[m
+[32m+[m
+[32m+[m[32m  double p_c = Pdelta_cluster(k,a);[m
+[32m+[m[32m  double p = Pdelta(k,a);[m
+[32m+[m[32m  res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;[m
+[32m+[m[32m  res= res*(b1*sqrt(p)*sqrt(p_c)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)));[m
+[32m+[m[32m  res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1*p;[m
+[32m+[m
+[32m+[m
+[32m+[m[32m  if (gbias.neutrino_induced_sdb>0.0){[m
+[32m+[m	[32m  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;[m
+[32m+[m	[32m  double b1_k = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);[m
+[32m+[m	[32m  res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;[m
+[32m+[m	[32m  res= res*(b1_k*sqrt(p)*sqrt(p_c)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1_k)*PT_d1d3(k)));[m[41m [m
+[32m+[m	[32m  res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1*p;[m
+[32m+[m[32m  }[m
+[32m+[m[32m  return res;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/*********** angular power spectra - without look-up tables ******************/[m
+[32m+[m
+[32m+[m[32mdouble C_cl_tomo_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj[m
+[32m+[m[32m{ static int init =-1;[m
+[32m+[m[32m  double array[3] = {1.0*ni,1.0*nj,l};[m
+[32m+[m[32m  if (gbias.b2[ni] || gbias.b2[nj]){[m
+[32m+[m[32m    if (ni != nj){[m
+[32m+[m[32m        if (init ==-1){[m
+[32m+[m[32m          printf("\nCalled C_cl(l,z1=%d,z2=%d) with non-linear bias parameters set.\n",ni,nj);[m
+[32m+[m[32m          printf("Cross-clustering beyond linear bias for cross-tomography bins not yet supported.\n");[m
+[32m+[m[32m          printf("Use linear bias only for z1!=z2 clustering\n\n");[m
+[32m+[m[32m          init = 1;}[m
+[32m+[m[32m          return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);[m
+[32m+[m[32m        }[m
+[32m+[m[32m    return int_gsl_integrate_medium_precision(int_for_C_cl_tomo_b2,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);[m
+[32m+[m[32m  }[m
+[32m+[m[32m  else if (ni == nj){[m
+[32m+[m[32m    // return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);[m
+[32m+[m[32m    return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(ni),0.999999,NULL,1000);[m
+[32m+[m[32m  }[m
+[32m+[m[32m  // return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);[m
+[32m+[m[32m  return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(nj),0.99999,NULL,1000); // zi<=zj[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/*********** angular power spectra - with look-up tables ******************/[m
+[32m+[m
+[32m+[m[32mdouble C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxies in bins ni, nj[m
+[32m+[m[32m{[m
+[32m+[m[32m  static cosmopara C;[m
+[32m+[m[32m  static nuisancepara N;[m
+[32m+[m[32m  static galpara G;[m
+[32m+[m[41m  [m
+[32m+[m[32m  static double **table;[m
+[32m+[m[32m  static double ds = .0, logsmin = .0, logsmax = .0;[m
+[32m+[m[32m  if (ni < 0 || ni >= tomo.clustering_Nbin ||nj < 0 || nj >= tomo.clustering_Nbin){[m
+[32m+[m[32m    printf("C_cl_tomo(l,%d,%d) outside tomo.clustering_Nbin range\nEXIT\n",ni,nj); exit(1);[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  if (recompute_clustering(C,G,N,ni,nj))[m
+[32m+[m[32m  {[m
+[32m+[m[32m    if (table==0) {[m
+[32m+[m[32m      table   = create_double_matrix(0, tomo.clustering_Nbin*tomo.clustering_Nbin-1, 0, Ntable.N_ell-1);[m
+[32m+[m[32m      logsmin = log(limits.P_2_s_min);[m
+[32m+[m[32m      logsmax = log(limits.P_2_s_max);[m
+[32m+[m[32m      ds = (logsmax - logsmin)/(Ntable.N_ell);[m
+[32m+[m[32m    }[m
+[32m+[m[32m    for (int i = 0; i < tomo.clustering_Nbin*tomo.clustering_Nbin; i++){table[i][0] = 123456789.0;}[m
+[32m+[m[32m    update_cosmopara(&C); update_nuisance(&N); update_galpara(&G);[m
+[32m+[m[32m  }[m
+[32m+[m[32m  int j = ni*tomo.clustering_Nbin+nj;[m
+[32m+[m[32m  if(table[j][0] > 123456780.0){ //still need to recompute this tomography bin combination[m
+[32m+[m[32m    //printf("recompute C_cl_tomo, %d, %d\n", ni, nj) ;[m
+[32m+[m[32m    double llog = logsmin;[m
+[32m+[m[32m    double result;[m
+[32m+[m[32m    for (int i=0; i<Ntable.N_ell; i++, llog+=ds) {[m
+[32m+[m
+[32m+[m[32m//      table[j][i]= log(C_cl_RSD_nointerp(exp(llog),ni,nj));[m
+[32m+[m[32m      result = C_cl_tomo_nointerp(exp(llog),ni,nj);[m
+[32m+[m[32m      if(result<=0) table[j][i] = -100;[m[41m [m
+[32m+[m[32m      else table[j][i] = log(result);[m
+[32m+[m[32m      table[nj*tomo.clustering_Nbin+ni][i]=table[j][i];[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m[32m  double f1 = exp(interpol_fitslope(table[j], Ntable.N_ell, logsmin, logsmax, ds, log(l), 1.));[m
+[32m+[m[32m  if (isnan(f1)){f1 = 0.;}[m
+[32m+[m[32m  return f1;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/////////////////////[m
+ double f_growth(double z){[m
+ 	double aa = 1./(1+z);[m
+ 	double gamma = 0.55;[m
+[36m@@ -25,18 +286,34 @@[m [mdouble f_growth(double z){[m
+ [m
+ double int_for_C_cl_lin(double a, void *params)[m
+ {[m
+[32m+[m	[32mint status;[m
+ 	double res,ell, fK, k;[m
+ 	double *ar = (double *) params;[m
+ 	ell       = ar[2]+0.5;[m
+ 	fK     = f_K(chi(a));[m
+ 	k      = ell/fK;[m
+[32m+[m
+[32m+[m	[32mdouble p_c = p_lin_cluster(k,a);[m
+[32m+[m	[32mdouble p = p_lin(k,a);[m
+[32m+[m	[32mres = (gbias.b1_function(1./a-1.,(int)ar[0])*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));[m
+[32m+[m	[32mres *=(gbias.b1_function(1./a-1.,(int)ar[1])*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));[m
+[32m+[m	[32mres *= dchi_da(a)/fK/fK;[m
+ 	[m
+[31m-	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;[m
+[31m-	res= res*p_lin(k,a);[m
+[32m+[m	[32mif (gbias.neutrino_induced_sdb>0.0){[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m	[41m  [m	[32mdouble f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;[m
+[32m+[m	[41m  [m	[32mdouble b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_c/p * f_cb)/(1.0+f_cb);[m
+[32m+[m	[41m  [m	[32mdouble b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_c/p * f_cb)/(1.0+f_cb);[m
+[32m+[m	[41m  [m	[32mres = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));[m
+[32m+[m	[41m  [m	[32mres *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));[m
+[32m+[m	[41m  [m	[32mres *= dchi_da(a)/fK/fK;[m
+[32m+[m[41m  [m	[32m}[m
+[32m+[m[41m  [m	[32m//uncomment above lines to implement scale-dependent neutrino bias[m
+ 	return res;[m
+ }[m
+ [m
+[31m-[m
+ double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj[m
+ {[m
+ 	double array[3] = {1.0*ni,1.0*nj,l};[m
+[36m@@ -44,32 +321,10 @@[m [mdouble C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power sp[m
+ 	return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.99999,NULL,1000);[m
+ }[m
+ [m
+[31m-// test for replacing Plin with Pdelta and rescaled[m
+[31m-double int_for_C_cl_nl_rescale(double a, void *params)[m
+[31m-{[m
+[31m-	double res,ell, fK, k;[m
+[31m-	double *ar = (double *) params;[m
+[31m-	ell       = ar[2]+0.5;[m
+[31m-	fK     = f_K(chi(a));[m
+[31m-	k      = ell/fK;[m
+[31m-	[m
+[31m-	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;[m
+[31m-	res= res*Pdelta(k,0.9999)*growfac(a)*growfac(a)/growfac(1.)/growfac(1.);[m
+[31m-	// printf("Pdelta(k,1):%lg, Prescale(k,1):%lg\n", Pdelta(k,0.9999), Pdelta(k,0.9999)*growfac(1.)*growfac(1.)/growfac(1.)/growfac(1.));[m
+[31m-	// printf("Pdelta(k,0.5):%lg, Prescale(k,0.5):%lg\n", Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.5), Pdelta(0.5*cosmology.coverH0 / cosmology.h0,0.9999)*growfac(0.5)*growfac(0.5)/growfac(1.)/growfac(1.));[m
+[31m-	// exit(0);[m
+[31m-	return res;[m
+[31m-}[m
+[31m-double C_cl_nl_rescaled_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj[m
+[31m-{[m
+[31m-	double array[3] = {1.0*ni,1.0*nj,l};[m
+[31m-	// return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);[m
+[31m-	return int_gsl_integrate_medium_precision(int_for_C_cl_nl_rescale,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.99999,NULL,1000);[m
+[31m-}[m
+ [m
+ /////// Integrand for galaxy density[m
+ void f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni){[m
+[31m-	double g0 =1./growfac(1.);[m
+[32m+[m	[32mdouble g0 =1./growfac(1.);//(1+0.2));[m
+ 	double a, z;[m
+ 	int i;[m
+ 	double real_coverH0 = cosmology.coverH0 / cosmology.h0; // unit Mpc[m
+[36m@@ -91,7 +346,7 @@[m [mvoid f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni){[m
+ [m
+ // Integrand for galaxy density RSD[m
+ void f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni){[m
+[31m-	double g0 =1./growfac(1.);[m
+[32m+[m	[32mdouble g0 =1./growfac(1.);//(1+0.2));[m
+ 	double a, z;[m
+ 	int i;[m
+ 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;[m
+[36m@@ -113,7 +368,7 @@[m [mvoid f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni[m
+ [m
+ // Integrand for lensing magnification of galaxy density[m
+ void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni){[m
+[31m-	double g0 =1./growfac(1.);[m
+[32m+[m	[32mdouble g0 =1./growfac(1.);//(1+0.2));[m
+ 	double a, z, fK;[m
+ 	int i;[m
+ 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;[m
+[36m@@ -122,16 +377,17 @@[m [mvoid f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni[m
+ 		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0[m
+ 		z = 1./a - 1.;[m
+ 		fK = f_K(chi_ar[i]/real_coverH0);[m
+[32m+[m
+ 		if( (z>tomo.clustering_zmax[ni]) )[m
+ 		{[m
+ 			f_chi_Mag_ar[i] = 0.;[m
+ 		}[m
+ 		else[m
+ 		{[m
+[31m-			// printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);[m
+[32m+[m			[32m//printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);[m
+ 			wmag = W_mag(a, fK, (double)ni);[m
+ 			window_M = wmag/ fK / (real_coverH0*real_coverH0);[m
+[31m-			// printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);[m
+[32m+[m			[32m//printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);[m
+ 			// pf = (pf_photoz(z,ni)<0.)? 0:pf_photoz(z,ni); // get rid of unphysical negatives[m
+ 			// f_chi_Mag_ar[i] = chi_ar[i]/a * window_M*growfac(a)*g0;[m
+ 			f_chi_Mag_ar[i] = window_M*growfac(a)*g0; // unit [Mpc^-2][m
+[36m@@ -144,20 +400,54 @@[m [mvoid f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni[m
+ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double tolerance) {[m
+ 	// ni = 4;[m
+ 	// nj = 4;[m
+[32m+[m	[32mint status;[m
+ 	int i,j,i_block;[m
+ 	long l;[m
+ 	// run 100 ells at a time, and see if switching to Limber is needed.[m
+ 	// Save runtime for Limber, and save re-creation time of fftw_plan.[m
+ 	int Nell_block = 100, Nchi = 1000;[m
+ 	int ell_ar[Nell_block];[m
+[31m-	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;[m
+[31m-	double **Fk1_Mag_ar, **Fk2_Mag_ar;[m
+[32m+[m	[32m//double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar, **Fk1_RSD_ar, **Fk2_RSD_ar;[m
+[32m+[m	[32m//double **Fk1_Mag_ar, **Fk2_Mag_ar;[m
+[32m+[m	[32mstatic double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar, **Fk1_RSD_ar, **Fk2_RSD_ar = 0;[m
+[32m+[m	[32mstatic double **Fk1_Mag_ar, **Fk2_Mag_ar = 0;[m
+[32m+[m
+[32m+[m	[32mstatic double *chi_ar, *f1_chi_ar, *f2_chi_ar=0;[m
+[32m+[m	[32mstatic double *f1_chi_RSD_ar, *f2_chi_RSD_ar=0;[m
+[32m+[m	[32mstatic double *f1_chi_Mag_ar, *f2_chi_Mag_ar=0;[m
+ [m
+[32m+[m[41m	[m
+[32m+[m	[32mif (k1_ar ==0){[m
+[32m+[m		[32mk1_ar = create_double_matrix(0, Nell_block-1, 0, Nchi-1);[m
+[32m+[m		[32mk2_ar = create_double_matrix(0, Nell_block-1, 0, Nchi-1);[m
+[32m+[m		[32mFk1_ar = create_double_matrix(0, Nell_block-1, 0, Nchi-1);[m
+[32m+[m		[32mFk2_ar = create_double_matrix(0, Nell_block-1, 0, Nchi-1);[m
+[32m+[m		[32mFk1_RSD_ar = create_double_matrix(0, Nell_block-1, 0, Nchi-1);[m
+[32m+[m		[32mFk2_RSD_ar = create_double_matrix(0, Nell_block-1, 0, Nchi-1);[m
+[32m+[m		[32mFk1_Mag_ar = create_double_matrix(0, Nell_block-1, 0, Nchi-1);[m
+[32m+[m		[32mFk2_Mag_ar = create_double_matrix(0, Nell_block-1, 0, Nchi-1);[m
+[32m+[m
+[32m+[m		[32mchi_ar = create_double_vector(0,Nchi-1);[m
+[32m+[m		[32mf1_chi_ar = create_double_vector(0,Nchi-1);[m
+[32m+[m		[32mf2_chi_ar = create_double_vector(0,Nchi-1);[m
+[32m+[m		[32mf1_chi_RSD_ar = create_double_vector(0,Nchi-1);[m
+[32m+[m		[32mf2_chi_RSD_ar = create_double_vector(0,Nchi-1);[m
+[32m+[m		[32mf1_chi_Mag_ar = create_double_vector(0,Nchi-1);[m
+[32m+[m		[32mf2_chi_Mag_ar = create_double_vector(0,Nchi-1);[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m	[32m}[m
+[32m+[m	[32m/*[m
+[32m+[m[41m	[m
+ 	k1_ar = malloc(Nell_block * sizeof(double *));[m
+ 	k2_ar = malloc(Nell_block * sizeof(double *));[m
+ 	Fk1_ar = malloc(Nell_block * sizeof(double *));[m
+ 	Fk2_ar = malloc(Nell_block * sizeof(double *));[m
+ [m
+[32m+[m	[32mFk1_RSD_ar = malloc(Nell_block * sizeof(double *));[m
+[32m+[m	[32mFk2_RSD_ar = malloc(Nell_block * sizeof(double *));[m
+[32m+[m
+ 	Fk1_Mag_ar = malloc(Nell_block * sizeof(double *));[m
+ 	Fk2_Mag_ar = malloc(Nell_block * sizeof(double *));[m
+ 	for(i=0;i<Nell_block;i++) {[m
+[36m@@ -165,20 +455,26 @@[m [mvoid C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double[m
+ 		k2_ar[i] = malloc(Nchi * sizeof(double));[m
+ 		Fk1_ar[i] = malloc(Nchi * sizeof(double));[m
+ 		Fk2_ar[i] = malloc(Nchi * sizeof(double));[m
+[32m+[m		[32mFk1_RSD_ar[i] = malloc(Nchi * sizeof(double));[m
+[32m+[m		[32mFk2_RSD_ar[i] = malloc(Nchi * sizeof(double));[m
+ 		Fk1_Mag_ar[i] = malloc(Nchi * sizeof(double));[m
+ 		Fk2_Mag_ar[i] = malloc(Nchi * sizeof(double));[m
+ 		for(j=0;j<Nchi;j++) {[m
+[32m+[m			[32mk1_ar[i][j] = 0;[m
+[32m+[m			[32mk2_ar[i][j] = 0;[m
+ 			Fk1_ar[i][j] = 0.;[m
+ 			Fk2_ar[i][j] = 0.;[m
+[32m+[m			[32mFk1_RSD_ar[i][j] = 0.;[m
+[32m+[m			[32mFk2_RSD_ar[i][j] = 0.;[m
+ 			Fk1_Mag_ar[i][j] = 0.;[m
+ 			Fk2_Mag_ar[i][j] = 0.;[m
+ 		}[m
+ 	}[m
+[31m-[m
+[32m+[m[41m	[m
+ 	double chi_ar[Nchi], f1_chi_ar[Nchi], f2_chi_ar[Nchi];[m
+ 	double f1_chi_RSD_ar[Nchi], f2_chi_RSD_ar[Nchi];[m
+ 	double f1_chi_Mag_ar[Nchi], f2_chi_Mag_ar[Nchi];[m
+[31m-[m
+[32m+[m	[32m*/[m
+ 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;[m
+ 	double chi_min = chi(1./(1.+0.002))*real_coverH0, chi_max = chi(1./(1.+4.))*real_coverH0;[m
+ 	double dlnchi = log(chi_max/chi_min) / (Nchi - 1.);[m
+[36m@@ -197,26 +493,6 @@[m [mvoid C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double[m
+ 	f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, ni);[m
+ 	if(ni != nj) {f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f2_chi_Mag_ar, nj);}[m
+ [m
+[31m-	// char *outfilename = (char*)malloc(80 * sizeof(char));[m
+[31m-	// sprintf(outfilename, "cl_test_lin_vs_nl/cl_%d_testnl_lin.txt", ni);[m
+[31m-	// // sprintf(outfilename, "cl_test_lin_vs_nl/cl_%d_testnl_rescale.txt", ni);[m
+[31m-	// FILE *OUT = fopen(outfilename, "w");[m
+[31m-	[m
+[31m-	// for(i=0; i<Nchi; i++) {[m
+[31m-	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);[m
+[31m-	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_RSD_ar[i]);[m
+[31m-	// 	fprintf(OUT, "%lg %lg %lg %lg\n", chi_ar[i], f1_chi_ar[i], f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);[m
+[31m-	// 	// fprintf(OUT, "\n");[m
+[31m-	// }[m
+[31m-	// for(i=0; i<Nchi; i++) {[m
+[31m-	// 	printf("f_chi_ar: %d, %lg, %lg, %lg, %lg\n", i,chi_ar[i], f1_chi_ar[i],f1_chi_RSD_ar[i], f1_chi_Mag_ar[i]);[m
+[31m-	// }[m
+[31m-	// exit(0);[m
+[31m-	// char *outfilename = (char*)malloc(80 * sizeof(char));;[m
+[31m-	// sprintf(outfilename, "cls2/c_cl_%d_%d_rsd_mag_fft.txt", ni,nj);[m
+[31m-	// FILE *OUT = fopen(outfilename, "w");[m
+[31m-[m
+[31m-[m
+ 	i_block = 0;[m
+ 	double cl_temp;[m
+ [m
+[36m@@ -243,64 +519,112 @@[m [mvoid C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double[m
+ 	my_config_Mag.N_extrap_high = 0;[m
+ [m
+ 	double ell_prefactor;[m
+[31m-[m
+ 	double k1_cH0;[m
+ [m
+[31m-[m
+ 	while (fabs(dev) > tolerance){[m
+ 	// while(0){[m
+ 	// while (L<100){[m
+ 		//Cl[L] = C_cl_RSD(L,nz,nz);[m
+ 		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}[m
+[31m-[m
+[32m+[m		[32m//printf("%f %f\n", fabs(dev), tolerance);[m
+ 		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);[m
+ 		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);}[m
+[32m+[m		[32mdouble f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;[m
+ [m
+[31m-		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_ar);[m
+[31m-		if(ni != nj) {cfftlog_ells_increment(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_ar);}[m
+[32m+[m		[32mif (gbias.neutrino_induced_sdb>0.0){[m
+[32m+[m			[32mdouble geff;[m
+[32m+[m			[32m//call to increment in this for-loop after re-weighting of f(\chi)[m
+[32m+[m				[32m//adjust f1_chi_ar for each chi in this for-loop with k-dep factor[m
+[32m+[m			[32mfor(j=0;j<Nchi;j++) {[m
+[32m+[m				[32m//need to calculate a g_eff term for each representative redshift to approximate[m
+[32m+[m				[32m//k-dependence in the incremeneted integral. This is the square root of 'growth factors',[m
+[32m+[m				[32m//i.e. p_(k,z) = p_(k,z_bin)*geff(z,z_bin)^2, where geff^2= (G(z)/G(z_bin)*(k_dep_factor(k,z)/k_dep_factor(k,z_bin)))^2[m
+[32m+[m
+[32m+[m				[32mgeff = 1.0;//f_cb * growfac_cluster(a_chi(chi_ar[j] / real_coverH0))/growfac(a_chi(chi_ar[j] / real_coverH0))*growfac(1.)/growfac_cluster(1.);[m
+[32m+[m[41m				[m
+[32m+[m				[32mf1_chi_ar[j] *= geff;[m
+[32m+[m				[32mif(ni != nj) {f2_chi_ar[j] *= geff;}[m
+[32m+[m			[32m}[m
+[32m+[m			[32m//cfftlog_ells_increment(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);[m
+[32m+[m			[32m//if(ni != nj) {cfftlog_ells_increment(chi_ar, f2_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k2_ar, Fk2_ar);}[m
+[32m+[m
+[32m+[m		[32m}[m
+[32m+[m		[32m//printf("hello2\n");[m
+[32m+[m
+[32m+[m		[32mcfftlog_ells(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_RSD_ar);[m
+[32m+[m		[32mif(ni != nj) {cfftlog_ells(chi_ar, f2_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k2_ar, Fk2_RSD_ar);}[m
+ [m
+ 		// Add in lensing magnification contribution[m
+[32m+[m		[32m//printf("hello3\n");[m
+[32m+[m
+ 		cfftlog_ells(chi_ar, f1_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k1_ar, Fk1_Mag_ar);[m
+ 		if(ni != nj) {cfftlog_ells(chi_ar, f2_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k2_ar, Fk2_Mag_ar);}[m
+ 		for(i=0;i<Nell_block;i++) {[m
+ 			ell_prefactor = ell_ar[i]*(ell_ar[i]+1.);[m
+ 			for(j=0;j<Nchi;j++) {[m
+[31m-				Fk1_ar[i][j]+= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j]) * (gbias.b_mag[ni]) *  Fk1_Mag_ar[i][j]);[m
+[31m-				if(ni != nj) {Fk2_ar[i][j]+= (ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* (gbias.b_mag[nj]) *  Fk2_Mag_ar[i][j]);}[m
+[32m+[m				[32mFk1_Mag_ar[i][j]= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j]) * (gbias.b_mag[ni]) *  Fk1_Mag_ar[i][j]);[m
+[32m+[m				[32mif(ni != nj) {Fk2_Mag_ar[i][j]= (ell_prefactor / (k2_ar[i][j]*k2_ar[i][j])* (gbias.b_mag[nj]) *  Fk2_Mag_ar[i][j]);}[m
+ 			}[m
+ 		}[m
+[32m+[m				[32m//printf("hello4\n");[m
+ [m
+[32m+[m		[32m//printf("%f\n", zmean(ni));[m
+ 		for(i=0;i<Nell_block;i++) {[m
+ 			cl_temp = 0.;[m
+ 			for(j=0;j<Nchi;j++) {[m
+ 				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);[m
+ 				k1_cH0 = k1_ar[i][j] * real_coverH0;[m
+[32m+[m				[32mdouble plin = p_lin(k1_cH0,1.0);[m
+[32m+[m				[32mdouble plin_cluster = p_lin_cluster(k1_cH0,1.0);[m
+[32m+[m				[32m//double factor = plin_cluster*(1+2*f_cb*(plin_cluster/plin) + f_cb*f_cb*(plin_cluster/plin)*(plin_cluster/plin))/(1+f_cb)/(1+f_cb);[m
+[32m+[m				[32mdouble cluster_a = 1.0/(1.0+zmean(ni));[m
+[32m+[m				[32mdouble factor = plin_cluster * ((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a)/p_lin(k1_cH0, cluster_a)))/(1+f_cb))*((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a)/p_lin(k1_cH0, cluster_a)))/(1+f_cb));[m
+[32m+[m				[32mdouble cluster_a_2  = 1.0/(1.0 + zmean(nj));[m
+[32m+[m				[32mdouble factor_2 = plin_cluster * ((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a_2)/p_lin(k1_cH0, cluster_a_2)))/(1+f_cb))*((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a_2)/p_lin(k1_cH0, cluster_a_2)))/(1+f_cb));[m
+[32m+[m				[32mdouble fk1;[m
+[32m+[m				[32mdouble fk2;[m
+[32m+[m				[32m//printf("%f %f\n", factor/plin, cluster_a);[m
+ 				if(ni == nj) {[m
+[31m-					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);[m
+[31m-					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *Pdelta(k1_cH0,0.9999);[m
+[31m-					// printf("plin,%lg, %lg\n", k1_ar[i][j],p_lin(k1_cH0,1.0));[m
+[32m+[m
+[32m+[m					[32mif (gbias.neutrino_induced_sdb>0.0){fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(factor);}[m
+[32m+[m					[32melse{fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(plin_cluster);}[m
+[32m+[m					[32mcl_temp += fk1*fk1*k1_cH0*k1_cH0*k1_cH0;[m
+[32m+[m					[32m//cl_temp += ((Fk1_RSD_ar[i][j]) * (Fk1_RSD_ar[i][j]) + (Fk1_Mag_ar[i][j])*(Fk1_Mag_ar[i][j]))*k1_cH0*k1_cH0*k1_cH0 *plin;[m
+[32m+[m					[32m//if (gbias.neutrino_induced_sdb){cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *factor;}[m
+[32m+[m					[32m//else{cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *plin_cluster;}[m
+ 				}[m
+ 				else {[m
+[31m-					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);[m
+[32m+[m					[32mif (gbias.neutrino_induced_sdb>0.0){[m
+[32m+[m						[32mfk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(factor);[m
+[32m+[m						[32mfk2 = (Fk2_RSD_ar[i][j] +Fk2_Mag_ar[i][j])* sqrt(plin) + Fk2_ar[i][j]*sqrt(factor_2);[m
+[32m+[m					[32m}[m
+[32m+[m					[32melse{[m
+[32m+[m						[32mfk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(plin_cluster);[m
+[32m+[m						[32mfk2 = (Fk2_RSD_ar[i][j] +Fk2_Mag_ar[i][j])* sqrt(plin) + Fk2_ar[i][j]*sqrt(plin_cluster);[m[41m						[m
+[32m+[m					[32m}[m
+[32m+[m					[32mcl_temp += fk1*fk2*k1_cH0*k1_cH0*k1_cH0;[m
+[32m+[m					[32m//cl_temp += ((Fk1_RSD_ar[i][j])*(Fk2_RSD_ar[i][j])+ (Fk1_Mag_ar[i][j])*(Fk2_Mag_ar[i][j])) *k1_cH0*k1_cH0*k1_cH0 *plin;[m
+[32m+[m					[32m//if (gbias.neutrino_induced_sdb){cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *factor;}[m
+[32m+[m					[32m//else{cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *plin_cluster;}[m
+ 				}[m
+ 			}[m
+ 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);[m
+[31m-			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;[m
+[31m-			// printf("cl_t/emp: %d, %lg\n", i, cl_temp);[m
+[31m-			// printf("%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));[m
+[31m-			// fprintf(OUT, "%d %lg %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj), C_cl_nl_rescaled_nointerp(1.*ell_ar[i],ni,nj));[m
+[31m-			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj), C_cl_lin_nointerp(1.*ell_ar[i],ni,nj));[m
+[31m-			// fprintf(OUT, "%d %lg\n", ell_ar[i], Cl[ell_ar[i]]);[m
+ 		}[m
+ [m
+ 		i_block++;[m
+[32m+[m
+ 		L = i_block*Nell_block -1 ;[m
+ 		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;[m
+[31m-	   // printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);[m
+[31m-		// printf("i_block: %d\n", i_block);[m
+[32m+[m	[32m  //printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);[m
+[32m+[m		[32m//printf("i_block: %d\n", i_block);[m
+[32m+[m[32m    if(L>=LMAX-Nell_block){ // break before memory leak in next iteration[m
+[32m+[m[32m      printf("L>Lmax\n");[m
+[32m+[m[32m      L = LMAX-Nell_block;[m
+[32m+[m[32m      break;[m
+[32m+[m[41m  [m	[32m}[m[41m [m
+ 	}[m
+ 	L++;[m
+[31m-	// printf("switching to Limber calculation at l = %d\n",L);[m
+[32m+[m	[32m//printf("switching to Limber calculation at l = %d %d\n",L, ni);[m
+ 	// for (l = 1; l < 50; l++){[m
+ 	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);[m
+ 	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);[m
+[36m@@ -310,30 +634,19 @@[m [mvoid C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double[m
+ 		// fprintf(OUT, "%d %lg\n", l, Cl[l]);[m
+ 	}[m
+ 	// printf("finished bin %d\n", ni);[m
+[32m+[m	[32m/*[m
+ 	for(i=0;i<Nell_block;i++) {[m
+ 		free(k1_ar[i]);free(k2_ar[i]);[m
+ 		free(Fk1_ar[i]);free(Fk2_ar[i]);[m
+[32m+[m		[32mfree(Fk1_RSD_ar[i]);free(Fk2_RSD_ar[i]);[m
+ 		free(Fk1_Mag_ar[i]);free(Fk2_Mag_ar[i]);[m
+ 	}[m
+ 	free(k1_ar);free(k2_ar);[m
+ 	free(Fk1_ar);free(Fk2_ar);[m
+[32m+[m	[32mfree(Fk1_RSD_ar);free(Fk2_RSD_ar);[m
+ 	free(Fk1_Mag_ar);free(Fk2_Mag_ar);[m
+[32m+[m	[32m*/[m
+ [m
+[31m-[m
+[31m-	 // FILE *F;[m
+[31m-	 // F=fopen("growth_z_0.3.txt","w");[m
+[31m-	 // double dlogk = log(5./0.0001)/400.;[m
+[31m-	 // double z=.3;[m
+[31m-	 // double a=1./(1.+z);[m
+[31m-	 // // double a=0.9999;[m
+[31m-	 // for (int i = 0; i <400; i++){[m
+[31m-	 //   double k = exp(log(0.0001)+i*dlogk);[m
+[31m-	 //   fprintf(F,"%lg %lg\n",k, Pdelta(k*cosmology.coverH0 / cosmology.h0,a)/growfac(a)/growfac(a)*growfac(1.)*growfac(1.));[m
+[31m-	 //   // fprintf(F,"%lg %lg\n",k, Pdelta(k*cosmology.coverH0 / cosmology.h0,a));[m
+[31m-	 // }[m
+[31m-	 // exit(0);[m
+[31m-	// fclose(OUT);[m
+[31m-	// exit(0);[m
+ }[m
+ [m
+ double w_tomo_nonLimber(int nt, int ni, int nj){[m
+[36m@@ -414,525 +727,10 @@[m [mdouble w_tomo_nonLimber(int nt, int ni, int nj){[m
+ 				}[m
+ 			}[m
+ 		}[m
+[31m-		update_cosmopara(&C);[m
+[31m-		update_galpara(&G);[m
+[31m-		update_nuisance(&N);[m
+[31m-	}[m
+[31m-	return w_vec[ni*like.Ntheta+nt];  [m
+[31m-}[m
+[31m-[m
+[31m-///////////////////////// [m
+[31m-///////// galaxy-galaxy lensing[m
+[31m-/*[m
+[31m-double int_for_C_gl_lin(double a, void *params)[m
+[31m-{[m
+[31m-	double res,ell, fK, k;[m
+[31m-	double *ar = (double *) params;[m
+[31m-	ell       = ar[2]+0.5;[m
+[31m-	fK     = f_K(chi(a));[m
+[31m-	k      = ell/fK;[m
+[31m-[m
+[31m-	double ell_prefactor1 = (ar[2])*(ar[2]+1.);[m
+[31m-	double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);[m
+[31m-	if(ell_prefactor2<=0.) [m
+[31m-		ell_prefactor2=0.;[m
+[31m-	else[m
+[31m-		ell_prefactor2=sqrt(ell_prefactor2);[m
+[31m-[m
+[31m-	double chi_0,chi_1,a_0,a_1;[m
+[31m-	chi_0 = f_K(ell/k);[m
+[31m-	chi_1 = f_K((ell+1.)/k);[m
+[31m-	if (chi_1 > chi(limits.a_min)){[m
+[31m-	return 0;}[m
+[31m-	a_0 = a_chi(chi_0);[m
+[31m-	a_1 = a_chi(chi_1);[m
+[31m-[m
+[31m-	double wgal = W_gal(a,ar[0]);[m
+[31m-	wgal += W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) ;[m
+[31m-  	res=(wgal + W_RSD(ell, a_0, a_1, ar[0]))*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;[m
+[31m-  	// res=(wgal)*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;[m
+[31m-	res= res*p_lin(k,a);[m
+[31m-	return res;[m
+[31m-}[m
+[31m-[m
+[31m-double C_gl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj[m
+[31m-{[m
+[31m-	double array[3] = {1.0*ni,1.0*nj,l};[m
+[31m-	return int_gsl_integrate_medium_precision(int_for_C_gl_lin,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);[m
+[31m-}[m
+[31m-[m
+[31m-double int_for_C_gl_IA_lin(double a, void *params)[m
+[31m-{[m
+[31m-  double res,ell, fK, k;[m
+[31m-  double *ar = (double *) params;[m
+[31m-  ell       = ar[2]+0.5;[m
+[31m-  fK     = f_K(chi(a));[m
+[31m-  k      = ell/fK;[m
+[31m-  [m
+[31m-  double ell_prefactor1 = (ar[2])*(ar[2]+1.);[m
+[31m-  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);[m
+[31m-  if(ell_prefactor2<=0.) [m
+[31m-    ell_prefactor2=0.;[m
+[31m-  else[m
+[31m-    ell_prefactor2=sqrt(ell_prefactor2);[m
+[31m-[m
+[31m-  double chi_0,chi_1,a_0,a_1;[m
+[31m-  chi_0 = f_K(ell/k);[m
+[31m-  chi_1 = f_K((ell+1.)/k);[m
+[31m-  if (chi_1 > chi(limits.a_min)){[m
+[31m-    return 0;}[m
+[31m-  a_0 = a_chi(chi_0);[m
+[31m-  a_1 = a_chi(chi_1);[m
+[31m-[m
+[31m-  double norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);[m
+[31m-[m
+[31m-  res=(W_gal(a,ar[0])+W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;[m
+[31m-  // res=(W_gal(a,ar[0]) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;[m
+[31m-  res= res*p_lin(k,a);[m
+[31m-  return res;[m
+[31m-}[m
+[31m-[m
+[31m-double int_for_C_gl_IA_lin_part1(double a, void *params)[m
+[31m-{[m
+[31m-  double res,ell, fK, k;[m
+[31m-  double *ar = (double *) params;[m
+[31m-  ell       = ar[2]+0.5;[m
+[31m-  fK     = f_K(chi(a));[m
+[31m-  k      = ell/fK;[m
+[31m-  [m
+[31m-  double ell_prefactor1 = (ar[2])*(ar[2]+1.);[m
+[31m-  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);[m
+[31m-  if(ell_prefactor2<=0.) [m
+[31m-    ell_prefactor2=0.;[m
+[31m-  else[m
+[31m-    ell_prefactor2=sqrt(ell_prefactor2);[m
+[31m-[m
+[31m-  double chi_0,chi_1,a_0,a_1;[m
+[31m-  chi_0 = f_K(ell/k);[m
+[31m-  chi_1 = f_K((ell+1.)/k);[m
+[31m-  if (chi_1 > chi(limits.a_min)){[m
+[31m-    return 0;}[m
+[31m-  a_0 = a_chi(chi_0);[m
+[31m-  a_1 = a_chi(chi_1);[m
+[31m-[m
+[31m-  double norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);[m
+[31m-[m
+[31m-  res=(W_gal(a,ar[0])+W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) )*(W_kappa(a,fK, ar[1]))*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;[m
+[31m-  // res=(W_gal(a,ar[0]) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;[m
+[31m-  res= res*p_lin(k,a);[m
+[31m-  return res;[m
+[31m-}[m
+[31m-[m
+[31m-double int_for_C_gl_IA_lin_part2(double a, void *params)[m
+[31m-{[m
+[31m-  double res,ell, fK, k;[m
+[31m-  double *ar = (double *) params;[m
+[31m-  ell       = ar[2]+0.5;[m
+[31m-  fK     = f_K(chi(a));[m
+[31m-  k      = ell/fK;[m
+[31m-  [m
+[31m-  double ell_prefactor1 = (ar[2])*(ar[2]+1.);[m
+[31m-  double ell_prefactor2 = (ar[2]-1.)*ell_prefactor1*(ar[2]+2.);[m
+[31m-  if(ell_prefactor2<=0.) [m
+[31m-    ell_prefactor2=0.;[m
+[31m-  else[m
+[31m-    ell_prefactor2=sqrt(ell_prefactor2);[m
+[31m-[m
+[31m-  double chi_0,chi_1,a_0,a_1;[m
+[31m-  chi_0 = f_K(ell/k);[m
+[31m-  chi_1 = f_K((ell+1.)/k);[m
+[31m-  if (chi_1 > chi(limits.a_min)){[m
+[31m-    return 0;}[m
+[31m-  a_0 = a_chi(chi_0);[m
+[31m-  a_1 = a_chi(chi_1);[m
+[31m-[m
+[31m-  double norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);[m
+[31m-[m
+[31m-  res=(W_gal(a,ar[0])+W_RSD(ell, a_0, a_1, ar[0]) +W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) )*(-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;[m
+[31m-  // res=(W_gal(a,ar[0]) )*(W_kappa(a,fK, ar[1])-W_source(a,ar[1])*norm)*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;[m
+[31m-  res= res*p_lin(k,a);[m
+[31m-  return res;[m
+[31m-}[m
+[31m-[m
+[31m-double C_gl_lin_IA_nointerp(double l, int ni, int nj)  //galaxy clustering power spectrum of galaxy bins ni, nj[m
+[31m-{[m
+[31m-  double array[3] = {1.0*ni,1.0*nj,l};[m
+[31m-  return int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin,(void*)array,amin_lens(ni),0.9999,NULL,1000);[m
+[31m-  // return int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin_part1,(void*)array,amin_lens(ni),0.9999,NULL,1000)+int_gsl_integrate_medium_precision(int_for_C_gl_IA_lin_part2,(void*)array,amin_lens(ni),0.9999,NULL,1000);[m
+[31m-}[m
+[31m-[m
+[31m-void f_chi_for_Psi_sh(double* chi_ar, int Nchi, double* f_chi_ar, int ns) {[m
+[31m-	double g0 =1./growfac(1.);[m
+[31m-	double a, z, fK;[m
+[31m-	int i;[m
+[31m-	double real_coverH0 = cosmology.coverH0 / cosmology.h0;[m
+[31m-	double window_L, wkappa;[m
+[31m-	for(i=0;i<Nchi;i++) {[m
+[31m-		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0[m
+[31m-		z = 1./a - 1.;[m
+[31m-		fK = f_K(chi_ar[i]/real_coverH0);[m
+[31m-		if(z>tomo.shear_zmax[ns]) [m
+[31m-		{[m
+[31m-			f_chi_ar[i] = 0.;[m
+[31m-		}[m
+[31m-		else[m
+[31m-		{[m
+[31m-			// printf("Here! a, fK, ns: %lg,%lg,%d\n", a, fK, ns);[m
+[31m-			wkappa = W_kappa(a, fK, (double)ns);[m
+[31m-			window_L = wkappa/ fK / (real_coverH0*real_coverH0);[m
+[31m-			// printf("win_L, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", window_L, wkappa, fK,real_coverH0);[m
+[31m-			f_chi_ar[i] = window_L*growfac(a)*g0; // unit [Mpc^-2][m
+[31m-		}[m
+[31m-	}[m
+[31m-}[m
+[31m-[m
+[31m-void f_chi_for_Psi_sh_IA(double* chi_ar, int Nchi, double* f_chi_IA_ar, int ns) {[m
+[31m-	double g0 =1./growfac(1.);[m
+[31m-	double a, z, fK;[m
+[31m-	int i;[m
+[31m-	double real_coverH0 = cosmology.coverH0 / cosmology.h0;[m
+[31m-	double window_ia, wsource;[m
+[31m-	double norm;[m
+[31m-	// printf("norm:%lg\n", norm);[m
+[31m-	// exit(0);[m
+[31m-	// printf("%d, %lg,%lg\n",ns,real_coverH0*chi(amax_source(ns)),real_coverH0*chi(amin_source(ns)) );[m
+[31m-	// printf("%d, %lg,%lg\n",ns,real_coverH0*chi(1./(1.+tomo.shear_zmax[ns])),real_coverH0*chi(1./(1.+tomo.shear_zmin[ns])) );[m
+[31m-	// exit(0);[m
+[31m-	for(i=0;i<Nchi;i++) {[m
+[31m-		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0[m
+[31m-		z = 1./a - 1.;[m
+[31m-		fK = f_K(chi_ar[i]/real_coverH0);[m
+[31m-		norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);[m
+[31m-		if( (z<tomo.shear_zmin[ns]) || (z>tomo.shear_zmax[ns]) )[m
+[31m-		{[m
+[31m-			f_chi_IA_ar[i] = 0.;[m
+[31m-		}[m
+[31m-		else[m
+[31m-		{[m
+[31m-			// printf("Here! a, fK, ni: %lg,%lg,%d\n", a, fK, ni);[m
+[31m-			wsource = W_source(a, (double)ns);[m
+[31m-			wsource = (wsource>0.)? wsource:0.;[m
+[31m-			window_ia = -wsource * norm / fK / (real_coverH0*real_coverH0);[m
+[31m-			// printf("bmag, wkappa, f_K, real_coverH0, %lg %lg %lg %lg\n", gbias.b_mag[ni], wkappa, fK,real_coverH0);[m
+[31m-			f_chi_IA_ar[i] = window_ia*growfac(a)*g0; // unit [Mpc^-2][m
+[31m-		}[m
+[31m-		// printf("%lg\n", f_chi_IA_ar[i]);[m
+[31m-	}[m
+[31m-}[m
+[31m-[m
+[31m-// Mixture of non-Limber and Limber of C_cl (G-G lensing)[m
+[31m-void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double tolerance) {[m
+[31m-	// nl = 4;[m
+[31m-	// ns = 0;[m
+[31m-	int i,j,i_block;[m
+[31m-	long l;[m
+[31m-	// run 100 ells at a time, and see if switching to Limber is needed.[m
+[31m-	// Save runtime for Limber, and save re-creation time of fftw_plan.[m
+[31m-	int Nell_block = 100, Nchi = 1000;[m
+[31m-	int ell_ar[Nell_block];[m
+[31m-	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;[m
+[31m-	double **Fk1_Mag_ar;[m
+[31m-[m
+[31m-	k1_ar = malloc(Nell_block * sizeof(double *));[m
+[31m-	k2_ar = malloc(Nell_block * sizeof(double *));[m
+[31m-	Fk1_ar = malloc(Nell_block * sizeof(double *));[m
+[31m-	Fk2_ar = malloc(Nell_block * sizeof(double *));[m
+[31m-[m
+[31m-	Fk1_Mag_ar = malloc(Nell_block * sizeof(double *));[m
+[31m-	for(i=0;i<Nell_block;i++) {[m
+[31m-		k1_ar[i] = malloc(Nchi * sizeof(double));[m
+[31m-		k2_ar[i] = malloc(Nchi * sizeof(double));[m
+[31m-		Fk1_ar[i] = malloc(Nchi * sizeof(double));[m
+[31m-		Fk2_ar[i] = malloc(Nchi * sizeof(double));[m
+[31m-		Fk1_Mag_ar[i] = malloc(Nchi * sizeof(double));[m
+[31m-		for(j=0;j<Nchi;j++) {[m
+[31m-			Fk1_ar[i][j] = 0.;[m
+[31m-			Fk2_ar[i][j] = 0.;[m
+[31m-			Fk1_Mag_ar[i][j] = 0.;[m
+[31m-		}[m
+[31m-	}[m
+[31m-[m
+[31m-	double chi_ar[Nchi];[m
+[31m-	double f1_chi_ar[Nchi], f1_chi_RSD_ar[Nchi], f1_chi_Mag_ar[Nchi];[m
+[31m-	double f2_chi_ar[Nchi], f2_chi_IA_ar[Nchi];[m
+[31m-[m
+[31m-	// double f2_chi_temp[Nchi];[m
+[31m-[m
+[31m-	double chi_min = 10., chi_max = 7000.;[m
+[31m-	// double chi_min = 6., chi_max = 6000.;[m
+[31m-[m
+[31m-	double dlnchi = log(chi_max/chi_min) / (Nchi - 1.);[m
+[31m-	double dlnk = dlnchi;[m
+[31m-[m
+[31m-	for(i=0; i<Nchi; i++) {[m
+[31m-		chi_ar[i] = chi_min * exp(dlnchi*i);[m
+[31m-	}[m
+[31m-	f_chi_for_Psi_cl(chi_ar, Nchi, f1_chi_ar, nl);[m
+[31m-	f_chi_for_Psi_cl_RSD(chi_ar, Nchi, f1_chi_RSD_ar, nl);[m
+[31m-	f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, nl);[m
+[31m-	// for(j=0;j<Nchi;j++) {[m
+[31m-	// 	f1_chi_ar[j] += f1_chi_Mag_ar[j];[m
+[31m-	// }[m
+[31m-	f_chi_for_Psi_sh(chi_ar, Nchi, f2_chi_ar, ns);[m
+[31m-	f_chi_for_Psi_sh_IA(chi_ar, Nchi, f2_chi_IA_ar, ns);[m
+[31m-	for(j=0;j<Nchi;j++) {[m
+[31m-		f2_chi_ar[j] += f2_chi_IA_ar[j];[m
+[31m-	}[m
+[31m-[m
+[31m-	// char outfilename[] = "f_chi_gl1.txt";[m
+[31m-	// char outfilename[] = "f1_chi_gl1.txt";[m
+[31m-	// char *outfilename = (char*)malloc(40 * sizeof(char));;[m
+[31m-	// sprintf(outfilename, "fchi/f_chi_sh_%d.txt", ns);[m
+[31m-	// FILE *OUT = fopen(outfilename, "w");[m
+[31m-	// for(i=0; i<Nchi; i++) {[m
+[31m-	// 	// fprintf(OUT, "%lg %lg", chi_ar[i], f1_chi_ar[i]);[m
+[31m-	// 	fprintf(OUT, "%lg %lg %lg", chi_ar[i], f2_chi_ar[i]-f2_chi_IA_ar[i], f2_chi_IA_ar[i]);[m
+[31m-	// 	fprintf(OUT, "\n");[m
+[31m-	// }[m
+[31m-	// for(i=0; i<Nchi; i++) {[m
+[31m-	// 	printf("f_chi_ar: %d, %lg\n", i, f2_chi_ar[i]);[m
+[31m-	// }[m
+[31m-	// exit(0);[m
+[31m-	// char *outfilename = (char*)malloc(40 * sizeof(char));;[m
+[31m-	// sprintf(outfilename, "cls2/c_gl_%d_%d_mag_IA.txt", nl,ns);[m
+[31m-	// FILE *OUT = fopen(outfilename, "w");[m
+[31m-[m
+[31m-[m
+[31m-	// char *outfilename = (char*)malloc(40 * sizeof(char));;[m
+[31m-	// sprintf(outfilename, "pk.txt");[m
+[31m-	// FILE *OUT = fopen(outfilename, "w");[m
+[31m-[m
+[31m-	i_block = 0;[m
+[31m-	double cl_temp;[m
+[31m-[m
+[31m-	config my_config, my_config_RSD, my_config_Mag, my_config_L;[m
+[31m-	my_config.nu = 1.;[m
+[31m-	my_config.c_window_width = 0.25;[m
+[31m-	my_config.derivative = 0;[m
+[31m-	my_config.N_pad = 200;[m
+[31m-	my_config.N_extrap_low = 0;[m
+[31m-	my_config.N_extrap_high = 0;[m
+[31m-[m
+[31m-	my_config_RSD.nu = 1.01;[m
+[31m-	my_config_RSD.c_window_width = 0.25;[m
+[31m-	my_config_RSD.derivative = 2;[m
+[31m-	my_config_RSD.N_pad = 200;[m
+[31m-	my_config_RSD.N_extrap_low = 0;[m
+[31m-	my_config_RSD.N_extrap_high = 0;[m
+[31m-[m
+[31m-	my_config_Mag.nu = 1.;[m
+[31m-	my_config_Mag.c_window_width = 0.25;[m
+[31m-	my_config_Mag.derivative = 0;[m
+[31m-	my_config_Mag.N_pad = 1000;[m
+[31m-	my_config_Mag.N_extrap_low = 0;[m
+[31m-	my_config_Mag.N_extrap_high = 0;[m
+[31m-[m
+[31m-	my_config_L.nu = 1.;[m
+[31m-	my_config_L.c_window_width = 0.25;[m
+[31m-	my_config_L.derivative = 0;[m
+[31m-	my_config_L.N_pad = 1000.;[m
+[31m-	my_config_L.N_extrap_low = 0;[m
+[31m-	my_config_L.N_extrap_high = 0;[m
+[31m-[m
+[31m-	double ell_prefactor, ell_prefactor2;[m
+[31m-[m
+[31m-	double real_coverH0 = cosmology.coverH0 / cosmology.h0;[m
+[31m-	double k1_cH0;[m
+[31m-[m
+[31m-	// long N_k=3000;[m
+[31m-	// double dlgk = 6./N_k;[m
+[31m-	// double ki, ki_cH0;[m
+[31m-	// for(i=0;i<N_k; i++){[m
+[31m-	// 	ki = 1e-4*pow(10.,dlgk*i);[m
+[31m-	// 	ki_cH0 = ki*real_coverH0;[m
+[31m-	// 	fprintf(OUT, "%.15e %.15e\n", ki, p_lin(ki_cH0,1.0)*real_coverH0*real_coverH0*real_coverH0 );[m
+[31m-	// }[m
+[31m-	// exit(0);[m
+[31m-[m
+[31m-	while (fabs(dev) > tolerance){[m
+[31m-		//Cl[L] = C_cl_RSD(L,nz,nz);[m
+[31m-		for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}[m
+[31m-		// galaxy density part[m
+[31m-		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);[m
+[31m-		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_ar);[m
+[31m-[m
+[31m-		// Add in lensing magnification contribution[m
+[31m-		cfftlog_ells(chi_ar, f1_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k1_ar, Fk1_Mag_ar);[m
+[31m-		for(i=0;i<Nell_block;i++) {[m
+[31m-			ell_prefactor = ell_ar[i]*(ell_ar[i]+1);[m
+[31m-			for(j=0;j<Nchi;j++) {[m
+[31m-				Fk1_ar[i][j]+= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j])* (gbias.b_mag[nl]) * Fk1_Mag_ar[i][j]);[m
+[31m-				// printf("Fk1: %d,%d, %lg\n", i,j, Fk1_ar[i][j]);[m
+[31m-			}[m
+[31m-		}[m
+[31m-		// shear part[m
+[31m-		cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config_L, ell_ar, Nell_block, k2_ar, Fk2_ar);	[m
+[31m-		// cfftlog_ells_increment(chi_ar, f2_chi_IA_ar, Nchi, &my_config_L, ell_ar, Nell_block, k2_ar, Fk2_ar);[m
+[31m-		// IA Already in f2_chi_temp[m
+[31m-[m
+[31m-		for(i=0;i<Nell_block;i++) {[m
+[31m-			ell_prefactor2 =(ell_ar[i]-1.)*ell_ar[i]*(ell_ar[i]+1.)*(ell_ar[i]+2.);[m
+[31m-			if(ell_prefactor2<=0.) {ell_prefactor2=0.;}[m
+[31m-			else {ell_prefactor2 = sqrt(ell_prefactor2);}[m
+[31m-[m
+[31m-			for(j=0;j<Nchi;j++) {[m
+[31m-				// printf("preFk2: %d,%d, %lg,%d, %lg,%lg\n", i,j, Fk2_ar[i][j], ell_ar[i],ell_prefactor2,k2_ar[i][j]);[m
+[31m-				// Fk2_ar[i][j] = -Fk2_ar[i][j]+f2_chi_ar[0]*sqrt(M_PI)/4.* exp(lngamma_lanczos_real(ell_ar[i]/2.)-lngamma_lanczos_real((ell_ar[i]+3.)/2.));[m
+[31m-				Fk2_ar[i][j]*= (ell_prefactor2 / (k1_ar[i][j]*k1_ar[i][j]));[m
+[31m-				// printf("Fk2: %d,%d, %lg\n", i,j, Fk2_ar[i][j]);[m
+[31m-			}[m
+[31m-		}[m
+[31m-[m
+[31m-		// exit(0);[m
+[31m-		for(i=0;i<Nell_block;i++) {[m
+[31m-			cl_temp = 0.;[m
+[31m-			for(j=0;j<Nchi;j++) {[m
+[31m-				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);[m
+[31m-				k1_cH0 = k1_ar[i][j] * real_coverH0;[m
+[31m-				cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);[m
+[31m-			}[m
+[31m-			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns) - C_gl_lin_nointerp(1.*ell_ar[i],nl,ns);[m
+[31m-			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_ggl_IA(1.*ell_ar[i],nl,ns) - C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns);[m
+[31m-			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;[m
+[31m-			// printf("cl_temp: %d, %lg\n", i, cl_temp);[m
+[31m-			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns), C_gl_lin_nointerp(1.*ell_ar[i],nl,ns));[m
+[31m-			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_ggl_IA(1.*ell_ar[i],nl,ns), C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns));[m
+[31m-			// dev = Cl[ell_ar[i]]/C_gl_tomo_nointerp(1.0*ell_ar[i],nl,ns)-1.;[m
+[31m-			dev = Cl[ell_ar[i]]/C_ggl_IA(1.0*ell_ar[i],nl,ns)-1.;[m
+[31m-[m
+[31m-		   // printf("nl,ns,L,Cl[L],dev=%d %d %d %e %e\n",nl,ns,ell_ar[i],Cl[ell_ar[i]],dev);[m
+[31m-		}[m
+[31m-[m
+[31m-		i_block++;[m
+[31m-		L = i_block*Nell_block -1 ;[m
+[31m-		// dev = Cl[L]/C_gl_tomo_nointerp(1.0*L,nl,ns)-1.;[m
+[31m-		dev = Cl[L]/C_ggl_IA(1.0*L,nl,ns)-1.;[m
+[31m-[m
+[31m-	 //   printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);[m
+[31m-		// printf("i_block: %d\n", i_block);[m
+[31m-	}[m
+[31m-	// exit(0);[m
+[31m-	L++;[m
+[31m-	// printf("switching to Limber calculation at l = %d\n",L);[m
+[31m-	// for (l = 1; l < 20; l++){[m
+[31m-	// 	Cl[l]=C_gl_tomo_nointerp((double)l,nl,ns);[m
+[31m-	// }[m
+[31m-	// for (l = 20; l < LMAX; l++){[m
+[31m-	// 	Cl[l]=C_gl_tomo((double)l,nl,ns);[m
+[31m-	// }[m
+[31m-[m
+[31m-	for (l = L; l < LMAX; l++){[m
+[31m-		// Cl[l]=C_gl_tomo((double)l,nl,ns);[m
+[31m-		Cl[l]=C_ggl_IA_tab((double)l,nl,ns);[m
+[31m-	}[m
+[31m-	// printf("finished bin %d %d\n", nl,ns);[m
+[31m-	for(i=0;i<Nell_block;i++) {[m
+[31m-		free(k1_ar[i]);free(k2_ar[i]);[m
+[31m-		free(Fk1_ar[i]);free(Fk2_ar[i]);[m
+[31m-		free(Fk1_Mag_ar[i]);[m
+[31m-	}[m
+[31m-	free(k1_ar);free(k2_ar);[m
+[31m-	free(Fk1_ar);free(Fk2_ar);[m
+[31m-	free(Fk1_Mag_ar);[m
+[31m-	// fclose(OUT);[m
+[31m-	// exit(0);[m
+[31m-}[m
+[31m-[m
+[31m-double w_gamma_t_nonLimber(int nt, int ni, int nj){[m
+[31m-	// if(1) return 0.;[m
+[31m-	static int LMAX = 100000;[m
+[31m-	static int NTHETA = 0;[m
+[31m-	static double ** Pl =0;[m
+[31m-	static double *Cl =0;[m
+[31m-	static double *w_vec =0;[m
+[31m-	static cosmopara C;[m
+[31m-	static nuisancepara N;[m
+[31m-	static galpara G;[m
+[31m-	int i,l,nz;[m
+[31m-	if (like.Ntheta ==0){[m
+[31m-		printf("cosmo2D_fullsky.c:w_gamma_t_tomo: like.Ntheta not initialized\nEXIT\n"); exit(1);[m
+[31m-	}[m
+[31m-	if (Pl ==0){[m
+[31m-		Pl =create_double_matrix(0, like.Ntheta-1, 0, LMAX-1);[m
+[31m-		Cl = create_double_vector(0,LMAX-1);[m
+[31m-		w_vec = create_double_vector(0,tomo.ggl_Npowerspectra*like.Ntheta-1);[m
+[31m-		NTHETA = like.Ntheta;[m
+[31m-		double *xmin, *xmax, *Pmin, *Pmax, *dP;[m
+[31m-		xmin= create_double_vector(0, like.Ntheta-1);[m
+[31m-		xmax= create_double_vector(0, like.Ntheta-1);[m
+[31m-		double logdt=(log(like.vtmax)-log(like.vtmin))/like.Ntheta;[m
+[31m-[m
+[31m-		// double *xmid, *Pmid;[m
+[31m-		double mythetamin, mythetamax;[m
+[31m-		// xmid= create_double_vector(0, like.Ntheta-1);[m
+[31m-		// Pmid= create_double_vector(0, LMAX+1);[m
+[31m-		for(i=0; i<like.Ntheta ; i++){[m
+[31m-			mythetamin = exp(log(like.vtmin)+(i+0.0)*logdt);[m
+[31m-			mythetamax = exp(log(like.vtmin)+(i+1.0)*logdt);[m
+[31m-			xmin[i]=cos(mythetamin);[m
+[31m-			xmax[i]=cos(mythetamax);[m
+[31m-			// xmid[i]= (2./3.) * (pow(thetamax,3) - pow(thetamin,3)) / (thetamax*thetamax - thetamin*thetamin);[m
+[31m-		}[m
+[31m-		Pmin= create_double_vector(0, LMAX+1);[m
+[31m-    	Pmax= create_double_vector(0, LMAX+1);[m
+[31m-[m
+[31m-		for (i = 0; i<NTHETA; i ++){[m
+[31m-			// printf("Tabulating Legendre coefficients %d/%d\n",i+1, NTHETA);[m
+[31m-			gsl_sf_legendre_Pl_array(LMAX, xmin[i],Pmin);[m
+[31m-			gsl_sf_legendre_Pl_array(LMAX, xmax[i],Pmax);[m
+[31m-		    // gsl_sf_legendre_Pl_array(LMAX, xmid[i],Pmid);[m
+[31m-			for (int l = 2; l < LMAX; l ++){[m
+[31m-				// Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*gsl_sf_legendre_Plm(l,2,cos(like.theta[i]));	[m
+[31m-				Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1)*(xmin[i]-xmax[i]))[m
+[31m-				*((l+2./(2*l+1.))*(Pmin[l-1]-Pmax[l-1])[m
+[31m-				+(2-l)*(xmin[i]*Pmin[l]-xmax[i]*Pmax[l])[m
+[31m-				-2./(2*l+1.)*(Pmin[l+1]-Pmax[l]));[m
+[31m-				// Pl[i][l] = (2.*l+1)/(4.*M_PI*l*(l+1))*Pmid[l]*Pmid[l];[m
+[31m-			}[m
+[31m-		}[m
+[31m-		free_double_vector(xmin,0,like.Ntheta-1);[m
+[31m-		free_double_vector(xmax,0,like.Ntheta-1);[m
+[31m-		free_double_vector(Pmin,0,LMAX+1);[m
+[31m-		free_double_vector(Pmax,0,LMAX+1);[m
+[31m-	}[m
+[31m-	if (recompute_ggl(C,G,N,ni)){[m
+[31m-		//required fractional accuracy in C(l)[m
+[31m-		double tolerance= 0.01;[m
+[31m-		//dev will be the actual difference between exact and Limber calcuation[m
+[31m-		double dev;[m
+[31m-[m
+[31m-		// if (like.IA != 0 && like.IA != 3 && like.IA != 4){printf("cosmo2D_real.c: w_gamma_t_tomo does not support like.IA = %d yet\nEXIT!\n",like.IA); exit(1);}[m
+[31m-		// C_tomo_pointer C_gl_pointer = &C_gl_tomo;[m
+[31m-		// if (like.IA ==3 || like.IA ==4) C_gl_pointer = &C_ggl_IA_tab;[m
+[31m-[m
+[31m-		for (nz = 0; nz <tomo.ggl_Npowerspectra; nz ++){[m
+[31m-			int L = 1;[m
+[31m-			// initialize to large value in order to start while loop[m
+[31m-			dev=10.*tolerance;[m
+[31m-			C_gl_mixed(L, LMAX, ZL(nz),ZS(nz), Cl, dev, tolerance);[m
+[31m-			for (i = 0; i < NTHETA; i++){[m
+[31m-				w_vec[nz*like.Ntheta+i] =0;[m
+[31m-				for (l = 1; l < LMAX; l++){[m
+[31m-					w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];[m
+[31m-				}[m
+[31m-			}[m
+[31m-		}[m
+[31m-		// for (nz = 0; nz <tomo.ggl_Npowerspectra; nz ++){[m
+[31m-		// 	for (l = 1; l < LMAX; l++){[m
+[31m-		// 		Cl[l]=C_ggl_IA_tab(1.0*l,ZL(nz),ZS(nz));[m
+[31m-		// 	}[m
+[31m-		// 	for (i = 0; i < NTHETA; i++){[m
+[31m-		// 		w_vec[nz*like.Ntheta+i] =0;[m
+[31m-		// 		for (l = 1; l < LMAX; l++){[m
+[31m-		// 			w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];[m
+[31m-		// 		}[m
+[31m-		// 	}[m
+[31m-		// }[m
+ [m
+ 		update_cosmopara(&C);[m
+ 		update_galpara(&G);[m
+ 		update_nuisance(&N);[m
+ 	}[m
+[31m-	return w_vec[N_ggl(ni,nj)*like.Ntheta+nt];  [m
+[32m+[m	[32mreturn w_vec[ni*like.Ntheta+nt];[m[41m  [m
+ }[m
+[31m-*/[m
+\ No newline at end of file[m

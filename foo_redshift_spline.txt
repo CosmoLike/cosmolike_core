@@ -1,0 +1,251 @@
+[1mdiff --git a/theory/redshift_spline.c b/theory/redshift_spline.c[m
+[1mold mode 100644[m
+[1mnew mode 100755[m
+[1mindex f175952..4200411[m
+[1m--- a/theory/redshift_spline.c[m
+[1m+++ b/theory/redshift_spline.c[m
+[36m@@ -1,5 +1,6 @@[m
+ //#define Z_SPLINE_TYPE gsl_interp_akima[m
+ #define Z_SPLINE_TYPE gsl_interp_cspline[m
+[32m+[m[32m#include <stdbool.h>[m
+ // lens efficiencies[m
+ double g_cmb (double a);//lens efficiency for CMB lensing[m
+ double g_tomo(double a, int zbin); // lens efficiency of source galaxies in tomography bin zbin[m
+[36m@@ -28,8 +29,9 @@[m [mdouble nsource(int j); //returns n_gal for shear tomography bin j, works only wi[m
+ double nlens(int j); //returns n_gal for clustering tomography bin j, works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j[m
+ double zmean(int j);//mean true redshift of (clustering/lens) galaxies within redshift bin j[m
+ double zmean_source(int j); //mean true redshift of source galaxies in tomography bin j[m
+[31m-[m
+[31m-[m
+[32m+[m[32m//double zmean_stretch(int j);[m
+[32m+[m[32m  double int_for_zmean_stretch(double z, void *params);[m
+[32m+[m[32m  double norm_for_zmean_stretch(double z, void *params);[m
+ /***** redshift integration boundaries **********/[m
+ double amin_source(int i);[m
+ double amax_source(int i);[m
+[36m@@ -57,7 +59,7 @@[m [mvoid write_gglensing_zbins(char *surveyname);[m
+ double ggl_efficiency(int zl, int zs);[m
+ ///[m
+ double g_bg (double a, int nzlens);//no longer supported - declaration only to prevent compile errors[m
+[31m-[m
+[32m+[m[32mstatic double **zmean_stretch = 0;[m
+ [m
+ /********** integration boundary routines *************/[m
+ double amin_source(int i){[m
+[36m@@ -77,14 +79,14 @@[m [mdouble amax_source_IA(int i){[m
+ double amin_lens(int i){[m
+   if (i == -1 || redshift.clustering_photoz == 1 || redshift.clustering_photoz == 2){return 1./(redshift.clustering_zdistrpar_zmax+1.);}[m
+   if (redshift.clustering_photoz == 0){ return 1./(1+tomo.clustering_zmax[i]);}[m
+[31m-  if (redshift.clustering_photoz == 4){ return 1./(1+tomo.clustering_zmax[i]+2.*fabs(nuisance.bias_zphot_clustering[i]));}[m
+[32m+[m[32m  if (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5){ return 1./(1+tomo.clustering_zmax[i]+2.*fabs(nuisance.bias_zphot_clustering[i]));}[m
+   return 1./(1+fmin(tomo.clustering_zmax[i] + 5.*nuisance.sigma_zphot_clustering[i] + fabs(nuisance.bias_zphot_clustering[i]),redshift.clustering_zdistrpar_zmax));[m
+ }[m
+ double amax_lens(int i){[m
+   if (gbias.b_mag[i] != 0){return 1./(1.+fmax(redshift.shear_zdistrpar_zmin,0.001));}[m
+   if (i == -1 || redshift.clustering_photoz == 1 || redshift.clustering_photoz == 2){return 1./(1.+fmax(redshift.clustering_zdistrpar_zmin,0.001));}[m
+   if (redshift.clustering_photoz == 0){ return 1./(1.+fmax(tomo.clustering_zmin[i],0.001));}[m
+[31m-  if (redshift.clustering_photoz == 4){ return 1./(1+fmax(tomo.clustering_zmin[i]-2.*fabs(nuisance.bias_zphot_clustering[i]),0.001));}[m
+[32m+[m[32m  if (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5){ return 1./(1+fmax(tomo.clustering_zmin[i]-2.*fabs(nuisance.bias_zphot_clustering[i]),0.001));}[m
+   return 1./(1+fmax(tomo.clustering_zmin[i] - 5.*nuisance.sigma_zphot_clustering[i]-fabs(nuisance.bias_zphot_clustering[i]),0.001));[m
+ }[m
+ [m
+[36m@@ -107,16 +109,18 @@[m [mint test_zoverlap(int zl, int zs){ //test whether source bin zs is behind lens b[m
+   // if (tomo.clustering_zmin[zl] >= tomo.shear_zmax[zs]) {return 0;}[m
+   if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}[m
+   if (redshift.shear_photoz < 4 && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}[m
+[31m-  if (redshift.shear_photoz == 4 && redshift.clustering_photoz != 4 && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}[m
+[31m-  if (redshift.shear_photoz == 4 && redshift.clustering_photoz == 4 && zmean(zl)+0.1 < zmean_source(zs)){return 1;}[m
+[32m+[m[32m  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz != 4 && redshift.clustering_photoz != 5) && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}[m
+[32m+[m[32m  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5) && zmean(zl)+0.1 < zmean_source(zs)){return 1;}[m
+[32m+[m
+   return 0;[m
+ }[m
+ int test_zoverlap_cov(int zl, int zs){ //test whether source bin zs is behind lens bin zl[m
+   // if (tomo.clustering_zmin[zl] >= tomo.shear_zmax[zs]) {return 0;}[m
+   if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}[m
+   if (redshift.shear_photoz < 4 && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}[m
+[31m-  if (redshift.shear_photoz == 4 && redshift.clustering_photoz != 4 && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}[m
+[31m-  if (redshift.shear_photoz == 4 && redshift.clustering_photoz == 4 && zmean(zl)+0.1 < zmean_source(zs)){return 1;}[m
+[32m+[m[32m  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz != 4 && redshift.clustering_photoz != 5) && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}[m
+[32m+[m[32m  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5) && zmean(zl)+0.1 < zmean_source(zs)){return 1;}[m
+[32m+[m
+   return 0;[m
+ }[m
+ int test_zoverlap_c(int zc, int zs){ //test whether source bin zs is behind lens bin zl[m
+[36m@@ -405,7 +409,7 @@[m [mdouble zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi[m
+   static gsl_interp_accel * photoz_accel[11];[m
+ [m
+   if (redshift.shear_photoz == -1){return n_of_z(zz,j);}[m
+[31m-  if ((redshift.shear_photoz != 4 && recompute_zphot_shear(N)) || table==0){[m
+[32m+[m[32m  if (((redshift.shear_photoz != 4) && recompute_zphot_shear(N)) || table==0){[m
+     update_nuisance(&N);[m
+     if (table == 0){[m
+       int zbins1 = line_count(redshift.shear_REDSHIFT_FILE);[m
+[36m@@ -522,7 +526,7 @@[m [mdouble zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi[m
+             norm += table[i+1][k]*da;[m
+           }[m
+           for (k = 0;k<zbins; k++){table[i+1][k]/= norm;}[m
+[31m-          break;        [m
+[32m+[m[32m          break;[m[41m                   [m
+         default:[m
+           printf("redshift.shear_photoz = %d not supported in this cosmolike version\n",redshift.shear_photoz);[m
+           exit(1);[m
+[36m@@ -539,6 +543,7 @@[m [mdouble zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi[m
+     }[m
+     for (i = -1; i < tomo.shear_Nbin; i++){[m
+       gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);[m
+[32m+[m
+ //      printf("spline init shear %d, %e\n",i,gsl_spline_eval(photoz_splines[i+1],1.0,NULL));[m
+     } [m
+   }[m
+[36m@@ -663,20 +668,24 @@[m [mdouble pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned[m
+   static int zbins = -1;[m
+   static gsl_spline * photoz_splines[11];[m
+   static gsl_interp_accel * photoz_accel[11];[m
+[32m+[m[41m  [m
+ [m
+[32m+[m[32m  //printf("%f %f %d at beginning\n", nuisance.bias_zphot_stretch[j], j, j);[m
+   if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}[m
+[31m-    if ((redshift.clustering_photoz != 4 && recompute_zphot_clustering(N)) || table==0){[m
+[32m+[m[32m    if (((redshift.clustering_photoz != 4 && redshift.clustering_photoz != 5) && recompute_zphot_clustering(N)) || table==0){[m
+[32m+[m[32m        //double **zmean_stretch = 0;[m
+[32m+[m
+     update_nuisance(&N);[m
+     if (table == 0){[m
+       zbins = line_count(redshift.clustering_REDSHIFT_FILE);[m
+[31m-      if (redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model[m
+[32m+[m[32m      if ((redshift.clustering_photoz !=4 && redshift.clustering_photoz != 5) && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model[m
+       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);[m
+       z_v=create_double_vector(0, zbins-1);[m
+       for (int i = 0; i < tomo.clustering_Nbin+1; i++){[m
+         photoz_splines[i] = gsl_spline_alloc(Z_SPLINE_TYPE, zbins);[m
+         photoz_accel[i] = gsl_interp_accel_alloc();[m
+       }[m
+[31m-      if (redshift.clustering_photoz ==4){//if multihisto, force zmin, zmax, tomo bins to match supplied file[m
+[32m+[m[32m      if (redshift.clustering_photoz ==4 || redshift.clustering_photoz == 5){//if multihisto, force zmin, zmax, tomo bins to match supplied file[m
+         FILE *ein;[m
+         double space;[m
+         int i,k;[m
+[36m@@ -779,6 +788,17 @@[m [mdouble pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned[m
+           }[m
+           for (k = 0;k<zbins; k++){ table[i+1][k] = pf_histo_n(z_v[k],(void*)array)/norm;}[m
+           break;[m
+[32m+[m[32m        case 5: // histogram file contains n(z) estimates for each bin[m
+[32m+[m[32m          array[0] = 1.0*i;[m
+[32m+[m[32m          pf_histo_n(0.,(void*) array);[m
+[32m+[m[32m          norm = int_gsl_integrate_medium_precision(pf_histo_n, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024);[m
+[32m+[m[32m          if (norm == 0){[m
+[32m+[m[32m            printf("redshift.c:pf_photoz:norm(nz=%d)=0\nEXIT\n",i);[m
+[32m+[m[32m            exit(1);[m
+[32m+[m[32m          }[m
+[32m+[m[32m          for (k = 0;k<zbins; k++){[m[41m [m
+[32m+[m[32m            table[i+1][k] = pf_histo_n(z_v[k],(void*)array)/norm;}[m
+[32m+[m[32m          break;[m
+         default:[m
+           printf("redshift.clustering_photoz = %d not supported in this cosmolike version\n",redshift.clustering_photoz);[m
+           exit(1);[m
+[36m@@ -802,8 +822,39 @@[m [mdouble pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned[m
+     printf("redshift.c: pf_photoz(z,%d) outside tomo.clustering_Nbin range\n", j);[m
+     exit(1);[m
+   } [m
+[32m+[m
+[32m+[m
+[32m+[m[32m  if (redshift.clustering_photoz == 5 && zmean_stretch==0){[m
+[32m+[m[32m    printf("Calculating z_mean with no tomography for MAGLIM sample\n");[m
+[32m+[m[32m      void* array[4];[m
+[32m+[m[32m      zmean_stretch   = create_double_matrix(0, tomo.clustering_Nbin, 0, 1);[m
+[32m+[m[32m      for (int i = 0; i< tomo.clustering_Nbin; i++){[m
+[32m+[m[32m       array[0] = &z_v[0];[m
+[32m+[m[32m       array[1] = &z_v[zbins-1];[m
+[32m+[m[32m       array[2] = (&photoz_splines[i+1]);[m
+[32m+[m[32m       array[3] = (&photoz_accel[i+1]);[m
+[32m+[m
+[32m+[m[32m       zmean_stretch[i][0] = int_gsl_integrate_low_precision(int_for_zmean_stretch, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024)/int_gsl_integrate_low_precision(norm_for_zmean_stretch, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024);[m[41m [m
+[32m+[m[32m          printf("%f\n", zmean_stretch[i][0]);[m
+[32m+[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m
+[32m+[m[32m  }[m
+[32m+[m[32m  //for (int i =0; i < tomo.clustering_Nbin; i++){printf("%f %d %d\n",nuisance.bias_zphot_stretch[i], i, j);}[m
+[32m+[m
+[32m+[m[32m  //update_nuisance(&N);[m
+   if (redshift.clustering_photoz == 4){ zz = zz -nuisance.bias_zphot_clustering[j];}[m
+[32m+[m[32m  if (redshift.clustering_photoz == 5 && j>=0){[m
+[32m+[m[32m    //printf("%f %f %f %f %f\n", zz, nuisance.bias_zphot_stretch[j], nuisance.bias_zphot_clustering[j], zmean_stretch[j][0], gbias.b[j]);[m
+[32m+[m[32m    zz = (zz -nuisance.bias_zphot_clustering[j] - zmean_stretch[j][0])/nuisance.bias_zphot_stretch[j] + zmean_stretch[j][0];}[m
+[32m+[m[32m    //printf("%f %f\n", zz, nuisance.bias_zphot_stretch[j]);}[m
+   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;[m
+[32m+[m[32m  if (redshift.clustering_photoz == 5 && j>=0){[m
+[32m+[m[32m    //printf("%f %f\n", nuisance.bias_zphot_stretch[j], zz);[m
+[32m+[m[32m      //printf("%f\n", gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));[m
+[32m+[m
+[32m+[m[32m    return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1])/nuisance.bias_zphot_stretch[j];}[m
+   return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);[m
+ }[m
+ [m
+[36m@@ -860,8 +911,8 @@[m [mdouble nlens(int j) //returns n_gal for clustering tomography bin j, works only[m
+   if (table ==0 ||table[0][0] != survey.n_lens){[m
+     array[0] = pf_photoz(0.,0);[m
+     table   = create_double_matrix(0, tomo.clustering_Nbin, 0, 1);[m
+[31m-    if (redshift.clustering_photoz == 4){[m
+[31m-      printf("redshift.clustering_photoz = 4, using tabulated tomo.n_lens =");[m
+[32m+[m[32m    if (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5){[m
+[32m+[m[32m      printf("redshift.clustering_photoz = 4 or 5, using tabulated tomo.n_lens =");[m
+       for (i = 0; i< tomo.clustering_Nbin; i++){[m
+         printf(" %e,", tomo.n_lens[i]);[m
+         table[i+1][0] = tomo.n_lens[i];[m
+[36m@@ -892,13 +943,52 @@[m [mdouble nlens(int j) //returns n_gal for clustering tomography bin j, works only[m
+ [m
+ double int_for_zmean(double z, void *params){[m
+   double *array = (double*)params;[m
+[31m-  return z*pf_photoz(z,(int)array[0]);[m
+[32m+[m[32m  int j = (int)array[0];[m
+[32m+[m[32m  //if (redshift.clustering_photoz == 5){return (nuisance.bias_zphot_stretch[j]*(z -nuisance.bias_zphot_clustering[j] - zmean_stretch[j][0]) + zmean_stretch[j][0])*pf_photoz(z,j);}[m[41m [m
+[32m+[m[32m  return z*pf_photoz(z,j);[m
+ }[m
+ [m
+ double norm_for_zmean(double z, void *params){[m
+   double *array = (double*)params;[m
+   return pf_photoz(z,(int)array[0]);[m
+ }[m
+[32m+[m
+[32m+[m[32mdouble int_for_zmean_stretch(double z, void *params){[m
+[32m+[m[32m    double z_temp = z;[m
+[32m+[m[32m  void** array = params;[m
+[32m+[m[32m  double min = *(double*)array[0];[m
+[32m+[m[32m  double max = *(double*)array[1];[m
+[32m+[m[32m  void* spline = array[2];[m
+[32m+[m[32m  void* accel = array[3];[m
+[32m+[m
+[32m+[m
+[32m+[m[32m  gsl_spline* a = *((gsl_spline**)(spline));[m
+[32m+[m[32m  gsl_interp_accel* b = *((gsl_interp_accel**)(accel));[m
+[32m+[m
+[32m+[m[32m  if (z <= min || z >= max) return 0.0;[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m  return z*gsl_spline_eval(a, z, b);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mdouble norm_for_zmean_stretch(double z, void *params){[m
+[32m+[m[32m  void** array = params;[m
+[32m+[m[32m  double min = *(double*)array[0];[m
+[32m+[m[32m  double max = *(double*)array[1];[m
+[32m+[m[32m  void* spline = array[2];[m
+[32m+[m[32m  void* accel = array[3];[m
+[32m+[m
+[32m+[m[32m  if (z <= min || z >= max) return 0.0;[m
+[32m+[m
+[32m+[m
+[32m+[m[32m  gsl_spline* a = *((gsl_spline**)(spline));[m
+[32m+[m[32m  gsl_interp_accel* b = *((gsl_interp_accel**)(accel));[m
+[32m+[m
+[32m+[m[32m  return gsl_spline_eval(a, z, b);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+ double zmean(int j){ //mean true redshift of galaxies in tomography bin j[m
+   static double **table = 0;[m
+   if (table ==0){[m

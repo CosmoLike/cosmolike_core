@@ -849,7 +849,11 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     //printf("%f %f %f %f %f\n", zz, nuisance.bias_zphot_stretch[j], nuisance.bias_zphot_clustering[j], zmean_stretch[j][0], gbias.b[j]);
     zz = (zz -nuisance.bias_zphot_clustering[j] - zmean_stretch[j][0])/nuisance.bias_zphot_stretch[j] + zmean_stretch[j][0];}
     //printf("%f %f\n", zz, nuisance.bias_zphot_stretch[j]);}
-  if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
+  if (zz <= z_v[0] || zz >= z_v[zbins-1]) {
+        //printf("%f %f\n", nuisance.bias_zphot_stretch[j], zz);
+
+    return 0.0;
+  }
   if (redshift.clustering_photoz == 5 && j>=0){
     //printf("%f %f\n", nuisance.bias_zphot_stretch[j], zz);
       //printf("%f\n", gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
@@ -991,6 +995,7 @@ double norm_for_zmean_stretch(double z, void *params){
 
 double zmean(int j){ //mean true redshift of galaxies in tomography bin j
   static double **table = 0;
+
   if (table ==0){
     double array[1];
     array[0] = pf_photoz(0.,0);

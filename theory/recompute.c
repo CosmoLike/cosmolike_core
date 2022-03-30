@@ -73,6 +73,7 @@ void update_nuisance (nuisancepara *N){
     N->sigma_zphot_clustering[i] = nuisance.sigma_zphot_clustering[i];
     N->bias_zphot_clustering[i] = nuisance.bias_zphot_clustering[i];
     N->bias_zphot_stretch[i] = nuisance.bias_zphot_stretch[i];
+    N->sigma_zphot_stretch[i] = nuisance.sigma_zphot_stretch[i];
   }
   for(i = 0; i < tomo.shear_Nbin; i++){
     N->sigma_zphot_shear[i] = nuisance.sigma_zphot_shear[i];

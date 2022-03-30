@@ -325,6 +325,7 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double shear_calibration_m[10][2];
   double sigma_zphot_shear[10][2];
   double bias_zphot_shear[10][2];
+  double sigma_zphot_stretch[10][2];
   double bias_zphot_stretch[10][2];
   double sigma_zphot_clustering[10][2];
   double bias_zphot_clustering[10][2];
@@ -351,6 +352,7 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
 priorpara prior = {.shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.sigma_zphot_stretch = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_stretch = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}}};

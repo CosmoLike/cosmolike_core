@@ -1,0 +1,50 @@
+[1mdiff --git a/theory/cosmo2D_fullsky_TATT.c b/theory/cosmo2D_fullsky_TATT.c[m
+[1mold mode 100644[m
+[1mnew mode 100755[m
+[1mindex bdecf85..ff929fc[m
+[1m--- a/theory/cosmo2D_fullsky_TATT.c[m
+[1m+++ b/theory/cosmo2D_fullsky_TATT.c[m
+[36m@@ -110,10 +110,21 @@[m [mdouble int_for_C_ggl_IA_TATT(double a, void *params){[m
+ [m
+   /* galaxy bias parameters for lens bin*/[m
+   b1 = gbias.b1_function(1./a-1.,(int)ar[0]);[m
+[32m+[m[32m  if (gbias.neutrino_induced_sdb>0.0){[m
+[32m+[m[41m  [m	[32mdouble f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;[m
+[32m+[m	[32mb1*= (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);[m
+[32m+[m[32m  }[m
+[32m+[m[32m  //printf("%.12lf\n", gbias.b1_function(1./a-1.,(int)ar[0]));[m
+[32m+[m[32m  //FILE *biases;[m
+[32m+[m[32m  //biases = fopen("./p_ks/b1_biases_P_lin_3_Nncdm_0.00083_simple_bias.txt", "a+");[m
+[32m+[m[32m  //fprintf(biases,"%.12lf %.12lf \n", k, (1.0 + Pdelta_cluster(k,a)/Pdelta(k,a) * f_cb)/(1.0+f_cb) );[m
+[32m+[m[32m  //fclose(biases);[m
+[32m+[m
+   b2 = gbias.b2[(int)ar[0]];[m
+   bs2 = gbias.bs2[(int)ar[0]];[m
+   double g4 = pow(growfac(a)/growfac(1.0),4.);[m
+[31m-  double Pnl = Pdelta(k,a);[m
+[32m+[m[32m  double Pnl = sqrt(Pdelta(k,a)*Pdelta_cluster(k,a));[m
+[32m+[m[32m  //printf("Pnl diff %f\n", (Pnl-Pdelta(k,a))/Pdelta(k,a));[m
+ [m
+   double P_1loop =b1*Pnl;[m
+   if (w_density*b2 !=0){[m
+[36m@@ -131,6 +142,7 @@[m [mdouble int_for_C_ggl_IA_TATT(double a, void *params){[m
+ [m
+ double C_EE_TATT(double l, int ni,int  nj){[m
+   double array[3] = {(double) ni, (double) nj, l};[m
+[32m+[m[41m  [m
+   double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);[m
+   return EE;[m
+ }[m
+[36m@@ -316,10 +328,12 @@[m [mdouble xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation[m
+ 				Cl_EE[l]=C_EE_TATT(1.0*l,Z1(nz),Z2(nz));[m
+ 				Cl_BB[l]=0.0;[m
+ 			}[m
+[32m+[m
+ 			for (l = LMIN_tab; l < LMAX; l++){[m
+ 				Cl_EE[l]=C_EE_tab(1.0*l,Z1(nz),Z2(nz));[m
+ 				Cl_BB[l]=0.0;[m
+ 			}[m
+[32m+[m
+ 			// only compute BB if the TATT parameters allow for B-mode terms[m
+ 			if (nuisance.b_ta_z[0] || nuisance.b_ta_z[Z1(nz)] || nuisance.b_ta_z[Z2(nz)] || nuisance.A2_ia || nuisance.A2_z[Z1(nz)] || nuisance.A2_z[Z2(nz)]){[m
+ 				for (l = 2; l < LMIN_tab; l++){[m
