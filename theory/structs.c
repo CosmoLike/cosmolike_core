@@ -374,6 +374,24 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double bary_Q2[2];
   double bary_Q3[2];
   double theta_star[2];
+
+  // double gas_Gamma_KS[2];
+  // double gas_beta[2];
+  // double gas_lgM0[2];
+  // double gas_eps1[2];
+  // double gas_eps2[2];
+
+  // double gas_beta_v2[2];
+  // double gas_lgM0_v2[2];
+  // double gas_eps1_v2[2];
+  // double gas_eps2_v2[2];
+
+  // double gas_alpha[2];
+  // double gas_A_star[2];
+  // double gas_lgM_star[2];
+  // double gas_sigma_star[2];
+  // double gas_lgT_w[2];
+  // double gas_f_H[2];
 }priorpara;
 priorpara prior = {
  .shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},

@@ -1077,17 +1077,17 @@ void set_HOD_redmagic()
 
 void set_halomodel_parameters_to_HMCode20_fiducial()
 {
-  gas.Gamma_KS=1.17;
-  gas.beta=0.6;
-  gas.lgM0=14.;
-  gas.alpha=1.;
-  gas.A_star=0.03;
-  gas.lgM_star=12.5;
-  gas.sigma_star=1.2;
-  gas.lgT_w=6.5;
-  gas.f_H=0.752;
-  gas.eps1=0.;
-  gas.eps2=0.;
+  nuisance.gas_Gamma_KS=1.17;
+  nuisance.gas_beta=0.6;
+  nuisance.gas_lgM0=14.;
+  nuisance.gas_alpha=1.;
+  nuisance.gas_A_star=0.03;
+  nuisance.gas_lgM_star=12.5;
+  nuisance.gas_sigma_star=1.2;
+  nuisance.gas_lgT_w=6.5;
+  nuisance.gas_f_H=0.752;
+  nuisance.gas_eps1=0.;
+  nuisance.gas_eps2=0.;
 
   printf("halo model and gas profile set to HMCode20_fiducial\n");
 }
