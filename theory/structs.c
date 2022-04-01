@@ -16,6 +16,7 @@ typedef struct {
   double lmax_kappacmb;
   double lmin_kappacmb;
   double lmax_y;
+  double lmin_y;
   int baryons;
   int IA;
   int bias;
