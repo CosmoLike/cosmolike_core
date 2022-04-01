@@ -296,7 +296,7 @@ double conc_y(double m, double a) // for y field, with a separate set of gas par
   double result;
   double M0=pow(10,nuisance.gas_lgM0_v2);
   // result = 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2013, Delta = 200 rho_{mean} (Table 2)
-  result = 10.14*pow(m/2.e+12,-0.081)*pow(a,1.01); //Duffy et al. 2008 (Delta = 200 mean)
+  result = 10.14*pow(m/2.e+12,-0.081)*pow(a,1.01); //Duffy et al. 2008 (Delta = 200 mean) - If use this, set c_max=50 !!
   if(like.feedback_on == 1){
     result *= (1.+nuisance.gas_eps1_v2 + (nuisance.gas_eps2_v2 - nuisance.gas_eps1_v2)/(1.+pow(M0/m, nuisance.gas_beta_v2)) );
   }
@@ -334,7 +334,7 @@ double u_nfw_c_interp(double c,double k, double m, double a){
   // static cosmopara C;
 
   static int N_c = 25, N_x = 80;
-  static double cmin = 0.1, cmax = 15.;
+  static double cmin = 0.1, cmax = 50.;
   static double xmin = 1e-10, xmax = 5e4; // full range of possible k*R_200/c in the code
   static double logxmin = 0., logxmax=0., dx=0., dc=0.;
   
@@ -451,7 +451,7 @@ double u_KS_normalized_interp(double c,double k, double rv){
   static nuisancepara N;
 
   static int N_c = 20, N_x = 200;
-  static double cmin = 0.1, cmax = 15.;
+  static double cmin = 0.1, cmax = 50.;
   static double xmin = 1e-10, xmax = 5e3; // full range of possible k*R_200/c in the code
   static double logxmin = 0., logxmax=0., dx=0., dc=0.;
    
