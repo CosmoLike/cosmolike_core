@@ -170,7 +170,7 @@ double int_for_C_cl_tomo(double a, void *params)
 	  res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
 	  res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
 	  res *= dchi_da(a)/fK/fK;
-	    //printf("%d %d %f %f %d %d %f %f %f\n", (int)ar[0], (int)ar[1], k*cosmology.h0/cosmology.coverH0, res/res1, res==0, res1==0, f_cb, b1_k_0, gbias.b1_function(1./a-1.,(int)ar[0]));
+	  //printf("%d %d %f %f %d %d %f %f \n", (int)ar[0], (int)ar[1], k*cosmology.h0/cosmology.coverH0, res/res1, res==0, res1==0, f_cb, b1_k_0/gbias.b1_function(1./a-1.,(int)ar[0]));
 
   }
   return res;
@@ -324,6 +324,8 @@ double int_for_C_cl_lin(double a, void *params)
 	  	res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
 	  	res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
 	  	res *= dchi_da(a)/fK/fK;
+	  		  //printf("%d %d %f %f %d %d %f %f \n", (int)ar[0], (int)ar[1], k*cosmology.h0/cosmology.coverH0, res/res1, res==0, res1==0, f_cb, b1_k_0/gbias.b1_function(1./a-1.,(int)ar[0]));
+
   	}
   	//uncomment above lines to implement scale-dependent neutrino bias
 	return res;
@@ -333,7 +335,7 @@ double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power sp
 {
 	double array[3] = {1.0*ni,1.0*nj,l};
 	// return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
-	return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.99999,NULL,1000);
+	return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.999999,NULL,1000);
 }
 
 
@@ -760,7 +762,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
   	} 
 	}
 	L++;
-	//printf("switching to Limber calculation at l = %d %d\n",L, ni);
+	printf("switching to Limber calculation at l = %d %d\n",L, ni);
 	// for (l = 1; l < 50; l++){
 	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
 	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);

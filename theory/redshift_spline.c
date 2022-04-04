@@ -791,7 +791,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
         case 5: // histogram file contains n(z) estimates for each bin
           array[0] = 1.0*i;
           pf_histo_n(0.,(void*) array);
-          norm = int_gsl_integrate_medium_precision(pf_histo_n, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024);
+          norm = int_gsl_integrate_medium_precision(pf_histo_n, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024)/nuisance.bias_zphot_stretch[i];
           if (norm == 0){
             printf("redshift.c:pf_photoz:norm(nz=%d)=0\nEXIT\n",i);
             exit(1);
