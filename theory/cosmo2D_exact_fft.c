@@ -121,8 +121,8 @@ double int_for_C_cl_tomo_b2(double a, void *params)
 
 	  res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;
 	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	  double a1 = 1.0/(1.0 + zmean((int)ar[0]));
-	  double a2 = 1.0/(1.0 + zmean((int)ar[1]));
+	  double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
+	  double a2 = 1.0/(1.0 + zmean((int)ar[1], false));
 
 	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a1)/p_lin(k,a1) * f_cb)/(1.0+f_cb);
 	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a2)/p_lin(k,a2) * f_cb)/(1.0+f_cb);
@@ -160,8 +160,8 @@ double int_for_C_cl_tomo(double a, void *params)
   double res1 = res;
   if (gbias.neutrino_induced_sdb>0.0){
 
-	  double a1 = 1.0/(1.0 + zmean((int)ar[0]));
-	  double a2 = 1.0/(1.0 + zmean((int)ar[1]));
+	  double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
+	  double a2 = 1.0/(1.0 + zmean((int)ar[1], false));
 
 	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
 	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a1)/p_lin(k,a1) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms
@@ -202,7 +202,7 @@ double int_for_C_gl_tomo_b2(double a, void *params)
 
   if (gbias.neutrino_induced_sdb>0.0){
 	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	  double a1 = 1.0/(1.0 + zmean((int)ar[0]));
+	  double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
 
 	  double b1_k = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a1)/p_lin(k,a1) * f_cb)/(1.0+f_cb);
 	  res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
@@ -260,6 +260,7 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
 
   if (recompute_clustering(C,G,N,ni,nj))
   {
+  	zmean(0,true);
     if (table==0) {
       table   = create_double_matrix(0, tomo.clustering_Nbin*tomo.clustering_Nbin-1, 0, Ntable.N_ell-1);
       logsmin = log(limits.P_2_s_min);
@@ -314,8 +315,8 @@ double int_for_C_cl_lin(double a, void *params)
 	
 	if (gbias.neutrino_induced_sdb>0.0){
 
-	  double a1 = 1.0/(1.0 + zmean((int)ar[0]));
-	  double a2 = 1.0/(1.0 + zmean((int)ar[1]));
+	  double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
+	  double a2 = 1.0/(1.0 + zmean((int)ar[1], false));
 
 
 	  	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
@@ -702,9 +703,9 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				double plin = p_lin(k1_cH0,1.0);
 				double plin_cluster = p_lin_cluster(k1_cH0,1.0);
 				//double factor = plin_cluster*(1+2*f_cb*(plin_cluster/plin) + f_cb*f_cb*(plin_cluster/plin)*(plin_cluster/plin))/(1+f_cb)/(1+f_cb);
-				double cluster_a = 1.0/(1.0+zmean(ni));
+				double cluster_a = 1.0/(1.0+zmean(ni, false));
 				double factor = plin_cluster * ((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a)/p_lin(k1_cH0, cluster_a)))/(1+f_cb))*((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a)/p_lin(k1_cH0, cluster_a)))/(1+f_cb));
-				double cluster_a_2  = 1.0/(1.0 + zmean(nj));
+				double cluster_a_2  = 1.0/(1.0 + zmean(nj, false));
 				double factor_2 = plin_cluster * ((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a_2)/p_lin(k1_cH0, cluster_a_2)))/(1+f_cb))*((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a_2)/p_lin(k1_cH0, cluster_a_2)))/(1+f_cb));
 				double fk1;
 				double fk2;
@@ -762,7 +763,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
   	} 
 	}
 	L++;
-	printf("switching to Limber calculation at l = %d %d\n",L, ni);
+	//printf("switching to Limber calculation at l = %d %d\n",L, ni);
 	// for (l = 1; l < 50; l++){
 	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
 	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);
@@ -848,6 +849,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 		free_double_vector(Pmax,0,LMAX+1);
 		}
 		if (recompute_clustering(C,G,N,ni,nj)){
+		zmean(0,true);
 		//required fractional accuracy in C(l)
 		double tolerance= 0.01;
 		//dev will be the actual difference between exact and Limber calcuation

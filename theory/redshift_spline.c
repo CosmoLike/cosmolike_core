@@ -27,7 +27,7 @@ double int_nsource(double z, void* param);
 double int_nlens(double z, void* param);
 double nsource(int j); //returns n_gal for shear tomography bin j, works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j
 double nlens(int j); //returns n_gal for clustering tomography bin j, works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j
-double zmean(int j);//mean true redshift of (clustering/lens) galaxies within redshift bin j
+double zmean(int j, bool recompute_zmean);//mean true redshift of (clustering/lens) galaxies within redshift bin j
 double zmean_source(int j); //mean true redshift of source galaxies in tomography bin j
 //double zmean_stretch(int j);
   double int_for_zmean_stretch(double z, void *params);
@@ -110,7 +110,7 @@ int test_zoverlap(int zl, int zs){ //test whether source bin zs is behind lens b
   if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}
   if (redshift.shear_photoz < 4 && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}
   if (redshift.shear_photoz == 4 && (redshift.clustering_photoz != 4 && redshift.clustering_photoz != 5) && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}
-  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5) && zmean(zl)+0.1 < zmean_source(zs)){return 1;}
+  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5) && zmean(zl, false)+0.1 < zmean_source(zs)){return 1;}
 
   return 0;
 }
@@ -119,7 +119,7 @@ int test_zoverlap_cov(int zl, int zs){ //test whether source bin zs is behind le
   if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}
   if (redshift.shear_photoz < 4 && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}
   if (redshift.shear_photoz == 4 && (redshift.clustering_photoz != 4 && redshift.clustering_photoz != 5) && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}
-  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5) && zmean(zl)+0.1 < zmean_source(zs)){return 1;}
+  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5) && zmean(zl, false)+0.1 < zmean_source(zs)){return 1;}
 
   return 0;
 }
@@ -672,8 +672,9 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
 
   //printf("%f %f %d at beginning\n", nuisance.bias_zphot_stretch[j], j, j);
   if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}
-    if (((redshift.clustering_photoz != 4 && redshift.clustering_photoz != 5) && recompute_zphot_clustering(N)) || table==0){
+    if (((redshift.clustering_photoz != 4) && recompute_zphot_clustering(N)) || table==0){
         //double **zmean_stretch = 0;
+      //zmean(0, true);
 
     update_nuisance(&N);
     if (table == 0){
@@ -804,6 +805,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
           exit(1);
       }
       NORM[i] = norm;
+      printf(" normi = %f, %f\n", norm, nuisance.bias_zphot_stretch[i]);
     }
     // calculate normalized overall redshift distribution (without bins), store in table[0][:]
     norm = 0;
@@ -993,10 +995,10 @@ double norm_for_zmean_stretch(double z, void *params){
 }
 
 
-double zmean(int j){ //mean true redshift of galaxies in tomography bin j
+double zmean(int j, bool recompute_zmean){ //mean true redshift of galaxies in tomography bin j
   static double **table = 0;
 
-  if (table ==0){
+  if (table ==0 || recompute_zmean){
     double array[1];
     array[0] = pf_photoz(0.,0);
     table   = create_double_matrix(0, tomo.clustering_Nbin, 0, 1);
@@ -1127,6 +1129,7 @@ double g_lens(double a, int zbin) // for *lens* tomography bin zbin
   int i,j;
   double array[2];
   if (table ==0 || recompute_zphot_clustering(N) || recompute_expansion(C)){
+    zmean(0,true);
     if (table==0) table   = create_double_matrix(0, tomo.clustering_Nbin, 0, Ntable.N_a-1);
     da = (0.999999-1./(redshift.clustering_zdistrpar_zmax+1.))/(Ntable.N_a-1);
     for (j=-1;j<tomo.clustering_Nbin;j++) {

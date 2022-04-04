@@ -47,7 +47,7 @@ double b3nl_from_b1 (double b1){
 }
 
 double b1_per_bin_evolv(double z, int ni){
-  return gbias.b[ni]*pow((1.+z)/(1.+zmean(ni)),1.0);
+  return gbias.b[ni]*pow((1.+z)/(1.+zmean(ni, false)),1.0);
 }
 
 double b1_per_bin(double z, int ni){
@@ -368,7 +368,7 @@ double P_gm (double k, double a,int nz){//galaxy-matter power spectrum based on 
 
 void set_HOD(int n){ //n >=0: set HOD parameters in redshift bin n; n = -1: unset HOD parameters (code then uses linear bias + non-linear matter power spectrum instead of halo model)
   int i;
-  double z = zmean(n);
+  double z = zmean(n, false);
   /*set HOD parameters, parameterization of Zehavi et al. */
   /*these example values from Coupon et al. 2012 for red galaxies with M_r < -21.8 (Table B.2)
    hod[zi][] ={lg(M_min), sigma_{lg M}, lg M_1, lg M_0, alpha, f_c}

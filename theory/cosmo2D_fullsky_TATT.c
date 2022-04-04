@@ -189,7 +189,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   b1 = gbias.b1_function(1./a-1.,(int)ar[0]);
   if (gbias.neutrino_induced_sdb>0.0){
   	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-  	double cluster_a = 1.0/(1.0+zmean((int)ar[0]));
+  	double cluster_a = 1.0/(1.0+zmean((int)ar[0], false));
 		b1*= (1.0 + p_lin_cluster(k,cluster_a)/p_lin(k,cluster_a) * f_cb)/(1.0+f_cb);
 
 
@@ -296,7 +296,7 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 		free_double_vector(Pmax,0,LMAX+1);
 	}
 	if (recompute_ggl(C,G,N,ni)){
-
+		zmean(0,true);
 		for (nz = 0; nz <tomo.ggl_Npowerspectra; nz ++){
 			for (l = 1; l < LMIN_tab; l++){
 				Cl[l]=C_ggl_TATT(1.0*l,ZL(nz),ZS(nz));
@@ -575,6 +575,7 @@ double C_ggl_TATT_tab(double l, int ni, int nj)  //G-G lensing power spectrum, l
   }
   
   if (recompute_ggl(C,G,N,ni)){
+  	zmean(0,true);
 	    //printf("calculating C_ggl_IA_tab  %e %e %e %e %e\n", nuisance.A_z[0], nuisance.A_z[1], nuisance.A_z[2], nuisance.A_z[3], nuisance.A_z[4]);
     if (table==0){
       table   = create_double_matrix(0, tomo.ggl_Npowerspectra-1, 0, NTAB_TATT-1);
