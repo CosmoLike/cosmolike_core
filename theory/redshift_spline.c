@@ -798,14 +798,15 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
             exit(1);
           }
           for (k = 0;k<zbins; k++){ 
-            table[i+1][k] = pf_histo_n(z_v[k],(void*)array)/norm;}
+            table[i+1][k] = pf_histo_n(z_v[k],(void*)array)/nuisance.bias_zphot_stretch[i]/norm;}
+            //printf("%d %d %e %e\n",i,k,z_v[k],table[i+1][k]);}
           break;
         default:
           printf("redshift.clustering_photoz = %d not supported in this cosmolike version\n",redshift.clustering_photoz);
           exit(1);
       }
       NORM[i] = norm;
-      printf(" normi = %f, %f\n", norm, nuisance.bias_zphot_stretch[i]);
+      //printf(" normi = %f, %f\n", norm, nuisance.bias_zphot_stretch[i]);
     }
     // calculate normalized overall redshift distribution (without bins), store in table[0][:]
     norm = 0;
@@ -849,8 +850,10 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   if (redshift.clustering_photoz == 4){ zz = zz -nuisance.bias_zphot_clustering[j];}
   if (redshift.clustering_photoz == 5 && j>=0){
     //printf("%f %f %f %f %f\n", zz, nuisance.bias_zphot_stretch[j], nuisance.bias_zphot_clustering[j], zmean_stretch[j][0], gbias.b[j]);
+    
     zz = (zz -nuisance.bias_zphot_clustering[j] - zmean_stretch[j][0])/nuisance.bias_zphot_stretch[j] + zmean_stretch[j][0];}
     //printf("%f %f\n", zz, nuisance.bias_zphot_stretch[j]);}
+  
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) {
         //printf("%f %f\n", nuisance.bias_zphot_stretch[j], zz);
 
@@ -858,7 +861,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   }
   if (redshift.clustering_photoz == 5 && j>=0){
     //printf("%f %f\n", nuisance.bias_zphot_stretch[j], zz);
-      //printf("%f\n", gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
+      //printf("%d %f %f\n", j, zz, gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
 
     return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1])/nuisance.bias_zphot_stretch[j];}
   return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);
@@ -1001,7 +1004,7 @@ double zmean(int j, bool recompute_zmean){ //mean true redshift of galaxies in t
   if (table ==0 || recompute_zmean){
     double array[1];
     array[0] = pf_photoz(0.,0);
-    table   = create_double_matrix(0, tomo.clustering_Nbin, 0, 1);
+    if (table ==0){table   = create_double_matrix(0, tomo.clustering_Nbin, 0, 1);}
     for (int i = 0; i< tomo.clustering_Nbin; i++){
      array[0]  = 1.0*i;
      table[i][0] = int_gsl_integrate_low_precision(int_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024)/int_gsl_integrate_low_precision(norm_for_zmean, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024); 

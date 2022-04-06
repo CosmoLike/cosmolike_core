@@ -124,8 +124,8 @@ double int_for_C_cl_tomo_b2(double a, void *params)
 	  double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
 	  double a2 = 1.0/(1.0 + zmean((int)ar[1], false));
 
-	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a1)/p_lin(k,a1) * f_cb)/(1.0+f_cb);
-	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a2)/p_lin(k,a2) * f_cb)/(1.0+f_cb);
+	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
 	  if(res){
 	    res= res*(b1_k_0*b1_k_1*p_c+g4*(b1_k_0*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1_k_0*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1_k_0*b3nl_from_b1(b1_k_0)*PT_d1d3(k)));
 	  }
@@ -164,8 +164,8 @@ double int_for_C_cl_tomo(double a, void *params)
 	  double a2 = 1.0/(1.0 + zmean((int)ar[1], false));
 
 	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a1)/p_lin(k,a1) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms
-	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a2)/p_lin(k,a2) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms
+	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms
+	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms
 
 	  res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
 	  res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
@@ -204,7 +204,7 @@ double int_for_C_gl_tomo_b2(double a, void *params)
 	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
 	  double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
 
-	  double b1_k = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a1)/p_lin(k,a1) * f_cb)/(1.0+f_cb);
+	  double b1_k = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
 	  res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
 	  res= res*(b1_k*sqrt(p)*sqrt(p_c)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1_k)*PT_d1d3(k))); 
 	  res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1_k*p;
@@ -320,8 +320,8 @@ double int_for_C_cl_lin(double a, void *params)
 
 
 	  	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	  	double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a1)/p_lin(k,a1) * f_cb)/(1.0+f_cb);
-	  	double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a2)/p_lin(k,a2) * f_cb)/(1.0+f_cb);
+	  	double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+	  	double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
 	  	res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
 	  	res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
 	  	res *= dchi_da(a)/fK/fK;
@@ -763,7 +763,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
   	} 
 	}
 	L++;
-	//printf("switching to Limber calculation at l = %d %d\n",L, ni);
+	printf("switching to Limber calculation at l = %d %d\n",L, ni);
 	// for (l = 1; l < 50; l++){
 	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
 	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);
