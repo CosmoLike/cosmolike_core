@@ -575,7 +575,7 @@ double C_ggl_TATT_tab(double l, int ni, int nj)  //G-G lensing power spectrum, l
   }
   
   if (recompute_ggl(C,G,N,ni)){
-  	zmean(0,true);
+  	//zmean(0,true);
 	    //printf("calculating C_ggl_IA_tab  %e %e %e %e %e\n", nuisance.A_z[0], nuisance.A_z[1], nuisance.A_z[2], nuisance.A_z[3], nuisance.A_z[4]);
     if (table==0){
       table   = create_double_matrix(0, tomo.ggl_Npowerspectra-1, 0, NTAB_TATT-1);

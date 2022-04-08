@@ -1132,7 +1132,7 @@ double g_lens(double a, int zbin) // for *lens* tomography bin zbin
   int i,j;
   double array[2];
   if (table ==0 || recompute_zphot_clustering(N) || recompute_expansion(C)){
-    zmean(0,true);
+    //zmean(0,true);
     if (table==0) table   = create_double_matrix(0, tomo.clustering_Nbin, 0, Ntable.N_a-1);
     da = (0.999999-1./(redshift.clustering_zdistrpar_zmax+1.))/(Ntable.N_a-1);
     for (j=-1;j<tomo.clustering_Nbin;j++) {
