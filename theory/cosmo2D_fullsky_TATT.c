@@ -198,7 +198,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);
   double Pnl_cross = sqrt(Pdelta(k,a)*Pdelta_cluster(k,a));
-  double Pnl = Pdelta_cluster(k,a);
+  double Pnl = Pdelta(k,a);
   //printf("Pnl diff %f\n", (Pnl-Pdelta(k,a))/Pdelta(k,a));
 
   double P_1loop =b1*Pnl_cross;
@@ -217,7 +217,10 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   /* lens magnification x G term*/
   res += w_mag*wk*Pnl;
   /* (linear bias lens density + lens magnification) with TATT_GI terms*/
-  if (C1 || C2) res += (b1*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
+  if (C1 || C2){
+  	if (gbias.neutrino_induced_sdb>0.0) res += (b1*(1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb)*sqrt(Pdelta(k,a)/Pdelta_cluster(k,a))*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
+  	else res += (b1*sqrt(Pdelta(k,a)/Pdelta_cluster(k,a))*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
+  }
   return res*dchi_da(a)/fK/fK;
 }
 
