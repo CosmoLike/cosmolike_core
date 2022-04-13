@@ -187,17 +187,7 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
 
   /* galaxy bias parameters for lens bin*/
   b1 = gbias.b1_function(1./a-1.,(int)ar[0]);
-  if (gbias.neutrino_induced_sdb>0.0){
-  	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-  	double cluster_a = 1.0/(1.0+zmean((int)ar[0], false));
-		b1*= (1.0 + p_lin_cluster(k,cluster_a)/p_lin(k,cluster_a) * f_cb)/(1.0+f_cb);
 
-
-		//b1*=bias_factor_mult((int)ar[0], k);
-
-
-
-  }
   //printf("%.12lf\n", gbias.b1_function(1./a-1.,(int)ar[0]));
   //FILE *biases;
   //biases = fopen("./p_ks/b1_biases_P_lin_3_Nncdm_0.00083_simple_bias.txt", "a+");
@@ -207,10 +197,17 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   b2 = gbias.b2[(int)ar[0]];
   bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);
-  double Pnl = sqrt(Pdelta(k,a)*Pdelta_cluster(k,a));
+  double Pnl_cross = sqrt(Pdelta(k,a)*Pdelta_cluster(k,a));
+  double Pnl = Pdelta_cluster(k,a);
   //printf("Pnl diff %f\n", (Pnl-Pdelta(k,a))/Pdelta(k,a));
 
-  double P_1loop =b1*Pnl;
+  double P_1loop =b1*Pnl_cross;
+  if (gbias.neutrino_induced_sdb>0.0){
+  	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  	//double cluster_a = 1.0/(1.0+zmean((int)ar[0], false));
+		P_1loop*= (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+  }
+
   if (w_density*b2 !=0){
   	P_1loop += g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k));
   }
