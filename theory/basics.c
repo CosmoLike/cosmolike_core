@@ -152,7 +152,7 @@ typedef struct {
 
 
 Ntab Ntable = {
-250, //N_a !!!!!!DO NOT F!@#$ING DECREASE THIS NUMBER UNLESS YOU ARE ELISABETH AND HAVE ASKED TIM BEFORE!!!!
+100, //N_a !!!!!!DO NOT F!@#$ING DECREASE THIS NUMBER UNLESS YOU ARE ELISABETH AND HAVE ASKED TIM BEFORE!!!!
 500, //N_k_lin
 500, //N_k_nlin
 200, //N_ell
@@ -246,6 +246,7 @@ double int_gsl_integrate_high_precision(double (*func)(double, void*),void *arg,
 
 double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter)
 {
+  niter= niter<50 ? niter:50;
   double res, err;
   gsl_integration_cquad_workspace *w = gsl_integration_cquad_workspace_alloc(niter);
   gsl_function F;
@@ -260,6 +261,7 @@ double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *ar
 
 double int_gsl_integrate_low_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter)
 {
+  niter= niter<50 ? niter:50;
   double res, err;
   gsl_integration_cquad_workspace *wcrude = gsl_integration_cquad_workspace_alloc(niter);
   gsl_function F;

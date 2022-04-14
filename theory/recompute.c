@@ -20,7 +20,15 @@ void update_PkRatio(barypara *B);
 int recompute_DESclusters(cosmopara C, nuisancepara N); //recompute criteria
 
 int recompute_gk(cosmopara C, galpara G, nuisancepara N,int i);//for gk statistics
-int recompute_ks(cosmopara C, galpara G, nuisancepara N, int i);//ks
+int recompute_ks(cosmopara C, nuisancepara N);//ks
+int recompute_kk(cosmopara C, nuisancepara N);
+
+int recompute_gy(cosmopara C, galpara G, nuisancepara N, int i);
+int recompute_sy(cosmopara C, nuisancepara N);
+int recompute_ky(cosmopara C, nuisancepara N);
+int recompute_yy(cosmopara C, nuisancepara N);
+
+int recompute_halo(nuisancepara N);
 
 void update_cosmopara (cosmopara *C){
   C->Omega_m = cosmology.Omega_m;
@@ -112,6 +120,24 @@ void update_nuisance (nuisancepara *N){
 
   N->frac_lowz = nuisance.frac_lowz;
   N->frac_highz= nuisance.frac_highz;
+
+  if (strcmp(pdeltaparams.runmode,"halomodel") ==0){
+    N->gas_beta = nuisance.gas_beta;
+    N->gas_lgM0 = nuisance.gas_lgM0; 
+    N->gas_eps1 = nuisance.gas_eps1;
+    N->gas_eps2 = nuisance.gas_eps2;
+    N->gas_beta_v2 = nuisance.gas_beta_v2;
+    N->gas_lgM0_v2 = nuisance.gas_lgM0_v2;
+    N->gas_eps1_v2 = nuisance.gas_eps1_v2;
+    N->gas_eps2_v2 = nuisance.gas_eps2_v2;
+    N->gas_alpha = nuisance.gas_alpha; 
+    N->gas_A_star = nuisance.gas_A_star; 
+    N->gas_lgM_star = nuisance.gas_lgM_star; 
+    N->gas_sigma_star = nuisance.gas_sigma_star;
+    N->gas_lgT_w = nuisance.gas_lgT_w;
+    N->gas_f_H = nuisance.gas_f_H;
+    N->gas_Gamma_KS = nuisance.gas_Gamma_KS;
+  }
 }
 int recompute_expansion(cosmopara C){ //rules for recomputing growth factor & comoving distance
   if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
@@ -199,7 +225,7 @@ int recompute_IA(nuisancepara N){
 }
 
 int recompute_shear(cosmopara C, nuisancepara N){
-  if (recompute_cosmo3D(C) || recompute_zphot_shear(N) || recompute_zphot_outlierfrac(N)||recompute_IA(N)){return 1;}
+  if (recompute_cosmo3D(C) || recompute_zphot_shear(N) || recompute_zphot_outlierfrac(N)||recompute_IA(N) || recompute_halo(N)){return 1;}
   else{return 0;}
 }
 int recompute_clusters(cosmopara C, nuisancepara N){
@@ -219,7 +245,7 @@ int recompute_DESclusters(cosmopara C, nuisancepara N){
 }
 
 int recompute_ii(cosmopara C, nuisancepara N){
-  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N)|| recompute_zphot_shear(N) || recompute_zphot_outlierfrac(N)|| N.A_ia != nuisance.A_ia || N.beta_ia != nuisance.beta_ia ||N.eta_ia != nuisance.eta_ia || N.eta_ia_highz != nuisance.eta_ia_highz || N.LF_alpha != nuisance.LF_alpha || N.LF_red_alpha != nuisance.LF_red_alpha || N.LF_P != nuisance.LF_P || N.LF_Q != nuisance.LF_Q || N.LF_red_P != nuisance.LF_red_P || N.LF_red_Q != nuisance.LF_red_Q){return 1;}
+  if (recompute_cosmo3D(C) || recompute_halo(N) || recompute_zphot_clustering(N)|| recompute_zphot_shear(N) || recompute_zphot_outlierfrac(N)|| N.A_ia != nuisance.A_ia || N.beta_ia != nuisance.beta_ia ||N.eta_ia != nuisance.eta_ia || N.eta_ia_highz != nuisance.eta_ia_highz || N.LF_alpha != nuisance.LF_alpha || N.LF_red_alpha != nuisance.LF_red_alpha || N.LF_P != nuisance.LF_P || N.LF_Q != nuisance.LF_Q || N.LF_red_P != nuisance.LF_red_P || N.LF_red_Q != nuisance.LF_red_Q){return 1;}
   else{return 0;} 
 }
 
@@ -236,23 +262,28 @@ int recompute_galaxies(galpara G, int i){
 }
 
 int recompute_ggl(cosmopara C, galpara G, nuisancepara N, int i){
-  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_zphot_outlierfrac(N) || recompute_zphot_shear(N) || recompute_galaxies(G,i) ||recompute_IA(N) ){return 1;}
+  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_zphot_outlierfrac(N) || recompute_zphot_shear(N) || recompute_galaxies(G,i) ||recompute_IA(N) || recompute_halo(N) ){return 1;}
   else{return 0;}
 }
 
 int recompute_clustering(cosmopara C, galpara G, nuisancepara N, int i, int j){
-  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_zphot_outlierfrac(N) || recompute_galaxies(G,i)|| recompute_galaxies(G,j)){return 1;}
+  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_zphot_outlierfrac(N) || recompute_galaxies(G,i)|| recompute_galaxies(G,j) || recompute_halo(N)){return 1;}
   else{return 0;}
  
 }
 
 int recompute_gk(cosmopara C, galpara G, nuisancepara N, int i){
-  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_zphot_outlierfrac(N) || recompute_galaxies(G,i) ){return 1;}
+  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_zphot_outlierfrac(N) || recompute_galaxies(G,i) || recompute_halo(N) ){return 1;}
   else{return 0;}
 }
 
-int recompute_ks(cosmopara C, galpara G, nuisancepara N, int i){
-  if (recompute_cosmo3D(C) || recompute_zphot_shear(N) || recompute_zphot_outlierfrac(N) || recompute_galaxies(G,i) ||recompute_IA(N) ){return 1;}
+int recompute_ks(cosmopara C, nuisancepara N){
+  if (recompute_cosmo3D(C) || recompute_zphot_shear(N) || recompute_zphot_outlierfrac(N) ||recompute_IA(N) || recompute_halo(N) ){return 1;}
+  else{return 0;}
+}
+
+int recompute_kk(cosmopara C, nuisancepara N){
+  if (recompute_cosmo3D(C) || recompute_halo(N) ){return 1;}
   else{return 0;}
 }
 
@@ -263,4 +294,36 @@ int recompute_PkRatio(barypara B){
 
 void update_PkRatio(barypara *B){
 	sprintf((*B).scenario,"%s", bary.scenario);
+}
+
+int recompute_gy(cosmopara C, galpara G, nuisancepara N, int i){
+  if (recompute_cosmo3D(C) || recompute_zphot_clustering(N) || recompute_zphot_outlierfrac(N) || recompute_galaxies(G,i) || recompute_halo(N) ){return 1;}
+  else{return 0;}
+}
+
+int recompute_sy(cosmopara C, nuisancepara N){
+  if (recompute_cosmo3D(C) || recompute_zphot_shear(N) || recompute_zphot_outlierfrac(N) ||recompute_IA(N) || recompute_halo(N) ){return 1;}
+  else{return 0;}
+}
+
+int recompute_ky(cosmopara C, nuisancepara N){
+  if (recompute_cosmo3D(C) || recompute_halo(N) ){return 1;}
+  else{return 0;}
+}
+
+int recompute_yy(cosmopara C, nuisancepara N){
+  if (recompute_cosmo3D(C) || recompute_halo(N) ){return 1;}
+  else{return 0;}
+}
+
+int recompute_halo(nuisancepara N){
+  if (strcmp(pdeltaparams.runmode,"halomodel") ==0){
+    if(N.gas_beta != nuisance.gas_beta || N.gas_lgM0 != nuisance.gas_lgM0 || N.gas_eps1 != nuisance.gas_eps1 || N.gas_eps2 != nuisance.gas_eps2 || \
+       N.gas_beta_v2 != nuisance.gas_beta_v2 || N.gas_lgM0_v2 != nuisance.gas_lgM0_v2 || N.gas_eps1_v2 != nuisance.gas_eps1_v2 || N.gas_eps2_v2 != nuisance.gas_eps2_v2 || \
+       N.gas_alpha != nuisance.gas_alpha || N.gas_A_star != nuisance.gas_A_star || N.gas_lgM_star != nuisance.gas_lgM_star || N.gas_sigma_star != nuisance.gas_sigma_star || \
+       N.gas_lgT_w != nuisance.gas_lgT_w || N.gas_f_H != nuisance.gas_f_H || N.gas_Gamma_KS != nuisance.gas_Gamma_KS ) {return 1;}
+    else{return 0;}
+  }else{
+    return 0;
+  }
 }

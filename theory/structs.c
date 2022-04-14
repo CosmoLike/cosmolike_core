@@ -16,6 +16,7 @@ typedef struct {
   double lmax_kappacmb;
   double lmin_kappacmb;
   double lmax_y;
+  double lmin_y;
   int baryons;
   int IA;
   int bias;
@@ -285,6 +286,24 @@ typedef struct {
   double bary[3];
   double frac_lowz;
   double frac_highz;
+
+  double gas_Gamma_KS; // Gamma in K-S profile
+  double gas_beta; // beta: mass scaling index in bound gas fraction
+  double gas_lgM0; // critical halo mass, below which gas ejection is significant
+  double gas_eps1;
+  double gas_eps2;
+
+  double gas_beta_v2; // beta: mass scaling index in bound gas fraction
+  double gas_lgM0_v2; // critical halo mass, below which gas ejection is significant
+  double gas_eps1_v2;
+  double gas_eps2_v2;
+
+  double gas_alpha;
+  double gas_A_star;
+  double gas_lgM_star;
+  double gas_sigma_star;
+  double gas_lgT_w;
+  double gas_f_H;
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
@@ -298,7 +317,9 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bary = {0.0, 0.0, 0.0},
   .frac_lowz = 0.,
-  .frac_highz = 0.};
+  .frac_highz = 0.,
+  .gas_beta_v2=0., .gas_lgM0_v2=0., .gas_eps1_v2=0., .gas_eps2_v2=0., .gas_eps1=0., .gas_eps2=0.
+};
 
 
 
@@ -354,6 +375,24 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double bary_Q2[2];
   double bary_Q3[2];
   double theta_star[2];
+
+  // double gas_Gamma_KS[2];
+  // double gas_beta[2];
+  // double gas_lgM0[2];
+  // double gas_eps1[2];
+  // double gas_eps2[2];
+
+  // double gas_beta_v2[2];
+  // double gas_lgM0_v2[2];
+  // double gas_eps1_v2[2];
+  // double gas_eps2_v2[2];
+
+  // double gas_alpha[2];
+  // double gas_A_star[2];
+  // double gas_lgM_star[2];
+  // double gas_sigma_star[2];
+  // double gas_lgT_w[2];
+  // double gas_f_H[2];
 }priorpara;
 priorpara prior = {
  .shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
@@ -467,6 +506,10 @@ typedef struct {
     char lk[8]; /* Calculate position-kappa_cmb components */
     char ks[8]; /* Calculate shear-kappa_cmb components */
     char kk[8]; /* Calculate kappa_cmb-kappa_cmb components */
+    char ly[8]; /* Calculate position-y components */
+    char sy[8]; /* Calculate shear-y components */
+    char ky[8]; /* Calculate kappa_cmb-y components */
+    char yy[8]; /* Calculate y-y components */
 } covpar;
 covpar covparams = {.lin_bins = 0};
 
@@ -512,18 +555,3 @@ typedef struct {
   int Nchi;
 } fft_optimize;
 fft_optimize fft_int;
-
-typedef struct {
-  double Gamma_KS; // Gamma in K-S profile
-  double beta; // beta: mass scaling index in bound gas fraction
-  double lgM0; // critical halo mass, below which gas ejection is significant
-  double alpha;
-  double A_star;
-  double lgM_star;
-  double sigma_star;
-  double lgT_w;
-  double f_H;
-  double eps1;
-  double eps2;
-}gaspara;
-gaspara gas;

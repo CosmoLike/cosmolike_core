@@ -128,11 +128,16 @@ double growfac(double a)
   static double *table;
   double res;
 
-  gsl_interp *intf=gsl_interp_alloc(gsl_interp_linear,Ntable.N_a);
-  gsl_interp_accel *acc=gsl_interp_accel_alloc();
+  static gsl_interp *intf;
+  static gsl_interp_accel *acc;
+
+  // gsl_interp *intf=gsl_interp_alloc(gsl_interp_linear,Ntable.N_a);
+  // gsl_interp_accel *acc=gsl_interp_accel_alloc();
 
   if (recompute_expansion(C))
   {
+    if(intf==0) intf=gsl_interp_alloc(gsl_interp_linear,Ntable.N_a);
+    if(acc==0) acc=gsl_interp_accel_alloc();
 
     if(table!=0) free_double_vector(table,0, Ntable.N_a-1);
     if(ai!=0) free_double_vector(ai,0, Ntable.N_a-1);
@@ -180,11 +185,14 @@ double growfac(double a)
 	    gsl_odeiv_step_free(s);
 	    update_cosmopara(&C);
 	  }
+    
+    gsl_interp_init(intf,ai,table,Ntable.N_a);
+      
   }
-  gsl_interp_init(intf,ai,table,Ntable.N_a);
+  // gsl_interp_init(intf,ai,table,Ntable.N_a);
   res=gsl_interp_eval(intf,ai,table,a,acc);
-  gsl_interp_accel_free(acc);
-  gsl_interp_free(intf);
+  // gsl_interp_accel_free(acc);
+  // gsl_interp_free(intf);
   return(res);
 }
 

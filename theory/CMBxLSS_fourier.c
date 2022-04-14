@@ -253,7 +253,7 @@ double C_gk(double l, int ni)
       printf("Bin %d outside tomo.clustering_Nbin range\nEXIT\n",ni); exit(1);
    }
    
-   if (recompute_clustering(C,G,N,ni,ni))
+   if (recompute_gk(C,G,N,ni))
    {
       if (table==0) {
          table   = create_double_matrix(0, tomo.clustering_Nbin-1, 0, Ntable.N_ell-1);
@@ -293,7 +293,7 @@ double C_ks(double l, int ni)
       printf("Bin %d outside tomo.clustering_Nbin range\nEXIT\n",ni); exit(1);
    }
 
-   if (recompute_shear(C,N))
+   if (recompute_ks(C,N))
    {
       if (table==0) {
          table   = create_double_matrix(0, tomo.shear_Nbin-1, 0, Ntable.N_ell-1);
@@ -342,11 +342,12 @@ double C_ks(double l, int ni)
 double C_kk(double l)
 {
    static cosmopara C;
+   static nuisancepara N;
    
    static double *table;
    static double ds = .0, logsmin = .0, logsmax = .0;
    
-   if (recompute_cosmo3D(C))
+   if (recompute_kk(C,N))
    {
       if (table==0) {
          table   = create_double_vector(0, Ntable.N_ell-1);
@@ -363,7 +364,7 @@ double C_kk(double l)
          table[i]= log(C_kk_nointerp(exp(llog)));
       }
 
-      update_cosmopara(&C); 
+      update_cosmopara(&C); update_nuisance(&N);
    }
    
    double f1 = exp(interpol(table, Ntable.N_ell, logsmin, logsmax, ds, log(l), 1., 1.));
@@ -444,6 +445,30 @@ double int_for_C_sy_IA(double a, void *params)
   return res;
 }
 
+double int_for_C_sy_IA_mpp(double a, void *params)
+{
+   double res, ell, fK, k,ws,wy,wk, norm;
+   double *ar = (double *) params;
+   ell       = ar[1]+0.5;
+   fK     = f_K(chi(a));
+   k      = ell/fK;
+   ws = W_source(a,ar[0]);
+   wk = W_kappa(a,fK,ar[0]);
+   wy = W_y(a);
+   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+   res= -ws*wy*norm + wk*wy;
+
+  double ell_prefactor1 = (ar[1])*(ar[1]+1.);
+  double ell_prefactor2 = (ar[1]-1.)*ell_prefactor1*(ar[1]+2.);
+  if(ell_prefactor2<=0.) 
+    ell_prefactor2=0.;
+  else
+    ell_prefactor2=sqrt(ell_prefactor2);
+
+  res *= dchi_da(a)/fK/fK *ell_prefactor2/ ell/ell;
+  res *= P_my(k,a);
+  return res;
+}
 
 double int_for_C_ky(double a, void *params){
   double *ar = (double *) params;
@@ -492,7 +517,7 @@ double C_sy_IA(double l, int ni)
    double array[2] = {(double) ni,l};
    if (like.IA==1) return int_gsl_integrate_medium_precision(int_for_C_sy_IA,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
    // if (like.IA==3) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_Az,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
-   // if (like.IA==4) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_mpp,(void*)array,amin_source(ni),0.99999,NULL,1000);
+   if (like.IA==4) return int_gsl_integrate_medium_precision(int_for_C_sy_IA_mpp,(void*)array,amin_source(ni),0.99999,NULL,1000);
    printf("CMBxLSS.c: C_sy_IA does not support like.IA = %d\nEXIT\n", like.IA);
   exit(1);
 }

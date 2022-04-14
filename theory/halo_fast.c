@@ -64,10 +64,10 @@ double r_Delta(double m, double a) //calculate r_Delta in c/H0 given m in (solar
   return pow(3./(4.*M_PI)*(m/rho_Delta(a)),1./3.);
 }
 
-double r_s(double m, double a)
-{
-  return r_Delta(m,a)/conc(m,a);
-}
+// double r_s(double m, double a)
+// {
+//   return r_Delta(m,a)/conc(m,a);
+// }
 
 double radius(double m)
 {
@@ -278,16 +278,29 @@ double B1_normalized (double m,double a){ //divide by bias norm only in matter s
 }
 /***************** halo profiles ***************/
 /******** mass-concentration relation **********/
-double conc(double m, double a)
+double conc(double m, double a) // for matter
 {
   double result;
-  double M0=pow(10,gas.lgM0);
-  result = 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2013, Delta = 200 rho_{mean} (Table 2)
-  //result = 10.14*pow(m/2.e+12,-0.081)*pow(a,1.01); //Duffy et al. 2008 (Delta = 200 mean)
+  double M0=pow(10,nuisance.gas_lgM0);
+  // result = 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2013, Delta = 200 rho_{mean} (Table 2)
+  result = 10.14*pow(m/2.e+12,-0.081)*pow(a,1.01); //Duffy et al. 2008 (Delta = 200 mean)
   if(like.feedback_on == 1){
-    result *= (1.+gas.eps1 + (gas.eps2 - gas.eps1)/(1.+pow(M0/m, gas.beta)) );
+    result *= (1.+nuisance.gas_eps1 + (nuisance.gas_eps2 - nuisance.gas_eps1)/(1.+pow(M0/m, nuisance.gas_beta)) );
   }
 	return result;
+}
+
+double conc_y(double m, double a) // for y field, with a separate set of gas parameters lgM0,beta,eps1,eps2.
+// ONLY USED FOR TEST_CALIB
+{
+  double result;
+  double M0=pow(10,nuisance.gas_lgM0_v2);
+  // result = 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2013, Delta = 200 rho_{mean} (Table 2)
+  result = 10.14*pow(m/2.e+12,-0.081)*pow(a,1.01); //Duffy et al. 2008 (Delta = 200 mean) - If use this, set c_max=50 !!
+  if(like.feedback_on == 1){
+    result *= (1.+nuisance.gas_eps1_v2 + (nuisance.gas_eps2_v2 - nuisance.gas_eps1_v2)/(1.+pow(M0/m, nuisance.gas_beta_v2)) );
+  }
+  return result;
 }
 
 /***********  FT of NFW Profile **************/
@@ -318,10 +331,10 @@ double u_nfw_c(double c,double k, double m, double aa){// analytic FT of NFW pro
 }
 
 double u_nfw_c_interp(double c,double k, double m, double a){
-  static cosmopara C;
+  // static cosmopara C;
 
   static int N_c = 25, N_x = 80;
-  static double cmin = 0.1, cmax = 15.;
+  static double cmin = 0.1, cmax = 50.;
   static double xmin = 1e-10, xmax = 5e4; // full range of possible k*R_200/c in the code
   static double logxmin = 0., logxmax=0., dx=0., dc=0.;
   
@@ -333,9 +346,10 @@ double u_nfw_c_interp(double c,double k, double m, double a){
 
   x = k * r_Delta(m,a)/c;
 
-  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-    update_cosmopara(&C);
-    if (table==0) table = create_double_matrix(0, N_c-1, 0, N_x-1);
+  // if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
+  //   update_cosmopara(&C);
+  if (table==0) {
+    table = create_double_matrix(0, N_c-1, 0, N_x-1);
     logxmin = log(xmin); logxmax = log(xmax);
     dx = (logxmax - logxmin)/(N_x-1.); dc = (cmax - cmin)/(N_c-1.);
 
@@ -364,7 +378,7 @@ double int_KS(double r, void *params){//Fourier kernel * K-S profile, integrand 
   double rv = array[2];
   double rs =rv/c;
   double x = r/rs;
-  return r*sinl(k*r)/k*pow(log(1.+x)/x, gas.Gamma_KS/(gas.Gamma_KS-1.));
+  return r*sinl(k*r)/k*pow(log(1.+x)/x, nuisance.gas_Gamma_KS/(nuisance.gas_Gamma_KS-1.));
 }
 
 double u_KS(double c, double k, double rv){
@@ -378,7 +392,7 @@ double u_KS(double c, double k, double rv){
 double int_F_KS(double x, void *params){
   double *array = (double*)params;
   double y = array[0];
-  return x*sinl(x*y)/y * pow(log(1.+x)/x, gas.Gamma_KS/(gas.Gamma_KS-1.));
+  return x*sinl(x*y)/y * pow(log(1.+x)/x, nuisance.gas_Gamma_KS/(nuisance.gas_Gamma_KS-1.));
 }
 double F_KS(double c, double kr_s){
   double array[1] ={kr_s};
@@ -411,7 +425,7 @@ void fft_F_KS(double *c_arr, int Nc, double *krs_arr, int Nx, double **F) {
   for(j=0;j<Nc;j++){
     fx[j] = malloc(Nx * sizeof(double));
     for(i=0;i<Nx;i++){
-      fx[j][i] = x[i]>c_arr[j] ? 0 : pow(x[i],3)*pow(log(1.+x[i])/x[i], gas.Gamma_KS/(gas.Gamma_KS-1.));
+      fx[j][i] = x[i]>c_arr[j] ? 0 : pow(x[i],3)*pow(log(1.+x[i])/x[i], nuisance.gas_Gamma_KS/(nuisance.gas_Gamma_KS-1.));
       // fprintf(output, "%le %le %le\n", c_arr[j], x[i], fx[j][i]);
     }
   }
@@ -425,7 +439,7 @@ void fft_F_KS(double *c_arr, int Nc, double *krs_arr, int Nx, double **F) {
 #endif
 
 double int_F_KS_norm(double x, void *params){
-  return x*x * pow(log(1.+x)/x, 1/(gas.Gamma_KS-1.));
+  return x*x * pow(log(1.+x)/x, 1/(nuisance.gas_Gamma_KS-1.));
 }
 double F_KS_norm(double c){
   double array[1] = {c};
@@ -433,10 +447,11 @@ double F_KS_norm(double c){
 }
 
 double u_KS_normalized_interp(double c,double k, double rv){
-  static cosmopara C;
+  // static cosmopara C;
+  static nuisancepara N;
 
   static int N_c = 20, N_x = 200;
-  static double cmin = 0.1, cmax = 15.;
+  static double cmin = 0.1, cmax = 50.;
   static double xmin = 1e-10, xmax = 5e3; // full range of possible k*R_200/c in the code
   static double logxmin = 0., logxmax=0., dx=0., dc=0.;
    
@@ -454,8 +469,8 @@ double u_KS_normalized_interp(double c,double k, double rv){
   N_x=1024; // for efficient fft
 #endif
 
-  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-    update_cosmopara(&C);
+  if (recompute_halo(N)){ // Only nuisance.gas_Gamma is used in creating the table
+    update_nuisance(&N);
     if (table==0) table = create_double_matrix(0, N_c-1, 0, N_x-1);
     logxmin = log(xmin); logxmax = log(xmax);
     dx = (logxmax - logxmin)/(N_x-1.); dc = (cmax - cmin)/(N_c-1.);
@@ -503,7 +518,7 @@ double int_KS_norm(double r, void *params){//normalization of u_KS
   double rv = array[1];
   double rs =rv/c;
   double x = r/rs;
-  return r*r*pow(log(1.+x)/x, 1./(gas.Gamma_KS-1.));
+  return r*r*pow(log(1.+x)/x, 1./(nuisance.gas_Gamma_KS-1.));
 }
 
 double KS_norm(double c, double rv){
@@ -513,31 +528,31 @@ double KS_norm(double c, double rv){
 }
 
 double frac_bnd(double m){
-  double M0=pow(10,gas.lgM0);
-  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, gas.beta));
+  double M0=pow(10,nuisance.gas_lgM0);
+  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, nuisance.gas_beta));
 }
 double frac_ejc(double m){
-  double M0=pow(10,gas.lgM0);
+  double M0=pow(10,nuisance.gas_lgM0);
   double lgm=log10(m);
-  double frac_star = gas.A_star * exp(-0.5* pow((lgm - gas.lgM_star)/gas.sigma_star,2));
-  if(lgm>gas.lgM0 && frac_star<gas.A_star/3.) {frac_star = gas.A_star/3.;}
-  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, -gas.beta)) - frac_star;
+  double frac_star = nuisance.gas_A_star * exp(-0.5* pow((lgm - nuisance.gas_lgM_star)/nuisance.gas_sigma_star,2));
+  if(lgm>nuisance.gas_lgM0 && frac_star<nuisance.gas_A_star/3.) {frac_star = nuisance.gas_A_star/3.;}
+  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, -nuisance.gas_beta)) - frac_star;
 }
 
 double u_y_bnd(double c, double k, double m, double a){ //unit: [G(M_solar/h)^2 / (c/H0)]
   double rv = r_Delta(m,a);
-  double mu_p = 4./(3.+5*gas.f_H);
-  double mu_e = 2./(1.+gas.f_H);
-  // return 2.*gas.alpha /(3.*a) * mu_p / mu_e * frac_bnd(m) * m*m/rv * u_KS(c, k, rv)/KS_norm(c, rv);
-  // return 2.*gas.alpha /(3.*a) * mu_p / mu_e * frac_bnd(m) * m*m/rv * u_KS(c, k, rv)/(F_KS_norm(c)*pow(rv/c,3));
-  return 2.*gas.alpha /(3.*a) * mu_p / mu_e * frac_bnd(m) * m*m/rv * u_KS_normalized_interp(c, k, rv);
+  double mu_p = 4./(3.+5*nuisance.gas_f_H);
+  double mu_e = 2./(1.+nuisance.gas_f_H);
+  // return 2.*nuisance.gas_alpha /(3.*a) * mu_p / mu_e * frac_bnd(m) * m*m/rv * u_KS(c, k, rv)/KS_norm(c, rv);
+  // return 2.*nuisance.gas_alpha /(3.*a) * mu_p / mu_e * frac_bnd(m) * m*m/rv * u_KS(c, k, rv)/(F_KS_norm(c)*pow(rv/c,3));
+  return 2.*nuisance.gas_alpha /(3.*a) * mu_p / mu_e * frac_bnd(m) * m*m/rv * u_KS_normalized_interp(c, k, rv);
 }
 
 double u_y_ejc(double m){
   static double num_p = 1.1892e57; // proton number in 1 solar mass, unit [1/Msun]
    // convert ejected gas temperature (K) to energy eV then to unit [G (Msun/h)^2 / (c/H0) * h]
-  double E_w = pow(10,gas.lgT_w) * 8.6173e-5 * 1.81945e-68;
-  double mu_e = 2./(1.+gas.f_H);
+  double E_w = pow(10,nuisance.gas_lgT_w) * 8.6173e-5 * 1.81945e-68;
+  double mu_e = 2./(1.+nuisance.gas_f_H);
   return num_p * m * frac_ejc(m) / mu_e * E_w; // [m]=[Msun/h]; final unit in [G(Msun/h)^2 / (c/H0)]
 }
 
@@ -585,12 +600,20 @@ double inner_I0j_y (double logm, void *para){
   long double u = 1.0;
   double a= array[6];
   double c = conc(m,a);
+
+  double c_y;
+#ifdef TEST_CALIB
+  c_y = conc_y(m,a);
+#else
+  c_y = c;
+#endif
+
   int l;
   int j = (int)(array[5]);
   double vol = m/(cosmology.rho_crit*cosmology.Omega_m); //rho_crit: [density]=[Msun/h*(H0/c)^3], m: [Msun/h]
   for (l = 0; l< j; l++){
     if(array[7+l]==-2.){ // ni=-2: y-field
-      u *= u_y_bnd(c,array[l],m,a);
+      u *= u_y_bnd(c_y,array[l],m,a);
     }else{
       u *= vol*u_nfw_c(c,array[l],m,a);
     } // u_(kappa|g): [volume]=[(c/H0)^3], u_y: [energy]=[G(Msun/h)^2 / (c/H0)]
@@ -642,6 +665,7 @@ double inner_I1j (double logm, void *para){
 #ifdef SLOW
 double I_11 (double k,double a){//look-up table for I11 integral
   static cosmopara C;
+  static nuisancepara N;
   static double amin = 0, amax = 0,logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   
   static double **table_I1=0;
@@ -649,8 +673,8 @@ double I_11 (double k,double a){//look-up table for I11 integral
   double aa,klog;
   int i,j;
   
-  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-    update_cosmopara(&C);
+  if (recompute_cosmo3D(C) || recompute_halo(N)){ //extend this by halo model parameters if these become part of the model
+    update_cosmopara(&C); update_nuisance(&N);
     if (table_I1==0) table_I1 = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
     double array[7];
     array[5]=1.0;
@@ -716,14 +740,22 @@ double inner_I1j_y (double logm, void *para){
   long double u = 1.0;
   double a= array[6];
   double c = conc(m,a);
+
+  double c_y;
+#ifdef TEST_CALIB
+  c_y = conc_y(m,a);
+#else
+  c_y = c;
+#endif
+
   int l;
   int j = (int)(array[5]);
   double vol = m/(cosmology.rho_crit*cosmology.Omega_m);
   for (l = 0; l< j; l++){
     if(array[7+l]==-2.){ // ni=-2: y-field
-      if(j==1){u *= (u_y_bnd(c,array[l],m,a)+u_y_ejc(m));}
+      if(j==1){u *= (u_y_bnd(c_y,array[l],m,a)+u_y_ejc(m));}
       // if(j==1){u *= (u_y_bnd(c,array[l],m,a));}
-      else{u *= u_y_bnd(c,array[l],m,a);}
+      else{u *= u_y_bnd(c_y,array[l],m,a);}
     }else{
       u *= vol*u_nfw_c_interp(c,array[l],m,a);
     }
@@ -863,6 +895,7 @@ double P_my(double k,double a){
 double Pdelta_halo(double k,double a)
 {
   static cosmopara C;
+  static nuisancepara N;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
 
   static int N_a = 20, N_k_nlin = 100;
@@ -872,8 +905,8 @@ double Pdelta_halo(double k,double a)
   double klog,val,aa,kk;
   int i,j;
   // clock_t t1, t2; double dt;
-  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-    update_cosmopara(&C);
+  if (recompute_cosmo3D(C) || recompute_halo(N)){ //extend this by halo model parameters if these become part of the model
+    update_cosmopara(&C); update_nuisance(&N);
     if (table_P_NL!=0) free_double_matrix(table_P_NL,0, N_a-1, 0, N_k_nlin-1);
     table_P_NL = create_double_matrix(0, N_a-1, 0, N_k_nlin-1);
     
@@ -918,6 +951,7 @@ double Pdelta_halo(double k,double a)
 double P_yy(double k,double a)
 {
   static cosmopara C;
+  static nuisancepara N;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
 
   static int N_a = 20, N_k_nlin = 100;
@@ -927,8 +961,8 @@ double P_yy(double k,double a)
   double klog,val,aa,kk;
   int i,j;
   double p1, p2;
-  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-    update_cosmopara(&C);
+  if (recompute_cosmo3D(C) || recompute_halo(N)){ //extend this by halo model parameters if these become part of the model
+    update_cosmopara(&C); update_nuisance(&N);
     if (table_P_NL!=0) free_double_matrix(table_P_NL,0, N_a-1, 0, N_k_nlin-1);
     table_P_NL = create_double_matrix(0, N_a-1, 0, N_k_nlin-1);
     
@@ -961,6 +995,7 @@ double P_yy(double k,double a)
 double P_my(double k,double a)
 {
   static cosmopara C;
+  static nuisancepara N;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   
   static int N_a = 20, N_k_nlin = 100;
@@ -970,8 +1005,8 @@ double P_my(double k,double a)
   double klog,val,aa,kk;
   double p1,p2;
   int i,j;
-  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-    update_cosmopara(&C);
+  if (recompute_cosmo3D(C) || recompute_halo(N)){ //extend this by halo model parameters if these become part of the model
+    update_cosmopara(&C); update_nuisance(&N);
     if (table_P_NL!=0) free_double_matrix(table_P_NL,0, N_a-1, 0, N_k_nlin-1);
     table_P_NL = create_double_matrix(0, N_a-1, 0, N_k_nlin-1);
     
@@ -1008,6 +1043,7 @@ double P_my(double k,double a)
 /****************** Lookup table for 1-halo term super-sample covariance/halo sample variance term**********/
 double I12_SSC (double k,double a){//one-halo term contribution to super sample covariance
   static cosmopara C;
+  static nuisancepara N;
   static double amin = 0, amax = 0,logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   
   static double **table_I1=0;
@@ -1015,8 +1051,8 @@ double I12_SSC (double k,double a){//one-halo term contribution to super sample 
   double aa,klog;
   int i,j;
 
-  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-    update_cosmopara(&C);
+  if (recompute_cosmo3D(C) || recompute_halo(N)){ //extend this by halo model parameters if these become part of the model
+    update_cosmopara(&C); update_nuisance(&N);
     if (table_I1==0) table_I1 = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
     // double array[7];
     // array[5]=2.0;
@@ -1049,6 +1085,7 @@ double I12_SSC (double k,double a){//one-halo term contribution to super sample 
 
 double I12_SSC_yy (double k,double a){//one-halo term contribution to super sample covariance
   static cosmopara C;
+  static nuisancepara N;
   static double amin = 0, amax = 0,logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   
   static double **table_I1=0;
@@ -1058,8 +1095,8 @@ double I12_SSC_yy (double k,double a){//one-halo term contribution to super samp
 
   static int ni[4]={-2,-2,0,0};
   
-  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-    update_cosmopara(&C);
+  if (recompute_cosmo3D(C) || recompute_halo(N)){ //extend this by halo model parameters if these become part of the model
+    update_cosmopara(&C); update_nuisance(&N);
     if (table_I1==0) table_I1 = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
     // double array[11];
     // array[5]=2.0;
@@ -1093,6 +1130,7 @@ double I12_SSC_yy (double k,double a){//one-halo term contribution to super samp
 
 double I12_SSC_my (double k,double a){//one-halo term contribution to super sample covariance
   static cosmopara C;
+  static nuisancepara N;
   static double amin = 0, amax = 0,logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   
   static double **table_I1=0;
@@ -1102,8 +1140,8 @@ double I12_SSC_my (double k,double a){//one-halo term contribution to super samp
 
   static int ni[4]={-2,0,0,0};
 
-  if (recompute_cosmo3D(C)){ //extend this by halo model parameters if these become part of the model
-    update_cosmopara(&C);
+  if (recompute_cosmo3D(C) || recompute_halo(N)){ //extend this by halo model parameters if these become part of the model
+    update_cosmopara(&C); update_nuisance(&N);
     if (table_I1==0) table_I1 = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
     // double array[11];
     // array[5]=2.0;
