@@ -55,6 +55,7 @@ double Pl_tab(int itheta, int ell);
 double Pl2_tab(int itheta, int ell);
 double Glplus_tab(int itheta, int ell);
 double Glminus_tab(int itheta, int ell);
+double CMB_lensing_mat(int ibp, int L); // CMB lensing binning+correction mat
 // CMB beam smoothing kernel
 double GaussianBeam(double fwhm, int ell, double ell_left, double ell_right);
 double GaussianBeam_test(double theta_fwhm, int ell_1, int ell_2, double ell_min, double ell_max, 
@@ -1036,6 +1037,37 @@ double Pl2_tab(int itheta, int ell) {
   return Pl2[itheta][ell];
 }
 
+double CMB_lensing_mat(int ibp, int L){
+  int iL;
+  static double **binning_correction_matrix = NULL;
+  if (binning_correction_matrix == NULL){
+    binning_correction_matrix = create_double_matrix(0, like.Nbp-1, 
+      0, like.Ncl-1);
+    FILE *F1;
+    F1 = fopen(covparams.BINMAT_FILE,"r");
+    if (F1 != NULL) {
+      fclose(F1);
+      int nbp = line_count(covparams.BINMAT_FILE);
+      
+      F1=fopen(covparams.BINMAT_FILE, "r");
+      for (int i = 0; i < like.Nbp; i++){
+        for (int j = 0; j < like.Ncl; j++){
+          double tmp2;
+          fscanf(F1,"%le ",&tmp2);
+          binning_correction_matrix[i][j] = tmp2;
+        }
+      }
+      fclose(F1);
+    }
+    else{
+      printf("ERROR: Cant't open file %s\n", covparams.BINMAT_FILE);
+      exit(-1);
+    }  
+  }
+  iL = L - like.lmin;
+  return binning_correction_matrix[ibp][iL];
+}
+
 /*  Calculate Gaussian Beam Kernel
     
     F(ell) = B(ell)H(ell - ell_min)H(ell_max - ell)
@@ -1417,36 +1449,42 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
   if(strcmp(mixcov_type, "kk_xi+")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_shear;
     func_bin_cov_NG = &bin_cov_NG_kk_shear;
+    func_P1 = &CMB_lensing_mat;
     func_P2 = &Glplus_tab;
     CMB_smooth_1 = 0;
     CMB_smooth_2 = 0;
   } else if(strcmp(mixcov_type, "kk_xi-")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_shear;
     func_bin_cov_NG = &bin_cov_NG_kk_shear;
+    func_P1 = &CMB_lensing_mat;
     func_P2 = &Glminus_tab;
     CMB_smooth_1 = 0;
     CMB_smooth_2 = 0;
   } else if(strcmp(mixcov_type, "kk_gl")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_gl;
     func_bin_cov_NG = &bin_cov_NG_kk_gl;
+    func_P1 = &CMB_lensing_mat;
     func_P2 = &Pl2_tab;
     CMB_smooth_1 = 0;
     CMB_smooth_2 = 0;
   } else if(strcmp(mixcov_type, "kk_cl")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_cl;
     func_bin_cov_NG = &bin_cov_NG_kk_cl;
+    func_P1 = &CMB_lensing_mat;
     func_P2 = &Pl_tab;
     CMB_smooth_1 = 0;
     CMB_smooth_2 = 0;
   } else if(strcmp(mixcov_type, "kk_gk")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_gk;
     func_bin_cov_NG = &bin_cov_NG_kk_gk;
+    func_P1 = &CMB_lensing_mat;
     func_P2 = &Pl_tab;
     CMB_smooth_1 = 0;
     CMB_smooth_2 = 1;
   } else if(strcmp(mixcov_type, "kk_ks")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_ks;
     func_bin_cov_NG = &bin_cov_NG_kk_ks;
+    func_P1 = &CMB_lensing_mat;
     func_P2 = &Pl2_tab;
     CMB_smooth_1 = 0;
     CMB_smooth_2 = 1;
@@ -1474,34 +1512,47 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
     cov_g_l[l1] = func_for_cov_G((double)l1, z_ar);
     //printf("cov_g_l: %d, %le\n", l1,cov_g_l[l1]);
   }
-  int l1_min, l1_max, l2_min, l2_max;
-  int N_l1, N_l2;
-  for(i=0; i<like.Ncl; i++){
+  int l1_min, l1_max;
+  int N_l1;
+  
+  // Loop 1: Harmonic space
+  /* TODO
+      - i = [0, Ncl-1] -> [0, Nbp-1]
+      - decide l1_min and l1_max
+  */
+  for(i=0; i<like.Nbp; i++){
     l1_min = (int)ceil(ell[i]);
     l1_max = (int)ceil(ell[i+1])-1;
     N_l1 = l1_max - l1_min + 1;
-    for(j=0; j<like.Ntheta ; j++){
-      for(l1=l1_min; l1<=l1_max; l1++){
-		beam1 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1 + CMB_smooth_2);
-		//beam = GaussianBeam_test(cmb.fwhm, l1, l1, covparams.lmin, covparams.lmax, CMB_smooth_1, CMB_smooth_2);
 
-        cov[i][j] += cov_g_l[l1] * func_P2(j,l1) / N_l1 * beam1;
+    // Loop 2: Configuration space
+    for(j=0; j<like.Ntheta ; j++){
+      
+      // sum over ell
+      for(l1=l1_min; l1<=l1_max; l1++){
+		    
+        // Gaussian
+        beam1 = pow( GaussianBeam(cmb.fwhm, l1, 
+          covparams.lmin, covparams.lmax), CMB_smooth_1 + CMB_smooth_2);
+
+        cov[i][j] += cov_g_l[l1]*func_P1(i,l1)*func_P2(j,l1)/N_l1*beam1;
         
+        // Non-Gaussian
         if(FLAG_NG){
           l1_double = (double)l1;
           for (l2 = 0; l2 < LMAX; l2++){
-			beam1 = pow( GaussianBeam(cmb.fwhm, l1, covparams.lmin, covparams.lmax), CMB_smooth_1);
-			//beam1 = GaussianBeam_test(cmb.fwhm, l1, covparams.lmin, covparams.lmax, CMB_smooth_1);
-			beam2 = pow( GaussianBeam(cmb.fwhm, l2, covparams.lmin, covparams.lmax), CMB_smooth_2);
-			//beam = GaussianBeam_test(cmb.fwhm, l1, l2, covparams.lmin, covparams.lmax, CMB_smooth_1, CMB_smooth_2);
-	
+            beam1 = pow( GaussianBeam(cmb.fwhm, l1, 
+              covparams.lmin, covparams.lmax), CMB_smooth_1);
+            beam2 = pow( GaussianBeam(cmb.fwhm, l2, 
+              covparams.lmin, covparams.lmax), CMB_smooth_2);
             tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
+            
             covNG[i][j] += tri * func_P2(j,l2) / N_l1 * beam1 * beam2;
           }
         }
-      }
-    }
-  }
+      }// end sum over ell
+    }// end Loop 2
+  }// End Loop 1
 }
 
 // Template routine: Fourier averaged band power
