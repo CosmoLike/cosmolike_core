@@ -1039,10 +1039,11 @@ double Pl2_tab(int itheta, int ell) {
 
 double CMB_lensing_mat(int ibp, int L){
   int iL;
+  int NL = like.lmax_bp - like.lmin_bp + 1;
   static double **binning_correction_matrix = NULL;
   if (binning_correction_matrix == NULL){
     binning_correction_matrix = create_double_matrix(0, like.Nbp-1, 
-      0, like.Ncl-1);
+      0, NL-1);
     FILE *F1;
     F1 = fopen(covparams.BINMAT_FILE,"r");
     if (F1 != NULL) {
@@ -1051,7 +1052,7 @@ double CMB_lensing_mat(int ibp, int L){
       
       F1=fopen(covparams.BINMAT_FILE, "r");
       for (int i = 0; i < like.Nbp; i++){
-        for (int j = 0; j < like.Ncl; j++){
+        for (int j = 0; j < NL; j++){
           double tmp2;
           fscanf(F1,"%le ",&tmp2);
           binning_correction_matrix[i][j] = tmp2;
@@ -1064,10 +1065,23 @@ double CMB_lensing_mat(int ibp, int L){
       exit(-1);
     }  
   }
-  iL = L - like.lmin;
+  iL = L - like.lmin_bp;
   return binning_correction_matrix[ibp][iL];
 }
 
+
+/* get the weight
+
+
+double Fourier_equal_weight(int iell){
+  int iL;
+  static double *ell_modes_per_bin = NULL;
+  if(L_modes_per_band==NULL){
+    L_modes_per_band = create_double_vector(0, like.Nbp-1);
+    FILE *F1;
+
+  }
+}*/
 /*  Calculate Gaussian Beam Kernel
     
     F(ell) = B(ell)H(ell - ell_min)H(ell_max - ell)
@@ -1433,7 +1447,11 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type, i
 
 
 // Template routine
-void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int *z_ar, int FLAG_NG, double *theta, double *dtheta, double *ell){
+void cov_mix_binned_fullsky(
+  double **cov, double **covNG, char *mixcov_type, 
+  int *z_ar, int FLAG_NG, 
+  double *theta, double *dtheta, 
+  double **bindef){
 
   int i,j;
   static int LMAX = 50000;
@@ -1444,6 +1462,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
 
   double (*func_for_cov_G)(double, int*);
   double (*func_bin_cov_NG)(double, double, int*);
+  double (*func_P1)(int, int);
   double (*func_P2)(int, int);
 
   if(strcmp(mixcov_type, "kk_xi+")==0) {
@@ -1521,8 +1540,8 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
       - decide l1_min and l1_max
   */
   for(i=0; i<like.Nbp; i++){
-    l1_min = (int)ceil(ell[i]);
-    l1_max = (int)ceil(ell[i+1])-1;
+    l1_min = (int)ceil(bindef[i][0]);
+    l1_max = (int)ceil(bindef[i][1]);
     N_l1 = l1_max - l1_min + 1;
 
     // Loop 2: Configuration space
@@ -1535,7 +1554,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
         beam1 = pow( GaussianBeam(cmb.fwhm, l1, 
           covparams.lmin, covparams.lmax), CMB_smooth_1 + CMB_smooth_2);
 
-        cov[i][j] += cov_g_l[l1]*func_P1(i,l1)*func_P2(j,l1)/N_l1*beam1;
+        cov[i][j] += cov_g_l[l1]*func_P1(i,l1)*func_P2(j,l1)*beam1;
         
         // Non-Gaussian
         if(FLAG_NG){
@@ -1547,7 +1566,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
               covparams.lmin, covparams.lmax), CMB_smooth_2);
             tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
             
-            covNG[i][j] += tri * func_P2(j,l2) / N_l1 * beam1 * beam2;
+            covNG[i][j] += tri*func_P1(i,l1)*func_P2(j,l2)*beam1*beam2;
           }
         }
       }// end sum over ell
@@ -1556,7 +1575,9 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
 }
 
 // Template routine: Fourier averaged band power
-void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar, int FLAG_NG, double *ell){
+
+void cov_fourier_binned(double **cov, double **covNG, char *cov_type, 
+  int *z_ar, int FLAG_NG, double *ell){
 
   int i,j;
   static int LMAX = 50000;
@@ -1567,6 +1588,10 @@ void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar,
 
   double (*func_for_cov_G)(double, int*);
   double (*func_bin_cov_NG)(double, double, int*);
+  double (*func_P1)(int, int) = NULL;
+  double (*func_P2)(int, int) = NULL;
+  int N1 = like.Ncl;
+  int N2 = like.Ncl;
 
 
   if(strcmp(cov_type, "ss_ss")==0) {
@@ -1618,22 +1643,29 @@ void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar,
   } else if(strcmp(cov_type, "kk_ss")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_shear;
     func_bin_cov_NG = &bin_cov_NG_kk_shear;
+    //func_P1 = &CMB_lensing_mat; N1 = like.Nbp;
   } else if(strcmp(cov_type, "kk_gl")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_gl;
     func_bin_cov_NG = &bin_cov_NG_kk_gl;
+    //func_P1 = &CMB_lensing_mat; N1 = like.Nbp;
   } else if(strcmp(cov_type, "kk_cl")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_cl;
     func_bin_cov_NG = &bin_cov_NG_kk_cl;
+    //func_P1 = &CMB_lensing_mat; N1 = like.Nbp;
   } else if(strcmp(cov_type, "kk_gk")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_gk;
     func_bin_cov_NG = &bin_cov_NG_kk_gk;
+    //func_P1 = &CMB_lensing_mat; N1 = like.Nbp;
   } else if(strcmp(cov_type, "kk_ks")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_ks;
     func_bin_cov_NG = &bin_cov_NG_kk_ks;
+    //func_P1 = &CMB_lensing_mat; N1 = like.Nbp;
 
   } else if(strcmp(cov_type, "kk_kk")==0) {
     func_for_cov_G  = &func_for_cov_G_kk;
     func_bin_cov_NG = &bin_cov_NG_kk_kk;
+    //func_P1 = &CMB_lensing_mat; N1 = like.Nbp;
+    //func_P2 = &CMB_lensing_mat; N2 = like.Nbp;
 
   } else {
     printf("cov_fourier_binned: cov_type \"%s\" not defined!\n", cov_type); exit(1);
@@ -1641,8 +1673,8 @@ void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar,
 
   double l1_double,tri;
   int l1,l2;
-  for(i=0; i<like.Ncl ; i++){
-    for(j=0; j<like.Ncl ; j++){
+  for(i=0; i<N1 ; i++){
+    for(j=0; j<N2 ; j++){
       cov[i][j] = 0.;
       covNG[i][j] = 0.;
     }
@@ -1660,18 +1692,26 @@ void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar,
 
   int l1_min, l1_max, l2_min, l2_max;
   int N_l1, N_l2;
-  for(i=0; i<like.Ncl; i++){
-    l1_min = (int)ceil(ell[i]);
-    l1_max = (int)ceil(ell[i+1])-1;
+
+  // Loop 1: Harmonic space
+  for(i=0; i<N1; i++){
+    l1_min = (int)ceil(bindef1[i][0]);
+    l1_max = (int)ceil(bindef1[i][1]);
     N_l1 = l1_max - l1_min + 1;
+
+    // Loop 2: Harmonic space
     for(l1=l1_min; l1<=l1_max; l1++){
+      
+      // Gaussian
       cov[i][i] += cov_g_l[l1];
 
+      // Non-Gaussian
       if(FLAG_NG){
         l1_double = (double)l1;
-        for(j=0; j<like.Ncl ; j++){
-          l2_min = (int)ceil(ell[j]);
-          l2_max = (int)ceil(ell[j+1])-1;
+
+        for(j=0; j<like.Nbp ; j++){
+          l2_min = (int)ceil(bindef[j][0]);
+          l2_max = (int)ceil(bindef[j][1]);
           N_l2 = l2_max - l2_min + 1;
           for (l2 = l2_min; l2 <= l2_max; l2++){
             tri = func_bin_cov_NG(l1_double,(double)l2,z_ar);
@@ -1680,10 +1720,10 @@ void cov_fourier_binned(double **cov, double **covNG, char *cov_type, int *z_ar,
           }
           // covNG[i][j] /= (float)(N_l2);
         }
-      }
-    }
+      }// End Non-Gaussian
+    }// End Loop 2
     cov[i][i] /= (float)(N_l1*N_l1);
-  }
+  }// End Loop 1
 }
 
 // Real cov
@@ -1870,14 +1910,21 @@ void cov_kk_kk_real_binned_fullsky(double **cov, double **covNG, int FLAG_NG, do
 
 
 // mixed cov 
-void cov_kk_shear_mix_binned_fullsky(double **cov, double **covNG, int z3,int z4,int pm, int FLAG_NG, double *theta, double *dtheta, double *ell){
+void cov_kk_shear_mix_binned_fullsky(
+  double **cov, double **covNG, 
+  int z3,int z4, int pm, int FLAG_NG, 
+  double *theta, double *dtheta, 
+  //double *ell
+  double **bindef)
+{
   static char xip[]="kk_xi+", xim[]="kk_xi-";
   char mixcov_type[8];
   if(pm==1) {strcpy(mixcov_type, xip);}
   else {strcpy(mixcov_type, xim);}
   int z_ar[2];
   z_ar[0]=z3; z_ar[1]=z4;
-  cov_mix_binned_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, theta, dtheta, ell);
+  cov_mix_binned_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
+    theta, dtheta, bindef);
 }
 
 void cov_kk_gl_mix_binned_fullsky(double **cov, double **covNG, int z3,int z4, int FLAG_NG, double *theta, double *dtheta, double *ell){

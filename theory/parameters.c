@@ -226,6 +226,34 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       }
       continue;
     }
+    // New parameters for calculating DES x Planck 6x2pt covmat
+    else if(strcmp(name, "nbp")==0) // # of Band power bins
+    {
+      sscanf(val, "%d", &covparams.nbp);
+      if(output==1)
+      {
+        printf("nbp %d \n",covparams.nbp);
+      }
+      continue;
+    }
+    else if(strcmp(name, "binmat_file")==0) // binning matrix file
+    {
+      sprintf(covparams.BINMAT_FILE,"%s",val);
+      if(output==1)
+      {
+        printf("binmat_file %s \n",covparams.BINMAT_FILE);
+      }
+      continue;
+    }
+    else if(strcmp(name, "bindef_file")==0) // binning definition file
+    {
+      sprintf(covparams.BINDEF_FILE,"%s",val);
+      if(output==1)
+      {
+        printf("bindef_file %s \n",covparams.BINDEF_FILE);
+      }
+      continue;
+    }
   }
 }
 

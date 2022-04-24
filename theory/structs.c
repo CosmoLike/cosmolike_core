@@ -1,14 +1,21 @@
 typedef struct {
-  int Ncl;
-  int Ntheta;
   int Ncos;
   int Ndata;
+  // ell bins
+  int Ncl;
   double lmin;
   double lmax;
+  double *ell;
+  // theta bins
+  int Ntheta;
   double vtmax;
   double vtmin;
   double *theta;
-  double *ell;
+  // band power bins
+  int Nbp; // number of band power bins
+  int lmin_bp; // minimum L of band power
+  int lmax_bp; // maximum L of band power
+  int **bindef_bp; // band power bin definition
   double cosmax;
   double Rmin_bias;
   double Rmin_shear;
@@ -495,11 +502,14 @@ typedef struct {
     double lmin; /* ell min  */
     double lmax; /* ell max  */
     int ncl;/* number of ell bins */
+    int nbp;/* number of band power bins*/
     int ng;/* ng covariance */
     int cng;/* cng covariance? */
     char outdir[200]; /* output directory */
     char filename[200]; /* output file name prefix */
     char C_FOOTPRINT_FILE[200]; /*angular power spectrum of survey footprint, in healpix format */
+    char BINMAT_FILE[200]; /*binning matrix for CMB lensing band power*/
+    char BINDEF_FILE[200]; /*binning definition for CMB lensing band power*/
     char ss[8]; /* Calculate shear-shear components */
     char ls[8]; /* Calculate shear-position components */
     char ll[8]; /* Calculate position-position components */
