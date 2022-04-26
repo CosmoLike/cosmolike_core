@@ -340,6 +340,36 @@ void free_double_matrix(double **m, long nrl, long nrh, long ncl, long nch)
 	free((FREE_ARG) (m+nrl-NR_END));
 }
 
+int **create_int_matrix(long nrl, long nrh, long ncl, long nch)
+/* allocate a int matrix with subscript range m[nrl..nrh][ncl..nch] */
+{
+	long i, nrow=nrh-nrl+1,ncol=nch-ncl+1;
+	int **m;
+
+	/* allocate pointers to rows */
+	m=(int **) calloc(nrow+NR_END,sizeof(int*));
+	if (!m) error("allocation failure 1 in create_int_matrix()");
+	m += NR_END;
+	m -= nrl;
+
+	/* allocate rows and set pointers to them */
+	m[nrl]=(int *) calloc(nrow*ncol+NR_END,sizeof(int));
+	if (!m[nrl]) error("allocation failure 2 in create_int_matrix()");
+	m[nrl] += NR_END;
+	m[nrl] -= ncl;
+
+	for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
+
+	/* return pointer to array of pointers to rows */
+	return m;
+}
+
+void free_int_matrix(int **m, long nrl, long nrh, long ncl, long nch)
+		/* free a int matrix allocated by create_int_matrix() */
+{
+	free((FREE_ARG) (m[nrl]+ncl-NR_END));
+	free((FREE_ARG) (m+nrl-NR_END));
+}
 
 double *create_double_vector(long nl, long nh)
 /* allocate a double vector with subscript range v[nl..nh] */
