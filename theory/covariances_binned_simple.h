@@ -115,7 +115,7 @@ void cov_gk_gk_fourier_binned(double **cov, double **covNG,
 void cov_ks_gk_fourier_binned(double **cov, double **covNG, 
   int z1,int z2, int FLAG_NG, double *ell);
 void cov_ks_ks_fourier_binned(double **cov, double **covNG, 
-  nt z1,int z2, int FLAG_NG, double *ell);
+  int z1,int z2, int FLAG_NG, double *ell);
 
 // kk x {5x2pt + kk} (6 blocks)
 void cov_kk_shear_fourier_binned(double **cov, double **covNG, 
