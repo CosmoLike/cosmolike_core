@@ -551,7 +551,9 @@ double u_y_bnd(double c, double k, double m, double a){ //unit: [G(M_solar/h)^2 
 double u_y_ejc(double m){
   static double num_p = 1.1892e57; // proton number in 1 solar mass, unit [1/Msun]
    // convert ejected gas temperature (K) to energy eV then to unit [G (Msun/h)^2 / (c/H0) * h]
-  double E_w = pow(10,nuisance.gas_lgT_w) * 8.6173e-5 * 1.81945e-68;
+  // double E_w = pow(10,nuisance.gas_lgT_w) * 8.6173e-5 * 1.81945e-68;
+  double E_w = pow(10,nuisance.gas_lgT_w) * 8.6173e-5 * 5.616e-44;
+  // printf("Tw: %le, %le\n", nuisance.gas_lgT_w,frac_ejc(m));
   double mu_e = 2./(1.+nuisance.gas_f_H);
   return num_p * m * frac_ejc(m) / mu_e * E_w; // [m]=[Msun/h]; final unit in [G(Msun/h)^2 / (c/H0)]
 }
