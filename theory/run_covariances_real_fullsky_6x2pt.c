@@ -44,10 +44,10 @@ void run_cov_kk_shear_mix_bin(char *OUTFILE, char *PATH,
   double *ell, int Ncl, int n2, int pm, int start);
 void run_cov_kk_ggl_mix_bin(char *OUTFILE, char *PATH, 
   double *theta, double *dtheta, int Ntheta, 
-  double *ell, int Ncl, double **bindef, int Nbp, int n2, int start);
+  double *ell, int Ncl, int n2, int start);
 void run_cov_kk_clustering_mix_bin(char *OUTFILE, char *PATH, 
   double *theta, double *dtheta, int Ntheta, 
-  double *ell, int Ncl, double **bindef, int Nbp, int n2, int start);
+  double *ell, int Ncl, int n2, int start);
 void run_cov_kk_gk_mix_bin(char *OUTFILE, char *PATH, 
   double *theta, double *dtheta, int Ntheta, 
   double *ell, int Ncl, int n2, int start);
