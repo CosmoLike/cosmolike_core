@@ -707,7 +707,7 @@ void run_cov_kk_shear_mix_band(char *OUTFILE, char *PATH,
   like.vtmax = theta[Ntheta];
   cov_fullsky_G = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
   cov_fullsky_NG = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
-  cov_kk_shear_mix_binned_fullsky(cov_fullsky_G,cov_fullsky_NG,z3,z4,pm, NG, theta, dtheta, bindef);
+  cov_kk_shear_mix_banded_fullsky(cov_fullsky_G,cov_fullsky_NG,z3,z4,pm, NG, theta, dtheta, bindef);
 
   for (nl1 = 0; nl1 < Nbp; nl1 ++){
     double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][1],2.));
@@ -752,7 +752,7 @@ void run_cov_kk_ggl_mix_band(char *OUTFILE, char *PATH,
   like.vtmax = theta[Ntheta];
   cov_fullsky_G = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
   cov_fullsky_NG = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
-  cov_kk_gl_mix_binned_fullsky(cov_fullsky_G,cov_fullsky_NG,z3,z4, NG, theta, dtheta, bindef);
+  cov_kk_gl_mix_banded_fullsky(cov_fullsky_G,cov_fullsky_NG,z3,z4, NG, theta, dtheta, bindef);
 
   for (nl1 = 0; nl1 < Nbp; nl1 ++){
     double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][0],2.));
@@ -795,7 +795,7 @@ void run_cov_kk_clustering_mix_band(char *OUTFILE, char *PATH,
   like.vtmax = theta[Ntheta];
   cov_fullsky_G = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
   cov_fullsky_NG = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
-  cov_kk_cl_mix_binned_fullsky(cov_fullsky_G,cov_fullsky_NG,z3,z4, NG, theta, dtheta, bindef);
+  cov_kk_cl_mix_banded_fullsky(cov_fullsky_G,cov_fullsky_NG,z3,z4, NG, theta, dtheta, bindef);
 
   for (nl1 = 0; nl1 < Nbp; nl1 ++){
     double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][0],2.));
@@ -838,7 +838,7 @@ void run_cov_kk_gk_mix_band(char *OUTFILE, char *PATH,
   like.vtmax = theta[Ntheta];
   cov_fullsky_G = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
   cov_fullsky_NG = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
-  cov_kk_gk_mix_binned_fullsky(cov_fullsky_G,cov_fullsky_NG,z3, NG, theta, dtheta, bindef);
+  cov_kk_gk_mix_banded_fullsky(cov_fullsky_G,cov_fullsky_NG,z3, NG, theta, dtheta, bindef);
 
   for (nl1 = 0; nl1 < Nbp; nl1 ++){
     double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][0],2.));
@@ -880,7 +880,7 @@ void run_cov_kk_ks_mix_band(char *OUTFILE, char *PATH,
   like.vtmax = theta[Ntheta];
   cov_fullsky_G = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
   cov_fullsky_NG = create_double_matrix(0, like.Nbp-1, 0, like.Ntheta-1);
-  cov_kk_ks_mix_binned_fullsky(cov_fullsky_G,cov_fullsky_NG,z3, NG, theta, dtheta, bindef);
+  cov_kk_ks_mix_banded_fullsky(cov_fullsky_G,cov_fullsky_NG,z3, NG, theta, dtheta, bindef);
 
   for (nl1 = 0; nl1 < Nbp; nl1 ++){
     double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][0],2.));
@@ -1006,7 +1006,7 @@ void run_cov_kk_kk_fourier_band(char *OUTFILE, char *PATH, double *ell,
 
   cov_fullsky_G = create_double_matrix(0, like.Nbp-1, 0, like.Nbp-1);
   cov_fullsky_NG = create_double_matrix(0, like.Nbp-1, 0, like.Nbp-1);
-  cov_kk_kk_fourier_binned(cov_fullsky_G, cov_fullsky_NG, NG, ell, bindef);
+  cov_kk_kk_fourier_banded(cov_fullsky_G, cov_fullsky_NG, NG, ell, bindef);
 
   for (nl1 = 0; nl1 < Nbp; nl1 ++){
     double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][1],2.));
