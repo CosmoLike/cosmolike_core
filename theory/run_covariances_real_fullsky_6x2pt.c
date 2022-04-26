@@ -1,3 +1,4 @@
+#include "covariances_binned_simple.h"
 /* run_covariance_real_fullsky_6x2pt.c
 
   This file contains the wrapper functions to calculate 6x2pt - 3x2pt 

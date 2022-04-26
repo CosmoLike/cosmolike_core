@@ -1,3 +1,5 @@
+#ifndef __COV_BINNED_SIMPLE__
+#define __COV_BINNED_SIMPLE__
 /************ ===================== ************/
 /************ Function Declarations ************/
 /************ ===================== ************/
@@ -160,3 +162,5 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type,
 // theta in Logarithmic bins, ell in band powers
 void cov_mix_banded_fullsky(double **cov, double **covNG, char *mixcov_type, 
   int *z_ar, int FLAG_NG, double *theta, double *dtheta, int **bindef);
+
+#endif
