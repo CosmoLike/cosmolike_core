@@ -1,3 +1,4 @@
+#include "./covariances_binned_simple.h"
 /* This new file aims to rewrite the bin-averaged real-space fullsky 
   3x2pt covariances in covariances_real_binned_fullsky.c, but also 
   provide bin-averaged mixed/real(fullsky)/fourier space 6x2pt cov 

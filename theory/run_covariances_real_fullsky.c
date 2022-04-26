@@ -1,3 +1,4 @@
+#include "./covariances_binned_simple.h"
 /* run_covariance_real_fullsky.c
 
   This file contains the wrapper functions to calculate 3x2pt covariance
