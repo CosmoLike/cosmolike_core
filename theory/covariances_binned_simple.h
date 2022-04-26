@@ -70,15 +70,15 @@ void cov_kk_ks_mix_binned_fullsky(double **cov, double **covNG,
 /* mixed space, theta in Logarithmic bins, ell in band powers (5 blocks) */
 
 // kk x {5x2pt} (5 blocks)
-void cov_kk_shear_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_shear_mix_banded_fullsky(double **cov, double **covNG, 
   int z3,int z4,int pm,int FLAG_NG,double *theta, double *dtheta, int **bindef);
-void cov_kk_gl_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_gl_mix_banded_fullsky(double **cov, double **covNG, 
   int z3,int z4, int FLAG_NG, double *theta, double *dtheta, int **bindef);
-void cov_kk_cl_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_cl_mix_banded_fullsky(double **cov, double **covNG, 
   int z3,int z4, int FLAG_NG, double *theta, double *dtheta, int **bindef);
-void cov_kk_gk_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_gk_mix_banded_fullsky(double **cov, double **covNG, 
   int zl, int FLAG_NG, double *theta, double *dtheta, int **bindef);
-void cov_kk_ks_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_ks_mix_banded_fullsky(double **cov, double **covNG, 
   int zs, int FLAG_NG, double *theta, double *dtheta, int **bindef);
 
 /* Fourier space, ell in Logarithmic bins (21 blocks) */
@@ -133,7 +133,7 @@ void cov_kk_kk_fourier_binned(double **cov, double **covNG,
 
 /* Fourier space, ell in band powers (1 blocks)*/
 
-void cov_kk_kk_fourier_binned(double **cov, double **covNG, 
+void cov_kk_kk_fourier_banded(double **cov, double **covNG, 
   int FLAG_NG, double *ell, int **bindef);
 
 /******           Level 1 functions           ******/
@@ -150,7 +150,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
 void cov_fourier_binned(double **cov, double **covNG, char *cov_type, 
   int *z_ar, int FLAG_NG, double *ell);
 // ell in band power and Logarithmic bins
-void cov_fourier_binned(double **cov, double **covNG, char *cov_type, 
+void cov_fourier_banded(double **cov, double **covNG, char *cov_type, 
   int *z_ar, int FLAG_NG, double *ell, int **bindef);
 
 // Mixed-space template functions
@@ -158,5 +158,5 @@ void cov_fourier_binned(double **cov, double **covNG, char *cov_type,
 void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, 
   int *z_ar, int FLAG_NG, double *theta, double *dtheta, double *ell);
 // theta in Logarithmic bins, ell in band powers
-void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, 
+void cov_mix_banded_fullsky(double **cov, double **covNG, char *mixcov_type, 
   int *z_ar, int FLAG_NG, double *theta, double *dtheta, int **bindef);

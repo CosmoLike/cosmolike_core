@@ -536,7 +536,7 @@ void cov_fourier_binned(double **cov, double **covNG, char *cov_type,
 // ell in band power (5x2pt), ell in Logarithmic bins (kk)
 // Does not include covariance matrix in 5x2pt, since they are Log-bin only
 // Does not include CMB beam
-void cov_fourier_binned(double **cov, double **covNG, char *cov_type, 
+void cov_fourier_banded(double **cov, double **covNG, char *cov_type, 
   int *z_ar, int FLAG_NG, double *ell, int **bindef)
 {
   int i,j;
@@ -579,7 +579,7 @@ void cov_fourier_binned(double **cov, double **covNG, char *cov_type,
     func_P2 = &CMB_lensing_mat; N2 = like.Nbp;
 
   } else {
-    printf("cov_fourier_binned: cov_type \"%s\" not defined!\n", cov_type); 
+    printf("cov_fourier_banded: cov_type \"%s\" not defined!\n", cov_type); 
     exit(1);
   }
 
@@ -762,7 +762,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type,
 
 // ell in band power, theta in Logarithmic bins
 // Include CMB beam smoothing for real-space probes
-void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, 
+void cov_mix_banded_fullsky(double **cov, double **covNG, char *mixcov_type, 
   int *z_ar, int FLAG_NG, double *theta, double *dtheta, int **bindef)
 {
   int i,j;
@@ -817,7 +817,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type,
     CMB_smooth_1 = 0;
     CMB_smooth_2 = 1;
   } else {
-    printf("cov_mix_binned_fullsky: mixcov_type \"%s\" not defined!\n", mixcov_type); exit(1);
+    printf("cov_mix_banded_fullsky: mixcov_type \"%s\" not defined!\n", mixcov_type); exit(1);
   }
 
   double l1_double,tri;
@@ -1160,7 +1160,7 @@ void cov_kk_ks_mix_binned_fullsky(double **cov, double **covNG,
 /* mixed space, theta in Logarithmic bins, ell in band powers (5 blocks) */
 
 // kk x {5x2pt} (5 blocks)
-void cov_kk_shear_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_shear_mix_banded_fullsky(double **cov, double **covNG, 
   int z3,int z4,int pm,int FLAG_NG,double *theta,double *dtheta,int **bindef)
 {
   static char xip[]="kk_xi+", xim[]="kk_xi-";
@@ -1173,7 +1173,7 @@ void cov_kk_shear_mix_binned_fullsky(double **cov, double **covNG,
     theta, dtheta, bindef);
 }
 
-void cov_kk_gl_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_gl_mix_banded_fullsky(double **cov, double **covNG, 
   int z3,int z4, int FLAG_NG, double *theta, double *dtheta, int **bindef)
 {
   char mixcov_type[] = "kk_gl";
@@ -1183,7 +1183,7 @@ void cov_kk_gl_mix_binned_fullsky(double **cov, double **covNG,
     theta, dtheta, bindef);
 }
 
-void cov_kk_cl_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_cl_mix_banded_fullsky(double **cov, double **covNG, 
   int z3,int z4, int FLAG_NG, double *theta, double *dtheta, int **bindef)
 {
   char mixcov_type[] = "kk_cl";
@@ -1193,7 +1193,7 @@ void cov_kk_cl_mix_binned_fullsky(double **cov, double **covNG,
     theta, dtheta, bindef);
 }
 
-void cov_kk_gk_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_gk_mix_banded_fullsky(double **cov, double **covNG, 
   int zl, int FLAG_NG, double *theta, double *dtheta, int **bindef)
 {
   char mixcov_type[] = "kk_gk";
@@ -1203,7 +1203,7 @@ void cov_kk_gk_mix_binned_fullsky(double **cov, double **covNG,
     theta, dtheta, bindef);
 }
 
-void cov_kk_ks_mix_binned_fullsky(double **cov, double **covNG, 
+void cov_kk_ks_mix_banded_fullsky(double **cov, double **covNG, 
   int zs, int FLAG_NG, double *theta, double *dtheta, int **bindef)
 {
   char mixcov_type[] = "kk_ks";
@@ -1408,7 +1408,7 @@ void cov_kk_kk_fourier_binned(double **cov, double **covNG,
 
 /* Fourier space, ell in band powers (1 blocks)*/
 
-void cov_kk_kk_fourier_binned(double **cov, double **covNG, 
+void cov_kk_kk_fourier_banded(double **cov, double **covNG, 
   int FLAG_NG, double *ell, int **bindef)
 {
   char cov_type[] = "kk_kk";
