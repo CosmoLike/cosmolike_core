@@ -135,7 +135,7 @@ double w_ks_fullsky(int nt, int ni){
     free_double_vector(Pmin,0,LMAX+1);
     free_double_vector(Pmax,0,LMAX+1);
   }
-  if (recompute_ks(C,G,N,ni)){
+  if (recompute_ks(C,N)){
     // if (like.IA != 0 && like.IA != 3 && like.IA != 4){printf("cosmo2D_real.c: w_ks_fullsky does not support like.IA = %d yet\nEXIT!\n",like.IA); exit(1);}
     // C_tomo_pointer C_gl_pointer = &C_gl_tomo;
     // if (like.IA ==3 || like.IA ==4) C_gl_pointer = &C_ggl_IA_tab;
