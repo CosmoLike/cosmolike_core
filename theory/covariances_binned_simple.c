@@ -1577,7 +1577,7 @@ void cov_kk_kk_fourier_banded(double **cov, double **covNG,
   char cov_type[] = "kk_kk";
   int z_ar[1];
   z_ar[0]=-1;
-  cov_fourier_binned(cov, covNG, cov_type, z_ar, FLAG_NG, ell, bindef);
+  cov_fourier_banded(cov, covNG, cov_type, z_ar, FLAG_NG, ell, bindef);
 }
 
 /****** Helper Functions ******/
