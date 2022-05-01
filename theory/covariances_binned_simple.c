@@ -987,7 +987,7 @@ void cov_mix_banded_fullsky(double **cov, double **covNG, char *mixcov_type,
   int l1,l2;
   double beam1, beam2;
   //double beam;
-  for(i=0; i<like.Ncl ; i++){
+  for(i=0; i<like.Nbp ; i++){
     for(j=0; j<like.Ntheta ; j++){
       cov[i][j] = 0.;
       covNG[i][j] = 0.;
@@ -998,8 +998,8 @@ void cov_mix_banded_fullsky(double **cov, double **covNG, char *mixcov_type,
   double covGl1;
 
   double cov_g_l[LMAX];
-  //printf("lmin,lmax, %d, %d\n", (int)floor(like.lmin),(int)ceil(like.lmax));
-  for(l1=(int)ceil(like.lmin); l1<(int)ceil(like.lmax)+1; l1++){
+  //printf("lmin,lmax, %d, %d\n", like.lmin_bp, like.lmax_bp);
+  for(l1=like.lmin_bp; l1<=like.lmax_bp; l1++){
     cov_g_l[l1] = func_for_cov_G((double)l1, z_ar);
     //printf("cov_g_l: %d, %le\n", l1,cov_g_l[l1]);
   }
