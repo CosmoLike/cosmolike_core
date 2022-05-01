@@ -711,7 +711,7 @@ void run_cov_kk_shear_mix_band(char *OUTFILE, char *PATH,
   cov_kk_shear_mix_banded_fullsky(cov_fullsky_G,cov_fullsky_NG,z3,z4,pm, NG, theta, dtheta, bindef);
 
   for (nl1 = 0; nl1 < Nbp; nl1 ++){
-    double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][1],2.));
+    double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][0],2.));
     for (nl2 = 0; nl2 < Ntheta; nl2 ++){
       double t2 = 2./3.*(pow(theta[nl2+1],3.)-pow(theta[nl2],3.))/(pow(theta[nl2+1],2.)-pow(theta[nl2],2.));
       c_ng = 0.; c_g = 0.;
@@ -1010,9 +1010,9 @@ void run_cov_kk_kk_fourier_band(char *OUTFILE, char *PATH, double *ell,
   cov_kk_kk_fourier_banded(cov_fullsky_G, cov_fullsky_NG, NG, ell, bindef);
 
   for (nl1 = 0; nl1 < Nbp; nl1 ++){
-    double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][1],2.));
+    double t1 = 2./3.*(pow(bindef[nl1][1],3.)-pow(bindef[nl1][0],3.))/(pow(bindef[nl1][1],2.)-pow(bindef[nl1][0],2.));
     for (nl2 = 0; nl2 < Nbp; nl2 ++){
-      double t2 = 2./3.*(pow(bindef[nl2][1],3.)-pow(bindef[nl2][0],3.))/(pow(bindef[nl2][1],2.)-pow(bindef[nl2][1],2.));
+      double t2 = 2./3.*(pow(bindef[nl2][1],3.)-pow(bindef[nl2][0],3.))/(pow(bindef[nl2][1],2.)-pow(bindef[nl2][0],2.));
 
       c_ng = 0.; c_g = 0.;
 
@@ -1021,7 +1021,8 @@ void run_cov_kk_kk_fourier_band(char *OUTFILE, char *PATH, double *ell,
 
       i=like.Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl1;
       j=like.Ntheta*(2*tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Nbin+tomo.clustering_Nbin+tomo.shear_Nbin)+nl2;
-      fprintf(F1, "%d %d %e %e %d %d %d %d %e %e\n",i,j,t1,t2,zk,zk,zk,zk,c_g,c_ng);
+      fprintf(F1, "%d %d %e %e %d %d %d %d %e %e\n",
+        i,j,t1,t2,zk,zk,zk,zk,c_g,c_ng);
     }
   }
   free_double_matrix(cov_fullsky_G,0, like.Nbp-1, 0, like.Nbp-1);
