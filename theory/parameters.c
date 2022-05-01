@@ -42,7 +42,7 @@ void set_cov_parameters_to_(char *covparamfile, int output)
 
   char line[256];
   int iline=0;
-
+  printf("Reading Covariance Matrix Parameters...\n");
   FILE* input = fopen(covparamfile, "r");
   while(fgets(line, 256, input) != NULL)
   {
@@ -265,6 +265,7 @@ void set_cosmological_parameters_to_(char *cosmofile, int output)
   int iline=0;
 
   FILE* input = fopen(cosmofile, "r");
+  printf("Reading Cosmological Parameters...\n");
   while(fgets(line, 256, input) != NULL)
   {
     char name[128],val[128];
@@ -403,6 +404,7 @@ void set_survey_parameters_to_(char *surveyfile, int output)
   int iline=0,i;
 
   FILE* input = fopen(surveyfile, "r");
+  printf("Reading Survey Parameters...\n");
   while(fgets(line, 256, input) != NULL)
   {
     char name[128],val[256];
