@@ -797,7 +797,7 @@ void cov_fourier_banded(double **cov, double **covNG, char *cov_type,
           }
 
           if(FLAG_NG){
-            tri = func_bin_cov_NG((double)l1, (double)l2, z_ar)
+            tri = func_bin_cov_NG((double)l1, (double)l2, z_ar);
             covNG[i][j] += tri * factor1 * factor2;
           }
         }
@@ -1332,7 +1332,7 @@ void cov_kk_shear_mix_banded_fullsky(double **cov, double **covNG,
   else {strcpy(mixcov_type, xim);}
   int z_ar[2];
   z_ar[0]=z3; z_ar[1]=z4;
-  cov_mix_binned_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
+  cov_mix_banded_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
     theta, dtheta, bindef);
 }
 
@@ -1342,7 +1342,7 @@ void cov_kk_gl_mix_banded_fullsky(double **cov, double **covNG,
   char mixcov_type[] = "kk_gl";
   int z_ar[2];
   z_ar[0]=z3; z_ar[1]=z4;
-  cov_mix_binned_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
+  cov_mix_banded_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
     theta, dtheta, bindef);
 }
 
@@ -1352,7 +1352,7 @@ void cov_kk_cl_mix_banded_fullsky(double **cov, double **covNG,
   char mixcov_type[] = "kk_cl";
   int z_ar[2];
   z_ar[0]=z3; z_ar[1]=z4;
-  cov_mix_binned_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
+  cov_mix_banded_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
     theta, dtheta, bindef);
 }
 
@@ -1362,7 +1362,7 @@ void cov_kk_gk_mix_banded_fullsky(double **cov, double **covNG,
   char mixcov_type[] = "kk_gk";
   int z_ar[1];
   z_ar[0]=zl;
-  cov_mix_binned_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
+  cov_mix_banded_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
     theta, dtheta, bindef);
 }
 
@@ -1372,7 +1372,7 @@ void cov_kk_ks_mix_banded_fullsky(double **cov, double **covNG,
   char mixcov_type[] = "kk_ks";
   int z_ar[1];
   z_ar[0]=zs;
-  cov_mix_binned_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
+  cov_mix_banded_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
     theta, dtheta, bindef);
 }
 
