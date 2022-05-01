@@ -1332,6 +1332,7 @@ void cov_kk_shear_mix_banded_fullsky(double **cov, double **covNG,
   else {strcpy(mixcov_type, xim);}
   int z_ar[2];
   z_ar[0]=z3; z_ar[1]=z4;
+  printf("mixcov type = %s\n",mixcov_type);
   cov_mix_banded_fullsky(cov, covNG, mixcov_type, z_ar, FLAG_NG, 
     theta, dtheta, bindef);
 }
