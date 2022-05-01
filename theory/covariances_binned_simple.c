@@ -276,7 +276,7 @@ double cov_NG_kk_gl_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_kk_cl_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_kk_gk_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_kk_ks_bridge(double ll1, double ll2, int *z_ar);
-// double cov_NG_kk_kk_bridge()?
+double cov_NG_kk_kk_bridge(double ll1, double ll2, int *z_ar)
 
 /* Helper Functions */
 
@@ -2340,6 +2340,8 @@ void tabulate_covNG(char *cov_type, int *z_ar, int Ntab, double **table){
     func_for_cov_NG = &cov_NG_kk_gk_bridge;
   } else if(strcmp(cov_type, "kk_ks")==0) {
     func_for_cov_NG = &cov_NG_kk_ks_bridge;
+  } else if(strcmp(cov_type, "kk_kk")==0) {
+    func_for_cov_NG = &cov_NG_kk_kk_bridge;
   } else {
     printf("tabulate_covNG: cov_type \"%s\" not defined!\n", cov_type); exit(1);
   }
@@ -2983,4 +2985,7 @@ double cov_NG_kk_gk_bridge(double ll1, double ll2, int *z_ar){
 }
 double cov_NG_kk_ks_bridge(double ll1, double ll2, int *z_ar){
   return cov_NG_kk_ks(ll1,ll2,z_ar[0]);
+}
+double cov_NG_kk_kk_bridge(double ll1, double ll2, int *z_ar){
+  return cov_NG_kk_kk(ll1,ll2);
 }
