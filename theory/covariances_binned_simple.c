@@ -276,7 +276,7 @@ double cov_NG_kk_gl_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_kk_cl_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_kk_gk_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_kk_ks_bridge(double ll1, double ll2, int *z_ar);
-double cov_NG_kk_kk_bridge(double ll1, double ll2, int *z_ar)
+double cov_NG_kk_kk_bridge(double ll1, double ll2, int *z_ar);
 
 /* Helper Functions */
 
@@ -793,6 +793,9 @@ void cov_fourier_banded(double **cov, double **covNG, char *cov_type,
           else{factor2 = 1.0/N_l2;}// Log-bin average
           
           if(l1==l2){
+            if(i==N1-1){
+              printf("cov(bin-%d, bin-%d): L=%d f1=%e f2=%e cg=%e\n"i,j,l1,factor1,factor2, func_for_cov_G((double)l1, z_ar));
+            }
             cov[i][j] += func_for_cov_G((double)l1, z_ar) * factor1 * factor2;
           }
 
