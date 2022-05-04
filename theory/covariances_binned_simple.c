@@ -276,7 +276,7 @@ double cov_NG_kk_gl_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_kk_cl_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_kk_gk_bridge(double ll1, double ll2, int *z_ar);
 double cov_NG_kk_ks_bridge(double ll1, double ll2, int *z_ar);
-double cov_NG_kk_kk_bridge(double ll1, double ll2, int *z_ar)
+double cov_NG_kk_kk_bridge(double ll1, double ll2, int *z_ar);
 
 /* Helper Functions */
 
