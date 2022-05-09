@@ -794,7 +794,7 @@ void cov_fourier_banded(double **cov, double **covNG, char *cov_type,
           
           if(l1==l2){
             if(i==N1-1){
-              printf("cov(bin-%d, bin-%d): L=%d f1=%e f2=%e cg=%e\n"i,j,l1,factor1,factor2, func_for_cov_G((double)l1, z_ar));
+              printf("cov(bin-%d, bin-%d): L=%d f1=%e f2=%e cg=%e\n",i,j,l1,factor1,factor2, func_for_cov_G((double)l1, z_ar));
             }
             cov[i][j] += func_for_cov_G((double)l1, z_ar) * factor1 * factor2;
           }
