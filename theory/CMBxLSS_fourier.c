@@ -25,11 +25,13 @@ double C_ks(double l, int ni);
 double C_kk(double l);
 
 //======= y related power spectra
+/*
 double W_y(double a); // efficiency weight function for Compton-y
 double int_for_C_gy(double a, void *params);
 double int_for_C_ky(double a, void *params);
 double int_for_C_sy(double a, void *params);
 double int_for_C_yy(double a, void *params);
+*/
 
 // power spectra - no look-up table
 double C_gy_nointerp(double l, int ni);  //CMB y x galaxy position power spectrum, lens bin ni
@@ -376,7 +378,7 @@ double C_kk(double l)
 
 //================================================================================================
 // y related functions
-
+/*
 // efficiency weight function for Compton-y
 double W_y(double a){ // sigma_Th /(m_e*c^2) / a^2 , see Eq.D9 of 2005.00009.
   static double real_coverH0, sigma_Th, E_e;
@@ -566,3 +568,4 @@ double C_yy(double l){
   error("C_yy not implemented yet!");
   return 0;
 }
+*/
