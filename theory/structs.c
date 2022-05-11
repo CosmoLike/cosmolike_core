@@ -15,6 +15,8 @@ typedef struct {
   int Nbp; // number of band power bins
   int lmin_bp; // minimum L of band power
   int lmax_bp; // maximum L of band power
+  int lmin_bp_with_corr;
+  int lmax_bp_with_corr;
   int **bindef_bp; // band power bin definition
   double cosmax;
   double Rmin_bias;
@@ -509,6 +511,7 @@ typedef struct {
     char filename[200]; /* output file name prefix */
     char C_FOOTPRINT_FILE[200]; /*angular power spectrum of survey footprint, in healpix format */
     char BINMAT_FILE[200]; /*binning matrix for CMB lensing band power*/
+    char BINMAT_WITH_CORR_FILE[200]; /*binning matrix, but marg. over CMB*/
     char BINDEF_FILE[200]; /*binning definition for CMB lensing band power*/
     char ss[8]; /* Calculate shear-shear components */
     char ls[8]; /* Calculate shear-position components */

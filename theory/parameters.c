@@ -245,12 +245,39 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       }
       continue;
     }
+    else if(strcmp(name, "binmat_with_corr_file")==0) // binning matrix file
+    {
+      sprintf(covparams.BINMAT_WITH_CORR_FILE,"%s",val);
+      if(output==1)
+      {
+        printf("binmat_with_corr_file %s \n",covparams.BINMAT_WITH_CORR_FILE);
+      }
+      continue;
+    }
     else if(strcmp(name, "bindef_file")==0) // binning definition file
     {
       sprintf(covparams.BINDEF_FILE,"%s",val);
       if(output==1)
       {
         printf("bindef_file %s \n",covparams.BINDEF_FILE);
+      }
+      continue;
+    }
+    if(strcmp(name, "lmin_bp_with_corr")==0)
+    {
+      sscanf(val, "%lf", &like.lmin_bp_with_corr);
+      if(output==1)
+      {
+        printf("lmin_bp_with_corr %f \n",like.lmin_bp_with_corr);
+      }
+      continue;
+    }
+    else if(strcmp(name, "lmax_bp_with_corr")==0)
+    {
+      sscanf(val, "%lf", &like.lmax_bp_with_corr);
+      if(output==1)
+      {
+        printf("lmax_bp_with_corr %f \n",like.lmax_bp_with_corr);
       }
       continue;
     }

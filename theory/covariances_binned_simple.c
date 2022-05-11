@@ -287,6 +287,7 @@ double Glplus_tab(int itheta, int ell);
 double Glminus_tab(int itheta, int ell);
 // Planck CMB lensing band power binning matrix (with correction)
 double CMB_lensing_mat(int ibp, int L);
+double CMB_lensing_mat_with_corr(int ibp, int L);
 // CMB beam smoothing kernel
 double GaussianBeam(double fwhm, int ell, double ell_left, double ell_right);
 // masking effect on pure noise
@@ -738,8 +739,8 @@ void cov_fourier_banded(double **cov, double **covNG, char *cov_type,
   } else if(strcmp(cov_type, "kk_kk")==0) {
     func_for_cov_G  = &func_for_cov_G_kk;
     func_bin_cov_NG = &bin_cov_NG_kk_kk;
-    func_P1 = &CMB_lensing_mat; N1 = like.Nbp;
-    func_P2 = &CMB_lensing_mat; N2 = like.Nbp;
+    func_P1 = &CMB_lensing_mat_with_corr; N1 = like.Nbp;
+    func_P2 = &CMB_lensing_mat_with_corr; N2 = like.Nbp;
 
   } else {
     printf("cov_fourier_banded: cov_type \"%s\" not defined!\n", cov_type); 
@@ -769,15 +770,25 @@ void cov_fourier_banded(double **cov, double **covNG, char *cov_type,
   for(i=0; i<N1; i++){
 
     // band power
-    l1_min = bindef[i][0];
-    l1_max = bindef[i][1];
+    if((strcmp(cov_type, "kk_kk")!=0)){
+      l1_min = bindef[i][0];
+      l1_max = bindef[i][1];
+    } else{
+      l1_min = like.lmin_bp_with_corr;
+      l1_max = like.lmax_bp_with_corr;
+    }
     N_l1 = l1_max - l1_min + 1;
 
     // Loop 2: Harmonic space
     for(j=0; j<N2; j++){
       if(func_P2!=NULL){ // band power
-        l2_min = bindef[j][0];
-        l2_max = bindef[j][1];
+        if((strcmp(cov_type, "kk_kk")!=0)){
+          l2_min = bindef[j][0];
+          l2_max = bindef[j][1];
+        } else{
+          l2_min = like.lmin_bp_with_corr;
+          l2_max = like.lmax_bp_with_corr;
+        }
       }
       else{ // Logarithmic bins
         l2_min = (int)ceil(ell[j]);
@@ -1829,9 +1840,9 @@ double CMB_lensing_mat(int ibp, int L)
 {
   int iL;
   int NL = like.lmax_bp - like.lmin_bp + 1;
-  static double **binning_correction_matrix = NULL;
-  if (binning_correction_matrix == NULL){
-    binning_correction_matrix = create_double_matrix(0, like.Nbp-1, 
+  static double **binning_matrix = NULL;
+  if (binning_matrix == NULL){
+    binning_matrix = create_double_matrix(0, like.Nbp-1, 
       0, NL-1);
     FILE *F1;
     F1 = fopen(covparams.BINMAT_FILE,"r");
@@ -1844,7 +1855,7 @@ double CMB_lensing_mat(int ibp, int L)
         for (int j = 0; j < NL; j++){
           double tmp2;
           fscanf(F1,"%le ",&tmp2);
-          binning_correction_matrix[i][j] = tmp2;
+          binning_matrix[i][j] = tmp2;
         }
       }
       fclose(F1);
@@ -1855,6 +1866,39 @@ double CMB_lensing_mat(int ibp, int L)
     }  
   }
   iL = L - like.lmin_bp;
+  return binning_matrix[ibp][iL];
+}
+
+double CMB_lensing_mat_with_corr(int ibp, int L)
+{
+  int iL;
+  int NL = like.lmax_bp_with_corr - like.lmin_bp_with_corr + 1;
+  static double **binning_correction_matrix = NULL;
+  if (binning_correction_matrix == NULL){
+    binning_correction_matrix = create_double_matrix(0, like.Nbp-1, 
+      0, NL-1);
+    FILE *F1;
+    F1 = fopen(covparams.BINMAT_WITH_CORR_FILE,"r");
+    if (F1 != NULL) {
+      fclose(F1);
+      int nbp = line_count(covparams.BINMAT_WITH_CORR_FILE);
+      
+      F1=fopen(covparams.BINMAT_WITH_CORR_FILE, "r");
+      for (int i = 0; i < like.Nbp; i++){
+        for (int j = 0; j < NL; j++){
+          double tmp2;
+          fscanf(F1,"%le ",&tmp2);
+          binning_correction_matrix[i][j] = tmp2;
+        }
+      }
+      fclose(F1);
+    }
+    else{
+      printf("ERROR: Cant't open file %s\n", covparams.BINMAT_WITH_CORR_FILE);
+      exit(-1);
+    }  
+  }
+  iL = L - like.lmin_bp_with_corr;
   return binning_correction_matrix[ibp][iL];
 }
 
