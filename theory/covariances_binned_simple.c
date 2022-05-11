@@ -782,6 +782,7 @@ void cov_fourier_banded(double **cov, double **covNG, char *cov_type,
 
     // Loop 2: Harmonic space
     for(j=0; j<N2; j++){
+      printf("cov index [%d, %d]\n", i+1, j+1);
       if(func_P2!=NULL){ // band power
         if((strcmp(cov_type, "kk_kk")!=0)){
           l2_min = bindef[j][0];
