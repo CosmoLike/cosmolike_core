@@ -756,14 +756,15 @@ void cov_fourier_banded(double **cov, double **covNG, char *cov_type,
     }
   }
 
-  /* Do we need that?
+  
   // Pre-compute the Gaussian covariance matrix
   double cov_g_l[LMAX];
-    // printf("lmin,lmax, %d, %d\n", (int)floor(like.lmin),(int)ceil(like.lmax));
-  for(l1=(int)ceil(like.lmin); l1<(int)ceil(like.lmax)+1; l1++){
+  printf("Pre-compute the Gaussian cov (%d <= L <= %d)\n", 
+    like.lmin_bp_with_corr, like.lmax_bp_with_corr);
+  for(l1=like.lmin_bp_with_corr; l1<like.lmax_bp_with_corr+1; l1++){
     cov_g_l[l1] = func_for_cov_G((double)l1, z_ar);
-    // printf("cov_g_l: %d, %le\n", l1,cov_g_l[l1]);
-  }*/
+    // printf("cov_g_l[L=%d] = %le\n", l1, cov_g_l[l1]);
+  }
 
 
   // Loop 1: Harmonic space --- band power
@@ -807,7 +808,8 @@ void cov_fourier_banded(double **cov, double **covNG, char *cov_type,
             if(i==N1-1){
               printf("cov(bin-%d, bin-%d): L=%d f1=%e f2=%e cg=%e\n",i,j,l1,factor1,factor2, func_for_cov_G((double)l1, z_ar));
             }
-            cov[i][j] += func_for_cov_G((double)l1, z_ar) * factor1 * factor2;
+            cov[i][j] += cov_g_l[l1] * factor1 * factor2;
+            //cov[i][j] += func_for_cov_G((double)l1, z_ar) * factor1 * factor2;
           }
 
           if(FLAG_NG){
