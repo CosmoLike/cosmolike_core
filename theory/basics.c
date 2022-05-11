@@ -248,7 +248,7 @@ double int_gsl_integrate_high_precision(double (*func)(double, void*),void *arg,
 
 double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter)
 {
-  niter= niter<50 ? niter:50;
+  //niter= niter<50 ? niter:50;
   double res, err;
   gsl_integration_cquad_workspace *w = gsl_integration_cquad_workspace_alloc(niter);
   gsl_function F;
@@ -263,7 +263,7 @@ double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *ar
 
 double int_gsl_integrate_low_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter)
 {
-  niter= niter<50 ? niter:50;
+  //niter= niter<50 ? niter:50;
   double res, err;
   gsl_integration_cquad_workspace *wcrude = gsl_integration_cquad_workspace_alloc(niter);
   gsl_function F;
