@@ -81,6 +81,7 @@ typedef struct {
      double h0; //Hubble constant
      double M_nu;
      double Omega_nu; //density parameter of massive neutrinos; Omega_m = Omega_cdm+ Omega_nu + omb
+     double Omega_rad_h2; /* radiation energy density at redshift 0, 2.7255 K */
      double coverH0; //units for comoving distances - speeds up code
      double rho_crit;      /* = 3 H_0^2/(8 pi G), critical comoving density */
      double f_NL; 
@@ -88,7 +89,7 @@ typedef struct {
      double MGmu;
      double theta_s;
 }cosmopara;
-cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.theta_s =0.0};
+cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.theta_s =0.0, .Omega_rad_h2 = 2.5094694598641805e-05,};
 
 typedef struct {
   int shear_Nbin; // number of tomography bins
