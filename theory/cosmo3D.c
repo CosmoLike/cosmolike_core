@@ -77,11 +77,12 @@ double omv_vareos(double a)
 
 void omega_a(double aa,double *om_m,double *om_v)
 {
-  double a2,omega_curv;
+  double a2,omega_curv,omega_rad;
   a2=aa*aa;
-  omega_curv=1.0-cosmology.Omega_m- cosmology.Omega_v;
-  *om_m=cosmology.Omega_m /(cosmology.Omega_m +aa*(omv_vareos(aa) *a2 +omega_curv));
-  *om_v=omv_vareos(aa)*a2*aa/(cosmology.Omega_m+aa*(a2*omv_vareos(aa) +omega_curv));
+  omega_rad = cosmology.Omega_rad_h2 / pow(cosmology.h0, 2);
+  omega_curv = 1.0 - cosmology.Omega_m - cosmology.Omega_v - omega_rad;
+  *om_m=cosmology.Omega_m /(cosmology.Omega_m +aa*(omv_vareos(aa) *a2 +omega_curv) + omega_rad/aa);
+  *om_v=omv_vareos(aa)*a2*aa/(cosmology.Omega_m+aa*(a2*omv_vareos(aa) +omega_curv) + omega_rad/aa);
 }
 //c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //growth factor including Dark energy parameters w0, wa
@@ -111,7 +112,11 @@ int func_for_growfac(double a,const double y[],double f[],void *params)
 }
 
 static inline double hoverh0(double a){
-  return sqrt(cosmology.Omega_m /(a*a*a) + (1.-cosmology.Omega_m -cosmology.Omega_v )/(a*a) + omv_vareos(a) );
+  return sqrt(  cosmology.Omega_rad_h2/pow(cosmology.h0,2) / (a*a*a*a) +\
+    cosmology.Omega_m /(a*a*a) + \
+    (1. - (cosmology.Omega_rad_h2/pow(cosmology.h0,2))\
+      - cosmology.Omega_m - cosmology.Omega_v)/(a*a) +\
+    omv_vareos(a) );
 }
 
 double growfac_from_class(double a){
