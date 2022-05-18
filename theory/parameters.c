@@ -268,7 +268,7 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       sscanf(val, "%d", &like.lmin_bp_with_corr);
       if(output==1)
       {
-        printf("lmin_bp_with_corr %f \n",like.lmin_bp_with_corr);
+        printf("lmin_bp_with_corr %d \n",like.lmin_bp_with_corr);
       }
       continue;
     }
@@ -277,7 +277,7 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       sscanf(val, "%d", &like.lmax_bp_with_corr);
       if(output==1)
       {
-        printf("lmax_bp_with_corr %f \n",like.lmax_bp_with_corr);
+        printf("lmax_bp_with_corr %d \n",like.lmax_bp_with_corr);
       }
       continue;
     }
