@@ -553,7 +553,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   }
   if (redshift.shear_photoz == 4){ zz = zz -nuisance.bias_zphot_shear[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
-  return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);
+  return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
 }
 
 
@@ -863,8 +863,8 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     //printf("%f %f\n", nuisance.bias_zphot_stretch[j], zz);
       //printf("%d %f %f\n", j, zz, gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
 
-    return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1])/nuisance.bias_zphot_stretch[j];}
-  return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);
+    return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1])/nuisance.bias_zphot_stretch[j]);}
+  return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
 }
 
 /*********** routines calculating the number of source and lens galaxies per bin ****************/

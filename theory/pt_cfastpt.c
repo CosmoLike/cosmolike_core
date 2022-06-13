@@ -263,7 +263,7 @@ double TATT_II_EE (double k_coverH0, double a, double C1, double C2, double b_ta
     double lgk = log(k_coverH0);
     //outside FASTPT interpolation range; return NLA contribution only
     if (lgk <= logkmin || lgk >= logkmax){return nla_EE;}
-    double g4 = pow(growfac(a)/growfac(0.99),4.0);
+    double g4 = pow(growfac(a)/growfac(1.),4.0);
 
 
     double P_ta_EE, P_ta_dE1, P_ta_dE2;
@@ -305,7 +305,7 @@ double TATT_II_BB (double k_coverH0, double a, double C1, double C2, double b_ta
     }
     double lgk = log(k_coverH0);
     if (lgk < logkmin || lgk >= logkmax){return 0.0;}
-    double g4 = pow(growfac(a)/growfac(0.99),4.0);
+    double g4 = pow(growfac(a)/growfac(1.),4.0);
 
 
     ta_BB = C1*C1_2*b_ta*b_ta_2*g4*interpol(FPT.tab_IA[5], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);
@@ -337,7 +337,7 @@ double TATT_GI_E (double k_coverH0, double a, double C1, double C2, double b_ta)
     }
     double lgk = log(k_coverH0);
     if (lgk < logkmin || lgk >= logkmax){return nla_GI;}
-    double g4 = pow(growfac(a)/growfac(0.99),4.0);
+    double g4 = pow(growfac(a)/growfac(1.),4.0);
 
     double P_ta_dE1, P_ta_dE2;
     P_ta_dE1 = g4*interpol(FPT.tab_IA[2], FPT.N, logkmin, logkmax, dlgk,lgk, 0.,0.);

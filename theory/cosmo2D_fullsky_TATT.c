@@ -17,10 +17,10 @@ int NTAB_TATT = 60;
 double C1_TA(double a, double nz){
 	// per-bin IA parameters
 	if (like.IA ==3 || like.IA ==5){
-		return -nuisance.A_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a);
+		return -nuisance.A_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a);
 	}
 	//power law evolution
-	return -cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+	return -cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
 }
 /* TA source bias parameter, nz argument only need if per-bin amplitude*/
 double b_TA(double a, double nz){
@@ -35,10 +35,10 @@ double b_TA(double a, double nz){
 double C2_TT(double a, double nz){
 	// per-bin IA parameters
 	if (like.IA == 5){
-		return 5.*nuisance.A2_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(0.9999)/growfac(a),2.0);
+		return 5.*nuisance.A2_z[(int)nz]*cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(1.)/growfac(a),2.0);
 	}
 	//power law evolution
-	return 5.*nuisance.A2_ia*cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(0.9999)/growfac(a),2.0)*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia_tt);
+	return 5.*nuisance.A2_ia*cosmology.Omega_m*nuisance.c1rhocrit_ia*pow(growfac(1.)/growfac(a),2.0)*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia_tt);
 }
 
 /****** Limber integrands for shear and ggl ******/
@@ -199,48 +199,49 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
   double g4 = pow(growfac(a)/growfac(1.0),4.);
   double Pnl_cross = sqrt(Pdelta(k,a)*Pdelta_cluster(k,a));
   double Pnl = Pdelta(k,a);
-  //printf("Pnl diff %f\n", (Pnl-Pdelta(k,a))/Pdelta(k,a));
+  //printf("Pnl diff %f\n", (Pnl_cross-Pdelta(k,a))/Pdelta(k,a));
 
   double P_1loop =b1*Pnl_cross;
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+
   if (gbias.neutrino_induced_sdb>0.0){
-  	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
   	//double cluster_a = 1.0/(1.0+zmean((int)ar[0], false));
-		P_1loop*= (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
+		P_1loop*= ((1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb));
   }
 
   if (w_density*b2 !=0){
   	P_1loop += g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k));
   }
-
+  //printf("w factor %f, wo factor %f \n", ((1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb)), k);
   /*1-loop P_gm ggl terms*/
   res = w_density*wk*P_1loop;
   /* lens magnification x G term*/
   res += w_mag*wk*Pnl;
   /* (linear bias lens density + lens magnification) with TATT_GI terms*/
   if (C1 || C2){
-  	if (gbias.neutrino_induced_sdb>0.0) res += (b1*(1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb)*sqrt(Pdelta(k,a)/Pdelta_cluster(k,a))*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
-  	else res += (b1*sqrt(Pdelta(k,a)/Pdelta_cluster(k,a))*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
+  	if (gbias.neutrino_induced_sdb>0.0) res += (b1*(1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb)*sqrt(Pdelta_cluster(k,a)/Pdelta(k,a))*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
+  	else res += (b1*sqrt(Pdelta_cluster(k,a)/Pdelta(k,a))*w_density+w_mag)*ws*TATT_GI_E(k,a,C1,C2,b_ta);
   }
   return res*dchi_da(a)/fK/fK;
 }
 
 double C_EE_TATT(double l, int ni,int  nj){
   double array[3] = {(double) ni, (double) nj, l};
-  
-  double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
+  double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.998,NULL,1000);
+
   return EE;
 }
 
 
 double C_BB_TATT(double l, int ni, int nj){
   double array[3] = {(double) ni, (double) nj, l};
-  return int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_BB,(void*)array,fmax(amin_source(ni),amin_source(nj)),fmin(amax_source_IA(ni),amax_source_IA(nj)),NULL,1000);
+  return int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_BB,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.998,NULL,1000);
 }
 
 double C_ggl_TATT(double l, int nl, int ns)
 {
   double array[3] = {(double) nl, (double) ns, l};
-  double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
+  double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),0.99999,NULL,1000);
   return gE;
 }
 /*************** look-up tables for angular correlation functions ***************/
@@ -357,7 +358,7 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation
 			double x = cos(like.theta[i]);
 			gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
 			gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
-			for (int l = 3; l < LMAX; l ++){
+			for (int l = 2; l < LMAX; l ++){
 				/*double plm = gsl_sf_legendre_Plm(l,2,x);
 				double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
 				Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
@@ -366,12 +367,11 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation
 				Glminus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
 				*(plm*(l,2,x)*((4-l-2.*x*(l-1))/(1-x*x)-l*(l+1)/2)
 				+plm_1*(l-1,2,x)*(l+2)*(x+2)/(1-x*x));*/
-
 				Glplus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
 
 				-l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
 				-l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-				+l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+				+l*(l-1.)/(2.*l+1)           * (Pmin[l+1]-Pmax[l+1])
 
 				+(4-l)   * (dPmin[l]-dPmax[l])
 				+(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])
@@ -379,13 +379,13 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj) //shear tomography correlation
 				+2*(l-1) * (xmin[i]*dPmin[l]   - xmax[i]*dPmax[l]   - Pmin[l] + Pmax[l])
 				-2*(l+2) * (dPmin[l-1]-dPmax[l-1])
 
-				)/(xmin[i]-xmax[i]);           
+				)/(xmin[i]-xmax[i]);
 
 				Glminus[i][l] =(2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))*(
 
 				-l*(l-1.)/2*(l+2./(2*l+1)) * (Pmin[l-1]-Pmax[l-1])
 				-l*(l-1.)*(2.-l)/2         * (xmin[i]*Pmin[l]-xmax[i]*Pmax[l])
-				+l*(l-1)/(2*l+1)           * (Pmin[l+1]-Pmax[l+1])
+				+l*(l-1.)/(2.*l+1)           * (Pmin[l+1]-Pmax[l+1])
 
 				+(4-l)   * (dPmin[l]-dPmax[l])
 				+(l+2)   * (xmin[i]*dPmin[l-1] - xmax[i]*dPmax[l-1] - Pmin[l-1] + Pmax[l-1])

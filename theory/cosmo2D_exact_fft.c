@@ -284,10 +284,10 @@ double C_cl_tomo_nointerp(double l, int ni, int nj)  //galaxy clustering power s
   else if (ni == nj){
     // return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(ni),amax_lens(ni),NULL,1000);
     //printf("%s\n", );
-    return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(ni),0.999999,NULL,1000);
+    return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(ni),0.99999,NULL,1000);
   }
   // return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
-  return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(nj),0.999999,NULL,1000); // zi<=zj
+  return int_gsl_integrate_medium_precision(int_for_C_cl_tomo,(void*)array,amin_lens(nj),0.99999,NULL,1000); // zi<=zj
 }
 
 
@@ -388,7 +388,7 @@ double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power sp
 {
 	double array[3] = {1.0*ni,1.0*nj,l};
 	// return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
-	return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.999999,NULL,1000);
+	return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.99999,NULL,1000);
 }
 
 
@@ -809,15 +809,15 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		}
 
 		i_block++;
-
-		L = i_block*Nell_block -1 ;
-		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
-		//printf("i_block: %d\n", i_block);
     if(L>=LMAX-Nell_block){ // break before memory leak in next iteration
       printf("L>Lmax\n");
       L = LMAX-Nell_block;
       break;
-  	} 
+  	}
+		L = i_block*Nell_block -1 ;
+		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
+		//printf("i_block: %d\n", i_block);
+ 
 	}
 	L++;
 	//printf("switching to Limber calculation at l = %d %d\n",L, ni);

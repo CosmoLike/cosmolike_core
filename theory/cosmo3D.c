@@ -43,6 +43,7 @@ double sigma_r_sqr();
 //double Delta_L_wiggle(double k);
 //double Delta_lin_wiggle(double k,double a);
 double p_lin(double k,double a);
+double p_lin_cluster(double k,double a);
 //double int_sig_R_knl(double logk, void *args);
 //double int_neff(double lnk, void *args);
 //double int_cur(double lnk, void *args);
@@ -53,6 +54,7 @@ double p_lin(double k,double a);
 //double Delta_NL_emu(double k_NL,double a); //k in h/Mpc
 //double Delta_NL_emu_only(double k_NL,double a); //k in h/Mpc
 double Pdelta(double k_NL,double a); //k in coverH0 units
+double Pdelta_cluster(double k_NL,double a); //k in coverH0 units
 double PkRatio_baryons(double kintern,double a); //k in h/Mpc
 
 //double int_for_chi(double a,void * args);
@@ -984,12 +986,14 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
    if (cosmology.A_s){
     norm = 3.*log(cosmology.h0/cosmology.coverH0);
     cosmology.sigma_8 =  *fo.sigma8;
+     
   }
   else{
     norm = log(pow(cosmology.sigma_8/ *fo.sigma8,2.)*pow(cosmology.h0/cosmology.coverH0,3.));
   }
 //    printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/ *fo.sigma8,2.));
-  /*if (class_status ==0){
+  if (class_status ==0){
+  /*
   FILE *fp_lin;
   FILE *fp_non;
   FILE *fp_lin_c;
@@ -998,7 +1002,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
   char file_ending[100];
   sprintf(file_ending, "_%d_Nncdm_%.5f_nonlinear_bias_const_As_efficient_ell_test_edits.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0));
   if (cosmology.meff!=0.0){
-      sprintf(file_ending, "_%d_Nncdm_%.5f_nur_%.4f_meff_%.2f.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0), cosmology.N_ur,cosmology.meff);
+      sprintf(file_ending, "_%d_Nncdm_%.5f.txt", cosmology.N_ncdm, (cosmology.Omega_nu*cosmology.h0 * cosmology.h0));
 
   }
 
@@ -1028,8 +1032,8 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
    printf("%s\n", file_ending);
 
    //printf("%d %e %e, %d %e %e\n", Ntable.N_a, da, aa, Ntable.N_k_nlin, dk, klog);
-   printf("norm %f\n", norm);*/
-
+   printf("norm %f\n", norm);
+  */
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
@@ -1049,24 +1053,26 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
 
         //printf("%d %d\n", i, j);
         //printf("%f\n", table_P_NL_C[i][j]);
-        /*fprintf(fp_lin, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
+        /*
+        fprintf(fp_lin, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
         fprintf(fp_non, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL[i][j]);
         fprintf(fp_lin_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L_C[i][j]);
-        fprintf(fp_non_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL_C[i][j]);*/
-
+        fprintf(fp_non_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL_C[i][j]);
+        */
 
 
       }
     }
   //printf("%d %d %f %f\n", Ntable.N_a-1, Ntable.N_k_nlin-1, table_P_L_C[Ntable.N_a-1][Ntable.N_k_nlin-1], table_P_NL_C[0][0]);
 
-
-   /*fclose(fp_lin);
+    /*
+   fclose(fp_lin);
    fclose(fp_non);
    fclose(fp_lin_c);
-   fclose(fp_non_c);*/
+   fclose(fp_non_c);
+   */
     free_class_structs(&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&sd);
-  //}
+  }
   update_cosmopara(&C);
 }
 
