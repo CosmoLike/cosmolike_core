@@ -13,8 +13,8 @@ typedef struct {
   double *theta;
   // band power bins
   int Nbp; // number of band power bins
-  int lmin_bp; // minimum L of band power
-  int lmax_bp; // maximum L of band power
+  int lmin_bp; // minimum L of band power (w/o corr)
+  int lmax_bp; // maximum L of band power (w/o corr)
   int lmin_bp_with_corr;
   int lmax_bp_with_corr;
   int **bindef_bp; // band power bin definition
@@ -46,6 +46,8 @@ typedef struct {
   char COV_FILE[500];
   char BARY_FILE[500]; 
   char MASK_FILE[500];
+  char BINMAT_WITH_CORR_FILE[500];
+  char CKK_OFFSET_FILE[500];
   int shear_shear;
   int shear_pos;
   int pos_pos;
