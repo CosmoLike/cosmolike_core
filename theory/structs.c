@@ -257,6 +257,8 @@ typedef struct {
   double LF_red_P;
   double LF_red_Q;
   double fA_blue; //fractional IA amplitude of blue galaxies compared to red 
+  double frac_highz;
+  double frac_lowz; 
   double cluster_Mobs_lgM0;
   double cluster_Mobs_sigma;
   double cluster_Mobs_alpha;
@@ -282,6 +284,8 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .A_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .A2_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .b_ta_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .frac_highz = 0.0;
+  .frac_lowz = 0.0;
   .shear_calibration_m = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
