@@ -846,6 +846,8 @@ double C_shear_shear_IA_tab(double l, int ni, int nj)  //shear power spectrum of
   
   static double **table;
   static double ds = .0, logsmin = .0, logsmax = .0;
+  double result =0 ;
+  double negative=0;
   if (ni < 0 || ni >= tomo.shear_Nbin ||nj < 0 || nj >= tomo.shear_Nbin){
     printf("C_shear_tomo(l,%d,%d) outside tomo.shear_Nbin range\nEXIT\n",ni,nj); exit(1);
   }
@@ -864,8 +866,15 @@ double C_shear_shear_IA_tab(double l, int ni, int nj)  //shear power spectrum of
     
     for (k=0; k<tomo.shear_Npowerspectra; k++) {
       llog = logsmin;
+      negative=0;
       for (i=0; i<Ntable.N_ell; i++, llog+=ds) {
-        table[k][i]= log(C_shear_shear_IA(exp(llog),Z1(k),Z2(k)));
+        result = C_shear_shear_IA(exp(llog),Z1(k),Z2(k));
+        if(result>0) table[k][i]= log(result);
+        else {
+            table[k][i]=log(1E-30);
+            negative=1;
+        }
+        if(negative>0){table[k][i]=log(1E-30);}
       }
     }
     update_cosmopara(&C); update_nuisance(&N); 

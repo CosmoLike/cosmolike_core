@@ -295,11 +295,12 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 		i_block++;
 		L = i_block*Nell_block -1 ;
-		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
-        if(L>=LMAX){ 
+        if(L>=LMAX-Nell_block){ 
             printf("L>Lmax\n");
             break;
         }
+		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
+        
 	   // printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
 		// printf("i_block: %d\n", i_block);
 	}
@@ -309,15 +310,17 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
 	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);
 	// }
-	for (l = L; l < LMAX; l++){
-		Cl[l]=C_cl_tomo((double)l,ni,nj);
-		// fprintf(OUT, "%d %lg\n", l, Cl[l]);
-	}
+    if(L<LMAX){
+        for (l = L; l < LMAX; l++){
+            Cl[l]=C_cl_tomo((double)l,ni,nj);
+            //printf("%d %lg\n", l, Cl[l]);
+        }
+    }
 	// printf("finished bin %d\n", ni);
 	for(i=0;i<Nell_block;i++) {
-		free(k1_ar[i]);free(k2_ar[i]);
 		free(Fk1_ar[i]);free(Fk2_ar[i]);
-		free(Fk1_Mag_ar[i]);free(Fk2_Mag_ar[i]);
+        free(Fk1_Mag_ar[i]);free(Fk2_Mag_ar[i]);
+        free(k1_ar[i]);free(k2_ar[i]);
 	}
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);

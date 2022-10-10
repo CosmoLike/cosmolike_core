@@ -533,7 +533,7 @@ double get_class_s8(struct file_content *fc, int *status){
     if (k_max_old >0){
       sprintf(fc->value[position_kmax],"%e",k_max_old);
     }
-    return *nl.sigma8;
+    return nl.sigma8[nl.index_pk_total];
   }
 
   double get_class_As(struct file_content *fc, int position_As,double sigma8, int *status){
@@ -562,11 +562,11 @@ double get_class_s8(struct file_content *fc, int *status){
     sprintf(fc->value[position_As],"%e",A_s_guess);
 
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-    A_s_guess*=pow(sigma8/(*nl.sigma8),2.);
+    A_s_guess*=pow(sigma8/(nl.sigma8[nl.index_pk_total]),2.);
     printf("A_s_guess=%e\n",A_s_guess);
     sprintf(fc->value[position_As],"%e",A_s_guess);
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-    A_s_guess*=pow(sigma8/(*nl.sigma8),2.);
+    A_s_guess*=pow(sigma8/(nl.sigma8[nl.index_pk_total]),2.);
     printf("A_s_guess=%e\n",A_s_guess);
     if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
 
@@ -733,10 +733,10 @@ double p_class(double k_coverh0,double a, int NL, int cdm_b, int *status){
         aa = limits.a_min;
         if (cosmology.A_s){
             norm = 3.*log(cosmology.h0/cosmology.coverH0);
-            cosmology.sigma_8 = (*nl.sigma8);
+            cosmology.sigma_8 = (nl.sigma8[nl.index_pk_total]);
         }
         else{
-            norm = log(pow(cosmology.sigma_8/(*nl.sigma8),2.)*pow(cosmology.h0/cosmology.coverH0,3.));
+            norm = log(pow(cosmology.sigma_8/(nl.sigma8[nl.index_pk_total]),2.)*pow(cosmology.h0/cosmology.coverH0,3.));
         }
         //printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/sp.sigma8,2.));
         if (*status ==0){
