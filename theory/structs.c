@@ -167,8 +167,9 @@ typedef struct{
   double b_mag[10]; /*amplitude of magnification bias, b_mag[i] = 5*s[i]+beta[i] -2 */
   B1_model b1_function;
   double neutrino_induced_sdb;
+  double cluster_tracer; //default set 1., i.e. using the total matter field as underlying tracer of galaxy field 
 }galpara;
-galpara gbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.b1_function = &b1_per_bin, .b_mag ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}, .neutrino_induced_sdb=0.}; //default: point to old bgal_z routin
+galpara gbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.b1_function = &b1_per_bin, .b_mag ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}, .neutrino_induced_sdb=0., .cluster_tracer = 1.}; //default: point to old bgal_z routin
 
 typedef struct{
   double hod[5];
@@ -433,6 +434,7 @@ typedef struct input_nuisance_params {
     double bary[3];
     double b_mag[10];
     double neutrino_induced_sdb;
+    double cluster_tracer;
 } input_nuisance_params;
 
 typedef struct input_nuisance_params_grs {

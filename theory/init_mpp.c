@@ -2,7 +2,7 @@
 void init_probes_5x2pt(char *probes);
 void init_probes_real_mpp(char *probes);
 void init_source_sample_mpp(char *multihisto_file, int Ntomo);
-void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *lens_bias, double *b1, double *b2, double ggl_cut, double nisdb);
+void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *lens_bias, double *b1, double *b2, double ggl_cut, double nisdb, double cluster_tracer);
 void init_binning_mpp(int Ntheta,double theta_min_arcmin, double theta_max_arcmin);
 void init_IA_mpp(int N);
 
@@ -202,11 +202,11 @@ void init_ggl_tomo(){
   printf("%d GGL Powerspectra\n",tomo.ggl_Npowerspectra);
 }
 
-void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *lens_bias, double *b1, double *b2, double ggl_cut, double nisdb)
+void init_lens_sample_mpp(char *multihisto_file, int Ntomo, double *stretch, double *lens_bias, double *b1, double *b2, double ggl_cut, double nisdb, double cluster_tracer)
 {
   sprintf(redshift.clustering_REDSHIFT_FILE,"%s",multihisto_file);
     gbias.neutrino_induced_sdb = nisdb;
-
+    gbias.cluster_tracer = cluster_tracer;
   redshift.clustering_photoz=5;
   tomo.clustering_Nbin = Ntomo;
   tomo.clustering_Npowerspectra = tomo.clustering_Nbin;

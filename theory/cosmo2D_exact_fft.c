@@ -11,6 +11,7 @@ void C_gl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 double w_gamma_t_nonLimber(int nt, int ni, int nj);
 
 //#include "pt.c"
+double bias_factor_mult(int nl, double k);
 
 double W_kappa(double a, double fK, double nz);//complete lens efficiency weight
 double W_source(double a, double nz); //source redshift distribution (radial weight for IA,source clustering)
@@ -29,6 +30,100 @@ double C_cl_tomo_nointerp(double l, int ni, int nj);
 //double C_shear_tomo_nointerp(double l, int ni, int nj);
 /**********************************************************/
 
+
+double bias_factor_mult(int nl, double k){
+  	double k_temp, factor;
+  	int num = 35;
+  	k_temp = k/cosmology.coverH0;//*cosmology.h0;
+  	//printf("%f %d\n", k_temp, nl);
+  	printf("CALLING RELICFAST SPLINE\n");
+		static double *b_of_k= 0;
+		static gsl_spline *bias_spline[4];
+  	static double *b_limits;
+  	static double *b_low_limits;
+  	static double *k_low_limits;
+  	gsl_interp_accel *acc
+	      = gsl_interp_accel_alloc ();
+		if (b_of_k==0){
+			b_of_k = create_double_vector(0, num);
+			
+			b_limits = create_double_vector(0,4); 
+			b_low_limits = create_double_vector(0,4);
+			k_low_limits = create_double_vector(0,4);  
+			double *ks= 0;
+			ks = create_double_vector(0, num);
+			FILE *ein;
+			//ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_1.dat", "r");
+			ein = fopen("/home/paul/RelicFast/output/z_0.292_spline_12", "r");
+
+	    
+	    for (int i = 0; i < tomo.clustering_Nbin; i++){
+
+	    	bias_spline[i] =  gsl_spline_alloc (gsl_interp_cspline,  num);
+			//printf("%f %f %f %f\n\n\n\n\n", ks[0], ks[39], b_of_k_ni[0], b_of_k_ni[39]);
+	    
+			//printf("%f\n", zmean(ni));
+			switch(i){
+					case 0: 
+						//ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_1.dat", "r");
+						ein = fopen("/home/paul/RelicFast/output/z_0.292_spline_12", "r");
+						break;
+					case 1: 
+						//ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_2.dat", "r");
+						ein = fopen("/home/paul/RelicFast/output/z_0.422_spline_12", "r");
+						break;
+					case 2: 
+						//ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_3.dat", "r");
+						ein = fopen("/home/paul/RelicFast/output/z_0.616_spline_12", "r");
+						break;
+					case 3: 
+						//ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_4.dat", "r");
+						ein = fopen("/home/paul/RelicFast/output/z_0.762_spline_12", "r");
+						break;
+				}
+			for (int k = 0; k < num; k++ ){
+			   for (int j = 0; j < 2; j++ ){
+			      if (j==0){
+			      	//printf("%f\n", b_of_k[k]);
+			      	fscanf(ein, "%lf", &b_of_k[k]);
+			      	//printf("%f %d\n", b_of_k[k], i); 
+			      }
+			      else{
+			      	fscanf(ein, "%lf", &ks[k]); 
+			      }
+			      }
+			   }
+			   fclose(ein);
+			   gsl_spline_init (bias_spline[i], ks, b_of_k, num);
+			   b_limits[i] = b_of_k[num-1];
+			   b_low_limits[i] = b_of_k[0];
+			   k_low_limits[i] = ks[0];
+
+			//free_double_vector(b_of_k_ni, 0, 40);
+			//free_double_vector(ks_ni,0,40);
+		}
+		}
+		//#gsl_interp_accel_free(acc);
+		//gsl_spline_free(bias_spline_ni);
+		if (nl==0) printf("ktemp %f\n", k_temp);
+		if (k_temp>1.5){
+			factor = b_limits[nl];
+			//factor_2 = plin_cluster * b_of_k_nj[39];
+			if (nl==0) printf("%f %f\n", k_temp, b_of_k[34]);
+
+		}
+		//else if(k_temp<=k_low_limits[nl]){
+		//	factor = b_low_limits[nl];
+		//}
+		else{
+						//printf("%d %f\n", k_temp<=0.0, k_temp*pow(10,6));
+
+			factor = gsl_spline_eval (bias_spline[nl],k_temp, acc);
+			//factor_2 = plin_cluster * gsl_spline_eval (bias_spline_nj,k1_ar[i][j], acc);
+		}
+		return factor;
+
+}
 
 double MG_Sigma(double a)
 {
@@ -95,7 +190,8 @@ double int_for_C_cl_tomo_b2(double a, void *params)
 {
   double res,ell, fK, k;
   double *ar = (double *) params;
-  double b1 = gbias.b1_function(1./a-1.,(int)ar[0]);
+  double b1_0 = gbias.b1_function(1./a-1.,(int)ar[0]);
+  double b1_1 = gbias.b1_function(1./a-1.,(int)ar[1]);
   double b2 = gbias.b2[(int)ar[0]];
   double bs2 = gbias.bs2[(int)ar[0]];
   double g4 = pow(growfac(a)/growfac(1.0),4.);
@@ -105,37 +201,40 @@ double int_for_C_cl_tomo_b2(double a, void *params)
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  
+
+
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
   double s4 = 0.;//PT_sigma4(k);
   double p = Pdelta(k,a);
-  double p_c = Pdelta_cluster(k,a);
-  res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;
-  if(res){
-    res= res*(b1*b1*p_c+g4*(b1*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1*b3nl_from_b1(b1)*PT_d1d3(k)));
-  }
-  double w_gal_0 = b1*W_HOD(a, ar[0]) * sqrt(p_c) + gbias.b_mag[(int)ar[0]]*W_mag(a, fK,ar[0])*sqrt(p);
-  double w_gal_1 = b1*W_HOD(a, ar[1]) * sqrt(p_c) + gbias.b_mag[(int)ar[1]]*W_mag(a, fK,ar[1])*sqrt(p);
-  res += (w_gal_0*W_mag(a, fK,ar[1])+ w_gal_1*W_mag(a, fK,ar[0]))*dchi_da(a)/fK/fK*sqrt(p);
+  double p_c = p;
+  double b1_0_k = b1_0;
+  double b1_1_k = b1_1;
 
-  if (gbias.neutrino_induced_sdb>0.0){
+	
+	if (gbias.cluster_tracer>0.0){
+		if (gbias.neutrino_induced_sdb>0.0){
+			b1_0_k *= ((1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb));
+			b1_1_k *= ((1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb));
 
-	  res=W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK;
-	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	  //double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
-	  //double a2 = 1.0/(1.0 + zmean((int)ar[1], false));
+		}
+	}
+	else{
+		if (gbias.neutrino_induced_sdb>0.0){
+			b1_0_k *= bias_factor_mult((int)ar[0],k);
+			b1_1_k *= bias_factor_mult((int)ar[1],k);
+		}
+		p_c = Pdelta_cluster(k,a);
+	}
 
-	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
-	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
-	  if(res){
-	    res= res*(b1_k_0*b1_k_1*p_c+g4*(b1_k_0*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1_k_0*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1_k_0*b3nl_from_b1(b1_k_0)*PT_d1d3(k)));
-	  }
-
-	  w_gal_0 = b1_k_0*W_HOD(a, ar[0]) * sqrt(p_c) + gbias.b_mag[(int)ar[0]]*W_mag(a, fK,ar[0])*sqrt(p);
-	  w_gal_1 = b1_k_1*W_HOD(a, ar[1]) * sqrt(p_c) + gbias.b_mag[(int)ar[1]]*W_mag(a, fK,ar[1])*sqrt(p);
-
-	  res += (w_gal_0*W_mag(a, fK,ar[1])+ w_gal_1*W_mag(a, fK,ar[0]))*dchi_da(a)/fK/fK*sqrt(p);
+  res=0.0;
+  if (b2!=0.0){
+  	res= W_HOD(a,ar[0])*W_HOD(a,ar[1])*dchi_da(a)/fK/fK*(g4*(b1_0_k*b2*PT_d1d2(k)+0.25*b2*b2*(PT_d2d2(k)-2.*s4)+b1_0_k*bs2*PT_d1s2(k)+0.5*b2*bs2*(PT_d2s2(k)-4./3.*s4)+.25*bs2*bs2*(PT_s2s2(k)-8./9.*s4)+b1_0_k*b3nl_from_b1(b1_0)*PT_d1d3(k)));
   }
 
+  double w_gal_0 = b1_0_k*W_HOD(a, ar[0]) * sqrt(p_c) + gbias.b_mag[(int)ar[0]]*W_mag(a, fK,ar[0])*sqrt(p);
+  double w_gal_1 = b1_1_k*W_HOD(a, ar[1]) * sqrt(p_c) + gbias.b_mag[(int)ar[1]]*W_mag(a, fK,ar[1])*sqrt(p);
+
+  res += (w_gal_0*w_gal_1)*dchi_da(a)/fK/fK;
 
   return res;
 }
@@ -149,30 +248,32 @@ double int_for_C_cl_tomo(double a, void *params)
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  double p_c = Pdelta_cluster(k,a);
   double p = Pdelta(k,a);
+  double p_c = p;
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
 
+  double b1_0 = gbias.b1_function(1./a-1.,(int)ar[0]);
+  double b1_1 = gbias.b1_function(1./a-1.,(int)ar[1]);
 
-  res = (gbias.b1_function(1./a-1.,(int)ar[0])*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
-  res *=(gbias.b1_function(1./a-1.,(int)ar[1])*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
+	if (gbias.cluster_tracer>0.0){
+		if (gbias.neutrino_induced_sdb>0.0){
+			b1_0 *= ((1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb));
+			b1_1 *= ((1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb));
+
+		}
+	}
+	else{
+		if (gbias.neutrino_induced_sdb>0.0){
+			b1_0 *= bias_factor_mult((int)ar[0],k);
+			b1_1 *= bias_factor_mult((int)ar[1],k);
+		}
+		p_c = Pdelta_cluster(k,a);
+	}
+
+  res = (b1_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
+  res *=(b1_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
   res *= dchi_da(a)/fK/fK;
-  //printf("%f\n", res);
-  double res1 = res;
-  if (gbias.neutrino_induced_sdb>0.0){
 
-	  //double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
-	  //double a2 = 1.0/(1.0 + zmean((int)ar[1], false));
-
-	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	  double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms
-	  double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);//changed this line from ar[0] -> a in p_lin terms
-
-	  res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
-	  res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
-	  res *= dchi_da(a)/fK/fK;
-	  //printf("%d %d %f %f %d %d %f %f \n", (int)ar[0], (int)ar[1], k*cosmology.h0/cosmology.coverH0, res/res1, res==0, res1==0, f_cb, b1_k_0/gbias.b1_function(1./a-1.,(int)ar[0]));
-	  //printf("am I not setting it\n");
-  }
   return res;
 
 
@@ -242,22 +343,32 @@ double int_for_C_gl_tomo_b2(double a, void *params)
   fK     = f_K(chi(a));
   k      = ell/fK;
 
-  double p_c = Pdelta_cluster(k,a);
+
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+  double s4 = 0.;//PT_sigma4(k);
   double p = Pdelta(k,a);
+  double p_c = p;
+  double b1_k = b1;
+
+	
+	if (gbias.cluster_tracer>0.0){
+		if (gbias.neutrino_induced_sdb>0.0){
+			b1_k *= ((1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb));
+		}
+	}
+	else{
+		if (gbias.neutrino_induced_sdb>0.0){
+			b1_k *= bias_factor_mult((int)ar[0],k);
+		}
+		p_c = Pdelta_cluster(k,a);
+	}
+
+
+
   res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
-  res= res*(b1*sqrt(p)*sqrt(p_c)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)));
-  res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1*p;
+  res= res*(b1_k*sqrt(p_c)*sqrt(p)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1)*PT_d1d3(k)));
+  res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1_k*sqrt(p)*sqrt(p_c);
 
-
-  if (gbias.neutrino_induced_sdb>0.0){
-	  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	  //double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
-
-	  double b1_k = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
-	  res= W_HOD(a,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK;
-	  res= res*(b1_k*sqrt(p)*sqrt(p_c)+g4*(0.5*b2*PT_d1d2(k)+0.5*bs2*PT_d1s2(k)+0.5*b3nl_from_b1(b1_k)*PT_d1d3(k))); 
-	  res += W_mag(a,fK,ar[0])*W_kappa(a,fK,ar[1])*dchi_da(a)/fK/fK*b1_k*p;
-  }
   return res;
 }
 
@@ -356,31 +467,33 @@ double int_for_C_cl_lin(double a, void *params)
 	fK     = f_K(chi(a));
 	k      = ell/fK;
 
-	double p_c = p_lin_cluster(k,a);
 	double p = p_lin(k,a);
-	res = (gbias.b1_function(1./a-1.,(int)ar[0])*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
-	res *=(gbias.b1_function(1./a-1.,(int)ar[1])*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
+	double p_c = p;
+  double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
+
+  double b1_0 = gbias.b1_function(1./a-1.,(int)ar[0]);
+  double b1_1 = gbias.b1_function(1./a-1.,(int)ar[1]);
+
+	if (gbias.cluster_tracer>0.0){
+		if (gbias.neutrino_induced_sdb>0.0){
+			b1_0 *= ((1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb));
+			b1_1 *= ((1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb));
+
+		}
+	}
+	else{
+		if (gbias.neutrino_induced_sdb>0.0){
+			b1_0 *= bias_factor_mult((int)ar[0],k);
+			b1_1 *= bias_factor_mult((int)ar[1],k);
+		}
+		p_c = p_lin_cluster(k,a);
+	}
+
+
+	res = (b1_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
+	res *=(b1_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
 	res *= dchi_da(a)/fK/fK;
-	
-	if (gbias.neutrino_induced_sdb>0.0){
 
-	  //double a1 = 1.0/(1.0 + zmean((int)ar[0], false));
-	  //double a2 = 1.0/(1.0 + zmean((int)ar[1], false));
-
-
-	  	double f_cb = 1.0-cosmology.Omega_nu/cosmology.Omega_m;
-	  	double b1_k_0 = gbias.b1_function(1./a-1.,(int)ar[0])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
-	  	double b1_k_1 = gbias.b1_function(1./a-1.,(int)ar[1])* (1.0 + p_lin_cluster(k,a)/p_lin(k,a) * f_cb)/(1.0+f_cb);
-	  	res = (b1_k_0*W_HOD(a, ar[0])*sqrt(p_c)+gbias.b_mag[(int)ar[0]]*W_mag(a, fK, ar[0])*sqrt(p));
-	  	res *=(b1_k_1*W_HOD(a, ar[1])*sqrt(p_c)+gbias.b_mag[(int)ar[1]]*W_mag(a, fK, ar[1])*sqrt(p));
-	  	res *= dchi_da(a)/fK/fK;
-	  		  //printf("%d %d %f %f %d %d %f %f \n", (int)ar[0], (int)ar[1], k*cosmology.h0/cosmology.coverH0, res/res1, res==0, res1==0, f_cb, b1_k_0/gbias.b1_function(1./a-1.,(int)ar[0]));
-			double temp_a_array[2] = {a, 1.};
-			double another_temp_a_array[2] = {a, 0.};
-
-			//printf("%f %f\n", a, int_gsl_integrate_medium_precision(NISDB_bias_factor,(void*)temp_a_array,1e-4,10,NULL,1000)/int_gsl_integrate_medium_precision(NISDB_bias_factor,(void*)another_temp_a_array,1e-4,10,NULL,1000));
-  	}
-  	//uncomment above lines to implement scale-dependent neutrino bias
 	return res;
 }
 
@@ -665,37 +778,37 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				//printf("hello4\n");
 		/*
 		double *b_of_k_ni= 0;
-		b_of_k_ni = create_double_vector(0, 40);
+		b_of_k_ni = create_double_vector(0, 35);
 		double *ks_ni= 0;
-		ks_ni = create_double_vector(0, 40);
+		ks_ni = create_double_vector(0, 35);
 		double *b_of_k_nj= 0;
-		b_of_k_nj = create_double_vector(0, 40);
+		b_of_k_nj = create_double_vector(0, 35);
 		double *ks_nj= 0;
-		ks_nj = create_double_vector(0, 40);
+		ks_nj = create_double_vector(0, 35);
 		FILE *ein;
-		ein = fopen("/home/paul/RelicFast/output/z_0.292_spline", "r");
+		ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_1.dat", "r");
 		gsl_interp_accel *acc
       = gsl_interp_accel_alloc ();
     gsl_spline *bias_spline_ni
-      = gsl_spline_alloc (gsl_interp_cspline, 40);
+      = gsl_spline_alloc (gsl_interp_cspline, 35);
 		//printf("%f %f %f %f\n\n\n\n\n", ks[0], ks[39], b_of_k_ni[0], b_of_k_ni[39]);
     
 		//printf("%f\n", zmean(ni));
 		switch(ni){
 				case 0: 
-					ein = fopen("/home/paul/RelicFast/output/z_0.292_spline", "r");
+					ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_1.dat", "r");
 					break;
 				case 1: 
-					ein = fopen("/home/paul/RelicFast/output/z_0.457_spline", "r");
+					ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_2.dat", "r");
 					break;
 				case 2: 
-					ein = fopen("/home/paul/RelicFast/output/z_0.621_spline", "r");
+					ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_3.dat", "r");
 					break;
 				case 3: 
-					ein = fopen("/home/paul/RelicFast/output/z_0.769_spline", "r");
+					ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_4.dat", "r");
 					break;
 			}
-		for (int i = 0; i < 40; ++i )
+		for (int i = 0; i < 35; ++i )
 		{
 		   for (int j = 0; j < 2; j++ )
 		   {
@@ -707,29 +820,29 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		      }
 		      }
 		   }
-		   gsl_spline_init (bias_spline_ni, ks_ni, b_of_k_ni, 40);
+		   gsl_spline_init (bias_spline_ni, ks_ni, b_of_k_ni, 35);
 
 		fclose(ein);
     gsl_spline *bias_spline_nj
-      = gsl_spline_alloc (gsl_interp_cspline, 40);
+      = gsl_spline_alloc (gsl_interp_cspline, 35);
 		//printf("%f %f %f %f\n\n\n\n\n", ks[0], ks[39], b_of_k_ni[0], b_of_k_ni[39]);
     
 		//printf("%f\n", zmean(ni));
 		switch(nj){
 				case 0: 
-					ein = fopen("/home/paul/RelicFast/output/z_0.292_spline", "r");
+					ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_1.dat", "r");
 					break;
 				case 1: 
-					ein = fopen("/home/paul/RelicFast/output/z_0.457_spline", "r");
+					ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_2.dat", "r");
 					break;
 				case 2: 
-					ein = fopen("/home/paul/RelicFast/output/z_0.621_spline", "r");
+					ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_3.dat", "r");
 					break;
 				case 3: 
-					ein = fopen("/home/paul/RelicFast/output/z_0.769_spline", "r");
+					ein = fopen("/home/paul/RelicFast/output/bias_Euler_maglim_bin_4.dat", "r");
 					break;
 			}
-		for (int i = 0; i < 40; ++i )
+		for (int i = 0; i < 35; ++i )
 		{
 		   for (int j = 0; j < 2; j++ )
 		   {
@@ -742,7 +855,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		      }
 		   }
 		   fclose(ein);
-		   gsl_spline_init (bias_spline_nj, ks_nj, b_of_k_nj, 40);
+		   gsl_spline_init (bias_spline_nj, ks_nj, b_of_k_nj, 35);
 		*/
 		for(i=0;i<Nell_block;i++) {
 			cl_temp = 0.;
@@ -753,52 +866,44 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
 
 				double plin = p_lin(k1_cH0,1.0);
-				double plin_cluster = p_lin_cluster(k1_cH0,1.0);
-				//double factor = plin_cluster*(1+2*f_cb*(plin_cluster/plin) + f_cb*f_cb*(plin_cluster/plin)*(plin_cluster/plin))/(1+f_cb)/(1+f_cb);
+				double plin_cluster = plin;//p_lin_cluster(k1_cH0,1.0);
+				double cluster_factor = sqrt(plin_cluster);
+				double cluster_factor_2 = sqrt(plin_cluster);
 				double cluster_a = 1.0/(1.0+zmean(ni, false));
-				double factor = plin_cluster * ((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a)/p_lin(k1_cH0, cluster_a)))/(1+f_cb))*((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a)/p_lin(k1_cH0, cluster_a)))/(1+f_cb));
 				double cluster_a_2  = 1.0/(1.0 + zmean(nj, false));
-				double factor_2 = plin_cluster * ((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a_2)/p_lin(k1_cH0, cluster_a_2)))/(1+f_cb))*((1 + f_cb * (p_lin_cluster(k1_cH0, cluster_a_2)/p_lin(k1_cH0, cluster_a_2)))/(1+f_cb));
-				double fk1;
-				double fk2;
-				//printf("%f %f\n", factor/plin, cluster_a);
-				/*
-				if (k1_ar[i][j]>1.5){
-					factor = plin_cluster * b_of_k_ni[39];
-					factor_2 = plin_cluster * b_of_k_nj[39];
-					//printf("%d %f\n", factor==0, b_of_k_ni[39]);
 
+
+				if (gbias.cluster_tracer>0.0){
+					if (gbias.neutrino_induced_sdb>0.0){
+						cluster_factor *= ((1. + f_cb * (p_lin_cluster(k1_cH0, cluster_a)/p_lin(k1_cH0, cluster_a)))/(1.+f_cb));
+						cluster_factor_2 *= ((1. + f_cb * (p_lin_cluster(k1_cH0, cluster_a_2)/p_lin(k1_cH0, cluster_a_2)))/(1.+f_cb));
+
+					}
 				}
 				else{
-					factor = plin_cluster * gsl_spline_eval (bias_spline_ni,k1_ar[i][j], acc);
-					factor_2 = plin_cluster * gsl_spline_eval (bias_spline_nj,k1_ar[i][j], acc);
-					//printf("%d %f\n", factor==0, b_of_k_ni[39]);
+					plin_cluster = p_lin_cluster(k1_cH0,1.0);
+					cluster_factor = sqrt(plin_cluster);
+					cluster_factor_2 = sqrt(plin_cluster);
+					if (gbias.neutrino_induced_sdb>0.0){
+						cluster_factor *= bias_factor_mult(ni,k1_cH0);
+						cluster_factor_2 *= bias_factor_mult(nj,k1_cH0);
+					}
+
 				}
-				*/
+
+				double fk1;
+				double fk2;
 				if(ni == nj) {
-					if (gbias.neutrino_induced_sdb>0.0){fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(factor);}
-					else{fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(plin_cluster);}
+					fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*(cluster_factor);
 					cl_temp += fk1*fk1*k1_cH0*k1_cH0*k1_cH0;
-					//cl_temp += ((Fk1_RSD_ar[i][j]) * (Fk1_RSD_ar[i][j]) + (Fk1_Mag_ar[i][j])*(Fk1_Mag_ar[i][j]))*k1_cH0*k1_cH0*k1_cH0 *plin;
-					//if (gbias.neutrino_induced_sdb){cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *factor;}
-					//else{cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *plin_cluster;}
 				}
 				else {
-					if (gbias.neutrino_induced_sdb>0.0){
-						fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(factor);
-						fk2 = (Fk2_RSD_ar[i][j] +Fk2_Mag_ar[i][j])* sqrt(plin) + Fk2_ar[i][j]*sqrt(factor_2);
-					}
-					else{
-						fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(plin_cluster);
-						fk2 = (Fk2_RSD_ar[i][j] +Fk2_Mag_ar[i][j])* sqrt(plin) + Fk2_ar[i][j]*sqrt(plin_cluster);						
-					}
-					cl_temp += fk1*fk2*k1_cH0*k1_cH0*k1_cH0;
-					//cl_temp += ((Fk1_RSD_ar[i][j])*(Fk2_RSD_ar[i][j])+ (Fk1_Mag_ar[i][j])*(Fk2_Mag_ar[i][j])) *k1_cH0*k1_cH0*k1_cH0 *plin;
-					//if (gbias.neutrino_induced_sdb){cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *factor;}
-					//else{cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *plin_cluster;}
-				}
-			//if (k1_ar[i][0]*real_coverH0 < 1) printf("%d %f %f %f %f\n", ni, k1_ar[i][0] * real_coverH0, Fk1_RSD_ar[i][0]/Fk1_ar[i][0], Fk1_Mag_ar[i][0]/Fk1_ar[i][0], fk1/((Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*sqrt(plin_cluster)));
+					fk1 = (Fk1_RSD_ar[i][j] +Fk1_Mag_ar[i][j])* sqrt(plin) + Fk1_ar[i][j]*(cluster_factor);
+					fk2 = (Fk2_RSD_ar[i][j] +Fk2_Mag_ar[i][j])* sqrt(plin) + Fk2_ar[i][j]*(cluster_factor_2);
 
+					cl_temp += fk1*fk2*k1_cH0*k1_cH0*k1_cH0;
+
+				}
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
 
@@ -807,20 +912,22 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 
 		}
+		//if (ni==3) printf("Cl %f \n", Cl[L]);
 
 		i_block++;
+		L = i_block*Nell_block -1 ;
+		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
     if(L>=LMAX-Nell_block){ // break before memory leak in next iteration
       printf("L>Lmax\n");
       L = LMAX-Nell_block;
       break;
   	}
-		L = i_block*Nell_block -1 ;
-		dev = Cl[L]/C_cl_tomo_nointerp((double)L,ni,nj)-1.;
+
 		//printf("i_block: %d\n", i_block);
  
 	}
 	L++;
-	//printf("switching to Limber calculation at l = %d %d\n",L, ni);
+	printf("switching to Limber calculation at l = %d %d\n",L, ni);
 	// for (l = 1; l < 50; l++){
 	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
 	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);
@@ -916,12 +1023,26 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 			int L = 0;
 			// initialize to large value in order to start while loop
 			dev=10.*tolerance;
+			/*
+			for (l = 1; l < LMAX; l++){
+				Cl[l]=C_cl_tomo((double)l,nz,nz);
+				// fprintf(OUT, "%d %lg\n", l, Cl[l]);
+			}
+			*/
 			C_cl_mixed(L, LMAX, nz,nz, Cl, dev, tolerance);
 			for (i = 0; i < NTHETA; i++){
 				w_vec[nz*like.Ntheta+i] =0;
+					//FILE *fp_lin;
+					//char temp_name[200];
+					//sprintf(temp_name, "./Cls_%d_%.1f_%d_%d_%.5f", cosmology.N_ncdm, (gbias.neutrino_induced_sdb), nz, i, cosmology.Omega_nu*cosmology.h0*cosmology.h0);
+					//fp_lin = fopen(temp_name, "w+");
 				for (l = 1; l < LMAX; l++){
 					w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];
+					//printf("%d %f \n", l, Cl[l]);
+					//fprintf(fp_lin, "%d %.14lf\n", l, Cl[l]);
+
 				}
+				//fclose(fp_lin);
 			}
 		}
 
