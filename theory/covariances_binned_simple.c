@@ -185,10 +185,14 @@ void cov_mix_banded_fullsky(double **cov, double **covNG, char *mixcov_type,
 double func_for_cov_G_shear_noNN(double l, int *ar);
 double func_for_cov_G_cl_noNN(double l, int *ar);
 double func_for_cov_G_gl_noNN(double l, int *ar);
+double func_for_cov_G_gk_noNN(double l, int *ar);
+double func_for_cov_G_ks_noNN(double l, int *ar);
 // 3x2pt Gaussian cov pure noise term on the diagonal, without masking effect
 void pure_noise_xipm_xipm(int *z_ar, double *theta, double *dtheta, double *N);
 void pure_noise_gl_gl(int *z_ar, double *theta, double *dtheta, double *N);
 void pure_noise_cl_cl(int *z_ar, double *theta, double *dtheta, double *N);
+void pure_noise_gk_gk(int *z_ar, double *theta, double *dtheta, double *N);
+void pure_noise_ks_ks(int *z_ar, double *theta, double *dtheta, double *N);
 
 // 3x2pt, pure noise included (6 functions)
 double func_for_cov_G_shear(double l, int *ar);
@@ -308,8 +312,14 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
   static int LMAX = 50000;
   int CMB_smooth_1 = 0, CMB_smooth_2 = 0; // flag for CMB smoothing kernel
 
-  double N[like.Ntheta];
-  for(i=0;i<like.Ntheta;i++) {N[i] = 0.;}
+  //double N[like.Ntheta];
+  double ** N = 0;
+  N = create_double_matrix(0, like.Ntheta-1, 0, like.Ntheta-1);
+  for(i=0; i<like.Ntheta; i++){
+    for(j=0; j<like.Ntheta; j++){
+      N[i][j] = 0.;
+    }
+  }
 
   double (*func_for_cov_G)(double, int*);
   double (*func_bin_cov_NG)(double, double, int*);
@@ -434,12 +444,13 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
     CMB_smooth_1 = 1;
     CMB_smooth_2 = 0;
   } else if(strcmp(realcov_type, "gk_gk")==0) {
-    func_for_cov_G  = &func_for_cov_G_gk;
+    func_for_cov_G  = &func_for_cov_G_gk_noNN;
     func_bin_cov_NG = &bin_cov_NG_gk_gk;
     func_P1 = &Pl_tab;
     func_P2 = &Pl_tab;
     CMB_smooth_1 = 1;
     CMB_smooth_2 = 1;
+    pure_noise_gk_gk(z_ar, theta, dtheta, N);
   } else if(strcmp(realcov_type, "ks_gk")==0) {
     func_for_cov_G  = &func_for_cov_G_ks_gk;
     func_bin_cov_NG = &bin_cov_NG_ks_gk;
@@ -448,12 +459,13 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
     CMB_smooth_1 = 1;
     CMB_smooth_2 = 1;
   } else if(strcmp(realcov_type, "ks_ks")==0) {
-    func_for_cov_G  = &func_for_cov_G_ks;
+    func_for_cov_G  = &func_for_cov_G_ks_noNN;
     func_bin_cov_NG = &bin_cov_NG_ks_ks;
     func_P1 = &Pl2_tab;
     func_P2 = &Pl2_tab;
     CMB_smooth_1 = 1;
     CMB_smooth_2 = 1;
+    pure_noise_ks_ks(z_ar, theta, dtheta, N);
   // 6x2pt
   } else if(strcmp(realcov_type, "kk_xi+")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_shear;
@@ -559,7 +571,15 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
       }
     }
   }
-  for(i=0; i<like.Ntheta; i++){if(N[i]){cov[i][i] += N[i]/w_mask(theta[i]);}}
+  for(i=0; i<like.Ntheta; i++){
+    for(j=0; j<like.Ntheta; j++){
+      if(N[i][j]){
+        cov[i][i] += N[i][j]/sqrt(w_mask(theta[i])*w_mask(theta[j]));
+      }
+    }
+  }
+  free_double_matrix(N,0, like.Ntheta-1, 0, like.Ntheta-1);
+
 }
 
 // Fourier-space template function
@@ -1600,6 +1620,7 @@ void cov_kk_kk_fourier_banded(double **cov, double **covNG,
 
 /****** Helper Functions ******/
 
+// survey mask correlation function, normalized to 1 at small angular scales
 double w_mask(double theta_min)
 {
   static int NTHETA = 0;
@@ -1614,7 +1635,11 @@ double w_mask(double theta_min)
     NTHETA = like.Ntheta;
     FILE *F1;
     F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
-    if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
+    if (F1 != NULL) {
+      // covparams.C_FOOTPRINT_FILE exists
+      // # l [int], Cl [double]
+      // Then w_mask(theta) = Cl * (2l+1)/4pi * P_l(cos(theta)) 
+      // use healpy C_mask(l) to compute mask power spectrum
       fclose(F1);
       int lbins = line_count(covparams.C_FOOTPRINT_FILE);
       double *Cl;
@@ -1637,7 +1662,8 @@ double w_mask(double theta_min)
       }
       free_double_vector(Cl,0,lbins-1);
     }
-    else{ //covparams.C_FOOTPRINT_FILE does not exit, ignore boundary effects
+    else{
+      //covparams.C_FOOTPRINT_FILE does not exit, ignore boundary effects
       printf("covparams.C_FOOTPRINT_FILE = %s not found\nNo boundary effect correction applied\n",covparams.C_FOOTPRINT_FILE);
       for (i = 0; i<NTHETA; i ++){
         w_vec[i] = 1.0;
@@ -1961,43 +1987,96 @@ double GaussianBeam(double theta_fwhm, int ell,
 /************ (21+6) Functions for different covariances ************/
 
 // Pure noise term in Gaussian cov
-void pure_noise_xipm_xipm(int *z_ar, double *theta, double *dtheta, double *N) {
+void pure_noise_xipm_xipm(int *z_ar, double *theta, double *dtheta, double **N) {
   int z1,z2,z3,z4;
   int i;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2]; z4=z_ar[3];
   if (z1 ==z3 && z2 ==z4){
     for(i=0;i<like.Ntheta;i++) {
-      N[i] = 2.* pow(survey.sigma_e,4.0)/(M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*4.*nsource(z1)*nsource(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
+      N[i][i] = 2.* pow(survey.sigma_e,4.0)/(M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*4.*nsource(z1)*nsource(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
     } //(number of galaxy pairs in the survey contributing to annulus of width Dtheta centered at theta1)^-1
   }
   if (z1 ==z4 && z2 ==z3){
     for(i=0;i<like.Ntheta;i++) {
-      N[i] += 2.* pow(survey.sigma_e,4.0)/(M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*4.*nsource(z1)*nsource(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
+      N[i][i] += 2.* pow(survey.sigma_e,4.0)/(M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*4.*nsource(z1)*nsource(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
     }
   } // factor of 2 already included
 }
-void pure_noise_gl_gl(int *z_ar, double *theta, double *dtheta, double *N) {
+void pure_noise_gl_gl(int *z_ar, double *theta, double *dtheta, double **N) {
   int zl1, zs1, zl2, zs2;
   int i;
   zl1 = z_ar[0]; zs1 = z_ar[1]; zl2 = z_ar[2]; zs2 = z_ar[3];
   if (zl1 ==zl2 && zs1 ==zs2){
     for(i=0;i<like.Ntheta;i++) {
-      N[i] = pow(survey.sigma_e,2.0)/(2.0*M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*nlens(zl1)*nsource(zs2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
+      N[i][i] = pow(survey.sigma_e,2.0)/(2.0*M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*nlens(zl1)*nsource(zs2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
     }
   }
 }
-void pure_noise_cl_cl(int *z_ar, double *theta, double *dtheta, double *N) {
+void pure_noise_cl_cl(int *z_ar, double *theta, double *dtheta, double **N) {
   int z1,z2,z3,z4;
   int i;
   z1=z_ar[0]; z2=z_ar[1]; z3=z_ar[2]; z4=z_ar[3];
   if (z1 ==z3 && z2 ==z4){
     for(i=0;i<like.Ntheta;i++) {
-      N[i] = 1./(M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*nlens(z1)*nlens(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor); //(number of galaxy pairs in the survey contributing to annulus of width Dtheta centered at theta1)^-1
+      N[i][i] = 1./(M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*nlens(z1)*nlens(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor); //(number of galaxy pairs in the survey contributing to annulus of width Dtheta centered at theta1)^-1
     }
   }
   if (z1 ==z4 && z2 ==z3){
     for(i=0;i<like.Ntheta;i++) {
-      N[i] += 1./(M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*nlens(z1)*nlens(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
+      N[i][i] += 1./(M_PI*(2.*theta[i]+dtheta[i])*dtheta[i]*nlens(z1)*nlens(z2)*pow(survey.n_gal_conversion_factor,2.0)*survey.area*survey.area_conversion_factor);
+    }
+  }
+}
+void pure_noise_gk_gk(int *z_ar, double *theta, double *dtheta, double **N){
+  // N is 2d matrix
+  double N13=0, N24=0, beam=0, func_P1=0, func_P2=0, ell_prefactor=0;
+  double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
+  int n1,n3;
+  n1 = ar[0]; n3 = ar[1];
+
+  N13 = 1./(nlens(n1)*survey.n_gal_conversion_factor);
+  if(n1 == n3){
+    // loop through theta bins
+    for(int i=0; i<like.Ntheta; i++){
+      for(int j=0; j<like.Ntheta; j++){
+        for(int l=0; l<LMAX; l++){
+          double l_d = (double)l;
+          N24 = kappa_reconstruction_noise(l_d);
+          // and also 
+          beam = GaussianBeam(cmb.fwhm, l_d, 
+            like.lmin_kappacmb, like.lmax_kappacmb);
+          func_P1 = Pl_tab(i, l);
+          func_P2 = Pl_tab(j, l);
+          ell_prefactor = (2.*l_d+1.)/(4.*M_PI*fsky*4.*M_PI);
+          N[i][j] += beam*func_P1*beam*func_P2*ell_prefactor*N24*N13;
+        }
+      }
+    }
+  }
+}
+void pure_noise_ks_ks(int *z_ar, double *theta, double *dtheta, double **N){
+  // N is 2d matrix
+  double N13=0, N24=0, beam=0, func_P1=0, func_P2=0, ell_prefactor=0;
+  double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
+  int n1,n3;
+  n1 = ar[0]; n3 = ar[1];
+
+  N13 = 1./(nsource(n1)*survey.n_gal_conversion_factor);
+  if(n1 == n3){
+    // loop through theta bins
+    for(int i=0; i<like.Ntheta; i++){
+      for(int j=0; j<like.Ntheta; j++){
+        for(int l=0; l<LMAX; l++){
+          double l_d = (double)l;
+          N24 = kappa_reconstruction_noise(l_d);
+          beam = GaussianBeam(cmb.fwhm, l_d, 
+            like.lmin_kappacmb, like.lmax_kappacmb);
+          func_P1 = Pl2_tab(i, l);
+          func_P2 = Pl2_tab(j, l);
+          ell_prefactor = (2.*l_d+1.)/(4.*M_PI*fsky*4.*M_PI);
+          N[i][j] += beam*func_P1*beam*func_P2*ell_prefactor*N24*N13;
+        }
+      }
     }
   }
 }
@@ -2239,6 +2318,21 @@ double func_for_cov_G_gk(double l, int *ar){
   N24=kappa_reconstruction_noise(l);
   return ((C13+N13)*(C24+N24)+C14*C23)/((2.*l+1.)*fsky);
 }
+double func_for_cov_G_gk_noNN(double l, int *ar){
+  double C13, C14, C23, C24, N13=0, N14=0, N23=0, N24=0;
+  double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
+  int n1,n3;
+  n1 = ar[0]; n3 = ar[1];
+  C13 = C_cl_tomo(l,n1,n3);
+  C24 = C_kk(l);
+  C14 = C_gk(l,n1);
+  C23 = C_gk(l,n3);
+  if (n1 == n3){
+    N13 = 1./(nlens(n1)*survey.n_gal_conversion_factor);
+  }
+  N24=kappa_reconstruction_noise(l);
+  return (C13*C24+C13*N24+N13*C24 +C14*C23)/((2.*l+1.)*fsky);
+}
 double func_for_cov_G_ks_gk(double l, int *ar){
   double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
   double C13, C14, C23, C24;
@@ -2276,6 +2370,21 @@ double func_for_cov_G_ks(double l, int *ar){
   // printf("%d,%d, %le,%le,%le,%le ,%le,%le,%le,%le,\n",z1,z3,C13,C24,C14,C23,N13,N24, l,((C13+N13)*(C24+N24)+C14*C23)/((2.*l+1.)*fsky));}
   // exit(0);
   return ((C13+N13)*(C24+N24)+C14*C23)/((2.*l+1.)*fsky);
+}
+double func_for_cov_G_ks_noNN(double l, int *ar){
+  double C13, C14, C23, C24, N13=0, N14=0, N23=0, N24=0;
+  int z1,z3;
+  z1 = ar[0]; z3 = ar[1];
+  double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
+  C13 = C_shear_tomo(l,z1,z3);
+  C24 = C_kk(l);
+  C14 = C_ks(l,z1);
+  C23 = C_ks(l,z3);
+  if (z1 == z3){
+    N13= pow(survey.sigma_e,2.0)/(2.0*nsource(z1)*survey.n_gal_conversion_factor);
+  }
+  N24=kappa_reconstruction_noise(l);
+  return (C13*C24+C13*N24+N13*C24 +C14*C23)/((2.*l+1.)*fsky);
 }
 double func_for_cov_G_kk_shear(double l, int *ar){
   double C13, C14, C23, C24;
