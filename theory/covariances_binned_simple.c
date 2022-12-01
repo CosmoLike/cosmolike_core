@@ -11,7 +11,7 @@
   
   -- Xiao Fang 
 */
-
+#define __NN_SNR_FLAG__ 0.0
 /************ ===================== ************/
 /************ Function Declarations ************/
 /************ ===================== ************/
@@ -2007,10 +2007,10 @@ double func_for_cov_G_shear_noNN(double l, int *ar){
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
   // printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
-  C13 = C_shear_tomo(l,n1,n3);
-  C24 = C_shear_tomo(l,n2,n4);
-  C14 = C_shear_tomo(l,n1,n4);
-  C23 = C_shear_tomo(l,n2,n3);
+  C13 = C_shear_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_shear_tomo(l,n2,n4) * __NN_SNR_FLAG__;
+  C14 = C_shear_tomo(l,n1,n4) * __NN_SNR_FLAG__;
+  C23 = C_shear_tomo(l,n2,n3) * __NN_SNR_FLAG__;
   
   if (n1 == n3){N13= pow(survey.sigma_e,2.0)/(2.*nsource(n1)*survey.n_gal_conversion_factor);}
   if (n1 == n4){N14= pow(survey.sigma_e,2.0)/(2.*nsource(n1)*survey.n_gal_conversion_factor);}
@@ -2024,10 +2024,10 @@ double func_for_cov_G_shear(double l, int *ar){
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
   // printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
-  C13 = C_shear_tomo(l,n1,n3);
-  C24 = C_shear_tomo(l,n2,n4);
-  C14 = C_shear_tomo(l,n1,n4);
-  C23 = C_shear_tomo(l,n2,n3);
+  C13 = C_shear_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_shear_tomo(l,n2,n4) * __NN_SNR_FLAG__;
+  C14 = C_shear_tomo(l,n1,n4) * __NN_SNR_FLAG__;
+  C23 = C_shear_tomo(l,n2,n3) * __NN_SNR_FLAG__;
   
   if (n1 == n3){N13= pow(survey.sigma_e,2.0)/(2.*nsource(n1)*survey.n_gal_conversion_factor);}
   if (n1 == n4){N14= pow(survey.sigma_e,2.0)/(2.*nsource(n1)*survey.n_gal_conversion_factor);}
@@ -2041,10 +2041,10 @@ double func_for_cov_G_cl_noNN(double l, int *ar){
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
   //printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
-  C13 = C_cl_tomo(l,n1,n3);
-  C24 = C_cl_tomo(l,n2,n4);
-  C14 = C_cl_tomo(l,n1,n4);
-  C23 = C_cl_tomo(l,n2,n3);
+  C13 = C_cl_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_cl_tomo(l,n2,n4) * __NN_SNR_FLAG__;
+  C14 = C_cl_tomo(l,n1,n4) * __NN_SNR_FLAG__;
+  C23 = C_cl_tomo(l,n2,n3) * __NN_SNR_FLAG__;
   
   if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
   if (n1 == n4){N14= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
@@ -2058,10 +2058,10 @@ double func_for_cov_G_cl(double l, int *ar){
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
   //printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
-  C13 = C_cl_tomo(l,n1,n3);
-  C24 = C_cl_tomo(l,n2,n4);
-  C14 = C_cl_tomo(l,n1,n4);
-  C23 = C_cl_tomo(l,n2,n3);
+  C13 = C_cl_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_cl_tomo(l,n2,n4) * __NN_SNR_FLAG__;
+  C14 = C_cl_tomo(l,n1,n4) * __NN_SNR_FLAG__;
+  C23 = C_cl_tomo(l,n2,n3) * __NN_SNR_FLAG__;
   
   if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
   if (n1 == n4){N14= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
@@ -2075,10 +2075,10 @@ double func_for_cov_G_cl_gl(double l, int *ar){
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
   //printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
-  C13 = C_cl_tomo(l,n1,n3);
-  C24 = C_gl_tomo(l,n2,n4);
-  C14 = C_gl_tomo(l,n1,n4);
-  C23 = C_cl_tomo(l,n2,n3);
+  C13 = C_cl_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_gl_tomo(l,n2,n4) * __NN_SNR_FLAG__;
+  C14 = C_gl_tomo(l,n1,n4) * __NN_SNR_FLAG__;
+  C23 = C_cl_tomo(l,n2,n3) * __NN_SNR_FLAG__;
   if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
   if (n2 == n3){N23= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
   
@@ -2089,10 +2089,10 @@ double func_for_cov_G_cl_shear(double l, int *ar){
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
   //printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
-  C13 = C_gl_tomo(l,n1,n3);
-  C24 = C_gl_tomo(l,n2,n4);
-  C14 = C_gl_tomo(l,n1,n4);
-  C23 = C_gl_tomo(l,n2,n3);
+  C13 = C_gl_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_gl_tomo(l,n2,n4) * __NN_SNR_FLAG__;
+  C14 = C_gl_tomo(l,n1,n4) * __NN_SNR_FLAG__;
+  C23 = C_gl_tomo(l,n2,n3) * __NN_SNR_FLAG__;
 
   return (C13*C24+ C14*C23)*4.*M_PI/(survey.area*survey.area_conversion_factor* (2.*l+1.));
 }
@@ -2101,10 +2101,10 @@ double func_for_cov_G_gl_noNN(double l, int *ar){
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
   //printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
-  C13 = C_cl_tomo(l,n1,n3);
-  C24 = C_shear_tomo(l,n2,n4);
-  C14 = C_gl_tomo(l,n1,n4);
-  C23 = C_gl_tomo(l,n3,n2);
+  C13 = C_cl_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_shear_tomo(l,n2,n4) * __NN_SNR_FLAG__;
+  C14 = C_gl_tomo(l,n1,n4) * __NN_SNR_FLAG__;
+  C23 = C_gl_tomo(l,n3,n2) * __NN_SNR_FLAG__;
   
   if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
   if (n2 == n4){N24= pow(survey.sigma_e,2.0)/(2.0*nsource(n2)*survey.n_gal_conversion_factor);}
@@ -2116,10 +2116,10 @@ double func_for_cov_G_gl(double l, int *ar){
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
   //printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
-  C13 = C_cl_tomo(l,n1,n3);
-  C24 = C_shear_tomo(l,n2,n4);
-  C14 = C_gl_tomo(l,n1,n4);
-  C23 = C_gl_tomo(l,n3,n2);
+  C13 = C_cl_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_shear_tomo(l,n2,n4) * __NN_SNR_FLAG__;
+  C14 = C_gl_tomo(l,n1,n4) * __NN_SNR_FLAG__;
+  C23 = C_gl_tomo(l,n3,n2) * __NN_SNR_FLAG__;
   
   if (n1 == n3){N13= 1./(nlens(n1)*survey.n_gal_conversion_factor);}
   if (n2 == n4){N24= pow(survey.sigma_e,2.0)/(2.0*nsource(n2)*survey.n_gal_conversion_factor);}
@@ -2131,10 +2131,10 @@ double func_for_cov_G_gl_shear(double l, int *ar){
   int n1,n2,n3,n4;
   n1 = ar[0]; n2 = ar[1]; n3 = ar[2]; n4 = ar[3];
   //printf("n1=%d n2=%d n3=%d n4=%d l=%le\n",n1,n2,n3,n4,l);
-  C13 = C_gl_tomo(l,n1,n3);
-  C24 = C_shear_tomo(l,n2,n4);
-  C14 = C_gl_tomo(l,n1,n4);
-  C23 = C_shear_tomo(l,n2,n3);
+  C13 = C_gl_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_shear_tomo(l,n2,n4) * __NN_SNR_FLAG__;
+  C14 = C_gl_tomo(l,n1,n4) * __NN_SNR_FLAG__;
+  C23 = C_shear_tomo(l,n2,n3) * __NN_SNR_FLAG__;
   if (n2 == n4){N24= pow(survey.sigma_e,2.0)/(2.0*nsource(n2)*survey.n_gal_conversion_factor);}
   if (n2 == n3){N23= pow(survey.sigma_e,2.0)/(2.0*nsource(n2)*survey.n_gal_conversion_factor);}
  
@@ -2146,10 +2146,10 @@ double func_for_cov_G_gk_shear(double l, int *ar){
   double C13, C14, C23, C24;
   int zl,zs1,zs2;
   zl = ar[0]; zs1 = ar[1]; zs2 = ar[2];
-  C13 = C_gl_tomo(l,zl, zs1);
-  C24 = C_ks(l, zs2);
-  C14 = C_gl_tomo(l, zl, zs2);
-  C23 = C_ks(l, zs1);
+  C13 = C_gl_tomo(l,zl, zs1) * __NN_SNR_FLAG__;
+  C24 = C_ks(l, zs2) * __NN_SNR_FLAG__;
+  C14 = C_gl_tomo(l, zl, zs2) * __NN_SNR_FLAG__;
+  C23 = C_ks(l, zs1) * __NN_SNR_FLAG__;
   return (C13*C24+C14*C23)/((2.*l+1.)*fsky);
 }
 double func_for_cov_G_ks_shear(double l, int *ar){
@@ -2157,10 +2157,10 @@ double func_for_cov_G_ks_shear(double l, int *ar){
   double C13, C14, C23, C24;
   int z1,z2,z3;
   z1 = ar[0]; z2 = ar[1]; z3 = ar[2];
-  C13 = C_ks(l,z2);
-  C24 = C_shear_tomo(l, z1, z3);
-  C14 = C_ks(l,z3);
-  C23 = C_shear_tomo(l, z1, z2);
+  C13 = C_ks(l,z2) * __NN_SNR_FLAG__;
+  C24 = C_shear_tomo(l, z1, z3) * __NN_SNR_FLAG__;
+  C14 = C_ks(l,z3) * __NN_SNR_FLAG__;
+  C23 = C_shear_tomo(l, z1, z2) * __NN_SNR_FLAG__;
   double N24 = 0, N23 = 0;
   if (z1 == z3){
     N24= pow(survey.sigma_e,2.0)/(2.0*nsource(z1)*survey.n_gal_conversion_factor);
@@ -2175,10 +2175,10 @@ double func_for_cov_G_gk_gl(double l, int *ar){
   double C13, C14, C23, C24;
   int zl1,zl2,zs;
   zl1 = ar[0]; zl2 = ar[1]; zs = ar[2];
-  C13 = C_cl_tomo(l,zl1, zl2);
-  C24 = C_ks(l, zs);
-  C14 = C_gl_tomo(l, zl1, zs);
-  C23 = C_gk(l, zl2);
+  C13 = C_cl_tomo(l,zl1, zl2) * __NN_SNR_FLAG__;
+  C24 = C_ks(l, zs) * __NN_SNR_FLAG__;
+  C14 = C_gl_tomo(l, zl1, zs) * __NN_SNR_FLAG__;
+  C23 = C_gk(l, zl2) * __NN_SNR_FLAG__;
   double N = 0;
   if (zl1==zl2) N = 1./(nlens(zl1)*survey.n_gal_conversion_factor);
   return ((C13+N)*C24+C14*C23)/((2.*l+1.)*fsky);
@@ -2188,10 +2188,10 @@ double func_for_cov_G_ks_gl(double l, int *ar){
   double C13, C14, C23, C24;
   int zl,zs1,zs2;
   zs1 = ar[0]; zl = ar[1]; zs2 = ar[2];
-  C13 = C_gk(l, zl);
-  C24 = C_shear_tomo(l, zs1, zs2);
-  C14 = C_ks(l, zs2);
-  C23 = C_gl_tomo(l, zl, zs1);
+  C13 = C_gk(l, zl) * __NN_SNR_FLAG__;
+  C24 = C_shear_tomo(l, zs1, zs2) * __NN_SNR_FLAG__;
+  C14 = C_ks(l, zs2) * __NN_SNR_FLAG__;
+  C23 = C_gl_tomo(l, zl, zs1) * __NN_SNR_FLAG__;
   double N = 0;
   if (zs1==zs2) N = pow(survey.sigma_e,2.0)/(2.0*nsource(zs1)*survey.n_gal_conversion_factor);
   return (C13*(C24+N)+C14*C23)/((2.*l+1.)*fsky);
@@ -2201,10 +2201,10 @@ double func_for_cov_G_gk_cl(double l, int *ar){
   int n1,n3,n4;
   n1 = ar[0]; n3 = ar[1]; n4 = ar[2];
   double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
-  C13 = C_cl_tomo(l,n1,n3);
-  C24 = C_gk(l,n4);
-  C23 = C_gk(l,n3);
-  C14 = C_cl_tomo(l,n1,n4);
+  C13 = C_cl_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_gk(l,n4) * __NN_SNR_FLAG__;
+  C23 = C_gk(l,n3) * __NN_SNR_FLAG__;
+  C14 = C_cl_tomo(l,n1,n4) * __NN_SNR_FLAG__;
   if (n1==n3){
     N13 = 1./(nlens(n1)*survey.n_gal_conversion_factor);
   }
@@ -2218,10 +2218,10 @@ double func_for_cov_G_ks_cl(double l, int *ar){
   double C13, C14, C23, C24;
   int n1,n2,zs;
   zs = ar[0]; n1 = ar[1]; n2 = ar[2];
-  C13 = C_gk(l, n1);
-  C24 = C_gl_tomo(l, n2, zs);
-  C23 = C_gl_tomo(l, n1, zs);
-  C14 = C_gk(l, n2);
+  C13 = C_gk(l, n1) * __NN_SNR_FLAG__;
+  C24 = C_gl_tomo(l, n2, zs) * __NN_SNR_FLAG__;
+  C23 = C_gl_tomo(l, n1, zs) * __NN_SNR_FLAG__;
+  C14 = C_gk(l, n2) * __NN_SNR_FLAG__;
   return (C13*C24+C14*C23)/((2.*l+1.)*fsky);
 }
 double func_for_cov_G_gk(double l, int *ar){
@@ -2229,10 +2229,10 @@ double func_for_cov_G_gk(double l, int *ar){
   double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
   int n1,n3;
   n1 = ar[0]; n3 = ar[1];
-  C13 = C_cl_tomo(l,n1,n3);
-  C24 = C_kk(l);
-  C14 = C_gk(l,n1);
-  C23 = C_gk(l,n3);
+  C13 = C_cl_tomo(l,n1,n3) * __NN_SNR_FLAG__;
+  C24 = C_kk(l) * __NN_SNR_FLAG__;
+  C14 = C_gk(l,n1) * __NN_SNR_FLAG__;
+  C23 = C_gk(l,n3) * __NN_SNR_FLAG__;
   if (n1 == n3){
     N13 = 1./(nlens(n1)*survey.n_gal_conversion_factor);
   }
@@ -2244,10 +2244,10 @@ double func_for_cov_G_ks_gk(double l, int *ar){
   double C13, C14, C23, C24;
   int zl,zs;
   zs = ar[0]; zl = ar[1];
-  C13 = C_gk(l,zl);
-  C24 = C_ks(l, zs);
-  C23 = C_gl_tomo(l, zl, zs);
-  C14 = C_kk(l);
+  C13 = C_gk(l,zl) * __NN_SNR_FLAG__;
+  C24 = C_ks(l, zs) * __NN_SNR_FLAG__;
+  C23 = C_gl_tomo(l, zl, zs) * __NN_SNR_FLAG__;
+  C14 = C_kk(l) * __NN_SNR_FLAG__;
   double N14 = kappa_reconstruction_noise(l);
   return (C13*C24+(C14+N14)*C23)/((2.*l+1.)*fsky);
 }
@@ -2256,10 +2256,10 @@ double func_for_cov_G_ks(double l, int *ar){
   int z1,z3;
   z1 = ar[0]; z3 = ar[1];
   double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
-  C13 = C_shear_tomo(l,z1,z3);
-  C24 = C_kk(l);
-  C14 = C_ks(l,z1);
-  C23 = C_ks(l,z3);
+  C13 = C_shear_tomo(l,z1,z3) * __NN_SNR_FLAG__;
+  C24 = C_kk(l) * __NN_SNR_FLAG__;
+  C14 = C_ks(l,z1) * __NN_SNR_FLAG__;
+  C23 = C_ks(l,z3) * __NN_SNR_FLAG__;
   if (z1 == z3){
     N13= pow(survey.sigma_e,2.0)/(2.0*nsource(z1)*survey.n_gal_conversion_factor);
   }
@@ -2281,40 +2281,40 @@ double func_for_cov_G_kk_shear(double l, int *ar){
   double C13, C14, C23, C24;
   int z1,z2;
   z1 = ar[0]; z2 = ar[1];
-  C13 = C_ks(l,z1);
-  C23 = C13;
-  C24 = C_ks(l, z2);
-  C14 = C24;
+  C13 = C_ks(l,z1) * __NN_SNR_FLAG__;
+  C23 = C13 * __NN_SNR_FLAG__;
+  C24 = C_ks(l, z2) * __NN_SNR_FLAG__;
+  C14 = C24 * __NN_SNR_FLAG__;
   return (C13*C24+C14*C23)/((2.*l+1.)*cmb.fsky);
 }
 double func_for_cov_G_kk_gl(double l, int *ar){
   double C13, C14, C23, C24;
   int zl,zs;
   zl = ar[0]; zs = ar[1];
-  C13 = C_gk(l, zl);
-  C14 = C13;
-  C24 = C_ks(l, zs);
-  C23 = C24;
+  C13 = C_gk(l, zl) * __NN_SNR_FLAG__;
+  C14 = C13 * __NN_SNR_FLAG__;
+  C24 = C_ks(l, zs) * __NN_SNR_FLAG__;
+  C23 = C24 * __NN_SNR_FLAG__;
   return (C13*C24+C14*C23)/((2.*l+1.)*cmb.fsky);
 }
 double func_for_cov_G_kk_cl(double l, int *ar){
   double C13, C14, C23, C24;
   int n1, n2;
   n1=ar[0]; n2=ar[1];
-  C13 = C_gk(l,n1);
-  C24 = C_gk(l,n2);
-  C14 = C13;
-  C23 = C24;
+  C13 = C_gk(l,n1) * __NN_SNR_FLAG__;
+  C24 = C_gk(l,n2) * __NN_SNR_FLAG__;
+  C14 = C13 * __NN_SNR_FLAG__;
+  C23 = C24 * __NN_SNR_FLAG__;
   return (C13*C24+C14*C23)/((2.*l+1.)*cmb.fsky);
 }
 double func_for_cov_G_kk_gk(double l, int *ar){
   double C13, C14, C23, C24;
   int zl;
   zl=ar[0];
-  C13 = C_gk(l,zl);
-  C14 = C13;
-  C24 = C_kk(l);
-  C23 = C24;
+  C13 = C_gk(l,zl) * __NN_SNR_FLAG__;
+  C14 = C13 * __NN_SNR_FLAG__;
+  C24 = C_kk(l) * __NN_SNR_FLAG__;
+  C23 = C24 * __NN_SNR_FLAG__;
   double N = kappa_reconstruction_noise(l);
   return (C13*(C24+N)+C14*(C23+N))/((2.*l+1.)*cmb.fsky);
 }
@@ -2322,10 +2322,10 @@ double func_for_cov_G_kk_ks(double l, int *ar){
   double C13, C24, C14, C23;
   int zs;
   zs = ar[0];
-  C13 = C_kk(l);
-  C23 = C13;
-  C14 = C_ks(l, zs);
-  C24 = C14;
+  C13 = C_kk(l) * __NN_SNR_FLAG__;
+  C23 = C13 * __NN_SNR_FLAG__;
+  C14 = C_ks(l, zs) * __NN_SNR_FLAG__;
+  C24 = C14 * __NN_SNR_FLAG__;
   double N = kappa_reconstruction_noise(l);
   double ans = ( (C13+N)*C24 + C14*(C23+N) )/( (2.*l+1.)*cmb.fsky );
   if(isfinite(ans)){return ans;}
@@ -2339,7 +2339,7 @@ double func_for_cov_G_kk_ks(double l, int *ar){
 
 double func_for_cov_G_kk(double l, int *ar){
    double C, N;
-   C = C_kk(l);
+   C = C_kk(l) * __NN_SNR_FLAG__;
    N = kappa_reconstruction_noise(l);
    return 2.*pow((C+N), 2) / ((2.*l+1.)*cmb.fsky);
 }
