@@ -296,6 +296,8 @@ double CMB_lensing_mat_with_corr(int ibp, int L);
 double GaussianBeam(double fwhm, int ell, double ell_left, double ell_right);
 // masking effect on pure noise
 double w_mask(double theta_min);
+// healpix pixel window function
+double w_pixel(int ell);
 
 /************ ======================== ************/
 /************ Function Implementations ************/
@@ -1678,6 +1680,56 @@ double w_mask(double theta_min)
   return w_vec[i];  
 }
 
+double w_pixel(int ell)
+{
+  static int LMAX = 50000;
+  static double *cl_pixel =0;
+  int i,l;
+
+  if (cl_pixel == 0){
+    cl_pixel = create_double_vector(0, LMAX -1);
+    for (i = 0; i<LMAX; i ++){cl_pixel[i] = 1.0;}  
+    FILE *F1;
+    printf("\nTabulating Cl_pixwin(l) from pixel window function %s\n",\
+        covparams.HEALPIX_WINDOW_FUNCTION_FILE);
+    F1 = fopen(covparams.HEALPIX_WINDOW_FUNCTION_FILE, "r");
+    if (F1 != NULL) {
+      // covparams.HEALPIX_WINDOW_FUNCTION_FILE exists
+      // # l [int], Cl [double]
+      fclose(F1);
+      int lbins = line_count(covparams.HEALPIX_WINDOW_FUNCTION_FILE);
+      if(lbins <= LMAX){
+        F1=fopen(covparams.HEALPIX_WINDOW_FUNCTION_FILE,"r");
+        for (int i = 0; i < lbins; i++){
+          int tmp;
+          double tmp2;
+          fscanf(F1,"%d %le\n",&tmp, &tmp2);
+          cl_pixel[i] = tmp2;
+        }
+        fclose(F1);
+        for(int i=lbins; i<LMAX; i++){cl_pixel[i] = 0.0;}
+      }
+      else{
+        printf("LMAX = %d is too small since the file has %d lines\n",
+          LMAX, lbins);
+        exit(-1);
+      }
+    }
+    else{
+      //covparams.HEALPIX_WINDOW_FUNCTION_FILE does not exit, 
+      // ignore healpix pixel window function
+      printf("covparams.HEALPIX_WINDOW_FUNCTION_FILE = %s not found\n",
+        covparams.HEALPIX_WINDOW_FUNCTION_FILE);
+      printf("No healpix pixel window function correction applied\n");    
+    }
+  }
+  if(ell<LMAX){return cl_pixel[ell];}
+  else{
+    printf("ell = %d larger than LMAX = %d!\n", ell, LMAX);
+    exit(-1);
+  }
+}
+
 double Glplus_tab(int itheta, int ell)
 {  
   int i;
@@ -1931,7 +1983,7 @@ double CMB_lensing_mat_with_corr(int ibp, int L)
   return binning_correction_matrix[ibp][iL];
 }
 
-/*  Calculate Gaussian Beam Kernel
+/*  Calculate Gaussian Beam Kernel (including healpix pixwin)
     
     F(ell) = B(ell)H(ell - ell_min)H(ell_max - ell)
     where B(ell) is the Gaussian kernel
@@ -1981,7 +2033,7 @@ double GaussianBeam(double theta_fwhm, int ell,
   }
   // Turn-Off Gaussian Beam Smoothing
   else{BeamKernel = 1.0;}
-  return BeamKernel;
+  return BeamKernel*w_pixel(ell);
 }
 
 /************ (21+6) Functions for different covariances ************/
@@ -2043,7 +2095,7 @@ void pure_noise_gk_gk(int *z_ar, double *theta, double *dtheta, double **N){
           double l_d = (double)l;
           N24 = kappa_reconstruction_noise(l_d);
           // and also 
-          beam = GaussianBeam(cmb.fwhm, l_d, 
+          beam = GaussianBeam(cmb.fwhm, l, 
             like.lmin_kappacmb, like.lmax_kappacmb);
           func_P1 = Pl_tab(i, l);
           func_P2 = Pl_tab(j, l);
@@ -2069,7 +2121,7 @@ void pure_noise_ks_ks(int *z_ar, double *theta, double *dtheta, double **N){
         for(int l=0; l<LMAX; l++){
           double l_d = (double)l;
           N24 = kappa_reconstruction_noise(l_d);
-          beam = GaussianBeam(cmb.fwhm, l_d, 
+          beam = GaussianBeam(cmb.fwhm, l, 
             like.lmin_kappacmb, like.lmax_kappacmb);
           func_P1 = Pl2_tab(i, l);
           func_P2 = Pl2_tab(j, l);
