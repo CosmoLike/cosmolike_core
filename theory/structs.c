@@ -512,7 +512,8 @@ typedef struct {
     int cng;/* cng covariance? */
     char outdir[200]; /* output directory */
     char filename[200]; /* output file name prefix */
-    char C_FOOTPRINT_FILE[200]; /*angular power spectrum of survey footprint, in healpix format */
+    char C_FOOTPRINT_FILE[200]; /*angular power spectrum of survey footprint*/
+    char HEALPIX_WINDOW_FUNCTION_FILE[200]; /*healpix pixwin as a func of ell*/
     char BINMAT_FILE[200]; /*binning matrix for CMB lensing band power*/
     char BINMAT_WITH_CORR_FILE[200]; /*binning matrix, but marg. over CMB*/
     char BINDEF_FILE[200]; /*binning definition for CMB lensing band power*/

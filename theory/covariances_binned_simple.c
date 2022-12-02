@@ -188,11 +188,11 @@ double func_for_cov_G_gl_noNN(double l, int *ar);
 double func_for_cov_G_gk_noNN(double l, int *ar);
 double func_for_cov_G_ks_noNN(double l, int *ar);
 // 3x2pt Gaussian cov pure noise term on the diagonal, without masking effect
-void pure_noise_xipm_xipm(int *z_ar, double *theta, double *dtheta, double *N);
-void pure_noise_gl_gl(int *z_ar, double *theta, double *dtheta, double *N);
-void pure_noise_cl_cl(int *z_ar, double *theta, double *dtheta, double *N);
-void pure_noise_gk_gk(int *z_ar, double *theta, double *dtheta, double *N);
-void pure_noise_ks_ks(int *z_ar, double *theta, double *dtheta, double *N);
+void pure_noise_xipm_xipm(int *z_ar, double *theta, double *dtheta, double **N);
+void pure_noise_gl_gl(int *z_ar, double *theta, double *dtheta, double **N);
+void pure_noise_cl_cl(int *z_ar, double *theta, double *dtheta, double **N);
+void pure_noise_gk_gk(int *z_ar, double *theta, double *dtheta, double **N);
+void pure_noise_ks_ks(int *z_ar, double *theta, double *dtheta, double **N);
 
 // 3x2pt, pure noise included (6 functions)
 double func_for_cov_G_shear(double l, int *ar);
@@ -2084,7 +2084,8 @@ void pure_noise_gk_gk(int *z_ar, double *theta, double *dtheta, double **N){
   double N13=0, N24=0, beam=0, func_P1=0, func_P2=0, ell_prefactor=0;
   double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
   int n1,n3;
-  n1 = ar[0]; n3 = ar[1];
+  static int LMAX = 50000;
+  n1 = z_ar[0]; n3 = z_ar[1];
 
   N13 = 1./(nlens(n1)*survey.n_gal_conversion_factor);
   if(n1 == n3){
@@ -2111,7 +2112,8 @@ void pure_noise_ks_ks(int *z_ar, double *theta, double *dtheta, double **N){
   double N13=0, N24=0, beam=0, func_P1=0, func_P2=0, ell_prefactor=0;
   double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
   int n1,n3;
-  n1 = ar[0]; n3 = ar[1];
+  static int LMAX = 50000;
+  n1 = z_ar[0]; n3 = z_ar[1];
 
   N13 = 1./(nsource(n1)*survey.n_gal_conversion_factor);
   if(n1 == n3){
