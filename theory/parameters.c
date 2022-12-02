@@ -163,6 +163,24 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       }
       continue;
     }
+    else if(strcmp(name, "HEALPIX_WINDOW_FUNCTION_FILE")==0)
+    {
+      sprintf(covparams.HEALPIX_WINDOW_FUNCTION_FILE,"%s",val);
+      if(output==1)
+      {
+        printf("HEALPIX_WINDOW_FUNCTION_FILE %s \n",covparams.HEALPIX_WINDOW_FUNCTION_FILE);
+      }
+      continue;
+    }
+    else if(strcmp(name, "healpix_window_function_file")==0)
+    {
+      sprintf(covparams.HEALPIX_WINDOW_FUNCTION_FILE,"%s",val);
+      if(output==1)
+      {
+        printf("healpix_window_function_file %s \n",covparams.HEALPIX_WINDOW_FUNCTION_FILE);
+      }
+      continue;
+    }
     else if(strcmp(name, "filename")==0)
     {
       sprintf(covparams.filename,"%s",val);
