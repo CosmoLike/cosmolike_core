@@ -2083,7 +2083,7 @@ void pure_noise_cl_cl(int *z_ar, double *theta, double *dtheta, double **N) {
 }
 void pure_noise_gk_gk(int *z_ar, double *theta, double *dtheta, double **N){
   // N is 2d matrix
-  double N13=0, N24=0, beam=0, func_P1=0, func_P2=0, ell_prefactor=0;
+  double N13=0, N24=0, beam=0, P1=0, P2=0, ell_prefactor=0;
   double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
   int n1,n3;
   static int LMAX = 50000;
@@ -2091,49 +2091,55 @@ void pure_noise_gk_gk(int *z_ar, double *theta, double *dtheta, double **N){
 
   N13 = 1./(nlens(n1)*survey.n_gal_conversion_factor);
   if(n1 == n3){
-    // loop through theta bins
-    for(int i=0; i<like.Ntheta; i++){
-      for(int j=0; j<like.Ntheta; j++){
-        for(int l=0; l<LMAX; l++){
-          double l_d = (double)l;
-          N24 = kappa_reconstruction_noise(l_d);
-          // and also 
-          beam = GaussianBeam(cmb.fwhm, l, 
-            like.lmin_kappacmb, like.lmax_kappacmb);
-          func_P1 = Pl_tab(i, l);
-          func_P2 = Pl_tab(j, l);
-          ell_prefactor = (2.*l_d+1.)/(4.*M_PI*fsky*4.*M_PI);
-          N[i][j] += beam*func_P1*beam*func_P2*ell_prefactor*N24*N13;
+    
+    for(int l=0; l<LMAX; l++){
+      double l_d = (double)l;
+      N24 = kappa_reconstruction_noise(l_d); 
+      beam = GaussianBeam(cmb.fwhm, l, 
+        like.lmin_kappacmb, like.lmax_kappacmb);
+
+      for(int i=0; i<like.Ntheta; i++){
+        for(int j=0; j<like.Ntheta; j++){         
+          P1 = Pl_tab(i, l);
+          P2 = Pl_tab(j, l);
+          ell_prefactor = 1./((2.*l+1.)*fsky);
+          N[i][j] += beam*P1*beam*P2*ell_prefactor*N24*N13;
         }
       }
+
     }
+
   }
 }
 void pure_noise_ks_ks(int *z_ar, double *theta, double *dtheta, double **N){
   // N is 2d matrix
-  double N13=0, N24=0, beam=0, func_P1=0, func_P2=0, ell_prefactor=0;
+  double N13=0, N24=0, beam=0, P1=0, P2=0, ell_prefactor=0;
   double fsky = survey.area*survey.area_conversion_factor/(4.*M_PI);
   int n1,n3;
   static int LMAX = 50000;
   n1 = z_ar[0]; n3 = z_ar[1];
 
-  N13 = 1./(nsource(n1)*survey.n_gal_conversion_factor);
+  N13 = pow(survey.sigma_e,2.0)/\
+    (2.0*nsource(n1)*survey.n_gal_conversion_factor);
   if(n1 == n3){
-    // loop through theta bins
-    for(int i=0; i<like.Ntheta; i++){
-      for(int j=0; j<like.Ntheta; j++){
-        for(int l=0; l<LMAX; l++){
-          double l_d = (double)l;
-          N24 = kappa_reconstruction_noise(l_d);
-          beam = GaussianBeam(cmb.fwhm, l, 
-            like.lmin_kappacmb, like.lmax_kappacmb);
-          func_P1 = Pl2_tab(i, l);
-          func_P2 = Pl2_tab(j, l);
-          ell_prefactor = (2.*l_d+1.)/(4.*M_PI*fsky*4.*M_PI);
-          N[i][j] += beam*func_P1*beam*func_P2*ell_prefactor*N24*N13;
+    
+    for(int l=0; l<LMAX; l++){
+      double l_d = (double)l;
+      N24 = kappa_reconstruction_noise(l_d);
+      beam = GaussianBeam(cmb.fwhm, l, 
+        like.lmin_kappacmb, like.lmax_kappacmb);
+
+      for(int i=0; i<like.Ntheta; i++){
+        for(int j=0; j<like.Ntheta; j++){  
+          P1 = Pl2_tab(i, l);
+          P2 = Pl2_tab(j, l);
+          ell_prefactor = 1./((2.*l+1.)*fsky);
+          N[i][j] += beam*P1*beam*P2*ell_prefactor*N24*N13;
         }
       }
+
     }
+
   }
 }
 
