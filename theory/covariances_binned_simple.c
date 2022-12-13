@@ -576,7 +576,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
   for(i=0; i<like.Ntheta; i++){
     for(j=0; j<like.Ntheta; j++){
       if(N[i][j]){
-        cov[i][i] += N[i][j]/sqrt(w_mask(theta[i])*w_mask(theta[j]));
+        cov[i][j] += N[i][j]/sqrt(w_mask(theta[i])*w_mask(theta[j]));
       }
     }
   }
@@ -1661,6 +1661,7 @@ double w_mask(double theta_min)
         for (l = 0; l < lbins; l++){
           w_vec[i]+=Cl[l]*(2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
         }
+        printf("w_mask[%d] = %e\n",i, w_vec[i]);
       }
       free_double_vector(Cl,0,lbins-1);
     }
@@ -1721,6 +1722,7 @@ double w_pixel(int ell)
       printf("covparams.HEALPIX_WINDOW_FUNCTION_FILE = %s not found\n",
         covparams.HEALPIX_WINDOW_FUNCTION_FILE);
       printf("No healpix pixel window function correction applied\n");    
+      for(int i=0; i<LMAX; i++){cl_pixel[i]=1.0;}
     }
   }
   if(ell<LMAX){return cl_pixel[ell];}
