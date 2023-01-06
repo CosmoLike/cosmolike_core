@@ -295,7 +295,7 @@ double CMB_lensing_mat_with_corr(int ibp, int L);
 // CMB beam smoothing kernel
 double GaussianBeam(double fwhm, int ell, double ell_left, double ell_right);
 // masking effect on pure noise
-double w_mask(double theta_min);
+double w_mask(double theta_min, int col);
 // healpix pixel window function
 double w_pixel(int ell);
 
@@ -327,6 +327,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
   double (*func_bin_cov_NG)(double, double, int*);
   double (*func_P1)(int, int);
   double (*func_P2)(int, int);
+  int Icol = 0;
 
   // 3x2pt
   if(strcmp(realcov_type, "xi+_xi+")==0) {
@@ -335,12 +336,14 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
     func_P1 = &Glplus_tab;
     func_P2 = &Glplus_tab;
     pure_noise_xipm_xipm(z_ar, theta, dtheta, N); //C+- doesn't have the diagonal shot noise term
+    Icol = 0;
   } else if(strcmp(realcov_type, "xi-_xi-")==0) {
     func_for_cov_G  = &func_for_cov_G_shear_noNN;
     func_bin_cov_NG = &bin_cov_NG_shear_shear;
     func_P1 = &Glminus_tab;
     func_P2 = &Glminus_tab;
     pure_noise_xipm_xipm(z_ar, theta, dtheta, N); //C+- doesn't have the diagonal shot noise term
+    Icol = 0;
   } else if(strcmp(realcov_type, "xi+_xi-")==0) {
     func_for_cov_G  = &func_for_cov_G_shear_noNN;
     func_bin_cov_NG = &bin_cov_NG_shear_shear;
@@ -377,6 +380,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
     func_P1 = &Pl2_tab;
     func_P2 = &Pl2_tab;
     pure_noise_gl_gl(z_ar, theta, dtheta, N);
+    Icol = 0;
   } else if(strcmp(realcov_type, "cl_gl")==0) {
     func_for_cov_G  = &func_for_cov_G_cl_gl;
     func_bin_cov_NG = &bin_cov_NG_cl_gl;
@@ -388,6 +392,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
     func_P1 = &Pl_tab;
     func_P2 = &Pl_tab;
     pure_noise_cl_cl(z_ar, theta, dtheta, N);
+    Icol = 0;
   // 5x2pt
   } else if(strcmp(realcov_type, "gk_xi+")==0) {
     func_for_cov_G  = &func_for_cov_G_gk_shear;
@@ -453,6 +458,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
     CMB_smooth_1 = 1;
     CMB_smooth_2 = 1;
     pure_noise_gk_gk(z_ar, theta, dtheta, N);
+    Icol = 0; // 0-w/o annulus; 2-w/annulus
   } else if(strcmp(realcov_type, "ks_gk")==0) {
     func_for_cov_G  = &func_for_cov_G_ks_gk;
     func_bin_cov_NG = &bin_cov_NG_ks_gk;
@@ -468,6 +474,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
     CMB_smooth_1 = 1;
     CMB_smooth_2 = 1;
     pure_noise_ks_ks(z_ar, theta, dtheta, N);
+    Icol = 0; // 0-w/o annulus; 2-w/annulus
   // 6x2pt
   } else if(strcmp(realcov_type, "kk_xi+")==0) {
     func_for_cov_G  = &func_for_cov_G_kk_shear;
@@ -576,7 +583,7 @@ void cov_real_binned_fullsky(double **cov, double **covNG, char *realcov_type,
   for(i=0; i<like.Ntheta; i++){
     for(j=0; j<like.Ntheta; j++){
       if(N[i][j]){
-        cov[i][j] += N[i][j]/sqrt(w_mask(theta[i])*w_mask(theta[j]));
+        cov[i][j] += N[i][j]/sqrt(w_mask(theta[i], Icol)*w_mask(theta[j], Icol));
       }
     }
   }
@@ -1623,17 +1630,18 @@ void cov_kk_kk_fourier_banded(double **cov, double **covNG,
 /****** Helper Functions ******/
 
 // survey mask correlation function, normalized to 1 at small angular scales
-double w_mask(double theta_min)
+double w_mask(double theta_min, int col)
 {
   static int NTHETA = 0;
-  static double *w_vec =0;
+  static double **w_vec =0;
+  static int Ncols = 0;
   int i,l;
   if (like.theta ==NULL || like.Ntheta < 1){
     printf("covariances_real_binned.c:w_mask: like.theta or like.Ntheta not initialized\nEXIT\n");
     exit(1);
   }
   if (w_vec ==0){
-    w_vec = create_double_vector(0,like.Ntheta-1);
+    //w_vec = create_double_vector(0,like.Ntheta-1);
     NTHETA = like.Ntheta;
     FILE *F1;
     F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
@@ -1644,33 +1652,44 @@ double w_mask(double theta_min)
       // use healpy C_mask(l) to compute mask power spectrum
       fclose(F1);
       int lbins = line_count(covparams.C_FOOTPRINT_FILE);
-      double *Cl;
-      Cl = create_double_vector(0,lbins-1);
+      Ncols = column_count(covparams.C_FOOTPRINT_FILE);
+      double **Cl;
+      w_vec = create_double_matrix(0, Ncols-2, 0, like.Ntheta-1);
+      Cl = create_double_matrix(0, Ncols-2, 0, lbins-1);
       F1=fopen(covparams.C_FOOTPRINT_FILE,"r");
       for (int i = 0; i < lbins; i++){
         int tmp;
+        fscanf(F1, "%d", &tmp);
         double tmp2;
-        fscanf(F1,"%d %le\n",&tmp, &tmp2);
-        Cl[i] = tmp2;
+        for(int j=0; j<Ncols-1; j++){
+          fscanf(F1, "%le", &tmp2);
+          Cl[j][i] = tmp2;
+        }
+        //fscanf(F1,"%d %le\n",&tmp, &tmp2);
+        //Cl[i] = tmp2;
       }
       fclose(F1);
 
       printf("\nTabulating w_mask(theta) from mask power spectrum %s\n",covparams.C_FOOTPRINT_FILE);
-      for (i = 0; i < NTHETA; i++){
-        w_vec[i] =0.;
-        for (l = 0; l < lbins; l++){
-          w_vec[i]+=Cl[l]*(2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
+      for(int j=0; j<Ncols-1; j++){
+        for (i = 0; i < NTHETA; i++){
+          w_vec[j][i] =0.;
+          for (l = 0; l < lbins; l++){
+            w_vec[j][i]+=Cl[j][l]*(2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
+          }
+          printf("w_mask[%d][%d] = %e\n",j,i, w_vec[i]);
         }
-        printf("w_mask[%d] = %e\n",i, w_vec[i]);
       }
-      free_double_vector(Cl,0,lbins-1);
+      free_double_matrix(Cl,0,Ncols-1,0,lbins-1);
     }
     else{
       //covparams.C_FOOTPRINT_FILE does not exit, ignore boundary effects
+      Ncols = 2
+      w_vec = create_double_matrix(0,Ncols-2,0,like.Ntheta-1);
       printf("covparams.C_FOOTPRINT_FILE = %s not found\nNo boundary effect correction applied\n",covparams.C_FOOTPRINT_FILE);
       for (i = 0; i<NTHETA; i ++){
-        w_vec[i] = 1.0;
-        printf("w_mask[%d] = %e\n",i, w_vec[i]);
+        w_vec[0][i] = 1.0;
+        printf("w_mask[%d] = %e\n",i, w_vec[0][i]);
       }      
     }
   }
@@ -1678,7 +1697,11 @@ double w_mask(double theta_min)
   while(like.theta[i]< theta_min){
     i ++;
   }
-  return w_vec[i];  
+  if(col < Ncols - 1){return w_vec[col][i];}
+  else{
+    printf("covariances_real_binned.c:w_mask: col %d/%d!\n",col,Ncols-1);
+    exit(1);
+  }
 }
 
 double w_pixel(int ell)

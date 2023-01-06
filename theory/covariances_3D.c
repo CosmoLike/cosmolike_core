@@ -257,7 +257,7 @@ double C_survey_window(int l, int col){
         double tmp2;
         fscanf(F1, "%d", &tmp);
         for(int j = 0; j < Ncols-1; j++){
-          fscanf(F1, "%le", &temp2);
+          fscanf(F1, "%le", &tmp2);
           Cl[j][i] = tmp2;
           Cl[j][i] /= Cl[j][0];
         }
