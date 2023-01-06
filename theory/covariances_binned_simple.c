@@ -1653,6 +1653,7 @@ double w_mask(double theta_min, int col)
       fclose(F1);
       int lbins = line_count(covparams.C_FOOTPRINT_FILE);
       Ncols = column_count(covparams.C_FOOTPRINT_FILE);
+      printf("C_FOOTPRINT_FILE has %d columns.\n", Ncols);
       double **Cl;
       w_vec = create_double_matrix(0, Ncols-2, 0, like.Ntheta-1);
       Cl = create_double_matrix(0, Ncols-2, 0, lbins-1);
@@ -1662,7 +1663,7 @@ double w_mask(double theta_min, int col)
         fscanf(F1, "%d", &tmp);
         double tmp2;
         for(int j=0; j<Ncols-1; j++){
-          fscanf(F1, "%le", &tmp2);
+          fscanf(F1, "%le", &tmp2);printf("%le", tmp2);
           Cl[j][i] = tmp2;
         }
         //fscanf(F1,"%d %le\n",&tmp, &tmp2);
@@ -1677,7 +1678,7 @@ double w_mask(double theta_min, int col)
           for (l = 0; l < lbins; l++){
             w_vec[j][i]+=Cl[j][l]*(2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
           }
-          printf("w_mask[%d][%d] = %e\n",j,i, w_vec[i]);
+          printf("w_mask[%d][%d] = %e\n",j,i, w_vec[j][i]);
         }
       }
       free_double_matrix(Cl,0,Ncols-1,0,lbins-1);
