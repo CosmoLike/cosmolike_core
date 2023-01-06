@@ -1684,7 +1684,7 @@ double w_mask(double theta_min, int col)
     }
     else{
       //covparams.C_FOOTPRINT_FILE does not exit, ignore boundary effects
-      Ncols = 2
+      Ncols = 2;
       w_vec = create_double_matrix(0,Ncols-2,0,like.Ntheta-1);
       printf("covparams.C_FOOTPRINT_FILE = %s not found\nNo boundary effect correction applied\n",covparams.C_FOOTPRINT_FILE);
       for (i = 0; i<NTHETA; i ++){
