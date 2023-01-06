@@ -49,6 +49,7 @@ void free_int_matrix(int **m, long nrl, long nrh, long ncl, long nch);
 double **create_double_matrix(long nrl, long nrh, long ncl, long nch);
 int **create_int_matrix(long nrl, long nrh, long ncl, long nch);
 int line_count(char *filename);
+int column_count(char *filename);
 
 void error(char *s);
 void cdgamma(fftw_complex x, fftw_complex *res);
@@ -309,6 +310,28 @@ int line_count(char *filename)
   if(ch != '\n' && prev !='\n' && number_of_lines != 0)
     number_of_lines++;
   return number_of_lines;
+}
+
+int column_count(char *filename)
+{
+  FILE *n;
+  char line[500];
+  int number_of_columns = 0;
+  n = fopen(filename,"r");
+  if (!n){printf("column_count: %s not found!\nEXIT!\n",filename);exit(1);}
+  
+  if(fgets(line, sizeof(line), n) != NULL){
+  	char *tmp = line;
+  	// count columns
+  	while ((*tmp) && (*tmp != '\n')){
+  		while (*tmp==' '||*tmp==','||*tmp=='\t'){tmp++;}
+  		if(*tmp=='\n'){break;}
+  		while (*tmp!=' '&&*tmp!=','&&*tmp!='\t'&&*tmp!='\n'){tmp++;}
+  		number_of_columns ++;
+  	}
+  	return number_of_columns;
+  }
+  else{printf("column_count: fail to read 1st line!\nEXIT!\n");exit(1);}
 }
 
 double **create_double_matrix(long nrl, long nrh, long ncl, long nch)

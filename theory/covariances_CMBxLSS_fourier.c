@@ -108,7 +108,7 @@ double inner_project_tri_cov_gg_gk(double a,void *params)
    weights = W_gal(a,ar[2])*W_gal(a,ar[3])*W_gal(a,ar[4])*W_k(a,fK)*dchi_da(a);
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0, 1)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
    return res;
@@ -156,10 +156,10 @@ double inner_project_tri_cov_gg_kk(double a,void *params)
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
       if (cmb.fsky>fsky) {
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky, 2)*pow(fK,-4.); //super-sample covariance
       }
       else{
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky, 2)*pow(fK,-4.); //super-sample covariance
       }
    }
    res *= weights;
@@ -202,7 +202,7 @@ double inner_project_tri_cov_gg_ks(double a,void *params)
    weights = W_gal(a,ar[2])*W_gal(a,ar[3])*W_k(a,fK)*W_kappa(a,fK,ar[4])*dchi_da(a);
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0, 1)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
    return res;
@@ -249,7 +249,7 @@ double inner_project_tri_cov_gk_gk(double a,void *params)
    weights = W_gal(a,ar[2])*W_k(a,fK)*W_gal(a,ar[3])*W_k(a,fK)*dchi_da(a);
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0, 3)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
    return res;
@@ -293,7 +293,7 @@ double inner_project_tri_cov_gk_gs(double a, void *params)
    weights = W_gal(a,ar[2])*W_k(a,fK)*W_gal(a,ar[3])*W_kappa(a, fK, ar[4])*dchi_da(a);
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0, 1)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
    return res;
@@ -339,10 +339,10 @@ double inner_project_tri_cov_gk_kk(double a, void *params)
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
       if (cmb.fsky>fsky) {
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky, 4)*pow(fK,-4.); //super-sample covariance
       }
       else{
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky, 4)*pow(fK,-4.); //super-sample covariance
       }
    }
    res *= weights;
@@ -383,7 +383,7 @@ double inner_project_tri_cov_gk_ks(double a, void *params)
    weights = W_gal(a,ar[2])*pow(W_k(a,fK), 2)*W_kappa(a,fK,ar[3])*dchi_da(a);
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0, 3)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
    return res;
@@ -423,7 +423,7 @@ double inner_project_tri_cov_gk_ss(double a, void *params)
    weights = W_gal(a,ar[2])*W_k(a,fK)*W_kappa(a, fK, ar[3])*W_kappa(a, fK, ar[4])*dchi_da(a);
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0, 1)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
    return res;
@@ -468,10 +468,10 @@ double inner_project_tri_cov_gs_kk(double a,void *params)
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
       if (cmb.fsky>fsky) {
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky, 2)*pow(fK,-4.); //super-sample covariance
       }
       else{
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky, 2)*pow(fK,-4.); //super-sample covariance
       }
    }
    res *= weights;
@@ -515,7 +515,7 @@ double inner_project_tri_cov_gs_ks(double a,void *params)
    weights = W_gal(a,ar[2])*W_kappa(a,fK,ar[3])*W_k(a,fK)*W_kappa(a,fK,ar[4])*dchi_da(a);
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0, 1)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
    return res;
@@ -557,9 +557,9 @@ double inner_project_tri_cov_kk_kk(double a,void *params)
    if (weights>0.){
 // MANUWARNING: put an if to switch between low-z and high-z cov?
 //      if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
-//      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,cmb.fsky)*pow(fK,-4.); //SSC
+//      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,cmb.fsky, 5)*pow(fK,-4.); //SSC
       if (covparams.cng) {res = tri_1h_cov(k1, k2, a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);} // T1h only
-      res += delPlin_SSC(k1, a)*delPlin_SSC(k2, a)*survey_variance(a,cmb.fsky)*pow(fK,-4.); //SSC for Plin
+      res += delPlin_SSC(k1, a)*delPlin_SSC(k2, a)*survey_variance(a,cmb.fsky, 5)*pow(fK,-4.); //SSC for Plin
    }
    res *= weights;
    return res;
@@ -602,10 +602,10 @@ double inner_project_tri_cov_kk_ks(double a,void *params)
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
       if (cmb.fsky>fsky) {
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky, 4)*pow(fK,-4.); //super-sample covariance
       }
       else{
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky, 4)*pow(fK,-4.); //super-sample covariance
       }
    }
    res *= weights;
@@ -649,10 +649,10 @@ double inner_project_tri_cov_kk_ss(double a,void *params)
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(cmb.fsky*41253.0*survey.area_conversion_factor);}
       if (cmb.fsky>fsky) {
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*cross_survey_variance(a,fsky,cmb.fsky, 2)*pow(fK,-4.); //super-sample covariance
       }
       else{
-         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky)*pow(fK,-4.); //super-sample covariance
+         res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,fsky, 2)*pow(fK,-4.); //super-sample covariance
       }
    }
    res *= weights;
@@ -698,7 +698,7 @@ double inner_project_tri_cov_ks_ks(double a,void *params)
    weights = W_kappa(a,fK,ar[2])*W_k(a,fK)*W_kappa(a,fK,ar[3])*W_k(a,fK)*dchi_da(a);
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0, 3)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
    return res;
@@ -746,7 +746,7 @@ double inner_project_tri_cov_ks_ss(double a,void *params)
    weights = W_k(a,fK)*W_kappa(a,fK,ar[2])*W_kappa(a,fK,ar[3])*W_kappa(a,fK,ar[4])*dchi_da(a);
    if (weights >0.){
       if (covparams.cng) {res = tri_matter_cov(k1,k2,a)*pow(fK,-6.)/(survey.area*survey.area_conversion_factor);}
-      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0)*pow(fK,-4.); //super-sample covariance
+      res += delP_SSC(k1,a)*delP_SSC(k2,a)*survey_variance(a,survey.area/41253.0, 1)*pow(fK,-4.); //super-sample covariance
    }
    res *= weights;
    return res;

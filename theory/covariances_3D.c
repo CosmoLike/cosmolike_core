@@ -17,10 +17,10 @@ double tri_4h_cov(double k1, double k2, double a);
 double tri_matter_cov(double k1, double k2, double a); //4h+3h+2h+1h trispectrum terms in covariance configuration
 double tri_multih_cov(double k1, double k2, double a); //4h+3h+2h terms in covariance configuration
 /***** routines for survey variance ********/
-double survey_variance (double a, double fsky);
+double survey_variance (double a, double fsky, int col);
 double delP_SSC(double k, double a);
 
-double cross_survey_variance (double a, double fsky, double fsky2);
+double cross_survey_variance (double a, double fsky, double fsky2, int col);
 
 /* mode coupling functions */
 
@@ -231,22 +231,39 @@ double tri_3h_cov(double k1, double k2, double a){
   return 4.0*I1j(2,k1,k2,0,a)*I1j(1,k1,0,0,a)*I1j(1,k2,0,0,a)*b_lin_cov(k1,k2,a);
 }
 /********** survey variance ***************/
-double C_survey_window(int l){
-  static double *Cl = 0;
+/* For DES Y1 x Planck project
+    0 - DES Y1 - DES Y1
+    1 - DES Y1 - intersection
+    2 - DES Y1 - Planck
+    3 - intersection - intersection
+    4 - intersection - Planck
+    5 - Planck - Planck
+*/
+double C_survey_window(int l, int col){
+  static double **Cl = 0;
+  static int lbins = 0;
+  static int Ncols = 0;
   if (Cl ==0){
     FILE *F1;
     F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
     if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
       fclose(F1);
-      int lbins = line_count(covparams.C_FOOTPRINT_FILE);
-      Cl = create_double_vector(0,lbins-1);
+      lbins = line_count(covparams.C_FOOTPRINT_FILE);
+      Ncols = column_count(covparams.C_FOOTPRINT_FILE);// including ell
+      Cl = create_double_matrix(0,Ncols-2, 0,lbins-1);
       F1=fopen(covparams.C_FOOTPRINT_FILE,"r");
       for (int i = 0; i < lbins; i++){
         int tmp;
         double tmp2;
-        fscanf(F1,"%d %le\n",&tmp, &tmp2);
-        Cl[i] = tmp2;
-        Cl[i] /= Cl[0];
+        fscanf(F1, "%d", &tmp);
+        for(int j = 0; j < Ncols-1; j++){
+          fscanf(F1, "%le", &temp2);
+          Cl[j][i] = tmp2;
+          Cl[j][i] /= Cl[j][0];
+        }
+        //fscanf(F1,"%d %le\n",&tmp, &tmp2);
+        //Cl[i] = tmp2;
+        //Cl[i] /= Cl[0];
       }
       fclose(F1);
     }
@@ -255,12 +272,19 @@ double C_survey_window(int l){
       exit(1);
     }
   }
-  return Cl[l];
+  if(col<Ncols-1 && l<lbins){return Cl[col][l];}
+  else{
+    printf("covariances_3D.c:C_survey_window: l and col out of range!\n");
+    printf("l = %d should be in [0, %d)", l, lbins);
+    printf("col = %d should be in [0, %d)", col, Ncols-1);
+    exit(1);
+  }
 }
 double int_for_variance (double logk, void *params){
   double *ar = (double *) params;
   double k = exp(logk);
   double x = pow(4.0*ar[1],0.5)*k*chi(ar[0]); //theta_s*k*chi(a)
+  // https://math.stackexchange.com/questions/129131/connection-between-legendre-polynomial-and-bessel-function
   return k*k/constants.twopi*p_lin(k,ar[0])*pow(2.*gsl_sf_bessel_J1(x)/x,2.0);
 }
 
@@ -273,16 +297,16 @@ double int_for_cross_variance (double logk, void *params){
 }
 
 //curved sky, healpix window function
-double sum_variance_healpix(double a){
+double sum_variance_healpix(double a, int col){
   double res = 0.;
   double r = f_K(chi(a));
   for (int l = 0; l < 1000; l++){
-    res+= (2.*l+1.)/(r*r)*C_survey_window(l)*p_lin((l+0.5)/r,a)/(4.*M_PI);
+    res+= (2.*l+1.)/(r*r)*C_survey_window(l, col)*p_lin((l+0.5)/r,a)/(4.*M_PI);
   }
   return res;
 }
 
-double survey_variance (double a, double fsky){
+double survey_variance (double a, double fsky, int col){
   static cosmopara C;
   static double FSKY = -42.;
   
@@ -305,7 +329,7 @@ double survey_variance (double a, double fsky){
     if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
       fclose(F1);
       for (i=0; i<Ntable.N_a; i++, aa += da) {
-         table_SV[i]=sum_variance_healpix(aa);
+         table_SV[i]=sum_variance_healpix(aa, col);
       }
     }
     else{ //covparams.C_FOOTPRINT_FILE doesn't exist, use analytic window
@@ -314,12 +338,12 @@ double survey_variance (double a, double fsky){
         result = int_gsl_integrate_high_precision(int_for_variance,(void*)array,log(1.e-6),log(1.e+6),NULL,2000);
         table_SV[i]=result;
       }
-    }
+    //}
   }
   return interpol(table_SV, Ntable.N_a, amin, amax, da,a, 1.0,1.0 );
 }
 
-double cross_survey_variance (double a, double fsky, double fsky2){
+double cross_survey_variance (double a, double fsky, double fsky2, int col){
   static cosmopara C;
   static double FSKY = -42., FSKY2 = -42.;
   
@@ -339,15 +363,15 @@ double cross_survey_variance (double a, double fsky, double fsky2){
     aa= amin;
     array[1] = fsky;
     array[2] = fsky2;
-    // FILE *F1;
-    // F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
-    // if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
-    //   fclose(F1);
-    //   for (i=0; i<Ntable.N_a; i++, aa += da) {
-    //      table_SV[i]=sum_variance_healpix(aa);
-    //   }
-    // }
-    // else{ //covparams.C_FOOTPRINT_FILE doesn't exist, use analytic window
+    FILE *F1;
+    F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
+    if (F1 != NULL) { //covparams.C_FOOTPRINT_FILE exists, use healpix C_mask(l) to compute mask correlation function
+      fclose(F1);
+      for (i=0; i<Ntable.N_a; i++, aa += da) {
+         table_SV[i]=sum_variance_healpix(aa, col);
+      }
+    }
+    else{ //covparams.C_FOOTPRINT_FILE doesn't exist, use analytic window
     for (i=0; i<Ntable.N_a; i++, aa += da) {
       array[0] = aa;
       result = int_gsl_integrate_high_precision(int_for_cross_variance,(void*)array,log(1.e-6),log(1.e+6),NULL,2000);
