@@ -338,7 +338,7 @@ double survey_variance (double a, double fsky, int col){
         result = int_gsl_integrate_high_precision(int_for_variance,(void*)array,log(1.e-6),log(1.e+6),NULL,2000);
         table_SV[i]=result;
       }
-    //}
+    }
   }
   return interpol(table_SV, Ntable.N_a, amin, amax, da,a, 1.0,1.0 );
 }
