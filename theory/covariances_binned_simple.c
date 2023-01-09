@@ -1641,18 +1641,20 @@ double w_mask(double theta_min, int col)
     exit(1);
   }
   if (w_vec ==0){
-    //w_vec = create_double_vector(0,like.Ntheta-1);
     NTHETA = like.Ntheta;
     FILE *F1;
     F1 = fopen(covparams.C_FOOTPRINT_FILE,"r");
     if (F1 != NULL) {
       // covparams.C_FOOTPRINT_FILE exists
-      // # l [int], Cl [double]
-      // Then w_mask(theta) = Cl * (2l+1)/4pi * P_l(cos(theta)) 
-      // use healpy C_mask(l) to compute mask power spectrum
+      // # l [int], Cls [double *]
+      // Then w_mask(theta) = Cl[Icol] * (2l+1)/4pi * P_l(cos(theta)) 
+      // Cls has multiple columns showing different auto- and cross-
+	  // power spectrum among several survey footprints. Users have
+      // to manually set which column to use during calculation.
       fclose(F1);
       int lbins = line_count(covparams.C_FOOTPRINT_FILE);
       Ncols = column_count(covparams.C_FOOTPRINT_FILE);
+      printf("MANUAL WARNING: the C_FOOTPRINT_FILE has multiple Cls columns, users have to manually specify which column to use in the source code!\n");
       printf("Reading file: %d columns, %d lines.\n", Ncols, lbins);
       double **Cl;
       w_vec = create_double_matrix(0, Ncols-2, 0, like.Ntheta-1);
@@ -1661,28 +1663,25 @@ double w_mask(double theta_min, int col)
       for (int i = 0; i < lbins; i++){
         int tmp;
         fscanf(F1, "%d", &tmp);
-        printf("ell = %d; Cls = (", tmp);
         double tmp2;
         for(int j=0; j<Ncols-1; j++){
           fscanf(F1, "%le", &tmp2);
           Cl[j][i] = tmp2;
-          printf(" %le,", tmp2);
         }
-        printf(")\n");
-        //fscanf(F1,"%d %le\n",&tmp, &tmp2);
-        //Cl[i] = tmp2;
       }
       fclose(F1);
 
       printf("\nTabulating w_mask(theta) from mask power spectrum %s\n",covparams.C_FOOTPRINT_FILE);
-      for(int j=0; j<Ncols-1; j++){
-        for (i = 0; i < NTHETA; i++){
+      for (i = 0; i < NTHETA; i++){
+        printf("w_mask[%d]:", i);
+        for (int j=0; j<Ncols-1; j++){
           w_vec[j][i] =0.;
           for (l = 0; l < lbins; l++){
             w_vec[j][i]+=Cl[j][l]*(2.*l+1)/(4.*M_PI)*gsl_sf_legendre_Pl(l,cos(like.theta[i]));
           }
-          printf("w_mask[%d][%d] = %le\n",j,i, w_vec[j][i]);
+          printf(" %le", w_vec[j][i]);
         }
+        printf("\n");
       }
       free_double_matrix(Cl,0,Ncols-1,0,lbins-1);
     }
@@ -1693,7 +1692,7 @@ double w_mask(double theta_min, int col)
       printf("covparams.C_FOOTPRINT_FILE = %s not found\nNo boundary effect correction applied\n",covparams.C_FOOTPRINT_FILE);
       for (i = 0; i<NTHETA; i ++){
         w_vec[0][i] = 1.0;
-        printf("w_mask[0][%d] = %e\n",i, w_vec[0][i]);
+        printf("w_mask[%d]: %e\n",i, w_vec[0][i]);
       }      
     }
   }
