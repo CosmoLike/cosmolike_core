@@ -238,7 +238,7 @@ double inner_project_tri_cov_AB_CD(double a,void *params)
   }
   fsky_larger = (fsky1>fsky2 ? fsky1 : fsky2);
 
-  if(weights >0.){
+  if(weights != 0.){
     if (covparams.cng) {
       if(FLAG_y==1){tri = tri_1h_y_cov(k[0],k[1],a,ni);}
       else{tri = tri_matter_cov(k[0],k[1],a);}

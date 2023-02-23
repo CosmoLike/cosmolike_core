@@ -112,6 +112,26 @@ double sigma2(double m)
   return exp(interpol(table_S2, Ntable.N_S2, logmmin, logmmax, dm,log(m), 1.0,1.0 ));
 }
 
+double dlogsigma_dlogR(double m)
+{
+	double dlogm = 0.0001;
+	double logm = log(m);
+	double m1 = exp(logm + dlogm);
+	double dlogsigma2 = log(sigma2(m1) / sigma2(m));
+	double dlogR = log(radius(m1) / radius(m));
+	return 0.5 * dlogsigma2 / dlogR;
+}
+double dlogPlin_dlogk(double m)
+{
+	double k0 = 0.69* 2*M_PI / radius(m);
+	double dlogk = 0.001;
+	double k1 = exp(log(k0) + dlogk);
+	double dlogPlin = log(p_lin(k1,1.) / p_lin(k0,1.));
+	return dlogPlin / dlogk;
+}
+
+
+
 double nu(double m, double a){
   static int init = 1;
   if ((cosmology.Omega_nu > 0 || cosmology.M_nu >0) && init){
@@ -303,6 +323,10 @@ double conc_y(double m, double a) // for y field, with a separate set of gas par
   return result;
 }
 
+// double conc_Ludlow16(double m, double a)
+// {
+	
+// }
 /***********  FT of NFW Profile **************/
 
 double int_rho_nfw(double r, void *params){//Fourier kernel * NFW profile, integrand for u_nfw 
