@@ -247,7 +247,7 @@ double w_gamma_t_TATT(int nt, int ni, int nj){
 			for (i = 0; i < NTHETA; i++){
 												FILE *fp_lin;
 					char temp_name[300];
-										sprintf(temp_name, "./Cls_b_ggl_%d_%d", nz, i);
+										//sprintf(temp_name, "./Cls_b_ggl_%d_%d", nz, i);
 					//fp_lin = fopen(temp_name, "w+");
 
 				w_vec[nz*like.Ntheta+i] =0;
