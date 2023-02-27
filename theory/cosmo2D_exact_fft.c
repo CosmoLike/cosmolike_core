@@ -20,7 +20,7 @@ double W_HOD(double a, double nz); //galaxy weigth without bias factor (for proj
 
 double C_cl_tomo(double l, int ni, int nj);  //galaxy clustering power spectrum of galaxies in bins ni, nj
 double C_cl_tomo_nointerp(double l, int ni, int nj);
-//double C_cl_HOD(double l, int ni);  //galaxy clustering power spectrum of galaxies in bin ni, using HOD model
+double C_cl_HOD(double l, int ni);  //galaxy clustering power spectrum of galaxies in bin ni, using HOD model
 
 //double C_gl_tomo(double l, int ni, int nj);  //G-G lensing power spectrum, lens bin ni, source bin nj
 //double C_gl_tomo_nointerp(double l, int ni, int nj);
@@ -890,6 +890,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 					}
 
 				}
+				//if (ni==3) printf("%f P %f %f\n", k1_cH0, Fk1_ar[i][j]*sqrt(factor)* dlnk * 2./M_PI*k1_cH0*k1_cH0*k1_cH0, Fk1_ar[i][j]*sqrt(plin_cluster)* dlnk * 2./M_PI*k1_cH0*k1_cH0*k1_cH0);
 
 				double fk1;
 				double fk2;
@@ -904,6 +905,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 					cl_temp += fk1*fk2*k1_cH0*k1_cH0*k1_cH0;
 
 				}
+				//if (ni==2 && i==1){printf("\[%f,%.14f,%.14f\],\n", k1_ar[i][j], fk1*fk1, k1_cH0*k1_cH0*k1_cH0 * cluster_factor*cluster_factor);}
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
 
@@ -927,11 +929,11 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
  
 	}
 	L++;
-	printf("switching to Limber calculation at l = %d %d\n",L, ni);
-	// for (l = 1; l < 50; l++){
+	//printf("switching to Limber calculation at l = %d %d\n",L, ni);
+	// for (l = 1; l < LMAX; l++){
 	// 	Cl[l]=C_cl_tomo_nointerp((double)l,ni,nj);
 	// 	// fprintf(OUT, "%d %lg\n", l, Cl[l]);
-	// }
+	//}
 	for (l = L; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 		// fprintf(OUT, "%d %lg\n", l, Cl[l]);
@@ -951,6 +953,66 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	*/
 
 }
+
+double w_tomo_nonLimber_fourier(int nl, int ni, int nj){
+	// if(1) return 0.;
+	static int LMAX = 100000;
+	static int NELL = 0;
+	static double *Cl =0;
+	static double *w_vec =0;
+	static cosmopara C;
+	static nuisancepara N;
+	static galpara G;
+	int i,l,nz;
+	if (like.Ncl ==0){
+		printf("cosmo2D_real.c:w_tomo_exact: like.Ncl not initialized\nEXIT\n"); exit(1);
+	}
+	if (ni != nj){
+		printf("cosmo2D_real.c:w_tomo_exact: ni != nj tomography not supported\nEXIT\n"); exit(1);    
+	}
+	if (Cl ==0){
+		Cl = create_double_vector(0,LMAX-1);
+		w_vec = create_double_vector(0,tomo.clustering_Nbin*like.Ncl-1);
+		NELL = like.Ncl;
+		}
+		if (recompute_clustering(C,G,N,ni,nj)){
+		zmean(0,true);
+		//required fractional accuracy in C(l)
+		double tolerance= 0.01;
+		//dev will be the actual difference between exact and Limber calcuation
+		double dev;
+
+		for (nz = 0; nz <tomo.clustering_Nbin; nz ++){
+			int L = 0;
+			// initialize to large value in order to start while loop
+			dev=10.*tolerance;
+			/*
+			for (l = 1; l < LMAX; l++){
+				Cl[l]=C_cl_tomo((double)l,nz,nz);
+				// fprintf(OUT, "%d %lg\n", l, Cl[l]);
+			}
+			*/
+			C_cl_mixed(L, LMAX, nz,nz, Cl, dev, tolerance);
+			for (i = 0; i < NELL; i++){
+				w_vec[nz*like.Ncl+i] =Cl[i];
+			}
+		}
+
+		update_cosmopara(&C);
+		update_galpara(&G);
+		update_nuisance(&N);
+	}
+	return w_vec[ni*like.Ncl+nl];  
+}
+
+
+
+
+
+
+
+
+
 
 double w_tomo_nonLimber(int nt, int ni, int nj){
 	// if(1) return 0.;
@@ -1034,7 +1096,7 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 				w_vec[nz*like.Ntheta+i] =0;
 					//FILE *fp_lin;
 					//char temp_name[200];
-					//sprintf(temp_name, "./Cls_%d_%.1f_%d_%d_%.5f", cosmology.N_ncdm, (gbias.neutrino_induced_sdb), nz, i, cosmology.Omega_nu*cosmology.h0*cosmology.h0);
+					//sprintf(temp_name, "./cls/Cls_new_neff_meff_%d_%.1f_%.1f_%d_%d_%.5f", cosmology.N_ncdm, (gbias.neutrino_induced_sdb), (gbias.cluster_tracer), nz, i, cosmology.Omega_nu*cosmology.h0*cosmology.h0);
 					//fp_lin = fopen(temp_name, "w+");
 				for (l = 1; l < LMAX; l++){
 					w_vec[nz*like.Ntheta+i]+=Pl[i][l]*Cl[l];

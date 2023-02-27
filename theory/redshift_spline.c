@@ -106,12 +106,12 @@ int test_kmax(double l, int zl){ //test whether the (l,zl) bin is in the linear 
 }
 
 int test_zoverlap(int zl, int zs){ //test whether source bin zs is behind lens bin zl
-  // if (tomo.clustering_zmin[zl] >= tomo.shear_zmax[zs]) {return 0;}
+  //if (tomo.clustering_zmin[zl] >= tomo.shear_zmax[zs]) {return 0;}
+  if (zl==zs){return 0;}
   if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}
   if (redshift.shear_photoz < 4 && tomo.clustering_zmax[zl] <= tomo.shear_zmin[zs]){return 1;}
   if (redshift.shear_photoz == 4 && (redshift.clustering_photoz != 4 && redshift.clustering_photoz != 5) && tomo.clustering_zmax[zl] < zmean_source(zs)){return 1;}
-  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5) && zmean(zl, false)+0.1 < zmean_source(zs)){return 1;}
-
+  if (redshift.shear_photoz == 4 && (redshift.clustering_photoz == 4 || redshift.clustering_photoz == 5) && zmean(zl, false)+0.4 < zmean_source(zs)){return 1;}
   return 0;
 }
 int test_zoverlap_cov(int zl, int zs){ //test whether source bin zs is behind lens bin zl
@@ -589,8 +589,8 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
     dz = (z_v[i-1]-z_v[0])/(1.*i-1.);
     zhisto_max=z_v[i-1]+dz;
     zhisto_min=z_v[0];
-    // redshift.clustering_zdistrpar_zmin = zhisto_min;
-    // redshift.clustering_zdistrpar_zmax = zhisto_max;
+    redshift.clustering_zdistrpar_zmin = zhisto_min;
+    redshift.clustering_zdistrpar_zmax = zhisto_max;
     free_double_vector(z_v,0,zbins-1);
     if (zhisto_max < tomo.clustering_zmax[tomo.clustering_Nbin-1] || zhisto_min > tomo.clustering_zmin[0]){
       printf("Error in redshift_spline.c:pf_histo.c: %s parameters incompatible with tomo.clustering bin choice\nEXIT!\n",redshift.clustering_REDSHIFT_FILE);
@@ -679,9 +679,10 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     update_nuisance(&N);
     if (table == 0){
       zbins = line_count(redshift.clustering_REDSHIFT_FILE);
-      if ((redshift.clustering_photoz !=4 && redshift.clustering_photoz != 5) && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model
+      if ((redshift.clustering_photoz !=4 && redshift.clustering_photoz != 5) && redshift.clustering_photoz !=0){pf_histo(0.5,NULL);}//upsample if convolving with analytic photo-z model
       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
+
       for (int i = 0; i < tomo.clustering_Nbin+1; i++){
         photoz_splines[i] = gsl_spline_alloc(Z_SPLINE_TYPE, zbins);
         photoz_accel[i] = gsl_interp_accel_alloc();
@@ -700,14 +701,39 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
         redshift.clustering_zdistrpar_zmin = fmax(z_v[0],1.e-5);
         redshift.clustering_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(zbins-1.);
       }
-    }
-    zhisto_max = redshift.clustering_zdistrpar_zmax;
-    zhisto_min = redshift.clustering_zdistrpar_zmin;
-    da = (zhisto_max-zhisto_min)/(1.0*zbins);
-    for (int i = 0;i < zbins; i++){
-      z_v[i] = zhisto_min+(i+0.5)*da;
-    }
+      if (redshift.clustering_photoz==9){
+            FILE *ein;
+        double space;
+        int i,k,nz, N = tomo.clustering_Nbin;
+        if (redshift.clustering_photoz ==4) {N = tomo.clustering_Nbin;}
+        nz = line_count(redshift.clustering_REDSHIFT_FILE);
+        double* z_v_temp=create_double_vector(0, nz-1);
+        ein=fopen(redshift.clustering_REDSHIFT_FILE,"r");
+        for (i=0;i<nz;i++){
+          fscanf(ein, "%le", &z_v_temp[i]);
+          printf("%f\n", z_v_temp[i]);
+          if (i > 0 && z_v_temp[i] < z_v_temp[i-1]){break;}
+          for (k = 0; k < 3; k++){fscanf(ein,"%le",&space);}
+        }
+        fclose(ein);
+        redshift.clustering_zdistrpar_zmin = fmax(z_v_temp[0],1.e-5);
+        redshift.clustering_zdistrpar_zmax = z_v_temp[i-1]+(z_v_temp[i-1]-z_v_temp[0])/(1.*i-1.);   
+        printf("%f %f\n", redshift.clustering_zdistrpar_zmin, redshift.clustering_zdistrpar_zmax);
+        zhisto_max = redshift.clustering_zdistrpar_zmax;
+          zhisto_min = redshift.clustering_zdistrpar_zmin;
+          da = (zhisto_max-zhisto_min)/(1.0*zbins);
+                //z_v=create_double_vector(0, zbins-1);
 
+          }
+    
+      zhisto_max = redshift.clustering_zdistrpar_zmax;
+          zhisto_min = redshift.clustering_zdistrpar_zmin;
+          da = (zhisto_max-zhisto_min)/(1.0*zbins);
+          for (int i = 0;i < zbins; i++){
+            z_v[i] = zhisto_min+(i+0.5)*da;
+          
+          }
+    }
     double array[4], NORM[11],norm,x1,x2,eta,outfrac,zi;
     //the outlier fraction (outfrac) should be specified externally. This is a temporary hack.
     int i,k;
@@ -815,10 +841,12 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
       table[0][k] = 0; 
       for (i = 0; i <tomo.clustering_Nbin; i++){table[0][k]+= table[i+1][k]*NORM[i]/norm;}
     }
+
       for (i = -1; i < tomo.clustering_Nbin; i++){
-      //for(k = 0; k<zbins; k++){printf("%d %d %e %e\n",i,k,z_v[k],table[i+1][k]);}
-      gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);
-    } 
+        //for(k = 0; k<zbins; k++){printf("%d %d %e %e\n",i,k,z_v[k],table[i+1][k]);}
+        gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);
+      
+    }
  
   }
   if (j >= tomo.clustering_Nbin){

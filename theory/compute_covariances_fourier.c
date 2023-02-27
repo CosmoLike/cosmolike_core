@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_sf_erf.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_sf_gamma.h>
@@ -18,25 +19,39 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sf_expint.h>
 #include <gsl/gsl_deriv.h>
+#include <gsl/gsl_interp2d.h>
+#include <gsl/gsl_spline2d.h>
+
+#include <fftw3.h>
+
+#include "../cfftlog/cfftlog.h"
+#include "../cfftlog/utils.h"
+#include "../cfastpt/cfastpt.h"
+#include "../cfastpt/utils.h"
+
 
 #include "basics.c"
 #include "structs.c"
 #include "parameters.c"
-#include "../emu13/emu.c"
+#include "../emu17/P_cb/emu.c"
 #include "recompute.c"
 #include "cosmo3D.c"
-#include "redshift.c"
+#include "redshift_spline.c"
 #include "halo.c"
 #include "HOD.c"
+#include "pt_cfastpt.c"
 #include "cosmo2D_fourier.c"
 #include "IA.c"
 #include "cluster.c"
 #include "BAO.c"
-#include "external_prior.c"
+//#include "external_prior.c"
 #include "covariances_3D.c"
 #include "covariances_fourier.c"
 #include "covariances_cluster.c"
-#include "init.c"
+#include "../../des_y3/init_y3_fourier.c"
+//#include "init.c"
+#include "../cfftlog/utils_complex.h"
+#include "../cfastpt/utils_complex.h"
 
 void run_cov_N_N (char *OUTFILE, char *PATH, int nzc1, int nzc2,int start);
 void run_cov_cgl_N (char *OUTFILE, char *PATH, double *ell_Cluster, double *dell_Cluster,int N1, int nzc2, int start);
@@ -523,25 +538,76 @@ void run_cov_shear_shear(char *OUTFILE, char *PATH, double *ell, double *dell,in
 int main(int argc, char** argv)
 {
   int i,l,m,n,o,s,p,nl1;
-  int hit=atoi(argv[1]);
+  int hit=1;//atoi(argv[1]);
   char OUTFILE[400],PATH[400];
-  
+    nuisance.A_ia = 0.7;
+  //nuisance.A2_ia = -1.36;
+  //nuisance.b_ta_z[0] = 1.0;
+
+  nuisance.eta_ia = -1.7;
+  double b1[10]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}, b2[10] ={0.0,0.0,0.0,0.0,0.,0.,0.,0.,0.,0.},b_mag[10] ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}, stretch[10]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  b1[0] = 1.7;
+  b1[1] = 1.7;
+  b1[2] = 1.7;
+  b1[3] = 2.0;
+  b1[4] = 2.0;
+  survey.area   = 12300.0;
+  survey.n_gal   = 10.7;
+  survey.sigma_e   = 0.26;  
+  survey.m_lim=24.1;
+  survey.n_lens=13.1;
   //RUN MODE setup
-  init_cosmo();
-  init_binning(10.);
-  init_survey("Euclid");
-  init_galaxies("../zdistris/zdistribution_Euclid","../zdistris/zdistribution_const_comoving", "none", "gaussian", "redmagic");
-  init_clusters();
-  init_IA("none", "GAMA");
+  double mean_m[10]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+  double sigma_m[10]={0.005,0.005,0.005,0.005,0.005,0.0,0.0,0.0,0.0,0.0};
+  double bias_photoz_s[10]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+  double sigma_b_photoz_s[10]={0.05,0.05,0.05,0.05,0.05,0.0,0.0,0.0,0.0,0.0};
+  double bias_photoz_l[10]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+  double sigma_b_photoz_l[10]={0.03,0.03,0.03,0.03,0.03,0.0,0.0,0.0,0.0,0.0};
+  double mean_stretch[10]={1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
+  double sigma_stretch[10]={0.03,0.03,0.03,0.03,0.003,0.0,0.0,0.0,0.0,0.0};
   
+  double pm[10]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+//set_stretch_priors_mpp(mean_stretch, sigma_stretch);
+
+  double A_1[10]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}, A_2[10] ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},b_ta[10] ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  A_1[0]= nuisance.A_ia; A_1[1] = nuisance.eta_ia;
+  A_2[0]= nuisance.A2_ia; A_2[1] = nuisance.eta_ia_tt;
+  b_ta[0] = nuisance.b_ta_z[0];
+
+  init_IA_mpp(6);
+  init_cosmo_runmode("CLASS");
+  init_survey_mpp("LSST Y1", 12300.0, 0.26);
+  
+  init_source_sample_mpp("cov_LSSTY1/source_LSSTY1.nz",5);
+  init_lens_sample_mpp("cov_LSSTY1/lens_LSSTY1.nz",5,mean_stretch, bias_photoz_l, b1,b2,10.0, 0, 1);
+  //init_source_sample_mpp("../DESC_SRD/zdistris/zdistri_model_z0=1.300000e-01_beta=7.800000e-01_Y1_source",5);
+  //init_lens_sample_mpp("../DESC_SRD/zdistris/zdistri_model_z0=2.600000e-01_beta=9.400000e-01_Y1_lens",5,stretch, b_mag, b1,b2,10.0, 0.0, 1.0);
+
+  init_binning_fourier_mpp(20,20,15000,15000, 0.0001);
+  init_probes_fourier_mpp("3x2pt");
+  tomo.n_source[0] = survey.n_gal;
+  tomo.n_source[1] = survey.n_gal;
+  tomo.n_source[2] = survey.n_gal;
+  tomo.n_source[3] = survey.n_gal;
+  tomo.n_source[4] = survey.n_gal;
+
+  tomo.n_lens[0] = survey.n_lens;
+  tomo.n_lens[1] = survey.n_lens;
+  tomo.n_lens[2] = survey.n_lens;
+  tomo.n_lens[3] = survey.n_lens;
+  tomo.n_lens[4] = survey.n_lens;
+
+  //init_binning_fourier_mpp(20,20,15000,15000, 0.00001);
+  //init_galaxies("../zdistris/zdistribution_Euclid","../zdistris/zdistribution_const_comoving", "none", "gaussian", "redmagic");
+  //init_clusters();
+
   //init_probes("all_2pt");
   //sprintf(PATH,"/home/teifler/Dropbox/cosmolike/top-level/WFIRST_SIT/covparallel/");  
   
-  survey.n_gal=13.0;  
-  survey.area=18000.0;  
-  sprintf(PATH,"/aurora_nobackup/sunglass/teifler/covparallel/LSST_Y1_%le_%le_Rmin_10",survey.n_gal,survey.area);
+
+  sprintf(PATH,"/home/paul/des_y3/cov_LSSTY1/nz/");
+  //printf("HIHIHIHIHIHIHIH\n");
   int k;
-  
 
   //set l-bins for shear, ggl, clustering
   double logdl=(log(like.lmax)-log(like.lmin))/like.Ncl;
@@ -563,35 +629,44 @@ int main(int argc, char** argv)
   }
 
   k=1;
+/*
   sprintf(OUTFILE,"%s_ssss_cov_Ncl%d_Ntomo%d",survey.name,like.Ncl,tomo.shear_Nbin);
   for (l=0;l<tomo.shear_Npowerspectra; l++){
     for (m=l;m<tomo.shear_Npowerspectra; m++){
-      if(k==hit) run_cov_shear_shear(OUTFILE,PATH,ell,dell,l,m,k);
+      //if(k==hit) 
+      run_cov_shear_shear(OUTFILE,PATH,ell,dell,l,m,k);
       k=k+1;
-      //printf("%d\n",k);
+      printf("%d\n",k);
     }
   }
 
+//k=1;
   sprintf(OUTFILE,"%s_lsls_cov_Ncl%d_Ntomo%d",survey.name,like.Ncl,tomo.shear_Nbin);
   for (l=0;l<tomo.ggl_Npowerspectra; l++){
     for (m=l;m<tomo.ggl_Npowerspectra; m++){
-      if(k==hit) run_cov_ggl(OUTFILE,PATH,ell,dell,l,m,k);
+      //if(k==hit) 
+      run_cov_ggl(OUTFILE,PATH,ell,dell,l,m,k);
      //printf("%d\n",k);
       k=k+1;
     }
   }
+    
+  //k=1;
   sprintf(OUTFILE,"%s_llll_cov_Ncl%d_Ntomo%d",survey.name,like.Ncl,tomo.shear_Nbin);
   for (l=0;l<tomo.clustering_Npowerspectra; l++){ //auto bins only for now!
     for (m=l;m<tomo.clustering_Npowerspectra; m++){
-      if(k==hit) run_cov_clustering(OUTFILE,PATH,ell,dell,l,m,k);
+      //if(k==hit) 
+      run_cov_clustering(OUTFILE,PATH,ell,dell,l,m,k);
       k=k+1;
-      //printf("%d %d %d\n",l,m,k);
+      printf("%d %d %d\n",l,m,k);
     }
   }
+
   sprintf(OUTFILE,"%s_llss_cov_Ncl%d_Ntomo%d",survey.name,like.Ncl,tomo.shear_Nbin);
   for (l=0;l<tomo.clustering_Npowerspectra; l++){
     for (m=0;m<tomo.shear_Npowerspectra; m++){
-      if(k==hit) run_cov_clustering_shear(OUTFILE,PATH,ell,dell,l,m,k);
+      //if(k==hit) 
+      run_cov_clustering_shear(OUTFILE,PATH,ell,dell,l,m,k);
       k=k+1;
       //printf("%d\n",k);
     }
@@ -599,7 +674,8 @@ int main(int argc, char** argv)
   sprintf(OUTFILE,"%s_llls_cov_Ncl%d_Ntomo%d",survey.name,like.Ncl,tomo.shear_Nbin);
   for (l=0;l<tomo.clustering_Npowerspectra; l++){
     for (m=0;m<tomo.ggl_Npowerspectra; m++){
-      if(k==hit) run_cov_clustering_ggl(OUTFILE,PATH,ell,dell,l,m,k);
+      //if(k==hit) 
+      run_cov_clustering_ggl(OUTFILE,PATH,ell,dell,l,m,k);
       k=k+1;
       //printf("%d\n",k);
     }
@@ -607,12 +683,15 @@ int main(int argc, char** argv)
   sprintf(OUTFILE,"%s_lsss_cov_Ncl%d_Ntomo%d",survey.name,like.Ncl,tomo.shear_Nbin);
   for (l=0;l<tomo.ggl_Npowerspectra; l++){
     for (m=0;m<tomo.shear_Npowerspectra; m++){
-      if(k==hit) run_cov_ggl_shear(OUTFILE,PATH,ell,dell,l,m,k);
+      //if(k==hit) 
+      run_cov_ggl_shear(OUTFILE,PATH,ell,dell,l,m,k);
       k=k+1;
       //printf("%d\n",k);
     }
   }
 
+
+*/
 // /********** cluster covariance ************/
 //   sprintf(OUTFILE,"%s_nn_cov_Ncl%d_Ntomo%d",survey.name,like.Ncl,tomo.shear_Nbin);
 //   for (l=0;l<tomo.cluster_Nbin; l++){

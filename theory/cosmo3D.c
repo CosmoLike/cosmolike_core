@@ -561,6 +561,43 @@ double get_class_s8(struct file_content *fc, int *status){
     return sigma8;
   }
 
+ double get_class_s8_cdm(struct file_content *fc, int *status){
+//structures for class test run
+    struct background ba;       // for cosmological background
+    struct thermodynamics th;           // for thermodynamics
+    struct perturbations pt;         // for source functions
+    struct transfer tr;        // for transfer functions
+    struct primordial pm;       // for primordial spectra
+    struct harmonic hr;          // for output spectra
+    struct fourier fo;        // for non-linear spectra
+    struct lensing le;
+    struct distortions sd;
+
+  //temporarily overwrite P_k_max_1/Mpc to speed up sigma_8 calculation
+    double k_max_old = 0.;
+    int position_kmax =2;
+    double A_s_guess;
+    strcpy(fc->name[1],"non linear");
+    strcpy(fc->value[1],"none");
+    if (strcmp(fc->name[position_kmax],"P_k_max_1/Mpc")){
+      k_max_old = strtof(fc->value[position_kmax],NULL);
+      sprintf(fc->value[position_kmax],"%e",10.);
+    }
+    *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&sd);
+    double sigma8 = fo.sigma8[fo.index_pk_cluster];
+    if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&sd);
+    if (k_max_old >0){
+      sprintf(fc->value[position_kmax],"%e",k_max_old);
+    }
+    //if (strcmp(__VERSION__, "v2.9.2")>=0) return  *fo.sigma8;
+    return sigma8;
+  }
+
+
+
+
+
+
   double get_class_As(struct file_content *fc, int position_As,double sigma8, int *status){
 //structures for class test run
     struct background ba;       // for cosmological background
@@ -680,7 +717,6 @@ double get_class_s8(struct file_content *fc, int *status){
       //TODO implement different hierarchies
       if (cosmology.M_nu>0. || cosmology.Omega_nu>0.){ 
               strcpy(fc->name[16],"N_ur");
-      //sprintf(fc->value[16],"%e",cosmology.N_eff);
         
         double ncdm_mass_or_omega;
         if (cosmology.M_nu>0.){ ncdm_mass_or_omega = cosmology.M_nu; strcpy(fc->name[15],"m_ncdm");}
@@ -691,6 +727,8 @@ double get_class_s8(struct file_content *fc, int *status){
         //i.e. 2 massless and 1 massive active neutrinos at 0.06eV
         //N_ncdm would be redefined to be 2, as there is an active and sterile massive ncdm component
         if (cosmology.meff>0){
+                sprintf(fc->value[16],"%e",cosmology.N_eff);
+
           double sterile_part;
           if (cosmology.M_nu>0) {
             sterile_part = cosmology.meff;
@@ -700,12 +738,12 @@ double get_class_s8(struct file_content *fc, int *status){
             sterile_part = cosmology.meff/94.1/cosmology.h0/cosmology.h0;
             sprintf(fc->value[15],"%e,%e,%e,%e",(ncdm_mass_or_omega-sterile_part)/3.0, (ncdm_mass_or_omega-sterile_part)/3.0, (ncdm_mass_or_omega-sterile_part)/3.0, sterile_part);
           }
-          cosmology.N_ncdm = 4;
+          cosmology.N_ncdm = 2;
           strcpy(fc->name[14],"N_ncdm");
           sprintf(fc->value[14],"%d",cosmology.N_ncdm);
           //sprintf(fc->value[16],"%e",0.00441);
           strcpy(fc->name[17],"T_ncdm");
-          sprintf(fc->value[17],"%e, %e, %e, %e", Tncdm_standard, Tncdm_standard, Tncdm_standard, Tncdm_standard);
+          sprintf(fc->value[17]," %e, %e", Tncdm_standard, Tncdm_standard);
 
           
             //printf("The two components are  %f %f \n", ncdm_mass_or_omega, sterile_part);
@@ -991,6 +1029,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
    if (cosmology.A_s){
     norm = 3.*log(cosmology.h0/cosmology.coverH0);
     cosmology.sigma_8 =  fo.sigma8[fo.index_pk_total];
+    cosmology.sigma_8_cdm = fo.sigma8[fo.index_pk_cluster];
         //printf("sigma 8's %f %f %f\n", *fo.sigma8, fo.sigma8[fo.index_pk_total], fo.sigma8[fo.index_pk_cluster]);
 
      
@@ -1000,7 +1039,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
   }
 //    printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/ *fo.sigma8,2.));
   if (class_status ==0){
-  /*FILE *fp_lin;
+  FILE *fp_lin;
   FILE *fp_non;
   FILE *fp_lin_c;
   FILE *fp_non_c;
@@ -1011,7 +1050,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
       sprintf(file_ending, "_%d_Nncdm_%.5f_T_ncdm_%.4f_meff_%.2f.txt", cosmology.N_ncdm, 0.71611, cosmology.N_eff,cosmology.meff);
 
   }
-
+  /*
    char header[50];
    char temp_name[200];
    strcpy(temp_name,"");
@@ -1036,10 +1075,10 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
    fp_non_c = fopen(temp_name, "w+");
 
    printf("%s\n", file_ending);
-  
+  */
    //printf("%d %e %e, %d %e %e\n", Ntable.N_a, da, aa, Ntable.N_k_nlin, dk, klog);
    printf("norm %f\n", norm);
-    */
+    
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
@@ -1059,22 +1098,24 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
 
         //printf("%d %d\n", i, j);
         //printf("%f\n", table_P_NL_C[i][j]);
-        /*fprintf(fp_lin, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
+        /*
+        fprintf(fp_lin, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L[i][j]);
         fprintf(fp_non, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL[i][j]);
         fprintf(fp_lin_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_L_C[i][j]);
         fprintf(fp_non_c, "%.8lf %.8lf %.8lf\n", k_class, fmax(1./aa-1.,0.), table_P_NL_C[i][j]);
-        */
+        */        
 
 
       }
     }
   //printf("%d %d %f %f\n", Ntable.N_a-1, Ntable.N_k_nlin-1, table_P_L_C[Ntable.N_a-1][Ntable.N_k_nlin-1], table_P_NL_C[0][0]);
 
-
-   /*fclose(fp_lin);
+    /*
+   fclose(fp_lin);
    fclose(fp_non);
    fclose(fp_lin_c);
-   fclose(fp_non_c);*/
+   fclose(fp_non_c);
+   */
     free_class_structs(&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&sd);
   }
   update_cosmopara(&C);
