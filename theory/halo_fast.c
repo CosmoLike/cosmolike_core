@@ -13,6 +13,10 @@ double mass_norm(double a);
 double B1 (double m, double a);
 /* halo density profiles */
 double conc(double m, double a);//mass-concentration relation
+double conc_y(double m, double a);
+double conc_Ludlow16_fit(double m, double a);
+double conc_Ludlow16(double m, double a);
+
 double u_nfw_c(double c,double k, double m, double a); //analytic expression for Fourier transform of NFW density profile
 double u_nfw(double c,double k, double m, double a);   // Fourier transform of NFW density profile, truncated at r_Delta, through direct integration
 // use this routine in inner I[0-1]j and modify int_rho_nfw if to work with different halo profiles, e.g. to include adiabatic contraction, AGN feedback, etc.
@@ -300,6 +304,13 @@ double B1_normalized (double m,double a){ //divide by bias norm only in matter s
 /******** mass-concentration relation **********/
 double conc(double m, double a) // for matter
 {
+#ifdef LUDLOW16
+  return conc_Ludlow16(m, a);
+#endif
+#ifdef LUDLOW16_FIT
+  return conc_Ludlow16_fit(m, a);
+#endif
+
   double result;
   double M0=pow(10,nuisance.gas_lgM0);
   // result = 9.*pow(nu(m,a),-.29)*pow(growfac(a)/growfac(1.),1.15);// Bhattacharya et al. 2013, Delta = 200 rho_{mean} (Table 2)
@@ -323,10 +334,93 @@ double conc_y(double m, double a) // for y field, with a separate set of gas par
   return result;
 }
 
-// double conc_Ludlow16(double m, double a)
-// {
-	
-// }
+#ifdef LUDLOW16_FIT
+double conc_Ludlow16_fit(double m, double a)
+// Ludlow16 fit at Planck cosmology
+{
+  double c0, beta, gamma1, gamma2, nu0;
+  c0 = 3.395 * pow(a, 0.215);
+  beta = 0.307 * pow(a, -0.540);
+  gamma1 = 0.628 * pow(a, 0.047);
+  gamma2 = 0.317 * pow(a, 0.893);
+  double a2 = a*a;
+  nu0 = (4.135 - 0.564 / a - 0.210 / a2 + 0.0557 / (a2*a) - 0.00348 / (a2*a2)) * growfac(1.) / growfac(a);
+  double nu_nu0_ratio = nu(m,a) / nu0;
+  return c0 * pow(nu_nu0_ratio, -gamma1) * pow(1+ pow(nu_nu0_ratio, 1./beta), -beta*(gamma2-gamma1));
+}
+#endif
+
+
+#ifdef LUDLOW16
+double conc_Ludlow16(double m, double a)
+{
+	static double **table=0;
+  static int N_c = 30, N_a = 50;
+  static double c_min = 0.608, c_max = 50.; // the method produces cmin ~0.607
+  static double a_min, a_max = 0.999;
+  static double dc, da;
+  static double C_Ludlow = 650., f_Ludlow = 0.02;
+  double cc, aa;
+  double M2, c3;
+  double af, rho_2;
+  int i, j;
+  printf("here!\n");
+  if (table==0) {
+    table = create_double_matrix(0, N_c-1, 0, N_a-1);
+    a_min = limits.a_min_hm;
+    dc = (c_max-c_min) / (N_c - 1);
+    da = (a_max - a_min) / (N_a - 1);
+    printf("here!-\n");
+    for (i=0; i<N_c; i++) {
+      cc = c_min + i * dc;
+      M2 = (log(2) - 0.5) / (log(1.+cc) - cc / (1.+cc));
+      c3 = cc*cc*cc;
+
+      printf("here!--\n");
+      for (j=0; j<N_a; j++) {
+        aa = a_min + j * da;
+        printf("here!---\n");
+        rho_2 = delta_Delta(aa) * c3 * M2;
+        af = pow(cosmology.Omega_m / (rho_2 / C_Ludlow * (cosmology.Omega_m / (aa*aa*aa) + cosmology.Omega_v) - cosmology.Omega_v), 1./3. );
+        
+        printf("here!---- [aa,af,M2] = %le, %le, %le \n", aa,af,M2);
+        table[i][j] = delta_c(aa) * (1./growfac(af) - 1./growfac(aa)) / erfcinv(M2);
+        // af can go beyond 1, Unclear what should we do about it!!!
+        printf("here!------\n");
+      }
+    }
+  }
+
+  printf("here!!\n");
+  if (a < a_min) {return 0;}
+  if (a >= a_max) {a = a_max;}
+
+  int ia = floor((a - a_min) / da);
+  double frac_high = (a - (a_min + ia * da)) / da;
+  double table_interp[N_c];
+
+  if (ia == N_a-1) {
+    ia--;
+    frac_high = 0;
+  }
+
+  double LHS, sig2rf, sig2r;
+  sig2r = sigma2(m);
+  sig2rf = sigma2(f_Ludlow * m);
+  LHS = sqrt(2.* (sig2rf - sig2r));
+  printf("here!!!\n");
+  for (i=0; i<N_c; i++) {
+    table_interp[i] = table[i][ia] * (1-frac_high) + table[i][ia+1] * frac_high - LHS;
+  }
+  for (i=1; i<N_c; i++) {
+    if (table_interp[i] * table_interp[i-1] <= 0) break;
+  }
+  double frac_table_low;
+  frac_table_low = table_interp[i] / (table_interp[i] - table_interp[i-1]);
+  printf("here--\n");
+  return c_min + dc * ( (i-1) * frac_table_low + i * (1 - frac_table_low) );
+}
+#endif
 /***********  FT of NFW Profile **************/
 
 double int_rho_nfw(double r, void *params){//Fourier kernel * NFW profile, integrand for u_nfw 
