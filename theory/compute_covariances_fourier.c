@@ -558,13 +558,13 @@ int main(int argc, char** argv)
   survey.n_lens=13.1;
   //RUN MODE setup
   double mean_m[10]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-  double sigma_m[10]={0.005,0.005,0.005,0.005,0.005,0.0,0.0,0.0,0.0,0.0};
+  double sigma_m[10]={0.013,0.013,0.013,0.013,0.013,0.0,0.0,0.0,0.0,0.0};
   double bias_photoz_s[10]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-  double sigma_b_photoz_s[10]={0.05,0.05,0.05,0.05,0.05,0.0,0.0,0.0,0.0,0.0};
+  double sigma_b_photoz_s[10]={0.002,0.002,0.002,0.002,0.002,0.0,0.0,0.0,0.0,0.0};
   double bias_photoz_l[10]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-  double sigma_b_photoz_l[10]={0.03,0.03,0.03,0.03,0.03,0.0,0.0,0.0,0.0,0.0};
+  double sigma_b_photoz_l[10]={0.005,0.005,0.005,0.005,0.005,0.0,0.0,0.0,0.0,0.0};
   double mean_stretch[10]={1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
-  double sigma_stretch[10]={0.03,0.03,0.03,0.03,0.003,0.0,0.0,0.0,0.0,0.0};
+  double sigma_stretch[10]={0.1,0.1,0.1,0.1,0.1,0.0,0.0,0.0,0.0,0.0};
   
   double pm[10]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 //set_stretch_priors_mpp(mean_stretch, sigma_stretch);
@@ -605,7 +605,7 @@ int main(int argc, char** argv)
   //sprintf(PATH,"/home/teifler/Dropbox/cosmolike/top-level/WFIRST_SIT/covparallel/");  
   
 
-  sprintf(PATH,"/home/paul/des_y3/cov_LSSTY1/nz/");
+  sprintf(PATH,"/home/paul/des_y3/cov_LSSTY1/nz_SRD_ggl/");
   //printf("HIHIHIHIHIHIHIH\n");
   int k;
 

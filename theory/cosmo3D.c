@@ -1030,7 +1030,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
     norm = 3.*log(cosmology.h0/cosmology.coverH0);
     cosmology.sigma_8 =  fo.sigma8[fo.index_pk_total];
     cosmology.sigma_8_cdm = fo.sigma8[fo.index_pk_cluster];
-        //printf("sigma 8's %f %f %f\n", *fo.sigma8, fo.sigma8[fo.index_pk_total], fo.sigma8[fo.index_pk_cluster]);
+    //printf("sigma 8's %f %f %f %f\n", *fo.sigma8, fo.sigma8[fo.index_pk_total], fo.sigma8[fo.index_pk_cluster], fo.sigma8[fo.index_pk_total+2]);
 
      
   }
@@ -1077,7 +1077,7 @@ double p_class(double k_coverh0,double a, int NL, int CLUSTERING){
    printf("%s\n", file_ending);
   */
    //printf("%d %e %e, %d %e %e\n", Ntable.N_a, da, aa, Ntable.N_k_nlin, dk, klog);
-   printf("norm %f\n", norm);
+   //printf("norm %f\n", norm);
     
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       klog = logkmin;
