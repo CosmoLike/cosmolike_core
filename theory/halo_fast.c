@@ -1,5 +1,10 @@
 #ifndef __HALO_FAST__
 #define __HALO_FAST__
+
+#if defined(HMF_CASTRO_ROCKSTAR) || defined(HMF_CASTRO_AHF) || defined(HMF_CASTRO_SUBFIND) || defined(HMF_CASTRO_VELOCI)
+#define HMF_CASTRO
+#endif
+
 #include <time.h>
 /*relations for converting mass -> radius, using \Delta = 200 \rho_m for consistency with mass & bias function */
 double m_Delta(double r, double a);
@@ -116,25 +121,44 @@ double sigma2(double m)
   return exp(interpol(table_S2, Ntable.N_S2, logmmin, logmmax, dm,log(m), 1.0,1.0 ));
 }
 
-double dlogsigma_dlogR(double m)
+double m_fromsigma2(double s2) // m as a function of sigma2
 {
-	double dlogm = 0.0001;
-	double logm = log(m);
-	double m1 = exp(logm + dlogm);
-	double dlogsigma2 = log(sigma2(m1) / sigma2(m));
-	double dlogR = log(radius(m1) / radius(m));
-	return 0.5 * dlogsigma2 / dlogR;
+  double mmin = limits.M_min/2.;
+  double mmax = limits.M_max*2.;
+
+  double s2_left = sigma2(mmin);
+  double s2_right = sigma2(mmax);
+  // printf("m min max, : %le, %le, %le\n", mmin, mmax, sqrt(mmin * mmax));
+  // printf("s2 left right, target: %le, %le, %le\n", s2_left, s2_right, s2);
+  if ((s2 > s2_left) || (s2 < s2_right)) {
+    printf("m_fromsigma2: Error! input sigma2 out-of-bound!\n");
+    exit(1);
+  }
+
+  double m_mid = sqrt(mmin * mmax);
+  double s2_mid = sigma2(m_mid);
+
+  while ( fabs(s2/s2_mid-1) > 1e-4 ) {
+    if (s2_mid > s2) {
+      mmin = m_mid;
+    } else {
+      mmax = m_mid;
+    }
+
+    m_mid = sqrt(mmin * mmax);
+    s2_mid = sigma2(m_mid);
+  }
+  return m_mid;
 }
-double dlogPlin_dlogk(double m)
+
+double dlogPlin_dlogk(double m, double a)
 {
 	double k0 = 0.69* 2*M_PI / radius(m);
 	double dlogk = 0.001;
 	double k1 = exp(log(k0) + dlogk);
-	double dlogPlin = log(p_lin(k1,1.) / p_lin(k0,1.));
-	return dlogPlin / dlogk;
+	double dlogP = log(p_lin(k1,a) / p_lin(k0,a));
+	return dlogP / dlogk;
 }
-
-
 
 double nu(double m, double a){
   static int init = 1;
@@ -184,6 +208,88 @@ double dlognudlogm(double m)
   return interpol(table_DS, Ntable.N_DS, logmmin, logmmax, dm,log(m), 1.0,1.0);
 }
 
+double dlogsigmadlogR(double m) {
+  return 3*dlognudlogm(m);
+}
+
+/*************** mass function (Castro et al., 2208.02174) **********/
+double gamma_lanczos(double z) {
+/* Lanczos coefficients for g = 7 */
+  static double p[] = {
+    0.99999999999980993227684700473478,
+    676.520368121885098567009190444019,
+    -1259.13921672240287047156078755283,
+    771.3234287776530788486528258894,
+    -176.61502916214059906584551354,
+    12.507343278686904814458936853,
+    -0.13857109526572011689554707,
+    9.984369578019570859563e-6,
+    1.50563273514931155834e-7};
+
+  if(z < 0.5) {return M_PI / (sin(M_PI*z)*gamma_lanczos(1. - z));}
+  z -= 1;
+  double x = p[0];
+  for(int n = 1; n < 9; n++){ x += p[n] / (z + (double)(n));}
+
+  double t = z + 7.5;
+  return sqrt(2*M_PI) * pow(t, z+0.5) * exp(-t) * x;
+}
+
+// built on Bhattacharya+2011
+double f_castro(double n, double a_in)
+{
+  double a = a_in;
+  double a3 = a*a*a;
+
+  double aa, p, q;
+  double aR, az, p1, p2, qR, qz;
+  double a1, a2, q1, q2;
+  double Om_z = cosmology.Omega_m/a3 / (cosmology.Omega_m/a3 + cosmology.Omega_v);
+
+#ifdef HMF_CASTRO_ROCKSTAR
+  a1=0.7962; a2=0.1449; az=-0.0658; p1=-0.5612; p2=-0.4743;
+  q1=0.3688; q2=-0.2804; qz=0.0251;
+
+#elif HMF_CASTRO_AHF
+  a1=0.7937; a2=0.1119; az=-0.0693; p1=-0.5689; p2=-0.4522;
+  q1=0.3652; q2=-0.2628; qz=0.0376;
+
+#elif HMF_CASTRO_SUBFIND
+  a1=0.7953; a2=0.1667; az=-0.0642; p1=-0.6265; p2=-0.4907;
+  q1=0.3215; q2=-0.2993; qz=0.0330;
+
+#elif HMF_CASTRO_VELOCI
+  // VELOCIraptor
+  a1=0.7987; a2=0.1227; az=-0.0523; p1=-0.5912; p2=-0.4088; 
+  q1=0.3634; q2=-0.2732; qz=0.0715;
+
+#else
+  printf("f_castro: Error! HMF_CASTRO not defined!\n");
+  exit(1);
+#endif
+  double s2 = pow(delta_c(a) / n / growfac(a) * growfac(1.), 2);
+  // printf("nu, a, s2, %le,%le,%le\n", n, a, s2);
+  double m = m_fromsigma2(s2);
+  // printf("m: %le\n", m);
+
+  aR = a1 + a2 * pow(dlogsigmadlogR(m) + 0.6125, 2);
+  qR = q1 + q2 * (dlogsigmadlogR(m) + 0.5);
+
+  aa = aR * pow(Om_z, az);
+  p = p1 + p2 * (dlogsigmadlogR(m) + 0.5);
+  q = qR * pow(Om_z, qz);
+
+  double A_pq = 1./ (pow(2, -0.5-p+q/2.) / sqrt(M_PI) * (pow(2, p) * gamma_lanczos(q/2.) + gamma_lanczos(-p+ q/2.)) );
+  double an2 = aa*n*n;
+
+  return A_pq * sqrt(2*an2 / M_PI) * exp(-an2/2.) * (1 + 1./pow(an2, p)) * pow(n * sqrt(aa), q-1.);
+}
+double fnu_castro(double n, double a){
+  return n*f_castro(n, a);
+}
+
+
+
 /*************** mass function & halo bias (Tinker et al.) **********/
 double f_tinker(double n, double a_in)
 {  //Eqs. (8-12) + Table 4 from Tinker et al. 2010
@@ -214,6 +320,11 @@ double mass_norm_integrand(double n, void * params)   // inner integral
 {
   double *array = (double*)params;
   double a = array[0];
+
+#ifdef HMF_CASTRO
+  return f_castro(n,a);
+#endif
+
   return f_tinker(n,a);
 }
 
@@ -246,7 +357,12 @@ double mass_norm(double a)
 
 double bias_norm_integrand (double n,void * params){
   double *array = (double*)params;
-  double a = array[0];  
+  double a = array[0];
+
+#ifdef HMF_CASTRO
+  return B1_nu(n,a)*f_castro(n,a);
+#endif
+
   return B1_nu(n,a)*f_tinker(n,a);
 }
 
@@ -283,6 +399,11 @@ double bias_norm(double a)
 }
 
 double massfunc(double m, double a){
+
+#ifdef HMF_CASTRO
+  return fnu_castro(nu(m,a),a)*cosmology.rho_crit*cosmology.Omega_m/m/m*dlognudlogm(m);
+#endif
+
 	return fnu_tinker(nu(m,a),a)*cosmology.rho_crit*cosmology.Omega_m/m/m*dlognudlogm(m);
 }
 
