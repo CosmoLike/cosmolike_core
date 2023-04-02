@@ -878,6 +878,46 @@ double I0j_y (int j, double k1, double k2, double k3, double k4,double a, int ni
 // }
 
 
+///////////////////
+// fix c-M relation, regardless of whether self-calibration is on or off.
+// This routine is only used for "halfcalib" option, i.e. 6x2pt+yy (nocalib) + sy (calib)
+// i.e. 6x2pt+sy uses one set of halo parameters, yy uses another separate set of halo parameters
+//////////////////
+double inner_I0j_y_fixc (double logm, void *para){
+  double *array = (double *) para;
+  double m = exp(logm);
+  long double u = 1.0;
+  double a= array[6];
+  double c = conc(m,a);
+
+
+  int l;
+  int j = (int)(array[5]);
+  double vol = m/(cosmology.rho_crit*cosmology.Omega_m); //rho_crit: [density]=[Msun/h*(H0/c)^3], m: [Msun/h]
+  for (l = 0; l< j; l++){
+    if(array[7+l]==-2.){ // ni=-2: y-field
+      u *= u_y_bnd(c,array[l],m,a);
+    }else{
+      u *= vol*u_nfw_c(c,array[l],m,a);
+    } // u_(kappa|g): [volume]=[(c/H0)^3], u_y: [energy]=[G(Msun/h)^2 / (c/H0)]
+  } // massfunc*m: [1/volume]=[(c/H0)^-3]
+  return massfunc(m,a)*m*u;
+}
+
+double I0j_y_fixc (int j, double k1, double k2, double k3, double k4,double a, int ni[4]){
+  double array[11] = {k1,k2,k3,k4,0.,(double)j,a,(double)ni[0],(double)ni[1],(double)ni[2],(double)ni[3]};
+  double result=0., logm;
+  double logMmin=log(limits.M_min), logMmax=log(limits.M_max);
+  double dlogm = (logMmax-logMmin)/200.;
+  for(logm=logMmin;logm<=logMmax;logm+=dlogm){
+    result += inner_I0j_y_fixc(logm, (void*)array);
+  }
+  return result*dlogm;
+}
+// end here
+///////////////////
+
+
 double inner_I1j (double logm, void *para){
   double *array = (double *) para;
   double m = exp(logm);
@@ -1064,6 +1104,52 @@ double I_11_y (double k,double a){
 //   return exp(interpol2d(table_I1, Ntable.N_a, amin, amax, da, aa, Ntable.N_k_nlin, logkmin, logkmax, dk, log(k), 1.0, 1.0));
 // }
 
+
+///////////////////
+// fix c-M relation, regardless of whether self-calibration is on or off.
+// This routine is only used for "halfcalib" option, i.e. 6x2pt+yy (nocalib) + sy (calib)
+// i.e. 6x2pt+sy uses one set of halo parameters, yy uses another separate set of halo parameters
+//////////////////
+double inner_I1j_y_fixc (double logm, void *para){
+  double *array = (double *) para;
+  double m = exp(logm);
+  long double u = 1.0;
+  double a= array[6];
+  double c = conc(m,a);
+
+  int l;
+  int j = (int)(array[5]);
+  double vol = m/(cosmology.rho_crit*cosmology.Omega_m);
+  for (l = 0; l< j; l++){
+    if(array[7+l]==-2.){ // ni=-2: y-field
+      if(j==1){u *= (u_y_bnd(c,array[l],m,a)+u_y_ejc(m));}
+      // if(j==1){u *= (u_y_bnd(c,array[l],m,a));}
+      else{u *= u_y_bnd(c,array[l],m,a);}
+    }else{
+      u *= vol*u_nfw_c_interp(c,array[l],m,a);
+    }
+  }
+  return massfunc(m,a)*m*u*B1(m,a);
+}
+double I_11_y_fixc (double k,double a){
+  double array[11];
+  array[0]=k;
+  array[5]=1.0;
+  array[6]=a;
+  array[7]=-2.;
+  double result=0., logm;
+  double logMmin=log(limits.M_min), logMmax=log(limits.M_max);
+  double dlogm = (logMmax-logMmin)/200.;
+  for(logm=logMmin;logm<=logMmax;logm+=dlogm){
+    result += inner_I1j_y_fixc(logm, (void*)array);
+  }
+  return result*dlogm;
+}
+// fixc end here
+////////////
+
+
+
 // double I1j_y (int j, double k1, double k2, double k3,double a, int ni[4]){
 //   if (j ==1) {return I_11_y(k1,a);}
 //   double array[11] = {k1,k2,k3,0.,0.,(double)j,a,(double)ni[0],(double)ni[1],(double)ni[2],(double)ni[3]};
@@ -1102,6 +1188,16 @@ double p_1h_y(double k, double a, int n1, int n2)
   return I0j_y(2,k,k,0.,0.,a, ni)*sup;
 }
 
+// only used for "halfcalib"
+double p_1h_y_halfcalib(double k, double a, int n1, int n2)
+{
+  int ni[]={n1, n2, 0,0};
+  // suppress low-k for 1h term same as 1h matter power
+  double k_star = 0.05618/pow(cosmology.sigma_8*a,1.013)*cosmology.coverH0; // convert to code unit, Table 2, 2009.01858
+  double sup = 1./(pow(k/k_star,-4)+1); // suppression at low-k, Eq.17, 2009.01858
+  return I0j_y_fixc(2,k,k,0.,0.,a, ni)*sup;
+}
+
 /*++++++++++++++++++++++++++++++++++++++++*
 * 2Halo Terms                         	   *
 *++++++++++++++++++++++++++++++++++++++++*/
@@ -1119,6 +1215,12 @@ double p_2h_my(double k, double a)
   return I_11(k,a)*I_11_y(k,a)*p_lin(k,a);
 }
 
+// only used for "halfcalib"
+double p_2h_my_halfcalib(double k, double a)
+{
+  return I_11(k,a)*I_11_y_fixc(k,a)*p_lin(k,a);
+}
+
 /******* halomodel power without tabulation********/
 #ifdef NOTAB
 double Pdelta_halo(double k,double a){
@@ -1128,7 +1230,11 @@ double P_yy(double k,double a){
   return p_1h_y(k,a,-2,-2) + p_2h_yy(k,a);
 }
 double P_my(double k,double a){
+#ifdef HALFCALIB
+  return p_1h_y_halfcalib(k,a,-2,0) + p_2h_my_halfcalib(k,a);
+#else
   return p_1h_y(k,a,-2,0) + p_2h_my(k,a);
+#endif
 }
 
 #else
