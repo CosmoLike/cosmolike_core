@@ -166,6 +166,10 @@ typedef  double (*B1_model)(double z, int nz);
 typedef struct{
   double b[10]; /* linear galaxy bias paramter in clustering bin i*/
   double b2[10]; /* quadratic bias parameter for redshift bin i */
+  double bG2[10]; /*for CLASS-PT interface*/
+  double bGamma3[10]; /*for CLASS-PT interface*/
+  double cs[10]; /*counter term for CLASS-PT interface*/
+  
   double bs2[10]; /* leading order tidal bias for redshift bin i */
   double rcorr[10];
   double hod[10][6]; /*HOD[i] contains HOD parameters of galaxies in clustering bin i, following 5 parameter model of Zehavi et al. 2011 + modification of concentration parameter*/
