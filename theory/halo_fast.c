@@ -767,15 +767,32 @@ double KS_norm(double c, double rv){
 }
 
 double frac_bnd(double m){
-  double M0=pow(10,nuisance.gas_lgM0);
-  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, nuisance.gas_beta));
+  double lgM0, beta;
+#ifdef TEST_CALIB
+  lgM0 = nuisance.gas_lgM0_v2;
+  beta = nuisance.gas_beta_v2;
+#else
+  lgM0 = nuisance.gas_lgM0;
+  beta = nuisance.gas_beta;
+#endif
+  double M0=pow(10,lgM0);
+  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, beta));
 }
+
 double frac_ejc(double m){
-  double M0=pow(10,nuisance.gas_lgM0);
+  double lgM0, beta;
+#ifdef TEST_CALIB
+  lgM0 = nuisance.gas_lgM0_v2;
+  beta = nuisance.gas_beta_v2;
+#else
+  lgM0 = nuisance.gas_lgM0;
+  beta = nuisance.gas_beta;
+#endif
+  double M0=pow(10,lgM0);
   double lgm=log10(m);
   double frac_star = nuisance.gas_A_star * exp(-0.5* pow((lgm - nuisance.gas_lgM_star)/nuisance.gas_sigma_star,2));
-  if(lgm>nuisance.gas_lgM0 && frac_star<nuisance.gas_A_star/3.) {frac_star = nuisance.gas_A_star/3.;}
-  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, -nuisance.gas_beta)) - frac_star;
+  if(lgm>lgM0 && frac_star<nuisance.gas_A_star/3.) {frac_star = nuisance.gas_A_star/3.;}
+  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, -beta)) - frac_star;
 }
 
 double u_y_bnd(double c, double k, double m, double a){ //unit: [G(M_solar/h)^2 / (c/H0)]
