@@ -900,6 +900,44 @@ double I0j_y (int j, double k1, double k2, double k3, double k4,double a, int ni
 // This routine is only used for "halfcalib" option, i.e. 6x2pt+yy (nocalib) + sy (calib)
 // i.e. 6x2pt+sy uses one set of halo parameters, yy uses another separate set of halo parameters
 //////////////////
+double frac_bnd_fixc(double m){
+  double lgM0, beta;
+  lgM0 = nuisance.gas_lgM0;
+  beta = nuisance.gas_beta;
+  double M0=pow(10,lgM0);
+  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, beta));
+}
+
+double frac_ejc_fixc(double m){
+  double lgM0, beta;
+  lgM0 = nuisance.gas_lgM0;
+  beta = nuisance.gas_beta;
+  double M0=pow(10,lgM0);
+  double lgm=log10(m);
+  double frac_star = nuisance.gas_A_star * exp(-0.5* pow((lgm - nuisance.gas_lgM_star)/nuisance.gas_sigma_star,2));
+  if(lgm>lgM0 && frac_star<nuisance.gas_A_star/3.) {frac_star = nuisance.gas_A_star/3.;}
+  return cosmology.omb / cosmology.Omega_m / (1.+ pow(M0/m, -beta)) - frac_star;
+}
+
+double u_y_bnd_fixc(double c, double k, double m, double a){ //unit: [G(M_solar/h)^2 / (c/H0)]
+  double rv = r_Delta(m,a);
+  double mu_p = 4./(3.+5*nuisance.gas_f_H);
+  double mu_e = 2./(1.+nuisance.gas_f_H);
+  // return 2.*nuisance.gas_alpha /(3.*a) * mu_p / mu_e * frac_bnd(m) * m*m/rv * u_KS(c, k, rv)/KS_norm(c, rv);
+  // return 2.*nuisance.gas_alpha /(3.*a) * mu_p / mu_e * frac_bnd(m) * m*m/rv * u_KS(c, k, rv)/(F_KS_norm(c)*pow(rv/c,3));
+  return 2.*nuisance.gas_alpha /(3.*a) * mu_p / mu_e * frac_bnd_fixc(m) * m*m/rv * u_KS_normalized_interp(c, k, rv);
+}
+
+double u_y_ejc_fixc(double m){
+  static double num_p = 1.1892e57; // proton number in 1 solar mass, unit [1/Msun]
+   // convert ejected gas temperature (K) to energy eV then to unit [G (Msun/h)^2 / (c/H0) * h]
+  // double E_w = pow(10,nuisance.gas_lgT_w) * 8.6173e-5 * 1.81945e-68;
+  double E_w = pow(10,nuisance.gas_lgT_w) * 8.6173e-5 * 5.616e-44;
+  // printf("Tw: %le, %le\n", nuisance.gas_lgT_w,frac_ejc(m));
+  double mu_e = 2./(1.+nuisance.gas_f_H);
+  return num_p * m * frac_ejc_fixc(m) / mu_e * E_w; // [m]=[Msun/h]; final unit in [G(Msun/h)^2 / (c/H0)]
+}
+
 double inner_I0j_y_fixc (double logm, void *para){
   double *array = (double *) para;
   double m = exp(logm);
@@ -913,7 +951,7 @@ double inner_I0j_y_fixc (double logm, void *para){
   double vol = m/(cosmology.rho_crit*cosmology.Omega_m); //rho_crit: [density]=[Msun/h*(H0/c)^3], m: [Msun/h]
   for (l = 0; l< j; l++){
     if(array[7+l]==-2.){ // ni=-2: y-field
-      u *= u_y_bnd(c,array[l],m,a);
+      u *= u_y_bnd_fixc(c,array[l],m,a);
     }else{
       u *= vol*u_nfw_c(c,array[l],m,a);
     } // u_(kappa|g): [volume]=[(c/H0)^3], u_y: [energy]=[G(Msun/h)^2 / (c/H0)]
@@ -1139,9 +1177,9 @@ double inner_I1j_y_fixc (double logm, void *para){
   double vol = m/(cosmology.rho_crit*cosmology.Omega_m);
   for (l = 0; l< j; l++){
     if(array[7+l]==-2.){ // ni=-2: y-field
-      if(j==1){u *= (u_y_bnd(c,array[l],m,a)+u_y_ejc(m));}
+      if(j==1){u *= (u_y_bnd_fixc(c,array[l],m,a)+u_y_ejc_fixc(m));}
       // if(j==1){u *= (u_y_bnd(c,array[l],m,a));}
-      else{u *= u_y_bnd(c,array[l],m,a);}
+      else{u *= u_y_bnd_fixc(c,array[l],m,a);}
     }else{
       u *= vol*u_nfw_c_interp(c,array[l],m,a);
     }
