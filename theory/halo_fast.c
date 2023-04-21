@@ -1423,8 +1423,13 @@ double P_my(double k,double a)
       // if(i==N_a-1){
         for (j=0; j<N_k_nlin; j++, klog += dk) {
           kk = exp(klog);
+#ifdef HALFCALIB
+          p1 = p_1h_y_halfcalib(kk,aa,-2,0);
+          p2 = p_2h_my_halfcalib(kk,aa);
+#else
           p1 = p_1h_y(kk,aa,-2,0);
           p2 = p_2h_my(kk,aa);
+#endif
           table_P_NL[i][j] = p1+p2;
           // table_P_NL[i][j] = log(p_1h_y(kk,aa,-2,0) + p_2h_my(kk,aa));
           if(isinf(table_P_NL[i][j])) table_P_NL[i][j] = -300.;
