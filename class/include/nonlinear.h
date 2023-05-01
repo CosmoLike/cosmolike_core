@@ -2,6 +2,10 @@
 
 #include "primordial.h"
 #include "trigonometric_integrals.h"
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_odeiv2.h>
+#include <gsl/gsl_integration.h>
+#include <assert.h>
 
 #ifndef __NONLINEAR__
 #define __NONLINEAR__
@@ -12,14 +16,14 @@
 
 #define _MAX_NUM_EXTRAPOLATION_ 100000
 
-enum non_linear_method {nl_none,nl_halofit,nl_HMcode};
+enum non_linear_method {nl_none,nl_halofit,nl_HMcode,nl_HMcode_2020};
 enum pk_outputs {pk_linear,pk_nonlinear};
 
 enum source_extrapolation {extrap_zero,extrap_only_max,extrap_only_max_units,extrap_max_scaled,extrap_hmcode,extrap_user_defined};
 
 enum halofit_integral_type {halofit_integral_one, halofit_integral_two, halofit_integral_three};
 
-enum hmcode_baryonic_feedback_model {nl_emu_dmonly, nl_owls_dmonly, nl_owls_ref, nl_owls_agn, nl_owls_dblim, nl_user_defined};
+enum hmcode_baryonic_feedback_model {nl_emu_dmonly, nl_owls_dmonly, nl_owls_ref, nl_owls_agn, nl_owls_dblim, nl_user_defined, hmcode2020tagn};
 enum out_sigmas {out_sigma,out_sigma_prime,out_sigma_disp};
 
 /**
@@ -48,6 +52,7 @@ struct nonlinear {
   double c_min;      /** for HMcode: minimum concentration in Bullock 2001 mass-concentration relation */
   double eta_0;      /** for HMcode: halo bloating parameter */
   double z_infinity; /** for HMcode: z value at which Dark Energy correction is evaluated needs to be at early times (default */
+  double hmcode2020log10tagn; /** for HMcode2020: Tagn value */
 
   //@}
 
@@ -194,6 +199,23 @@ struct nonlinear {
   //@}
 };
 
+
+typedef struct {
+    double omega0m;
+    double omega0w;
+    double w0;
+    double wa;
+    double omega0k;
+} ParamsMeadGrowth;
+
+
+
+
+
+
+
+
+
 /**
  * Structure containing variables used only internally in nonlinear module by various functions.
  *
@@ -210,7 +232,11 @@ struct nonlinear_workspace {
   double * ddstab; /** Splined sigma */
 
   double * growtable;
+  double * intgrowtable;
+  double *meadgrowtable;
+  double *meadscaletable;
   double * ztable;
+  double * scaletable;
   double * tautable;
 
   double ** sigma_8;
@@ -221,7 +247,10 @@ struct nonlinear_workspace {
   double dark_energy_correction; /** this is the ratio [g_wcdm(z_infinity)/g_lcdm(z_infinity)]^1.5
                                   * (power comes from Dolag et al. (2004) correction)
                                   * it is 1, if has_fld == _FALSE_ */
-
+  double*  dark_energy_correction_hmcode2020_table; /** the correction of c-m relation in equation 22 of Mead 2009.01858**/
+  double* Pk_wiggle_tab; /** Wiggle pk at z=0 **/
+  double* lnk_wiggle_tab;
+  int nk_wiggle;
   //@}
 
 };
@@ -237,6 +266,8 @@ extern "C" {
 #endif
 
   /* external functions (meant to be called from other modules) */
+
+  int meadgrowth_func(double a, const double y[], double f[], void *params);
 
   int nonlinear_pk_at_z(
                         struct background * pba,
@@ -452,7 +483,25 @@ extern "C" {
                        struct nonlinear_workspace * pnw
                        );
 
+  int nonlinear_hmcode2020(
+                       struct precision *ppr,
+                       struct background *pba,
+                       struct perturbs *ppt,
+                       struct primordial *ppm,
+                       struct nonlinear *pnl,
+                       int index_pk,
+                       int index_tau,
+                       double tau,
+                       double *pk_nl,
+                       double **lnpk_l,
+                       double **ddlnpk_l,
+                       double *k_nl,
+                       short * halofit_found_k_max,
+                       struct nonlinear_workspace * pnw
+                       );
+
   int nonlinear_hmcode_workspace_init(
+                                     struct primordial *ppm,
                                       struct precision *ppr,
                                       struct background *pba,
                                       struct nonlinear *pnl,
@@ -495,6 +544,22 @@ extern "C" {
                                     struct nonlinear_workspace * pnw
                                     );
 
+
+  int nonlinear_hmcode_fill_intgrowtab(
+                                    struct precision *ppr,
+                                    struct background * pba,
+                                    struct nonlinear * pnl,
+                                    struct nonlinear_workspace * pnw
+                                    );
+int fill_Pk_wiggle_table(
+                        struct primordial * ppm,
+                        struct precision *ppr,
+                        struct background *pba,
+                        struct nonlinear *pnl,
+                        struct nonlinear_workspace * pnw
+                        );
+
+
   int nonlinear_hmcode_growint(
                                struct precision *ppr,
                                struct background * pba,
@@ -504,6 +569,13 @@ extern "C" {
                                double wa,
                                double * growth
                                );
+
+int nonlinear_hmcode_fill_meadgrowtab(
+                                  struct precision * ppr,
+                                  struct background * pba,
+                                  struct nonlinear * pnl,
+                                  struct nonlinear_workspace * pnw
+                                  );
 
   int nonlinear_hmcode_window_nfw(
                                   struct nonlinear * pnl,

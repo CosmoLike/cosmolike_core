@@ -465,11 +465,18 @@ class_precision_parameter(hmcode_tol_sigma,double,1.e-6) /**< tolerance required
                                                             condition sigma(R_nl)=1, which defines the wavenumber
                                                             of non-linearity, k_nl=1./R_nl */
 
+
+class_precision_parameter(nk_wiggle,int,512) /** following camb implementation for HMcode2020*/
+class_precision_parameter(logkmin_wiggle,double, log(5E-3)) /** following camb implementation for HMcode2020*/
+class_precision_parameter(logkmax_wiggle,double, log(5.0)) /** following camb implementation for HMcode2020*/
+class_precision_parameter(knorm_nowiggle,double, 0.03) /** following camb implementation for HMcode2020*/
+
 /**
  * parameters controlling stepsize and min/max r & a values for
  * sigma(r) & grow table
  */
 class_precision_parameter(n_hmcode_tables,int,64)
+class_precision_parameter(n_hmcode_mead_growth_tables,int,64)
 class_precision_parameter(rmin_for_sigtab,double,1.e-5)
 class_precision_parameter(rmax_for_sigtab,double,1.e3)
 class_precision_parameter(ainit_for_growtab,double,1.e-3)

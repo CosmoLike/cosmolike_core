@@ -33,12 +33,13 @@ AR        = ar rv
 PYTHON ?= python
 
 # your optimization flag
-OPTFLAG = -O4 -ffast-math #-march=native
+#OPTFLAG = -O4 -ffast-math #-march=native
 #OPTFLAG = -Ofast -ffast-math #-march=native
 #OPTFLAG = -fast
+OPTFLAG = -O4 -ffast-math -lgsl -lgslcblas 
 
 # your openmp flag (comment for compiling without openmp)
-#OMPFLAG   = -fopenmp
+OMPFLAG   = -fopenmp
 #OMPFLAG   = -mp -mp=nonuma -mp=allcores -g
 #OMPFLAG   = -openmp
 
@@ -196,7 +197,7 @@ ifdef OMPFLAG
 else
 	grep -v "lgomp" python/setup.py > python/autosetup.py
 endif
-	cd python; export CC=$(CC); $(PYTHON) autosetup.py install || $(PYTHON) autosetup.py install --user
+	cd python; export CC='$(CC) $(OPTFLAG)'; $(PYTHON) autosetup.py install || $(PYTHON) autosetup.py install --user
 	rm python/autosetup.py
 
 clean: .base

@@ -2837,73 +2837,114 @@ int input_read_parameters(
       ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
     }
     if ((strstr(string1,"hmcode") != NULL) || (strstr(string1,"HMCODE") != NULL) || (strstr(string1,"HMcode") != NULL) || (strstr(string1,"Hmcode") != NULL)) {
-      pnl->method=nl_HMcode;
-      ppt->k_max_for_pk = MAX(ppt->k_max_for_pk,MAX(ppr->hmcode_min_k_max,ppr->nonlinear_min_k_max));
-      ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
-      class_read_int("extrapolation_method",pnl->extrapolation_method);
+          pnl->method=nl_HMcode;
+          ppt->k_max_for_pk = MAX(ppt->k_max_for_pk,MAX(ppr->hmcode_min_k_max,ppr->nonlinear_min_k_max));
+          ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
+          class_read_int("extrapolation_method",pnl->extrapolation_method);
 
-      class_call(parser_read_string(pfc,
-                                    "feedback model",
-                                    &(string1),
-                                    &(flag1),
-                                    errmsg),
-                 errmsg,
-                 errmsg);
+          class_call(parser_read_string(pfc,
+                                        "feedback model",
+                                        &(string1),
+                                        &(flag1),
+                                        errmsg),
+                     errmsg,
+                     errmsg);
 
-      if (flag1 == _TRUE_) {
+          if (flag1 == _TRUE_) {
 
-		if (strstr(string1,"emu_dmonly") != NULL) {
-          pnl->feedback = nl_emu_dmonly;
-		}
-		if (strstr(string1,"owls_dmonly") != NULL) {
-          pnl->feedback = nl_owls_dmonly;
-		}
-		if (strstr(string1,"owls_ref") != NULL) {
-          pnl->feedback = nl_owls_ref;
-		}
-		if (strstr(string1,"owls_agn") != NULL) {
-          pnl->feedback = nl_owls_agn;
-		}
-		if (strstr(string1,"owls_dblim") != NULL) {
-          pnl->feedback = nl_owls_dblim;
-		}
-      }
+            if (strstr(string1,"emu_dmonly") != NULL) {
+              pnl->feedback = nl_emu_dmonly;
+            }
+            if (strstr(string1,"owls_dmonly") != NULL) {
+              pnl->feedback = nl_owls_dmonly;
+            }
+            if (strstr(string1,"owls_ref") != NULL) {
+              pnl->feedback = nl_owls_ref;
+            }
+            if (strstr(string1,"owls_agn") != NULL) {
+              pnl->feedback = nl_owls_agn;
+            }
+            if (strstr(string1,"owls_dblim") != NULL) {
+              pnl->feedback = nl_owls_dblim;
+            }
+          }
 
-      class_call(parser_read_double(pfc,"eta_0",&param2,&flag2,errmsg),
-                 errmsg,
-                 errmsg);
-      class_call(parser_read_double(pfc,"c_min",&param3,&flag3,errmsg),
-                 errmsg,
-                 errmsg);
+          class_call(parser_read_double(pfc,"eta_0",&param2,&flag2,errmsg),
+                     errmsg,
+                     errmsg);
+          class_call(parser_read_double(pfc,"c_min",&param3,&flag3,errmsg),
+                     errmsg,
+                     errmsg);
 
-      class_test(((flag1 == _TRUE_) && ((flag2 == _TRUE_) || (flag3 == _TRUE_))),
-                 errmsg,
-                 "In input file, you cannot enter both a baryonic feedback model and a choice of baryonic feedback parameters, choose one of both methods");
+          class_test(((flag1 == _TRUE_) && ((flag2 == _TRUE_) || (flag3 == _TRUE_))),
+                     errmsg,
+                     "In input file, you cannot enter both a baryonic feedback model and a choice of baryonic feedback parameters, choose one of both methods");
 
-      if ((flag2 == _TRUE_) && (flag3 == _TRUE_)) {
-		pnl->feedback = nl_user_defined;
-		class_read_double("eta_0", pnl->eta_0);
-		class_read_double("c_min", pnl->c_min);
-      }
-      else if ((flag2 == _TRUE_) && (flag3 == _FALSE_)) {
-		pnl->feedback = nl_user_defined;
-		class_read_double("eta_0", pnl->eta_0);
-		pnl->c_min = (0.98 - pnl->eta_0)/0.12;
-      }
-      else if ((flag2 == _FALSE_) && (flag3 == _TRUE_)) {
-		pnl->feedback = nl_user_defined;
-		class_read_double("c_min", pnl->c_min);
-		pnl->eta_0 = 0.98 - 0.12*pnl->c_min;
-      }
+          if ((flag2 == _TRUE_) && (flag3 == _TRUE_)) {
+            pnl->feedback = nl_user_defined;
+            class_read_double("eta_0", pnl->eta_0);
+            class_read_double("c_min", pnl->c_min);
+          }
+          else if ((flag2 == _TRUE_) && (flag3 == _FALSE_)) {
+            pnl->feedback = nl_user_defined;
+            class_read_double("eta_0", pnl->eta_0);
+            pnl->c_min = (0.98 - pnl->eta_0)/0.12;
+          }
+          else if ((flag2 == _FALSE_) && (flag3 == _TRUE_)) {
+            pnl->feedback = nl_user_defined;
+            class_read_double("c_min", pnl->c_min);
+            pnl->eta_0 = 0.98 - 0.12*pnl->c_min;
+          }
 
-      class_call(parser_read_double(pfc,"z_infinity",&param1,&flag1,errmsg),
-                 errmsg,
-                 errmsg);
+          class_call(parser_read_double(pfc,"z_infinity",&param1,&flag1,errmsg),
+                     errmsg,
+                     errmsg);
 
-      if (flag1 == _TRUE_) {
-        class_read_double("z_infinity", pnl->z_infinity);
-      }
+          if (flag1 == _TRUE_) {
+            class_read_double("z_infinity", pnl->z_infinity);
+          }
     }
+
+
+    if ((strstr(string1,"hmcode2020") != NULL) || (strstr(string1,"HMCODE2020") != NULL) || (strstr(string1,"HMcode2020") != NULL) || (strstr(string1,"Hmcode2020") != NULL)) {
+          pnl->method=nl_HMcode_2020;
+          ppt->k_max_for_pk = MAX(ppt->k_max_for_pk,MAX(ppr->hmcode_min_k_max,ppr->nonlinear_min_k_max));
+          ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
+          class_read_int("extrapolation_method",pnl->extrapolation_method);
+
+          class_call(parser_read_string(pfc,
+                                        "feedback model",
+                                        &(string1),
+                                        &(flag1),
+                                        errmsg),
+                     errmsg,
+                     errmsg);
+
+
+          class_call(parser_read_double(pfc,"hmcode2020log10tagn",&param2,&flag2,errmsg),
+                     errmsg,
+                     errmsg);
+
+          class_test(((flag1 == _TRUE_) && ((flag2 == _TRUE_) || (flag3 == _TRUE_))),
+                     errmsg,
+                     "In input file, you cannot enter both a baryonic feedback model and a choice of baryonic feedback parameters, choose one of both methods");
+
+          if ((flag2 == _TRUE_)){
+            pnl->feedback = hmcode2020tagn;
+            class_read_double("hmcode2020log10tagn", pnl->hmcode2020log10tagn);
+          }
+
+          class_call(parser_read_double(pfc,"z_infinity",&param1,&flag1,errmsg),
+                     errmsg,
+                     errmsg);
+
+          if (flag1 == _TRUE_) {
+            class_read_double("z_infinity", pnl->z_infinity);
+          }
+    }
+
+
+
   }
 
   /** (g) amount of information sent to standard output (none if all set to zero) */
