@@ -2033,8 +2033,8 @@ double CMB_lensing_mat_with_corr(int ibp, int L)
 double GaussianBeam(double theta_fwhm, int ell, 
   double ell_left, double ell_right)
 {
-  double ell_min = ell_left - 10;
-  double ell_max = ell_right + 50;
+  double ell_min = ell_left;
+  double ell_max = ell_right;
   double ell_beam = sqrt(16.0 * log(2.0)) / theta_fwhm;
   double BeamKernel, window_func, u=0;
   // Turn-On Gaussian Beam Smoothing
@@ -2046,14 +2046,14 @@ double GaussianBeam(double theta_fwhm, int ell,
       window_func = 0.;
     }
     // tapering the edges
-    else if((ell_min <= ell) && (ell<ell_left)){
+    /*else if((ell_min <= ell) && (ell<ell_left)){
       u = (ell - ell_min)/(ell_left - ell_min);
       window_func = u - sin( constants.twopi * u) / constants.twopi;
     }
     else if ((ell_right < ell) && (ell <= ell_max)){
       u = (ell_max - ell)/(ell_max - ell_right);
       window_func = u - sin( constants.twopi * u) / constants.twopi; 
-    }
+    }*/
     else{
       window_func = 1.0;
     }
