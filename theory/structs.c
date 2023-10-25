@@ -445,6 +445,11 @@ typedef struct input_cosmo_params {
     double MGmu;
 } input_cosmo_params;
 
+typedef struct input_cosmo_params_lowz {
+    double sigma_8_lowz;
+    double z_low;
+} input_cosmo_params_lowz;
+
 typedef struct input_nuisance_params_mpp {
     double bias[10];
     double bias2[10];
