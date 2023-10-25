@@ -1,10 +1,12 @@
 void update_cosmopara (cosmopara *C);
+void update_cosmopara_lowz (cosmopara_lowz *C_low);
 void update_gal (galpara *G);
 void update_nuisance (nuisancepara *N);
 //conditions for recomputing look-up tables
 int recompute_expansion(cosmopara C);
 int recompute_Delta(cosmopara C);
 int recompute_cosmo3D(cosmopara C);
+int recompute_cosmo3D_lowz(cosmopara_lowz C_low);
 int recompute_cosmo3D_CLASS(cosmopara C);
 int recompute_zphot_shear(nuisancepara N);
 int recompute_zphot_clustering(nuisancepara N);
@@ -48,6 +50,10 @@ void update_cosmopara (cosmopara *C){
   C->MGmu = cosmology.MGmu;
   C->M_nu = cosmology.M_nu;
   C->theta_s = cosmology.theta_s;
+}
+void update_cosmopara_lowz (cosmopara_lowz *C_low){
+  C_low->sigma_8 = cosmology_lowz.sigma_8;
+  C_low->z_low = cosmology_lowz.z_low;
 }
 
 void update_galpara (galpara *G){
@@ -165,6 +171,10 @@ int recompute_cosmo3D(cosmopara C){
      if (C.sigma_8 != cosmology.sigma_8){return 1;}
   }
   if (cosmology.theta_s > 0 && C.theta_s != cosmology.theta_s){return 1;}
+  return 0;
+}
+int recompute_cosmo3D_lowz(cosmopara_lowz C_low){
+  if (C_low.sigma_8 != cosmology_lowz.sigma_8 || C_low.z_low != cosmology_lowz.z_low){return 1;}
   return 0;
 }
 int recompute_cosmo3D_CLASS(cosmopara C){
