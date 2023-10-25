@@ -811,7 +811,7 @@ double p_lin(double k,double a)
   int i,j;
   if (a >= 0.99999){a =0.99999;}
   if (recompute_cosmo3D(C) || recompute_cosmo3D_lowz(C_low)){
-    update_cosmopara(&C);update_cosmopara_lowz(C_low);
+    update_cosmopara(&C);update_cosmopara_lowz(&C_low);
     if (table_P_Lz!=0) free_double_matrix(table_P_Lz,0, Ntable.N_a-1, 0, Ntable.N_k_lin-1);
     table_P_Lz = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_lin-1);
     grow0=growfac(1.);
