@@ -82,6 +82,12 @@ typedef struct {
 }cosmopara;
 cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.theta_s =0.0, .Omega_rad_h2 = 2.5094694598641805e-05};
 
+typedef struct{ /* a quick sigma8-split to study S8 tension */
+  double sigma_8; // sigma8 at low-z
+  double z_low; // the redshift where high-z and low-z sigma8 splits
+}cosmopara_lowz;
+cosmopara_lowz cosmology_lowz = {.sigma_8=0., .z_low=-0.1};
+
 typedef struct {
   int shear_Nbin; // number of tomography bins
   int shear_Npowerspectra;// number of tomography power spectra+2+3+...+Nbin
