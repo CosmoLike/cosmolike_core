@@ -798,17 +798,20 @@ return exp(val);
 double p_lin(double k,double a)
 {
   static cosmopara C;
+  static cosmopara_lowz C_low;
   static double **table_P_Lz = 0;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   int status;
+  double a_lowz = 1./(1.+cosmology_lowz.z_low);
+  if (a_lowz<=1.) assert(strcmp(pdeltaparams.runmode,"Halofit_split")==0 || strcmp(pdeltaparams.runmode,"halofit_split")==0);
   if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) return p_class(k,a,0, &status);
 
-  double amp,ampsqr,grow0,aa,klog,val;
+  double amp,ampsqr,norm_split,norm_split_sqr,grow0,aa,klog,val;
 
   int i,j;
   if (a >= 0.99999){a =0.99999;}
-  if (recompute_cosmo3D(C)){
-    update_cosmopara(&C);
+  if (recompute_cosmo3D(C) || recompute_cosmo3D_lowz(C_low)){
+    update_cosmopara(&C);update_cosmopara_lowz(C_low);
     if (table_P_Lz!=0) free_double_matrix(table_P_Lz,0, Ntable.N_a-1, 0, Ntable.N_k_lin-1);
     table_P_Lz = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_lin-1);
     grow0=growfac(1.);
@@ -816,15 +819,17 @@ double p_lin(double k,double a)
     aa = limits.a_min;
     for (i=0; i<Ntable.N_a; i++, aa +=da) {
       if(aa>1.0) aa=1.0;
+      norm_split = (aa<a_lowz)? 1 : cosmology_lowz.sigma_8/cosmology.sigma_8;
       amp=growfac(aa)/grow0;
       ampsqr=amp*amp;
+      norm_split_sqr = ampsqr*norm_split*norm_split;
 
       logkmin = log(limits.k_min_mpc);
       logkmax = log(limits.k_max_mpc);
       dk = (logkmax - logkmin)/(Ntable.N_k_lin-1.);
       klog = logkmin;
       for (j=0; j<Ntable.N_k_lin; j++, klog += dk) {
-        table_P_Lz[i][j] = log(ampsqr*Delta_L_wiggle(exp(klog)));
+        table_P_Lz[i][j] = log(norm_split_sqr*Delta_L_wiggle(exp(klog)));
         //printf("%le %le",exp(klog),Delta_L_wiggle(exp(klog));
       }
     }
@@ -945,8 +950,10 @@ double Halofit(double k, double amp, double omm, double omv,double w_z, double R
 
 void Delta_halofit(double **table_P_NL,double logkmin, double logkmax, double dk, double da)
 {
-  double rk,omm,omv,w_z,amp,grow0,aa,klog;
+  double rk,omm,omv,w_z,amp,norm_split,grow0,aa,klog;
   double R_NL,Curv,neff,P_delta,P_delta_Lin;
+  double a_lowz = 1./(cosmology_lowz.z_low+1.);
+  if (a_lowz <= 1.) assert(strcmp(pdeltaparams.runmode,"Halofit_split")==0 || strcmp(pdeltaparams.runmode,"halofit_split")==0);
   int i,j;
 
   grow0=growfac(1.);
@@ -954,15 +961,17 @@ void Delta_halofit(double **table_P_NL,double logkmin, double logkmax, double dk
   //binning in k and a must be the same as in emu
   for (i=0; i<Ntable.N_a; i++, aa +=da) {
     if(aa>1.0) aa=1.0;
+    norm_split = (aa < a_lowz)? 1. : cosmology_lowz.sigma_8/cosmology.sigma_8;
     omega_a(aa,&omm,&omv);
     w_z=cosmology.w0+cosmology.wa*(1.-aa);
     amp=growfac(aa)/grow0;
-    nonlin_scale(amp, &R_NL, &neff, &Curv);
+    norm_split *= amp;
+    nonlin_scale(norm_split, &R_NL, &neff, &Curv);
     //printf("%le %le %le %le\n",aa,R_NL,neff,Curv);
     klog = logkmin;
     for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
       rk=exp(klog);
-      P_delta_Lin=amp*amp*Delta_L_wiggle(rk);
+      P_delta_Lin=norm_split*norm_split*Delta_L_wiggle(rk);
       P_delta=Halofit(rk, amp, omm, omv, w_z, R_NL, neff, Curv, P_delta_Lin);
       //printf("P_delta_Lin = %e\n", P_delta_Lin);
       table_P_NL[i][j]=log(P_delta);
@@ -973,14 +982,20 @@ void Delta_halofit(double **table_P_NL,double logkmin, double logkmax, double dk
 
 double Delta_NL_Halofit(double k_NL, double a)
 {
+  /* Calculate $\Delta_{NL}^{Halofit}$ with split $\sigma_8$ at low v.s. high z
+  Note that by default, this routine behaves the same as the `Delta_NL_Halofit`
+  in the main branch. The sigma_8 split function is turned on only if 
+  `cosmology_lowz.z_low` is set to some positive value. 
+  */
   static cosmopara C;
+  static cosmopara_lowz C_low;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
 
   static double **table_P_NL=0;
   double klog,val;
 
-  if (recompute_cosmo3D(C)){
-    update_cosmopara(&C);
+  if ( recompute_cosmo3D(C) || recompute_cosmo3D_lowz(C_low) ){
+    update_cosmopara(&C);update_cosmopara_lowz(&C_low);
     if (table_P_NL!=0) free_double_matrix(table_P_NL,0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
     table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
 
@@ -1478,26 +1493,51 @@ double Pdelta(double k_NL,double a)
     if (strcmp(pdeltaparams.runmode,"class")==0) P_type = 4;
     if (strcmp(pdeltaparams.runmode,"cosmo_sim_test") ==0) P_type = 5;
     if (strcmp(pdeltaparams.runmode,"halomodel") ==0) P_type = 6;
-
+    if (strcmp(pdeltaparams.runmode,"Halofit_split")==0) P_type = 7;
+    if (strcmp(pdeltaparams.runmode,"halofit_split")==0) P_type = 7;
   }
 
   //printf("%s set\n",pdeltaparams.runmode);
   double pdelta = 0.,kintern=k_NL/cosmology.coverH0,error,k_nonlin,res;
   int status;
   switch (P_type){
-    case 0: pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL; break;
-    case 1: pdelta=2.0*constants.pi_sqr*Delta_NL_emu(kintern,a)/k_NL/k_NL/k_NL; break;
-    case 2: pdelta=2.0*constants.pi_sqr*Delta_NL_emu_only(kintern,a)/k_NL/k_NL/k_NL; break;
-    case 3: pdelta=p_lin(k_NL,a); break;
-    case 4: pdelta=p_class(k_NL,a,1, &status); break;
-    case 5: k_nonlin=nonlinear_scale_computation(a);
-    if (kintern<0.01) pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
-    else{
-      error=0.01*pow((pdeltaparams.DIFF_A*kintern/k_nonlin),pdeltaparams.DIFF_n);
-      pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)*(1.0+error)/k_NL/k_NL/k_NL;
-    }
-    break;
-    case 6: pdelta=Pdelta_halo(k_NL,a); break;
+    case 0:
+      assert(cosmology_lowz.z_low<0);
+      pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
+      break;
+    case 1: 
+      assert(cosmology_lowz.z_low<0);
+      pdelta=2.0*constants.pi_sqr*Delta_NL_emu(kintern,a)/k_NL/k_NL/k_NL;
+      break;
+    case 2:
+      assert(cosmology_lowz.z_low<0);
+      pdelta=2.0*constants.pi_sqr*Delta_NL_emu_only(kintern,a)/k_NL/k_NL/k_NL;
+      break;
+    case 3: 
+      assert(cosmology_lowz.z_low<0);
+      pdelta=p_lin(k_NL,a);
+      break;
+    case 4:
+      assert(cosmology_lowz.z_low<0);
+      pdelta=p_class(k_NL,a,1, &status);
+      break;
+    case 5: 
+      assert(cosmology_lowz.z_low<0);
+      k_nonlin=nonlinear_scale_computation(a);
+      if (kintern<0.01)
+        pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
+      else{
+        error=0.01*pow((pdeltaparams.DIFF_A*kintern/k_nonlin),pdeltaparams.DIFF_n);
+        pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)*(1.0+error)/k_NL/k_NL/k_NL;
+      }
+      break;
+    case 6:
+      assert(cosmology_lowz.z_low<0);
+      pdelta=Pdelta_halo(k_NL,a);
+      break;
+    case 7: 
+      pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL; 
+      break;
     default:
     printf("cosmo3D:Pdelta: %s Pdelta runmode not defined\n",pdeltaparams.runmode);
     printf("using Halofit (standard)\n");
