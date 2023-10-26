@@ -749,7 +749,7 @@ double int_for_C_shear_shear_IA_mpp(double a, void *params)
   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a);
   res= ws1*ws2*norm*norm - (ws1*wk2+ws2*wk1)*norm + wk1*wk2;
   
-  return res*Pdelta(k,a)*dchi_da(a)/fK/fK;// * ell_prefactor;
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor;
 }
 
 double C_shear_shear_IA(double s, int ni, int nj)
