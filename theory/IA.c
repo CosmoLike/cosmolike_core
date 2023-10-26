@@ -732,7 +732,7 @@ double int_for_C_shear_shear_IA_Az(double a, void *params)
 }
 
 double int_for_C_shear_shear_IA_mpp(double a, void *params)
-{
+{ // DES Y1 version, NLA + power law
   double res, ell, fK, k,ws1,ws2,wk1,wk2, norm;
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_C_II");
