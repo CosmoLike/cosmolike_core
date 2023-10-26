@@ -746,7 +746,7 @@ double int_for_C_shear_shear_IA_mpp(double a, void *params)
   ws2 = W_source(a,ar[1]);
   wk1 = W_kappa(a,fK,ar[0]);
   wk2 = W_kappa(a,fK,ar[1]);
-  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(1.)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
   res= ws1*ws2*norm*norm - (ws1*wk2+ws2*wk1)*norm+wk1*wk2;
   
   return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor / pow(ell,4);
@@ -758,9 +758,12 @@ double C_shear_shear_IA(double s, int ni, int nj)
   int j,k;
   if (ni <= nj){j =nj; k = ni;}
   switch(like.IA){
-    case 1: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA,(void*)array,amin_source(j),amax_source(k),NULL,1000);
-    case 3: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_Az,(void*)array,amin_source(j),amax_source(k),NULL,1000);
-    case 4: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_mpp,(void*)array,amin_source(j),0.99999,NULL,1000);
+    case 1: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA,(void*)array,
+		amin_source(j),amax_source(k),NULL,1000);
+    case 3: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_Az,(void*)array,
+		amin_source(j),amax_source(k),NULL,1000);
+    case 4: return int_gsl_integrate_medium_precision(int_for_C_shear_shear_IA_mpp,(void*)array,
+		amin_source(j),amax_source(k),NULL,1000);
     default: { printf("IA.c: C_shear_shear_IA does not support like.IA = %d\nEXIT\n", like.IA);
                exit(1);
     }
