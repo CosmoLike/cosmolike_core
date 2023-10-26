@@ -721,35 +721,35 @@ double int_for_C_shear_shear_IA_Az(double a, void *params)
   ell       = ar[2]+0.5;
   fK     = f_K(chi(a));
   k      = ell/fK;
-  ws1 = W_source(a,ar[0])*nuisance.A_z[(int)ar[0]];
-  ws2 = W_source(a,ar[1])*nuisance.A_z[(int)ar[1]];
+  ws1 = W_source(a,ar[0]) * nuisance.A_z[(int)ar[0]];
+  ws2 = W_source(a,ar[1]) * nuisance.A_z[(int)ar[1]];
   wk1 = W_kappa(a,fK,ar[0]);
   wk2 = W_kappa(a,fK,ar[1]);
   norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a);
-  res= ws1*ws2*norm*norm - (ws1*wk2+ws2*wk1)*norm+wk1*wk2;
+  res= ws1*ws2*norm*norm - (ws1*wk2+ws2*wk1)*norm + wk1*wk2;
   
   return res*Pdelta(k,a)*dchi_da(a)/fK/fK;
 }
 
 double int_for_C_shear_shear_IA_mpp(double a, void *params)
 { // DES Y1 version, NLA + power law
-  double res, ell, fK, k,ws1,ws2,wk1,wk2, norm;
+  double res, ell, ell_prefactor, fK, k,ws1,ws2,wk1,wk2, norm, A_z_IA;
   double *ar = (double *) params;
   if (a >= 1.0) error("a>=1 in int_for_C_II");
 
-  double ell_prefactor = (ar[2]-1.)*(ar[2])*(ar[2]+1.)*(ar[2]+2.);
-
   ell       = ar[2]+0.5;
+  ell_prefactor = (ar[2]-1.)*(ar[2])*(ar[2]+1.)*(ar[2]+2.)/pow(ell,4);
   fK     = f_K(chi(a));
   k      = ell/fK;
-  ws1 = W_source(a,ar[0]);
-  ws2 = W_source(a,ar[1]);
+  A_z_IA = nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia), nuisance.eta_ia);
+  ws1 = W_source(a,ar[0]) * A_z_IA;
+  ws2 = W_source(a,ar[1]) * A_z_IA;
   wk1 = W_kappa(a,fK,ar[0]);
   wk2 = W_kappa(a,fK,ar[1]);
-  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
-  res= ws1*ws2*norm*norm - (ws1*wk2+ws2*wk1)*norm+wk1*wk2;
+  norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a);
+  res= ws1*ws2*norm*norm - (ws1*wk2+ws2*wk1)*norm + wk1*wk2;
   
-  return res*Pdelta(k,a)*dchi_da(a)/fK/fK * ell_prefactor / pow(ell,4);
+  return res*Pdelta(k,a)*dchi_da(a)/fK/fK;// * ell_prefactor;
 }
 
 double C_shear_shear_IA(double s, int ni, int nj)
