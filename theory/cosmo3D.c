@@ -138,7 +138,7 @@ double growfac(double a)
 
     int i;
     //if using CLASS, calculate growth factor from low-k ratio of power spectrum at different redshifts
-    if ((strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) && cosmology.w0 == -1.0){
+    if ((strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0 || strcmp(pdeltaparams.runmode,"classtagn")==0 || strcmp(pdeltaparams.runmode,"classhmcode")==0) && cosmology.w0 == -1.0){
     	double da = (1. - limits.a_min)/(Ntable.N_a-1.);
 
     	for (i=0;i< Ntable.N_a-1;i++) {
@@ -507,6 +507,14 @@ int run_class(
   }
   return 0;
 }
+double CLASS_sigma8(struct spectra *sp, struct nonlinear *nl){
+      #ifndef CLASS_V29
+          return sp->sigma8;
+            #else
+                return  *nl->sigma8;
+                  #endif
+}
+
 double get_class_s8(struct file_content *fc, int *status){
 //structures for class test run
     struct background ba;       // for cosmological background
@@ -529,11 +537,14 @@ double get_class_s8(struct file_content *fc, int *status){
       sprintf(fc->value[position_kmax],"%e",10.);
     }
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-    if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+
     if (k_max_old >0){
       sprintf(fc->value[position_kmax],"%e",k_max_old);
     }
-    return nl.sigma8[nl.index_pk_total];
+    double s8= CLASS_sigma8(&sp,&nl);
+    if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+    return s8; 
+    //nl.sigma8[nl.index_pk_total];
   }
 
   double get_class_As(struct file_content *fc, int position_As,double sigma8, int *status){
@@ -672,7 +683,12 @@ void fprint_parser(struct file_content * fc,int parser_length){
     fprintf(stderr, "%d %s %s\n",i, fc->name[i],fc->value[i]);
   }
 }
-double p_class(double k_coverh0,double a, int NL, int cdm_b, int *status){
+
+
+
+
+
+double p_class_inner(double k_coverh0,double a, int NL, int cdm_b, int nonlinear, int *status){
   static cosmopara C;
   static double **table_P_L = 0;
   static double **table_P_NL = 0;
@@ -720,6 +736,21 @@ double p_class(double k_coverh0,double a, int NL, int cdm_b, int *status){
 
         *status = fill_class_parameters(&fc,parser_length);
 
+        switch(nonlinear){
+            case 0: break; //use Halofit within CLASS 
+            case 1:  //use hmcode2020 within class 
+              strcpy(fc.name[1],"non linear");
+              strcpy(fc.value[1],"hmcode2020"); 
+              break;
+            case 2: //use hmcode2020 with TAGN within class 
+              strcpy(fc.name[1],"non linear");
+              strcpy(fc.value[1],"hmcode2020"); //to use Halofit within CLASS
+              strcpy(fc.name[18],"hmcode2020log10tagn");
+              //printf("log10Tagn, %e\n", cosmology.log10Tagn);
+              sprintf(fc.value[18],"%e",cosmology.log10Tagn);
+            break;
+       }
+
         if(*status>0) return 1;
         *status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
         if(*status>0) {
@@ -734,6 +765,7 @@ double p_class(double k_coverh0,double a, int NL, int cdm_b, int *status){
         if (cosmology.A_s){
             norm = 3.*log(cosmology.h0/cosmology.coverH0);
             cosmology.sigma_8 = (nl.sigma8[nl.index_pk_total]);
+            cosmology.sigma_8_cc = (nl.sigma8[nl.index_pk_cluster]);
         }
         else{
             norm = log(pow(cosmology.sigma_8/(nl.sigma8[nl.index_pk_total]),2.)*pow(cosmology.h0/cosmology.coverH0,3.));
@@ -777,6 +809,17 @@ double p_class(double k_coverh0,double a, int NL, int cdm_b, int *status){
     if(isnan(val)) return 0.0;
     return exp(val);
 }
+
+double p_class(double k_coverh0,double a, int NL, int cdm_b, int *status){
+    return p_class_inner( k_coverh0, a , NL, cdm_b, 0, status);
+}
+
+double p_class_tagn(double k_coverh0,double a, int NL, int cdm_b, int *status){
+    return p_class_inner( k_coverh0, a , NL, cdm_b, 2, status);
+}
+double p_class_hmcode(double k_coverh0,double a, int NL, int cdm_b, int *status){
+    return p_class_inner( k_coverh0, a , NL, cdm_b, 1, status);
+}
 // linear power spectrum routine with k in units H_0/c; used in covariances.c for beat coupling and in halo.c
 double p_lin(double k,double a)
 {
@@ -784,7 +827,7 @@ double p_lin(double k,double a)
   static double **table_P_Lz = 0;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   int status;
-  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) return p_class(k,a,0, 0, &status);
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0 || strcmp(pdeltaparams.runmode,"classtagn")==0 || strcmp(pdeltaparams.runmode,"classhmcode")==0) return p_class(k,a,0, 0, &status);
 
   double amp,ampsqr,grow0,aa,klog,val;
 
@@ -825,7 +868,7 @@ double p_lin_cdm_b(double k,double a)
   static double **table_P_Lz = 0;
   static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
   int status;
-  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) return p_class(k,a,0, 1, &status);
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0 || strcmp(pdeltaparams.runmode,"classtagn")==0 || strcmp(pdeltaparams.runmode,"classhmcode")==0) return p_class(k,a,0, 1, &status);
 
   double amp,ampsqr,grow0,aa,klog,val;
 
@@ -1498,6 +1541,8 @@ double Pdelta(double k_NL,double a)
     if (strcmp(pdeltaparams.runmode,"linear")==0) P_type = 3;
     if (strcmp(pdeltaparams.runmode,"CLASS")==0) P_type = 4;
     if (strcmp(pdeltaparams.runmode,"class")==0) P_type = 4;
+    if (strcmp(pdeltaparams.runmode,"classtagn")==0) P_type = 6;
+    if (strcmp(pdeltaparams.runmode,"classhmcode")==0) P_type = 7;
     if (strcmp(pdeltaparams.runmode,"cosmo_sim_test") ==0) P_type = 5;
 
   }
@@ -1512,6 +1557,8 @@ double Pdelta(double k_NL,double a)
     case 3: pdelta=p_lin(k_NL,a); break;
     case 4: pdelta=p_class(k_NL,a,1,0,&status); break;
     case 5: k_nonlin=nonlinear_scale_computation(a);
+    case 6: pdelta=p_class_tagn(k_NL,a,1,0,&status); break;
+    case 7: pdelta=p_class_hmcode(k_NL,a,1,0,&status); break;
     if (kintern<0.01) pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
     else{
       error=0.01*pow((pdeltaparams.DIFF_A*kintern/k_nonlin),pdeltaparams.DIFF_n);
