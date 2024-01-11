@@ -6,6 +6,7 @@
 /********************           AUTO-COVARIANCE BLOCKS              **********************/
 double cov_NG_shear_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4);
 double cov_G_shear_shear_tomo(double l, double delta_l, int z1, int z2, int z3, int z4);
+void cov_G_shear_shear_tomo_break_up(double l, double delta_l, int z1, int z2, int z3, int z4, double * res);
 
 double cov_NG_gl_gl_tomo(double l1,double l2, int z1l, int z1s, int z2l, int z2s);
 double cov_G_gl_gl_tomo(double l, double delta_l, int z1l, int z1s, int z2l, int z2s);
@@ -70,6 +71,24 @@ double cov_G_shear_shear_tomo(double l, double delta_l, int z1, int z2, int z3, 
   
   return (C13*C24+ C13*N24+N13*C24 + C14*C23+C14*N23+N14*C23+N13*N24+N14*N23)/((2.*l+1.)*delta_l*fsky);
 }
+
+void cov_G_shear_shear_tomo_break_up(double l, double delta_l, int z1, int z2, int z3, int z4, double * res){
+  double C13, C14, C23, C24, N13 =0, N14=0, N23=0, N24=0;
+   double fsky = survey.area/41253.0;
+  C13 = C_shear_tomo_nointerp(l,z1,z3);C24 = C_shear_tomo_nointerp(l,z2,z4);
+  C14 = C_shear_tomo_nointerp(l,z1,z4);C23 = C_shear_tomo_nointerp(l,z2,z3);
+  if (z1 == z3){N13= pow(survey.sigma_e,2.0)/(2.0*nsource(z1)*survey.n_gal_conversion_factor);}
+  if (z1 == z4){N14= pow(survey.sigma_e,2.0)/(2.0*nsource(z1)*survey.n_gal_conversion_factor);}
+  if (z2 == z3){N23= pow(survey.sigma_e,2.0)/(2.0*nsource(z2)*survey.n_gal_conversion_factor);}
+  if (z2 == z4){N24=pow(survey.sigma_e,2.0)/(2.0*nsource(z2)*survey.n_gal_conversion_factor);}
+  // cosmic variance
+  res[0] = (C13*C24+C14*C23)/((2.*l+1.)*delta_l*fsky);
+  // mix terms
+  res[1] = (C13*N24+N13*C24+C14*N23+N14*C23)/((2.*l+1.)*delta_l*fsky);
+  // shot noise
+  res[2] = (N13*N24+N14*N23)/((2.*l+1.)*delta_l*fsky);
+}
+
 
 /***** gg-lensing x gg-lensing routines ****/
 double bgal_a(double a, double nz){
