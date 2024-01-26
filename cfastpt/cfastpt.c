@@ -3,14 +3,12 @@
 #include <math.h>
 #include <complex.h>
 #include <string.h>
-
 #include <time.h>
-
 #include <fftw3.h>
-
+#include <gsl/gsl_math.h>
+#include "cfastpt.h"
 #include "utils.h"
 #include "utils_complex.h"
-#include "cfastpt.h"
 
 void fastpt_scalar(int *alpha_ar, int *beta_ar, int *ell_ar, int *isP13type_ar, double *coeff_A_ar, int Nterms, double *Pout, double *k, double *Pin, int Nk){
 	long i, j;
