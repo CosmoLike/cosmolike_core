@@ -14,11 +14,11 @@ double beam_planck(double ell){ // TO BE UPDATED!!!!
 //================================================================================================
 // angular correlation functions - no look-up tables
 double C_gk_wrapper(double l,int ni){
-  return C_gk(l,ni)*beam_planck(l);
+  return l>20? C_gk(l,ni)*beam_planck(l) : C_gk_nointerp(l,ni)*beam_planck(l);
 }
 
 double C_ks_wrapper(double l,int ni){
-  return C_ks(l,ni)*beam_planck(l);
+  return l>20? C_ks(l,ni)*beam_planck(l) : C_ks_nointerp(l,ni)*beam_planck(l);
 }
 
 double w_gk_fullsky(int nt, int ni){

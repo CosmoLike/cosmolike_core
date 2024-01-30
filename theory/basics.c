@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-
 #include <fftw3.h>
 
 #include <gsl/gsl_errno.h>
@@ -126,7 +125,8 @@ lim limits = {
 	50., //k_max_mpc_class 
 	2.e-2, //k_min_cH0
 	3.e+6,  //k_max_cH0
-	0.1,//P_2_s_min
+	//0.1,//P_2_s_min
+    20.0,//P_2_s_min
 	1.0e5,//P_2_s_max
 	3.0e-7,//xi_via_hankel_theta_min
 	0.12, //xi_via_hankel_theta_max
@@ -155,11 +155,11 @@ typedef struct {
 
 
 Ntab Ntable = {
-100, //N_a !!!!!!DO NOT F!@#$ING DECREASE THIS NUMBER UNLESS YOU ARE ELISABETH AND HAVE ASKED TIM BEFORE!!!!
+400, //N_a=100 !!!!!!DO NOT F!@#$ING DECREASE THIS NUMBER UNLESS YOU ARE ELISABETH AND HAVE ASKED TIM BEFORE!!!!
 500, //N_k_lin
 500, //N_k_nlin
-200, //N_ell
-200, //N_theta
+400, //N_ell=200
+250, //N_theta=200
 2048, //N_theta for Hankel
 1000, //N_S2
 1000, //N_DS
@@ -249,7 +249,7 @@ double int_gsl_integrate_high_precision(double (*func)(double, void*),void *arg,
 
 double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter)
 {
-  niter= niter<50 ? niter:50;
+  //niter= niter<50 ? niter:50;
   double res, err;
   gsl_integration_cquad_workspace *w = gsl_integration_cquad_workspace_alloc(niter);
   gsl_function F;
@@ -264,7 +264,7 @@ double int_gsl_integrate_medium_precision(double (*func)(double, void*),void *ar
 
 double int_gsl_integrate_low_precision(double (*func)(double, void*),void *arg,double a, double b, double *error, int niter)
 {
-  niter= niter<50 ? niter:50;
+  //niter= niter<50 ? niter:50;
   double res, err;
   gsl_integration_cquad_workspace *wcrude = gsl_integration_cquad_workspace_alloc(niter);
   gsl_function F;

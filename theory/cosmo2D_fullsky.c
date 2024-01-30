@@ -130,7 +130,9 @@ double w_gamma_t_fullsky(int nt, int ni, int nj){
 
 		for (nz = 0; nz <tomo.ggl_Npowerspectra; nz ++){
 			for (l = 1; l < LMAX; l++){
-				Cl[l]=C_ggl_IA_tab(1.0*l,ZL(nz),ZS(nz));
+				Cl[l] = l>20? 
+                        C_ggl_IA_tab(1.0*l,ZL(nz),ZS(nz)) :
+                        C_ggl_IA(1.0*l, ZL(nz), ZS(nz));
 			}
 			for (i = 0; i < NTHETA; i++){
 				w_vec[nz*like.Ntheta+i] =0;
@@ -184,7 +186,7 @@ double xi_pm_fullsky(int pm, int nt, int ni, int nj) //shear tomography correlat
 			double x = cos(like.theta[i]);
 			gsl_sf_legendre_Pl_deriv_array(LMAX, xmin[i],Pmin,dPmin);
 			gsl_sf_legendre_Pl_deriv_array(LMAX, xmax[i],Pmax,dPmax);
-			for (int l = 3; l < LMAX; l ++){
+			for (int l = 1; l < LMAX; l ++){
 				/*double plm = gsl_sf_legendre_Plm(l,2,x);
 				double plm_1 = gsl_sf_legendre_Plm(l-1,2,x);
 				Glplus[i][l] = (2.*l+1)/(2.*M_PI*l*l*(l+1)*(l+1))
@@ -242,8 +244,10 @@ double xi_pm_fullsky(int pm, int nt, int ni, int nj) //shear tomography correlat
 
 		update_cosmopara(&C); update_nuisance(&N);
 		for (nz = 0; nz <tomo.shear_Npowerspectra; nz ++){
-			for (l = 2; l < LMAX; l++){
-				Cl[l]=C_shear_shear_IA_tab(1.0*l,Z1(nz),Z2(nz));
+			for (l = 2; l < LMAX; l++){ 
+				Cl[l] = l > 20? 
+                        C_shear_shear_IA_tab(1.0*l,Z1(nz),Z2(nz)) : 
+                        C_shear_shear_IA(1.0*l, Z1(nz), Z2(nz));
 			}
 			for (i = 0; i < like.Ntheta; i++){
 				xi_vec_plus[nz*like.Ntheta+i] =0;
