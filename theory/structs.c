@@ -253,7 +253,7 @@ typedef struct {
   //like.IA = 6: TATT, power law
   double A_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3 or like.IA = 5)
   double A2_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA = 5)
-  double b_ta_z[10]; //b_ta, per bin (like.IA = 6), or use b_ta_z[0] with like.IA = 5
+  double b_ta_z[10]; //b_ta, per bin (like.IA = 5), or use b_ta_z[0] with like.IA = 6
   double A_ia; //A IA see Joachimi2012
   double A2_ia; //placeholder param for quadratic,etc IA
   double beta_ia; //beta IA see Joachimi2012
