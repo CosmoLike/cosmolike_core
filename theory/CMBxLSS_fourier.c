@@ -203,7 +203,11 @@ double C_ks_IA(double s, int ni)
    if (like.IA==1) return int_gsl_integrate_medium_precision(int_for_C_ks_IA,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
    if (like.IA==3) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_Az,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);
    if (like.IA==4) return int_gsl_integrate_medium_precision(int_for_C_ks_IA_mpp,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);//0.99999
-   printf("CMBxLSS.c: C_ks_IA does not support like.IA = %d\nEXIT\n", like.IA);
+   if (like.IA==6){
+     printf("WARNING: %s: C_ks_IA does not support TATT (like.IA=6), fall back to NLA!\n", __FILE__);
+     return int_gsl_integrate_medium_precision(int_for_C_ks_IA_mpp,(void*)array,amin_source(ni),amax_source(ni),NULL,1000);//0.99999
+   }
+   printf("%s: C_ks_IA does not support like.IA = %d\nEXIT\n",__FILE__, like.IA);
   exit(1);
 }
 
