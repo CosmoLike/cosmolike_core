@@ -281,6 +281,24 @@ void set_cov_parameters_to_(char *covparamfile, int output)
       }
       continue;
     }
+    if(strcmp(name, "lmin_bp")==0)
+    {
+      sscanf(val, "%d", &like.lmin_bp);
+      if(output==1)
+      {
+        printf("lmin_bp %d \n",like.lmin_bp);
+      }
+      continue;
+    }
+    else if(strcmp(name, "lmax_bp")==0)
+    {
+      sscanf(val, "%d", &like.lmax_bp);
+      if(output==1)
+      {
+        printf("lmax_bp %d \n",like.lmax_bp);
+      }
+      continue;
+    }
     if(strcmp(name, "lmin_bp_with_corr")==0)
     {
       sscanf(val, "%d", &like.lmin_bp_with_corr);
@@ -666,6 +684,21 @@ void set_survey_parameters_to_(char *surveyfile, int output)
         i++;
       }
     }
+    else if(strcmp(name, "lens_tomo_bmag")==0)
+    {
+      i=0;
+      for (char *p = strtok(val,","); p != NULL; p = strtok(NULL, ","))
+      {
+        double var;
+        sscanf(p, "%lf", &var);
+        gbias.b_mag[i]=var;
+        if(output==1)
+        {
+          printf("b_mag[%d]=%f \n",i,gbias.b_mag[i]);
+        }
+        i++;
+      }
+    }
     else if(strcmp(name, "lens_zphot_sigma")==0)
     { 
       i=0;
@@ -696,6 +729,15 @@ void set_survey_parameters_to_(char *surveyfile, int output)
         }
         i++;
       }
+    }
+    else if(strcmp(name, "cmbl_nlkk_file")==0)
+    {
+      sprintf(cmb.pathLensRecNoise,"%s",val);
+      if(output==1)
+      {
+        printf("cmbl_nlkk_file %s \n",cmb.pathLensRecNoise);
+      }
+      continue;
     }
   }
 

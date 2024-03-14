@@ -62,7 +62,6 @@ double W_gal(double a, double nz){
     wmag *= (1.+MG_Sigma(a));
   }
   return wgal + wmag;
-  // return wgal;
 }
 
 double W_source(double a, double nz){
