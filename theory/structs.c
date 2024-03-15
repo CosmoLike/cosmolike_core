@@ -164,7 +164,7 @@ typedef struct {
    char name[500];
    double fwhm;   // beam fwhm in rad
    double sensitivity;  // white noise level in muK*rad
-   char * pathLensRecNoise;   // path to precomputed noise on reconstructed kappa
+   char pathLensRecNoise[500];   // path to precomputed noise on reconstructed kappa
    char * path_yNoise;
    double fsky;
 }Cmb;
