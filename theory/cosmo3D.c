@@ -432,80 +432,81 @@ void free_class_structs(
 }
 
 int run_class(
-  struct file_content *fc,
-  struct background *ba,
-  struct thermo *th,
-  struct perturbs *pt,
-  struct transfers *tr,
-  struct primordial *pm,
-  struct spectra *sp,
-  struct nonlinear *nl,
-  struct lensing *le){
-  struct precision pr;        // for precision parameters
-  struct output op;           /* for output files */
-  ErrorMsg errmsg; // for error messages
+      struct file_content *fc,
+      struct background *ba,
+      struct thermo *th,
+      struct perturbs *pt,
+      struct transfers *tr,
+      struct primordial *pm,
+      struct spectra *sp,
+      struct nonlinear *nl,
+      struct lensing *le){
+      struct precision pr;        // for precision parameters
+      struct output op;           /* for output files */
+      ErrorMsg errmsg; // for error messages
 
-  if(input_init(fc,&pr,ba,th,pt,tr,pm,sp,nl,le,&op,errmsg) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS input:%s\n",errmsg);
-    parser_free(fc);
-    return 1;
-  }
-  if (background_init(&pr,ba) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS background:%s\n",ba->error_message);
-    return 1;
-  }
-  if (thermodynamics_init(&pr,ba,th) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS thermodynamics:%s\n",th->error_message);
-    background_free(ba);
-    return 1;
-  }
-  cosmology.theta_s = 100.*th->rs_rec/th->ra_rec;
-  cosmology.h0 = ba->h;
-//    printf("theta_* = %.5f\n",cosmology.theta_s);
-//    printf("h_CLASS = %.3f\n\n", ba->h);
-  if (perturb_init(&pr,ba,th,pt) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS perturb:%s\n",pt->error_message);
-    thermodynamics_free(th);
-    background_free(ba);
-    return 1;
-  }
-  if (primordial_init(&pr,pt,pm) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS primordial:%s\n",pm->error_message);
-    perturb_free(pt);
-    thermodynamics_free(th);
-    background_free(ba);
-    return 1;
-  }
+      if(input_init(fc,&pr,ba,th,pt,tr,pm,sp,nl,le,&op,errmsg) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS input:%s\n",errmsg);
+        parser_free(fc);
+        return 1;
+      }
+      if (background_init(&pr,ba) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS background:%s\n",ba->error_message);
+        return 1;
+      }
+      if (thermodynamics_init(&pr,ba,th) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS thermodynamics:%s\n",th->error_message);
+        background_free(ba);
+        return 1;
+      }
+      cosmology.theta_s = 100.*th->rs_rec/th->ra_rec;
+      cosmology.rs_d = th->rs_d;
+      cosmology.h0 = ba->h;
+    //    printf("theta_* = %.5f\n",cosmology.theta_s);
+    //    printf("h_CLASS = %.3f\n\n", ba->h);
+      if (perturb_init(&pr,ba,th,pt) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS perturb:%s\n",pt->error_message);
+        thermodynamics_free(th);
+        background_free(ba);
+        return 1;
+      }
+      if (primordial_init(&pr,pt,pm) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS primordial:%s\n",pm->error_message);
+        perturb_free(pt);
+        thermodynamics_free(th);
+        background_free(ba);
+        return 1;
+      }
 
-  if (nonlinear_init(&pr,ba,th,pt,pm,nl) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS nonlinear:%s\n",nl->error_message);
-    primordial_free(pm);
-    perturb_free(pt);
-    thermodynamics_free(th);
-    background_free(ba);
-    return 1;
-  }
+      if (nonlinear_init(&pr,ba,th,pt,pm,nl) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS nonlinear:%s\n",nl->error_message);
+        primordial_free(pm);
+        perturb_free(pt);
+        thermodynamics_free(th);
+        background_free(ba);
+        return 1;
+      }
 
-  if (transfer_init(&pr,ba,th,pt,nl,tr) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS transfer:%s\n",tr->error_message);
-    nonlinear_free(nl);
-    primordial_free(pm);
-    perturb_free(pt);
-    thermodynamics_free(th);
-    background_free(ba);
-    return 1;
-  }
-  if (spectra_init(&pr,ba,pt,pm,nl,tr,sp) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS spectra:%s\n",sp->error_message);
-    transfer_free(tr);
-    nonlinear_free(nl);
-    primordial_free(pm);
-    perturb_free(pt);
-    thermodynamics_free(th);
-    background_free(ba);
-    return 1;
-  }
-  return 0;
+      if (transfer_init(&pr,ba,th,pt,nl,tr) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS transfer:%s\n",tr->error_message);
+        nonlinear_free(nl);
+        primordial_free(pm);
+        perturb_free(pt);
+        thermodynamics_free(th);
+        background_free(ba);
+        return 1;
+      }
+      if (spectra_init(&pr,ba,pt,pm,nl,tr,sp) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS spectra:%s\n",sp->error_message);
+        transfer_free(tr);
+        nonlinear_free(nl);
+        primordial_free(pm);
+        perturb_free(pt);
+        thermodynamics_free(th);
+        background_free(ba);
+        return 1;
+      }
+      return 0;
 }
 double CLASS_sigma8(struct spectra *sp, struct nonlinear *nl){
       #ifndef CLASS_V29
@@ -685,129 +686,225 @@ void fprint_parser(struct file_content * fc,int parser_length){
 }
 
 
+int run_class_SNBAO(
+      struct file_content *fc,
+      struct background *ba,
+      struct thermo *th,
+      struct perturbs *pt,
+      struct transfers *tr,
+      struct primordial *pm,
+      struct spectra *sp,
+      struct nonlinear *nl,
+      struct lensing *le){
+      struct precision pr;        // for precision parameters
+      struct output op;           /* for output files */
+      ErrorMsg errmsg; // for error messages
+
+      if(input_init(fc,&pr,ba,th,pt,tr,pm,sp,nl,le,&op,errmsg) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS input:%s\n",errmsg);
+        parser_free(fc);
+        return 1;
+      }
+      if (background_init(&pr,ba) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS background:%s\n",ba->error_message);
+        return 1;
+      }
+      if (thermodynamics_init(&pr,ba,th) == _FAILURE_) {
+        fprintf(stderr,"cosmo3D.c: Error running CLASS thermodynamics:%s\n",th->error_message);
+        background_free(ba);
+        return 1;
+      }
+      cosmology.theta_s = 100.*th->rs_rec/th->ra_rec;
+      cosmology.rs_d = th->rs_d;
+      cosmology.h0 = ba->h;
+      return 0;
+}
+void free_class_structs_SNBAO(
+ struct background *ba,
+ struct thermo *th,
+ struct perturbs *pt,
+ struct transfers *tr,
+ struct primordial *pm,
+ struct spectra *sp,
+ struct nonlinear *nl,
+ struct lensing *le){
+  if (thermodynamics_free(th) == _FAILURE_) {
+    printf("\n\nError in thermodynamics_free \n=>%s\n",th->error_message);
+  }
+
+  if (background_free(ba) == _FAILURE_) {
+    printf("\n\nError in background_free \n=>%s\n",ba->error_message);
+  }
+}
+
+
+
+double p_class_SNBAO(int *status){
+      static cosmopara C;
+      static int class_status = 0;
+
+        if (recompute_cosmo3D(C)){
+            //allocate CLASS structures
+            struct background ba;       // for cosmological background
+            struct thermo th;           // for thermodynamics
+            struct perturbs pt;         // for source functions
+            struct transfers tr;        // for transfer functions
+            struct primordial pm;       // for primordial spectra
+            struct spectra sp;          // for output spectra
+            struct nonlinear nl;        // for non-linear spectra
+            struct lensing le;
+            struct output op;
+
+            ErrorMsg errmsg; // for error messages
+
+            struct file_content fc;
+            int parser_length = 30;
+            if (parser_init(&fc,parser_length,"none",errmsg) == _FAILURE_){
+             fprintf(stderr,"cosmo3D.c: CLASS parser init error:%s\n",errmsg);
+             *status = 1;
+             return 0.;
+            }
+            for (int i =0; i < parser_length; i++){
+                strcpy(fc.name[i]," ");
+                strcpy(fc.value[i]," ");
+            }
+
+            *status = fill_class_parameters(&fc,parser_length);
+            if(*status>0) return 1;
+            *status = run_class_SNBAO(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+            if(*status>0) {
+                fprint_parser(&fc,parser_length);
+                parser_free(&fc);
+                return 1;
+            }
+            parser_free(&fc);
+            if (*status ==0){
+                free_class_structs_SNBAO(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+            }
+            update_cosmopara(&C);
+        }
+}
 
 
 
 double p_class_inner(double k_coverh0,double a, int NL, int cdm_b, int nonlinear, int *status){
-  static cosmopara C;
-  static double **table_P_L = 0;
-  static double **table_P_NL = 0;
-  static double **table_P_L_c = 0;
-  static double **table_P_NL_c = 0;
-  static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
-  static int class_status = 0;
-  double val,klog;
+      static cosmopara C;
+      static double **table_P_L = 0;
+      static double **table_P_NL = 0;
+      static double **table_P_L_c = 0;
+      static double **table_P_NL_c = 0;
+      static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
+      static int class_status = 0;
+      double val,klog;
 
-    if (recompute_cosmo3D(C)){
-        if (table_P_L ==0){
-          table_P_L = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
-          table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
-          table_P_L_c = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
-          table_P_NL_c = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
-          da = (1. - limits.a_min)/(Ntable.N_a-1.);
-          logkmin = log(limits.k_min_mpc*cosmology.coverH0);
-          logkmax = log(limits.k_max_mpc_class*cosmology.coverH0);
-          dk = (logkmax-logkmin)/(Ntable.N_k_nlin-1.);
-        }
-        //allocate CLASS structures
-        struct background ba;       // for cosmological background
-        struct thermo th;           // for thermodynamics
-        struct perturbs pt;         // for source functions
-        struct transfers tr;        // for transfer functions
-        struct primordial pm;       // for primordial spectra
-        struct spectra sp;          // for output spectra
-        struct nonlinear nl;        // for non-linear spectra
-        struct lensing le;
-        struct output op;
+        if (recompute_cosmo3D(C)){
+            if (table_P_L ==0){
+              table_P_L = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
+              table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
+              table_P_L_c = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
+              table_P_NL_c = create_double_matrix(0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
+              da = (1. - limits.a_min)/(Ntable.N_a-1.);
+              logkmin = log(limits.k_min_mpc*cosmology.coverH0);
+              logkmax = log(limits.k_max_mpc_class*cosmology.coverH0);
+              dk = (logkmax-logkmin)/(Ntable.N_k_nlin-1.);
+            }
+            //allocate CLASS structures
+            struct background ba;       // for cosmological background
+            struct thermo th;           // for thermodynamics
+            struct perturbs pt;         // for source functions
+            struct transfers tr;        // for transfer functions
+            struct primordial pm;       // for primordial spectra
+            struct spectra sp;          // for output spectra
+            struct nonlinear nl;        // for non-linear spectra
+            struct lensing le;
+            struct output op;
 
-        ErrorMsg errmsg; // for error messages
+            ErrorMsg errmsg; // for error messages
 
-        struct file_content fc;
-        int parser_length = 30;
-        if (parser_init(&fc,parser_length,"none",errmsg) == _FAILURE_){
-         fprintf(stderr,"cosmo3D.c: CLASS parser init error:%s\n",errmsg);
-         *status = 1;
-         return 0.;
-        }
-        for (int i =0; i < parser_length; i++){
-         strcpy(fc.name[i]," ");
-         strcpy(fc.value[i]," ");
-        }
+            struct file_content fc;
+            int parser_length = 30;
+            if (parser_init(&fc,parser_length,"none",errmsg) == _FAILURE_){
+             fprintf(stderr,"cosmo3D.c: CLASS parser init error:%s\n",errmsg);
+             *status = 1;
+             return 0.;
+            }
+            for (int i =0; i < parser_length; i++){
+             strcpy(fc.name[i]," ");
+             strcpy(fc.value[i]," ");
+            }
 
-        *status = fill_class_parameters(&fc,parser_length);
+            *status = fill_class_parameters(&fc,parser_length);
+            switch(nonlinear){
+                case 0: break; //use Halofit within CLASS 
+                case 1:  //use hmcode2020 within class 
+                  strcpy(fc.name[1],"non linear");
+                  strcpy(fc.value[1],"hmcode2020"); 
+                  break;
+                case 2: //use hmcode2020 with TAGN within class 
+                  strcpy(fc.name[1],"non linear");
+                  strcpy(fc.value[1],"hmcode2020"); //to use Halofit within CLASS
+                  strcpy(fc.name[18],"hmcode2020log10tagn");
+                  sprintf(fc.value[18],"%e",cosmology.log10Tagn);
+                break;
+           }
 
-        switch(nonlinear){
-            case 0: break; //use Halofit within CLASS 
-            case 1:  //use hmcode2020 within class 
-              strcpy(fc.name[1],"non linear");
-              strcpy(fc.value[1],"hmcode2020"); 
-              break;
-            case 2: //use hmcode2020 with TAGN within class 
-              strcpy(fc.name[1],"non linear");
-              strcpy(fc.value[1],"hmcode2020"); //to use Halofit within CLASS
-              strcpy(fc.name[18],"hmcode2020log10tagn");
-              //printf("log10Tagn, %e\n", cosmology.log10Tagn);
-              sprintf(fc.value[18],"%e",cosmology.log10Tagn);
-            break;
-       }
-
-        if(*status>0) return 1;
-        *status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-        if(*status>0) {
-            fprint_parser(&fc,parser_length);
+            if(*status>0) return 1;
+            *status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+            if(*status>0) {
+                fprint_parser(&fc,parser_length);
+                parser_free(&fc);
+                return 1;
+            }
             parser_free(&fc);
-            return 1;
+            double aa,norm, k_class,Pk,ic, Pk_c;
+            int i,j,s;
+            aa = limits.a_min;
+            if (cosmology.A_s){
+                norm = 3.*log(cosmology.h0/cosmology.coverH0);
+                cosmology.sigma_8 = (nl.sigma8[nl.index_pk_total]);
+                cosmology.sigma_8_cc = (nl.sigma8[nl.index_pk_cluster]);
+            }
+            else{
+                norm = log(pow(cosmology.sigma_8/(nl.sigma8[nl.index_pk_total]),2.)*pow(cosmology.h0/cosmology.coverH0,3.));
+            }
+            //printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/sp.sigma8,2.));
+            if (*status ==0){
+                for (i=0; i<Ntable.N_a; i++, aa +=da) {
+                    klog = logkmin;
+                    for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
+                        k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
+                        //s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
+                        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+                        table_P_L[i][j] = log(Pk) +norm;
+
+                        //s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
+                        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+                        table_P_NL[i][j] = log(Pk) +norm;
+
+                        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk_c, &ic);
+                        table_P_L_c[i][j] = log(Pk_c) +norm;
+
+                        s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk_c, &ic);
+                        table_P_NL_c[i][j] = log(Pk_c) +norm;
+
+                    }
+                }
+                free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+            }
+            update_cosmopara(&C);
         }
-        parser_free(&fc);
-        double aa,norm, k_class,Pk,ic, Pk_c;
-        int i,j,s;
-        aa = limits.a_min;
-        if (cosmology.A_s){
-            norm = 3.*log(cosmology.h0/cosmology.coverH0);
-            cosmology.sigma_8 = (nl.sigma8[nl.index_pk_total]);
-            cosmology.sigma_8_cc = (nl.sigma8[nl.index_pk_cluster]);
+        klog = log(k_coverh0);
+        if (isnan(klog) || class_status) return 0.0;
+        if (NL==1){
+            if(cdm_b==1) val = interpol2d_fitslope(table_P_NL_c, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+            else val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
         }
         else{
-            norm = log(pow(cosmology.sigma_8/(nl.sigma8[nl.index_pk_total]),2.)*pow(cosmology.h0/cosmology.coverH0,3.));
+            if(cdm_b==1) val = interpol2d_fitslope(table_P_L_c, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+            else val = interpol2d_fitslope(table_P_L, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
         }
-        //printf("power spectrum scaling factor %e\n", pow(cosmology.sigma_8/sp.sigma8,2.));
-        if (*status ==0){
-            for (i=0; i<Ntable.N_a; i++, aa +=da) {
-                klog = logkmin;
-                for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
-                    k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
-                    //s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
-                    s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
-                    table_P_L[i][j] = log(Pk) +norm;
-
-                    //s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk);
-                    s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
-                    table_P_NL[i][j] = log(Pk) +norm;
-
-                    s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk_c, &ic);
-                    table_P_L_c[i][j] = log(Pk_c) +norm;
-
-                    s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_cluster, &Pk_c, &ic);
-                    table_P_NL_c[i][j] = log(Pk_c) +norm;
-
-                }
-            }
-            free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
-        }
-        update_cosmopara(&C);
-    }
-    klog = log(k_coverh0);
-    if (isnan(klog) || class_status) return 0.0;
-    if (NL==1){
-        if(cdm_b==1) val = interpol2d_fitslope(table_P_NL_c, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
-        else val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
-    }
-    else{
-        if(cdm_b==1) val = interpol2d_fitslope(table_P_L_c, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
-        else val = interpol2d_fitslope(table_P_L, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
-    }
-    if(isnan(val)) return 0.0;
-    return exp(val);
+        if(isnan(val)) return 0.0;
+        return exp(val);
 }
 
 double p_class(double k_coverh0,double a, int NL, int cdm_b, int *status){
@@ -1547,7 +1644,6 @@ double Pdelta(double k_NL,double a)
 
   }
 
-  //printf("%s set\n",pdeltaparams.runmode);
   double pdelta = 0.,kintern=k_NL/cosmology.coverH0,error,k_nonlin,res;
   int status;
   switch (P_type){
