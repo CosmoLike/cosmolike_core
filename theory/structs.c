@@ -257,6 +257,7 @@ typedef struct {
   double bias_zphot_shear[10];
   double sigma_zphot_clustering[10];
   double bias_zphot_clustering[10];
+  double stretch_zphot_clustering[10];
   double sigma_zphot_magnification[10];
   double bias_zphot_magnification[10];
   double LF_alpha;
@@ -316,6 +317,7 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .stretch_zphot_clustering = {1.,1.,1.,1.,1.,1.,1.,1.,1.,1.},
   .bary = {0.0, 0.0, 0.0},
   .frac_lowz = 0.,
   .frac_highz = 0.,

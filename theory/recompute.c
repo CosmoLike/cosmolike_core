@@ -84,6 +84,7 @@ void update_nuisance (nuisancepara *N){
     N-> fred[i] = nuisance.fred[i];
     N->sigma_zphot_clustering[i] = nuisance.sigma_zphot_clustering[i];
     N->bias_zphot_clustering[i] = nuisance.bias_zphot_clustering[i];
+    N->stretch_zphot_clustering[i] = nuisance.stretch_zphot_clustering[i];
   }
   for(i = 0; i < tomo.shear_Nbin; i++){
     N->sigma_zphot_shear[i] = nuisance.sigma_zphot_shear[i];
@@ -197,7 +198,7 @@ int recompute_zphot_clustering(nuisancepara N){
   if (redshift.clustering_photoz != 3 && redshift.clustering_photoz != 4){return 0;}
   int i, res = 0;
   for(i = 0; i < tomo.clustering_Nbin; i++){
-    if (N.sigma_zphot_clustering[i]!= nuisance.sigma_zphot_clustering[i] || N.bias_zphot_clustering[i]!= nuisance.bias_zphot_clustering[i]){ res = 1;}
+    if (N.sigma_zphot_clustering[i]!= nuisance.sigma_zphot_clustering[i] || N.bias_zphot_clustering[i]!= nuisance.bias_zphot_clustering[i] || N.stretch_zphot_clustering[i]!= nuisance.stretch_zphot_clustering[i]){ res = 1;}
   }
   return res;
 }
