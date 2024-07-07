@@ -358,6 +358,7 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double bias_zphot_shear[10][2];
   double sigma_zphot_clustering[10][2];
   double bias_zphot_clustering[10][2];
+  double stretch_zphot_clustering[10][2];
   double sigma_zphot_magnification[10][2];
   double bias_zphot_magnification[10][2];
   double cluster_Mobs_lgM0[2];
@@ -403,6 +404,7 @@ priorpara prior = {
 .bias_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.stretch_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bary_Q1 = {0.,0.},
 .bary_Q2 = {0.,0.},
 .bary_Q3 = {0.,0.}
