@@ -41,7 +41,7 @@ double C_cl_lin_nointerp(double l, int ni, int nj)  //galaxy clustering power sp
 {
 	double array[3] = {1.0*ni,1.0*nj,l};
 	// return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),fmin(amax_lens(ni),amax_lens(nj)),NULL,1000);
-	return int_gsl_integrate_medium_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.99999,NULL,1000);
+	return int_gsl_integrate_high_precision(int_for_C_cl_lin,(void*)array,fmax(amin_lens(ni),amin_lens(nj)),0.99999,NULL,1000);
 }
 
 // test for replacing Plin with Pdelta and rescaled

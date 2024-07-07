@@ -959,8 +959,10 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
           if(zmean_tomo==0){
             zmean_tomo = create_double_vector(0, zbins-1);
             for(int j=0; j<tomo.clustering_Nbin; j++){
-            array[0] = 1.*j;
-            zmean_tomo[j] = int_gsl_integrate_medium_precision(int_for_zmean_histo_n, (void*) array, tomo.clustering_zmin[j], tomo.clustering_zmax[j],NULL, 1024)/int_gsl_integrate_medium_precision(norm_for_zmean_histo_n, (void*) array, tomo.clustering_zmin[j], tomo.clustering_zmax[j],NULL, 1024);} 
+              array[0] = 1.*j;
+              zmean_tomo[j] = int_gsl_integrate_medium_precision(int_for_zmean_histo_n, (void*) array, tomo.clustering_zmin[j], tomo.clustering_zmax[j],NULL, 1024)/int_gsl_integrate_medium_precision(norm_for_zmean_histo_n, (void*) array, tomo.clustering_zmin[j], tomo.clustering_zmax[j],NULL, 1024);
+              printf("z_mean of tomo bin %d = %.3f (histogram file)\n", j+1, zmean_tomo[j]);
+            } 
           }
           array[0] = 1.0*i;
           norm = int_gsl_integrate_medium_precision(pf_histo_n, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024);
