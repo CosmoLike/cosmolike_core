@@ -209,8 +209,17 @@ void SVD_inversion(gsl_matrix *cov, gsl_matrix *inverseSVD,int Nmatrix)
 
 void invert_matrix_colesky(gsl_matrix *A)
 {
-  gsl_linalg_cholesky_decomp (A);  // Adummy will be overwritten  */
-  gsl_linalg_cholesky_invert (A);   
+  int status = 0;
+  status = gsl_linalg_cholesky_decomp (A);  // Adummy will be overwritten  */
+  if (status!=0){
+    printf("invert_matrix_colesky Error %d!\nAbort...", status);
+    exit(-1);
+  }
+  status = gsl_linalg_cholesky_invert (A);   
+  if (status!=0){
+    printf("invert_matrix_colesky Error %d!\nAbort...", status);
+    exit(-1);
+  }
 }
 
 
