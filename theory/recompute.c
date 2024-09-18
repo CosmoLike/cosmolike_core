@@ -298,14 +298,16 @@ int recompute_kk(cosmopara C, nuisancepara N){
 }
 
 int recompute_PkRatio(barypara B){
-  if (B.isPkbary!=bary.isPkbary){return 1;}
-  else if(strcmp(B.scenario,bary.scenario)!=0){return 1;}
+  if ((B.isPkbary!=bary.isPkbary) || (strcmp(B.scenario,bary.scenario)!=0) || 
+      (B.Nabins!=bary.Nabins) || (B.Nkbins!=bary.Nkbins)){return 1;}
 	return 0;
 }
 
 void update_PkRatio(barypara *B){
-	sprintf((*B).scenario,"%s", bary.scenario);
-    B->isPkbary = bary.isPkbary;
+  sprintf((B->scenario,"%s", bary.scenario);
+  B->isPkbary = bary.isPkbary;
+  B->Nabins = bary.Nabins;
+  B->Nkbins = bary.Nkbins;
 }
 
 int recompute_gy(cosmopara C, galpara G, nuisancepara N, int i){
