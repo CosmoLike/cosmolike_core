@@ -1422,7 +1422,7 @@ double PkRatio_baryons(double kintern,double a){
     if (logk_bins!=0) free_double_vector(logk_bins, 0, B.Nkbins-1);
     logk_bins = create_double_vector(0, bary.Nkbins-1);
 
-    if (a_bins!=0) free_double_vector(logk_bins, 0, B.Nabins-1);
+    if (a_bins!=0) free_double_vector(a_bins, 0, B.Nabins-1);
     a_bins = create_double_vector(0, bary.Nabins-1);
 
 		update_PkRatio(&B);
