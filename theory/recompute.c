@@ -305,7 +305,7 @@ int recompute_PkRatio(barypara B){
 
 void update_PkRatio(barypara *B){
 	sprintf((*B).scenario,"%s", bary.scenario);
-  (*B).isPkbary = bary.scenario;
+    B->isPkbary = bary.isPkbary;
 }
 
 int recompute_gy(cosmopara C, galpara G, nuisancepara N, int i){
