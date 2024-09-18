@@ -1406,7 +1406,7 @@ double PkRatio_baryons(double kintern,double a){
 
   static double *GSLPKR = 0;
   static gsl_interp2d *interp2d = 0;
-	if (recompute_PkRatio(B) && GSLPKR == 0){
+	if (recompute_PkRatio(B) || GSLPKR == 0){
 
     const gsl_interp2d_type *T = gsl_interp2d_bilinear;
     interp2d = gsl_interp2d_alloc (T, bary.Nkbins, bary.Nabins);
