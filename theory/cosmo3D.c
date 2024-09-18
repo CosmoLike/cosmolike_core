@@ -1407,22 +1407,27 @@ double PkRatio_baryons(double kintern,double a){
   static double *GSLPKR = 0;
   static gsl_interp2d *interp2d = 0;
 	if (recompute_PkRatio(B) || GSLPKR == 0){
-
     const gsl_interp2d_type *T = gsl_interp2d_bilinear;
+    // release all the static memory in previous run
+    // Free B, allocate bary
+    if (interp2d!=0) gsl_interp2d_free(interp2d);
     interp2d = gsl_interp2d_alloc (T, bary.Nkbins, bary.Nabins);
+
+    if (GSLPKR!=0) free(GSLPKR);
     GSLPKR = malloc(bary.Nkbins * bary.Nabins * sizeof(double));
+
+    if (TblogPkR!=0) free_double_matrix(TblogPkR,0,B.Nkbins-1, 0, B.Nabins-1);
+    TblogPkR = create_double_matrix(0,bary.Nkbins-1, 0, bary.Nabins-1);
+
+    if (logk_bins!=0) free_double_vector(logk_bins, 0, B.Nkbins-1);
+    logk_bins = create_double_vector(0, bary.Nkbins-1);
+
+    if (a_bins!=0) free_double_vector(logk_bins, 0, B.Nabins-1);
+    a_bins = create_double_vector(0, bary.Nabins-1);
+
 		update_PkRatio(&B);
 
 		printf("in recompute PkRatio \n");
-
-		if (TblogPkR!=0) free_double_matrix(TblogPkR,0,bary.Nkbins-1, 0, bary.Nabins-1);
-		TblogPkR = create_double_matrix(0,bary.Nkbins-1, 0, bary.Nabins-1);
-
-		if (logk_bins!=0) free_double_vector(logk_bins, 0, bary.Nkbins-1);
-		logk_bins = create_double_vector(0, bary.Nkbins-1);
-
-		if (a_bins!=0) free_double_vector(logk_bins, 0, bary.Nabins-1);
-		a_bins = create_double_vector(0, bary.Nabins-1);
 
 		for (int i=0;i<bary.Nabins;i++){
 			a_bins[i]=1./(1+bary.z_bins[i]);   //printf("a: %le,z: %le\n",a[i],z[i]);
