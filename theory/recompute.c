@@ -304,7 +304,7 @@ int recompute_PkRatio(barypara B){
 }
 
 void update_PkRatio(barypara *B){
-  sprintf((B->scenario,"%s", bary.scenario);
+  sprintf(B->scenario,"%s", bary.scenario);
   B->isPkbary = bary.isPkbary;
   B->Nabins = bary.Nabins;
   B->Nkbins = bary.Nkbins;
