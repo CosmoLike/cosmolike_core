@@ -1,6 +1,7 @@
 void set_shear_priors_mpp(double *mean_m,double *sigma_m);
 void set_wlphotoz_priors_mpp(double *bias_photoz_s,double *sigma_photoz_s);
 void set_clphotoz_priors_mpp(double *bias_photoz_l,double *sigma_photoz_l);
+void set_clphotozstretch_priors_mpp(double *stretch_photoz_l,double *sigma_stretch_photoz_l);
 
 void set_ia_priors_mpp(double A_min, double A_max);
 void set_b1_priors_mpp(double b1_min, double b1_max);
@@ -56,6 +57,20 @@ void set_clphotoz_priors_mpp(double *bias_photoz_l,double *sigma_b_photoz_l){
     prior.bias_zphot_clustering[i][1] = sigma_b_photoz_l[i];
     if (sigma_b_photoz_l[i]) {
       printf("zn = %d (mean,sigma) = (%e, %e)\n",i, prior.bias_zphot_clustering[i][0],prior.bias_zphot_clustering[i][1]);
+      like.clphotoz=1;
+    }
+  }
+  printf("\n");
+}
+void set_clphotozstretch_priors_mpp(double *stretch_photoz_l,double *sigma_stretch_photoz_l){
+  printf("Setting Gaussian Priors on lens n(z) stretch\n");
+  for (int i=0;i<10; i++){
+    prior.stretch_zphot_clustering[i][0] = stretch_photoz_l[i];
+    prior.stretch_zphot_clustering[i][1] = sigma_stretch_photoz_l[i];
+    if (sigma_stretch_photoz_l[i]) {
+      printf("zn = %d (mean,sigma) = (%e, %e)\n",i, 
+        prior.stretch_zphot_clustering[i][0],
+        prior.stretch_zphot_clustering[i][1]);
       like.clphotoz=1;
     }
   }

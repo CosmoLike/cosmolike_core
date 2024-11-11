@@ -395,6 +395,7 @@ typedef struct input_nuisance_params_mpp {
     double bias[10];
     double bias2[10];
     double lens_z_bias[10];
+    double lens_z_stretch[10];
     double source_z_bias[10];
     double shear_m[10];
     double A_z[10];
