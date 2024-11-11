@@ -819,11 +819,10 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   static int zbins = -1;
   static gsl_spline * photoz_splines[11];
   static gsl_interp_accel * photoz_accel[11];
-
   static double *nz_old=0, *nz_diag=0, *nz_ext=0;
   static double **nz_ext_bin=0;
-
   double zmin_file, zmax_file, dz_file; // values derived from the nz file
+
   if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}
     if ((redshift.clustering_photoz != 4 && recompute_zphot_clustering(N)) || table==0){
     update_nuisance(&N);
@@ -1092,7 +1091,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   return res;
 }
 
-/*********** routines calculating the number of source and lens galaxies per bin ****************/
+/*********** routines calculating the numbe and lens galaxies per bin ****************/
 double int_nsource(double z, void* param){
   return zdistr_photoz(z,-1);
 }
