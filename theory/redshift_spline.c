@@ -653,10 +653,25 @@ double pf_histo_n(double z,  void *params) //return pf(z,j) based on redshift fi
   }
   return 0.;
 }
+
+double int_for_zmean_histo_n(double z, void* params) 
+{
+  double* ar = (double*) params;
+  return z * pf_histo_n(z, (void *)ar);
+}
+
+double norm_for_zmean_histo_n(double z, void* params) 
+{
+  double* ar = (double*) params;
+  return pf_histo_n(z, (void *)ar);
+}
+
+
 double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j
 {
   static double **table = 0;
   static double *z_v = 0;
+static double *zmean_tomo = 0;
   static double da = 0.0;
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
@@ -769,8 +784,18 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
           for (k = 0;k<zbins; k++){table[i+1][k]/= norm;}
           break;
         case 4: // histogram file contains n(z) estimates for each bin
-          array[0] = 1.0*i;
           pf_histo_n(0.,(void*) array);
+          if(zmean_tomo==0){
+            zmean_tomo = create_double_vector(0, zbins-1);
+            for(int j=0; j<tomo.clustering_Nbin; j++){
+              array[0] = 1.*j;
+              zmean_tomo[j] = int_gsl_integrate_medium_precision(int_for_zmean_histo_n, (void*) array, tomo.clustering_zmin[j], tomo.clustering_zmax[j],NULL, 1024)/int_gsl_integrate_medium_precision(norm_for_zmean_histo_n, (void*) array, tomo.clustering_zmin[j], tomo.clustering_zmax[j],NULL, 1024);
+              printf("z_mean of tomo bin %d = %.3f (histogram file)\n", j+1, zmean_tomo[j]);
+            } 
+          }
+          array[0] = 1.0*i;
+
+
           norm = int_gsl_integrate_medium_precision(pf_histo_n, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024);
           if (norm == 0){
             printf("redshift.c:pf_photoz:norm(nz=%d)=0\nEXIT\n",i);
@@ -801,9 +826,13 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     printf("redshift.c: pf_photoz(z,%d) outside tomo.clustering_Nbin range\n", j);
     exit(1);
   } 
-  if (redshift.clustering_photoz == 4){ zz = zz -nuisance.bias_zphot_clustering[j];}
+  if (redshift.clustering_photoz == 4){ zz = (zz - nuisance.bias_zphot_clustering[j]- zmean_tomo[j])/nuisance.stretch_zphot_clustering[j] + zmean_tomo[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
-  return gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);
+  double res= fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
+  if (redshift.clustering_photoz == 4){
+      res = res/nuisance.stretch_zphot_clustering[j];
+  }
+  return res;
 }
 
 /*********** routines calculating the number of source and lens galaxies per bin ****************/
