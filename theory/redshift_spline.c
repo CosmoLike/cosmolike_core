@@ -389,7 +389,7 @@ double zdistr_histo_1(double z, void *params) //return nz(z) based on redshift f
     dz = (z_v[i-1]-z_v[0])/(1.*i -1.);
     zhisto_max=z_v[i-1]+dz;
     zhisto_min=z_v[0];
-    redshift.shear_zdistrpar_zmin = zhisto_min;
+    redshift.shear_zdistrpar_zmin = fmax(zhisto_min, dz/100.0);
     redshift.shear_zdistrpar_zmax = zhisto_max;
     free_double_vector(z_v,0,zbins-1);
   }
