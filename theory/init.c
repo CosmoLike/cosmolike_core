@@ -443,7 +443,7 @@ void set_cmb_actpol() {
    sprintf(cmb.name, "actpol");
    cmb.fwhm = 1.4 * (constants.pi/180.) / 60.;
    cmb.sensitivity = 18.*(constants.pi/180.)/60.;
-   cmb.pathLensRecNoise = "./cov/cmblensrec/actpol/cmblensrecnoise_lmax3000.txt";
+   sprintf(cmb.pathLensRecNoise, "./cov/cmblensrec/actpol/cmblensrecnoise_lmax3000.txt");
    printf("path for CMB lens noise: %s\n", cmb.pathLensRecNoise);
 }
 
@@ -451,7 +451,7 @@ void set_cmb_advact() {
    sprintf(cmb.name, "advact");
    cmb.fwhm = 1.4 * (constants.pi/180.) / 60.;
    cmb.sensitivity = 10.*(constants.pi/180.)/60.;
-   cmb.pathLensRecNoise = "./cov/cmblensrec/advact/cmblensrecnoise_lmax3000.txt";
+   sprintf(cmb.pathLensRecNoise, "./cov/cmblensrec/advact/cmblensrecnoise_lmax3000.txt");
    printf("path for CMB lens noise: %s\n", cmb.pathLensRecNoise);
 }
 
@@ -459,7 +459,7 @@ void set_cmb_cmbs4() {
    sprintf(cmb.name, "cmbs4");
    cmb.fwhm = 1. * (constants.pi/180.) / 60.;
    cmb.sensitivity = 1.*(constants.pi/180.)/60.;
-   cmb.pathLensRecNoise = "./cov/cmblensrec/cmbs4/cmblensrecnoise_lmax3000.txt";
+   sprintf(cmb.pathLensRecNoise, "./cov/cmblensrec/cmbs4/cmblensrecnoise_lmax3000.txt");
    printf("path for CMB lens noise: %s\n", cmb.pathLensRecNoise);
 }
 
@@ -664,6 +664,9 @@ void init_lens_sample_()
     nuisance.bias_zphot_clustering[i]=0.0;
     for(j = 0; j<tomo.shear_Nbin;j++){
       n += test_zoverlap(i,j);
+      if(test_zoverlap(i,j) == 0){
+        printf("GGL L%d-S%d skipped!\n", i, j);
+      }
     }
   }
   tomo.ggl_Npowerspectra = n;
