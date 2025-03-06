@@ -109,7 +109,7 @@ void run_cov_shear_shear_fourier_bin(char *OUTFILE, char *PATH,double *ell, int 
   FILE *F1;
   char filename[300];
   z1 = Z1(n1); z2 = Z2(n1);
-  printf("N_shear1 = %d (%d,%d)\n", n1,z1,z2);
+  printf("N_shear1 = %d (%d, %d)\n", n1,z1,z2);
   z3 = Z1(n2); z4 = Z2(n2);
   printf("N_shear2 = %d (%d, %d)\n",n2,z3,z4);
   sprintf(filename,"%s%s_%d",PATH,OUTFILE,start);
