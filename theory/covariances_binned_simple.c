@@ -1444,6 +1444,7 @@ void cov_mix_binned_fullsky(double **cov, double **covNG, char *mixcov_type, int
 
   double (*func_for_cov_G)(double, int*);
   double (*func_bin_cov_NG)(double, double, int*);
+  double (*func_P1)(int, int);
   double (*func_P2)(int, int);
 
   if(strcmp(mixcov_type, "kk_xi+")==0) {
@@ -1911,7 +1912,7 @@ void cov_kk_ks_mix_binned_fullsky(double **cov, double **covNG, int zs, int FLAG
 /// Full Fourier 6x2pt cov - band averaged
 
 
-// Real cov
+// Fourier cov
 void cov_shear_shear_fourier_binned(double **cov, double **covNG, int z1,int z2,int z3,int z4, int FLAG_NG, double *ell){
   char cov_type[]= "ss_ss";
   int z_ar[4];
