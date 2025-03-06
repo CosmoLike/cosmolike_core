@@ -346,8 +346,8 @@ double C_cl_tomo(double l, int ni, int nj)  //galaxy clustering power spectrum o
     double result;
     for (int i=0; i<Ntable.N_ell; i++, llog+=ds) {
 
-//      table[j][i]= log(C_cl_RSD_nointerp(exp(llog),ni,nj));
-      result = C_cl_tomo_nointerp(exp(llog),ni,nj);
+      //result = C_cl_tomo_nointerp(exp(llog),ni,nj); // w/o RSD
+      result = C_cl_RSD_nointerp(exp(llog),ni,nj); // w/ RSD
       if(result<=0) table[j][i] = -100;
       else table[j][i] = log(result);
       table[nj*tomo.clustering_Nbin+ni][i]=table[j][i];
