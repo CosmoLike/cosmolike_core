@@ -48,6 +48,7 @@ void update_cosmopara (cosmopara *C){
   C->MGmu = cosmology.MGmu;
   C->M_nu = cosmology.M_nu;
   C->theta_s = cosmology.theta_s;
+  C->log10Tagn =cosmology.log10Tagn;
 }
 
 void update_galpara (galpara *G){
@@ -84,6 +85,7 @@ void update_nuisance (nuisancepara *N){
     N-> fred[i] = nuisance.fred[i];
     N->sigma_zphot_clustering[i] = nuisance.sigma_zphot_clustering[i];
     N->bias_zphot_clustering[i] = nuisance.bias_zphot_clustering[i];
+    N->stretch_zphot_clustering[i] = nuisance.stretch_zphot_clustering[i];
   }
   for(i = 0; i < tomo.shear_Nbin; i++){
     N->sigma_zphot_shear[i] = nuisance.sigma_zphot_shear[i];
@@ -117,27 +119,7 @@ void update_nuisance (nuisancepara *N){
   for (int _i = 0; _i < nuisance.N_cluster_selection; ++_i){
     N->cluster_selection[_i] = nuisance.cluster_selection[_i];
   }
-
-  N->frac_lowz = nuisance.frac_lowz;
-  N->frac_highz= nuisance.frac_highz;
-
-  if (strcmp(pdeltaparams.runmode,"halomodel") ==0){
-    N->gas_beta = nuisance.gas_beta;
-    N->gas_lgM0 = nuisance.gas_lgM0; 
-    N->gas_eps1 = nuisance.gas_eps1;
-    N->gas_eps2 = nuisance.gas_eps2;
-    N->gas_beta_v2 = nuisance.gas_beta_v2;
-    N->gas_lgM0_v2 = nuisance.gas_lgM0_v2;
-    N->gas_eps1_v2 = nuisance.gas_eps1_v2;
-    N->gas_eps2_v2 = nuisance.gas_eps2_v2;
-    N->gas_alpha = nuisance.gas_alpha; 
-    N->gas_A_star = nuisance.gas_A_star; 
-    N->gas_lgM_star = nuisance.gas_lgM_star; 
-    N->gas_sigma_star = nuisance.gas_sigma_star;
-    N->gas_lgT_w = nuisance.gas_lgT_w;
-    N->gas_f_H = nuisance.gas_f_H;
-    N->gas_Gamma_KS = nuisance.gas_Gamma_KS;
-  }
+  N->cluster_b2=cbias.b2[2];
 }
 int recompute_expansion(cosmopara C){ //rules for recomputing growth factor & comoving distance
   if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
@@ -157,7 +139,7 @@ int recompute_Delta(cosmopara C){ //rules for recomputing early time power spect
 }
 
 int recompute_cosmo3D(cosmopara C){
-  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
+  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu || C.log10Tagn!=cosmology.log10Tagn){return 1;}
   if (cosmology.A_s){
      if(C.A_s != cosmology.A_s){return 1;}
   }
@@ -168,7 +150,7 @@ int recompute_cosmo3D(cosmopara C){
   return 0;
 }
 int recompute_cosmo3D_CLASS(cosmopara C){
-  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
+  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu || C.log10Tagn!=cosmology.log10Tagn){return 1;}
   if (cosmology.A_s > 0){
      if(C.A_s != cosmology.A_s){return 1;}
   }
@@ -197,7 +179,7 @@ int recompute_zphot_clustering(nuisancepara N){
   if (redshift.clustering_photoz != 3 && redshift.clustering_photoz != 4){return 0;}
   int i, res = 0;
   for(i = 0; i < tomo.clustering_Nbin; i++){
-    if (N.sigma_zphot_clustering[i]!= nuisance.sigma_zphot_clustering[i] || N.bias_zphot_clustering[i]!= nuisance.bias_zphot_clustering[i]){ res = 1;}
+    if (N.sigma_zphot_clustering[i]!= nuisance.sigma_zphot_clustering[i] || N.bias_zphot_clustering[i]!= nuisance.bias_zphot_clustering[i] || N.stretch_zphot_clustering[i]!= nuisance.stretch_zphot_clustering[i]){ res = 1;}
   }
   return res;
 }
@@ -235,6 +217,9 @@ int recompute_clusters(cosmopara C, nuisancepara N){
 
 int recompute_DESclusters(cosmopara C, nuisancepara N){
    if (recompute_cosmo3D(C)) return 1;
+   if (N.cluster_b2!=cbias.b2[2]){
+      return 1;
+   }
    for (int _i = 0; _i < nuisance.N_cluster_MOR; ++_i){
       if (N.cluster_MOR[_i] !=nuisance.cluster_MOR[_i] ) return 1; 
    }

@@ -13,7 +13,7 @@ int LMAX = 100000;
 //ell_min for switching from exact evalution of C(ell) to interpolated look-up table
 int LMIN_tab =20;
 //number of grid point for C(ell) look-up tables
-int NTAB_TATT = 60;
+int NTAB_TATT = 400;//60 v.s. 400;
 double C_source[4] ={-1.165,-0.641,-0.547,0.803};
 /* NLA/TA amplitude C1, nz argument only need if per-bin amplitude*/
 double C1_TA(double a, double nz){
@@ -162,8 +162,8 @@ double int_for_C_ggl_IA_TATT(double a, void *params){
 double C_EE_TATT(double l, int ni,int  nj){
   double array[3] = {(double) ni, (double) nj, l};
   // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
-  // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.99999,NULL,1000);
-  double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.998,NULL,1000);
+  double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.999,NULL,1000);//0.99999
+  //double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.999,NULL,1000);
   // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,0.95,0.99,NULL,1000);
   return EE;
 }
@@ -171,7 +171,7 @@ double C_EE_TATT(double l, int ni,int  nj){
 double C_reduced_shear(double l, int ni,int  nj){
   double array[3] = {(double) ni, (double) nj, l};
   // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),amax_source(ni),NULL,1000);
-  double EE = int_gsl_integrate_low_precision(int_for_C_reduced_shear,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.99999,NULL,1000);
+  double EE = int_gsl_integrate_low_precision(int_for_C_reduced_shear,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.999,NULL,1000);
   // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.98,NULL,1000);
   // double EE = int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_EE,(void*)array,0.95,0.99,NULL,1000);
   return EE;
@@ -180,14 +180,14 @@ double C_reduced_shear(double l, int ni,int  nj){
 double C_BB_TATT(double l, int ni, int nj){
   double array[3] = {(double) ni, (double) nj, l};
   // return int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_BB,(void*)array,fmax(amin_source(ni),amin_source(nj)),fmin(amax_source_IA(ni),amax_source_IA(nj)),NULL,1000);
-  return int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_BB,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.998,NULL,1000);
+  return int_gsl_integrate_low_precision(int_for_C_shear_shear_IA_BB,(void*)array,fmax(amin_source(ni),amin_source(nj)),0.999,NULL,1000);//0.99999
 }
 
 double C_ggl_TATT(double l, int nl, int ns)
 {
   double array[3] = {(double) nl, (double) ns, l};
   // double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),amax_lens(nl),NULL,1000);
-  double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),0.99999,NULL,1000);
+  double gE = int_gsl_integrate_low_precision(int_for_C_ggl_IA_TATT,(void*)array,amin_lens(nl),0.999,NULL,1000);//0.99999
   return gE;
 }
 /*************** look-up tables for angular correlation functions ***************/

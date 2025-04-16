@@ -88,7 +88,7 @@ typedef struct {
 
 pre precision= {
   1e-2, //low
-  1e-3, //medium
+  1e-3/4., //medium
   1e-5, //high
   1e-7 //insane
 };
@@ -152,11 +152,11 @@ typedef struct {
 
 
 Ntab Ntable = {
-100, //N_a !!!!!!DO NOT F!@#$ING DECREASE THIS NUMBER UNLESS YOU ARE ELISABETH AND HAVE ASKED TIM BEFORE!!!!
+400,//100, //N_a !!!!!!DO NOT F!@#$ING DECREASE THIS NUMBER UNLESS YOU ARE ELISABETH AND HAVE ASKED TIM BEFORE!!!!
 500, //N_k_lin
 500, //N_k_nlin
-200, //N_ell
-200, //N_theta
+400,//200, //N_ell
+250,//200, //N_theta
 2048, //N_theta for Hankel
 1000, //N_S2
 1000, //N_DS
@@ -209,8 +209,17 @@ void SVD_inversion(gsl_matrix *cov, gsl_matrix *inverseSVD,int Nmatrix)
 
 void invert_matrix_colesky(gsl_matrix *A)
 {
-  gsl_linalg_cholesky_decomp (A);  // Adummy will be overwritten  */
-  gsl_linalg_cholesky_invert (A);   
+  int status = 0;
+  status = gsl_linalg_cholesky_decomp (A);  // Adummy will be overwritten  */
+  if (status!=0){
+    printf("invert_matrix_colesky Error %d!\nAbort...", status);
+    exit(-1);
+  }
+  status = gsl_linalg_cholesky_invert (A);   
+  if (status!=0){
+    printf("invert_matrix_colesky Error %d!\nAbort...", status);
+    exit(-1);
+  }
 }
 
 

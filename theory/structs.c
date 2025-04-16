@@ -29,6 +29,7 @@ typedef struct {
   int Planck18_BAO_w0wa; //CH
   int Planck18_w0; //CH
   int BAO;
+  int SN;
   int SN_WFIRST;
   int GRS;
   int SRD;
@@ -54,10 +55,11 @@ typedef struct {
   char probes[500];
   char ext_data[500];
   int theta_s;
-  int Ytransform; //whether do Y transform or not
-  int feedback_on;
+
+  int Ytransform;
 }likepara;
-likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .BAO = 0, .SN_WFIRST = 0, .GRS = 0, .SRD = 0, .Planck15_BAO_H070p6_JLA_w0wa = 0, .Planck18_BAO_Riess18_Pantheon_w0wa = 0, .Planck18_BAO_w0wa = 0, .Planck18_w0 = 0,.theta_s =0, .Ytransform=0, .feedback_on=0};
+likepara like ={.baryons = 0, .IA = 0., .bias = 0, .wlphotoz = 0, .clphotoz = 0, .shearcalib = 0, .clusterMobs =0, .BAO = 0, .SN_WFIRST = 0, .GRS = 0, .SRD = 0, .Planck15_BAO_H070p6_JLA_w0wa = 0, .Planck18_BAO_Riess18_Pantheon_w0wa = 0, .Planck18_BAO_w0wa = 0, .Planck18_w0 = 0,.theta_s =0, .Ytransform=0, .SN=0};
+
 
 typedef struct {
      double Omega_m;  /* matter density parameter                       */
@@ -79,8 +81,13 @@ typedef struct {
      double MGSigma;
      double MGmu;
      double theta_s;
+     double rs_d; //   comoving sound horizon at baryon drag
+    double Tcmb;
+    double sigma_8_cc; /*sigma_8 of cold dark matter and baryon*/
+  double log10Tagn;
 }cosmopara;
-cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.theta_s =0.0, .Omega_rad_h2 = 2.5094694598641805e-05};
+
+cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.theta_s =0.0, .Tcmb=2.728, .sigma_8_cc=0.,.log10Tagn=0., .rs_d=0};
 
 typedef struct {
   int shear_Nbin; // number of tomography bins
@@ -257,6 +264,7 @@ typedef struct {
   double bias_zphot_shear[10];
   double sigma_zphot_clustering[10];
   double bias_zphot_clustering[10];
+  double stretch_zphot_clustering[10];
   double sigma_zphot_magnification[10];
   double bias_zphot_magnification[10];
   double LF_alpha;
@@ -284,27 +292,9 @@ typedef struct {
   double cluster_MOR[10];
   int N_cluster_selection;
   double cluster_selection[10];
-  double bary[3];
-  double frac_lowz;
-  double frac_highz;
 
-  double gas_Gamma_KS; // Gamma in K-S profile
-  double gas_beta; // beta: mass scaling index in bound gas fraction
-  double gas_lgM0; // critical halo mass, below which gas ejection is significant
-  double gas_eps1;
-  double gas_eps2;
+  double cluster_b2;
 
-  double gas_beta_v2; // beta: mass scaling index in bound gas fraction
-  double gas_lgM0_v2; // critical halo mass, below which gas ejection is significant
-  double gas_eps1_v2;
-  double gas_eps2_v2;
-
-  double gas_alpha;
-  double gas_A_star;
-  double gas_lgM_star;
-  double gas_sigma_star;
-  double gas_lgT_w;
-  double gas_f_H;
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
@@ -316,11 +306,9 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .bary = {0.0, 0.0, 0.0},
-  .frac_lowz = 0.,
-  .frac_highz = 0.,
-  .gas_beta_v2=0., .gas_lgM0_v2=0., .gas_eps1_v2=0., .gas_eps2_v2=0., .gas_eps1=0., .gas_eps2=0.
-};
+  .stretch_zphot_clustering = {1.,1.,1.,1.,1.,1.,1.,1.,1.,1.},
+  .cluster_b2=-1
+  };
 
 
 
@@ -356,6 +344,7 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double bias_zphot_shear[10][2];
   double sigma_zphot_clustering[10][2];
   double bias_zphot_clustering[10][2];
+  double stretch_zphot_clustering[10][2];
   double sigma_zphot_magnification[10][2];
   double bias_zphot_magnification[10][2];
   double cluster_Mobs_lgM0[2];
@@ -401,6 +390,7 @@ priorpara prior = {
 .bias_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.stretch_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bary_Q1 = {0.,0.},
 .bary_Q2 = {0.,0.},
 .bary_Q3 = {0.,0.}
@@ -425,6 +415,7 @@ typedef struct input_cosmo_params_mpp {
     double h0;
     double MGSigma;
     double MGmu;
+    double log10Tagn;
 } input_cosmo_params_mpp;
 
 typedef struct input_cosmo_params {
@@ -449,6 +440,7 @@ typedef struct input_nuisance_params_mpp {
     double MOR[10];
     double selection[10];
     double b_mag[10];
+    double pm[10];
 } input_nuisance_params_mpp;
 
 typedef struct input_HOD_params {
@@ -556,3 +548,8 @@ typedef struct {
   int Nchi;
 } fft_optimize;
 fft_optimize fft_int;
+
+typedef struct{
+      double b2[10]; /* quadratic bias parameter for redshift bin i */
+}clpara;
+clpara cbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}};
