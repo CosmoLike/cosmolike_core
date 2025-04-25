@@ -1,0 +1,1276 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+A_s	parse.h	/^    std::vector<double> A_s;$/;"	m	struct:csmpars
+BASE	euclidemu2.cpp	232;"	d	file:
+Bvec	emulator.h	/^		double Bvec[101][613];$/;"	m	class:EuclidEmulator
+Bvec	euclidemu2.pyx	/^     def Bvec(self):$/;"	m	class:PyEuclidEmulator
+Bvec	euclidemu2.pyx	/^     def Bvec(self, Bvec):$/;"	m	class:PyEuclidEmulator
+COSMOLOGY_H	cosmo.h	21;"	d
+CYTHON_ABI	euclidemu2.cpp	44;"	d	file:
+CYTHON_ASSUME_SAFE_MACROS	euclidemu2.cpp	104;"	d	file:
+CYTHON_ASSUME_SAFE_MACROS	euclidemu2.cpp	105;"	d	file:
+CYTHON_ASSUME_SAFE_MACROS	euclidemu2.cpp	144;"	d	file:
+CYTHON_ASSUME_SAFE_MACROS	euclidemu2.cpp	202;"	d	file:
+CYTHON_AVOID_BORROWED_REFS	euclidemu2.cpp	102;"	d	file:
+CYTHON_AVOID_BORROWED_REFS	euclidemu2.cpp	103;"	d	file:
+CYTHON_AVOID_BORROWED_REFS	euclidemu2.cpp	141;"	d	file:
+CYTHON_AVOID_BORROWED_REFS	euclidemu2.cpp	199;"	d	file:
+CYTHON_COMPILING_IN_CPYTHON	euclidemu2.cpp	123;"	d	file:
+CYTHON_COMPILING_IN_CPYTHON	euclidemu2.cpp	164;"	d	file:
+CYTHON_COMPILING_IN_CPYTHON	euclidemu2.cpp	83;"	d	file:
+CYTHON_COMPILING_IN_PYPY	euclidemu2.cpp	121;"	d	file:
+CYTHON_COMPILING_IN_PYPY	euclidemu2.cpp	162;"	d	file:
+CYTHON_COMPILING_IN_PYPY	euclidemu2.cpp	81;"	d	file:
+CYTHON_COMPILING_IN_PYSTON	euclidemu2.cpp	122;"	d	file:
+CYTHON_COMPILING_IN_PYSTON	euclidemu2.cpp	163;"	d	file:
+CYTHON_COMPILING_IN_PYSTON	euclidemu2.cpp	82;"	d	file:
+CYTHON_FALLTHROUGH	euclidemu2.cpp	299;"	d	file:
+CYTHON_FALLTHROUGH	euclidemu2.cpp	301;"	d	file:
+CYTHON_FALLTHROUGH	euclidemu2.cpp	303;"	d	file:
+CYTHON_FALLTHROUGH	euclidemu2.cpp	308;"	d	file:
+CYTHON_FALLTHROUGH	euclidemu2.cpp	310;"	d	file:
+CYTHON_FALLTHROUGH	euclidemu2.cpp	315;"	d	file:
+CYTHON_FALLTHROUGH	euclidemu2.cpp	316;"	d	file:
+CYTHON_FAST_PYCALL	euclidemu2.cpp	110;"	d	file:
+CYTHON_FAST_PYCALL	euclidemu2.cpp	111;"	d	file:
+CYTHON_FAST_PYCALL	euclidemu2.cpp	151;"	d	file:
+CYTHON_FAST_PYCALL	euclidemu2.cpp	152;"	d	file:
+CYTHON_FAST_PYCALL	euclidemu2.cpp	211;"	d	file:
+CYTHON_FAST_PYCCALL	euclidemu2.cpp	227;"	d	file:
+CYTHON_FAST_THREAD_STATE	euclidemu2.cpp	108;"	d	file:
+CYTHON_FAST_THREAD_STATE	euclidemu2.cpp	109;"	d	file:
+CYTHON_FAST_THREAD_STATE	euclidemu2.cpp	149;"	d	file:
+CYTHON_FAST_THREAD_STATE	euclidemu2.cpp	150;"	d	file:
+CYTHON_FAST_THREAD_STATE	euclidemu2.cpp	208;"	d	file:
+CYTHON_FORMAT_SSIZE_T	euclidemu2.cpp	353;"	d	file:
+CYTHON_FUTURE_DIVISION	euclidemu2.cpp	46;"	d	file:
+CYTHON_HEX_VERSION	euclidemu2.cpp	45;"	d	file:
+CYTHON_INLINE	euclidemu2.cpp	326;"	d	file:
+CYTHON_INLINE	euclidemu2.cpp	328;"	d	file:
+CYTHON_MAYBE_UNUSED_VAR	euclidemu2.cpp	/^     template<class T> void CYTHON_MAYBE_UNUSED_VAR( const T& ) { }$/;"	f
+CYTHON_MAYBE_UNUSED_VAR	euclidemu2.cpp	272;"	d	file:
+CYTHON_NCP_UNUSED	euclidemu2.cpp	277;"	d	file:
+CYTHON_NCP_UNUSED	euclidemu2.cpp	279;"	d	file:
+CYTHON_PEP393_ENABLED	euclidemu2.cpp	476;"	d	file:
+CYTHON_PEP393_ENABLED	euclidemu2.cpp	492;"	d	file:
+CYTHON_PEP489_MULTI_PHASE_INIT	euclidemu2.cpp	112;"	d	file:
+CYTHON_PEP489_MULTI_PHASE_INIT	euclidemu2.cpp	113;"	d	file:
+CYTHON_PEP489_MULTI_PHASE_INIT	euclidemu2.cpp	153;"	d	file:
+CYTHON_PEP489_MULTI_PHASE_INIT	euclidemu2.cpp	154;"	d	file:
+CYTHON_PEP489_MULTI_PHASE_INIT	euclidemu2.cpp	214;"	d	file:
+CYTHON_REFNANNY	euclidemu2.cpp	912;"	d	file:
+CYTHON_RESTRICT	euclidemu2.cpp	246;"	d	file:
+CYTHON_RESTRICT	euclidemu2.cpp	248;"	d	file:
+CYTHON_RESTRICT	euclidemu2.cpp	250;"	d	file:
+CYTHON_RESTRICT	euclidemu2.cpp	252;"	d	file:
+CYTHON_SMALL_CODE	euclidemu2.cpp	9699;"	d	file:
+CYTHON_SMALL_CODE	euclidemu2.cpp	9701;"	d	file:
+CYTHON_SMALL_CODE	euclidemu2.cpp	9703;"	d	file:
+CYTHON_UNPACK_METHODS	euclidemu2.cpp	106;"	d	file:
+CYTHON_UNPACK_METHODS	euclidemu2.cpp	107;"	d	file:
+CYTHON_UNPACK_METHODS	euclidemu2.cpp	147;"	d	file:
+CYTHON_UNPACK_METHODS	euclidemu2.cpp	205;"	d	file:
+CYTHON_UNUSED	euclidemu2.cpp	258;"	d	file:
+CYTHON_UNUSED	euclidemu2.cpp	260;"	d	file:
+CYTHON_UNUSED	euclidemu2.cpp	263;"	d	file:
+CYTHON_UNUSED	euclidemu2.cpp	265;"	d	file:
+CYTHON_USE_ASYNC_SLOTS	euclidemu2.cpp	129;"	d	file:
+CYTHON_USE_ASYNC_SLOTS	euclidemu2.cpp	130;"	d	file:
+CYTHON_USE_ASYNC_SLOTS	euclidemu2.cpp	175;"	d	file:
+CYTHON_USE_ASYNC_SLOTS	euclidemu2.cpp	176;"	d	file:
+CYTHON_USE_ASYNC_SLOTS	euclidemu2.cpp	178;"	d	file:
+CYTHON_USE_ASYNC_SLOTS	euclidemu2.cpp	89;"	d	file:
+CYTHON_USE_ASYNC_SLOTS	euclidemu2.cpp	90;"	d	file:
+CYTHON_USE_ASYNC_SLOTS	euclidemu2.cpp	92;"	d	file:
+CYTHON_USE_DICT_VERSIONS	euclidemu2.cpp	116;"	d	file:
+CYTHON_USE_DICT_VERSIONS	euclidemu2.cpp	117;"	d	file:
+CYTHON_USE_DICT_VERSIONS	euclidemu2.cpp	157;"	d	file:
+CYTHON_USE_DICT_VERSIONS	euclidemu2.cpp	158;"	d	file:
+CYTHON_USE_DICT_VERSIONS	euclidemu2.cpp	220;"	d	file:
+CYTHON_USE_EXC_INFO_STACK	euclidemu2.cpp	118;"	d	file:
+CYTHON_USE_EXC_INFO_STACK	euclidemu2.cpp	119;"	d	file:
+CYTHON_USE_EXC_INFO_STACK	euclidemu2.cpp	159;"	d	file:
+CYTHON_USE_EXC_INFO_STACK	euclidemu2.cpp	160;"	d	file:
+CYTHON_USE_EXC_INFO_STACK	euclidemu2.cpp	223;"	d	file:
+CYTHON_USE_PYLIST_INTERNALS	euclidemu2.cpp	131;"	d	file:
+CYTHON_USE_PYLIST_INTERNALS	euclidemu2.cpp	132;"	d	file:
+CYTHON_USE_PYLIST_INTERNALS	euclidemu2.cpp	187;"	d	file:
+CYTHON_USE_PYLIST_INTERNALS	euclidemu2.cpp	94;"	d	file:
+CYTHON_USE_PYLIST_INTERNALS	euclidemu2.cpp	95;"	d	file:
+CYTHON_USE_PYLONG_INTERNALS	euclidemu2.cpp	100;"	d	file:
+CYTHON_USE_PYLONG_INTERNALS	euclidemu2.cpp	101;"	d	file:
+CYTHON_USE_PYLONG_INTERNALS	euclidemu2.cpp	138;"	d	file:
+CYTHON_USE_PYLONG_INTERNALS	euclidemu2.cpp	139;"	d	file:
+CYTHON_USE_PYLONG_INTERNALS	euclidemu2.cpp	181;"	d	file:
+CYTHON_USE_PYLONG_INTERNALS	euclidemu2.cpp	182;"	d	file:
+CYTHON_USE_PYLONG_INTERNALS	euclidemu2.cpp	184;"	d	file:
+CYTHON_USE_PYTYPE_LOOKUP	euclidemu2.cpp	127;"	d	file:
+CYTHON_USE_PYTYPE_LOOKUP	euclidemu2.cpp	128;"	d	file:
+CYTHON_USE_PYTYPE_LOOKUP	euclidemu2.cpp	169;"	d	file:
+CYTHON_USE_PYTYPE_LOOKUP	euclidemu2.cpp	170;"	d	file:
+CYTHON_USE_PYTYPE_LOOKUP	euclidemu2.cpp	172;"	d	file:
+CYTHON_USE_PYTYPE_LOOKUP	euclidemu2.cpp	86;"	d	file:
+CYTHON_USE_PYTYPE_LOOKUP	euclidemu2.cpp	87;"	d	file:
+CYTHON_USE_TP_FINALIZE	euclidemu2.cpp	114;"	d	file:
+CYTHON_USE_TP_FINALIZE	euclidemu2.cpp	115;"	d	file:
+CYTHON_USE_TP_FINALIZE	euclidemu2.cpp	155;"	d	file:
+CYTHON_USE_TP_FINALIZE	euclidemu2.cpp	156;"	d	file:
+CYTHON_USE_TP_FINALIZE	euclidemu2.cpp	217;"	d	file:
+CYTHON_USE_TYPE_SLOTS	euclidemu2.cpp	125;"	d	file:
+CYTHON_USE_TYPE_SLOTS	euclidemu2.cpp	166;"	d	file:
+CYTHON_USE_TYPE_SLOTS	euclidemu2.cpp	84;"	d	file:
+CYTHON_USE_TYPE_SLOTS	euclidemu2.cpp	85;"	d	file:
+CYTHON_USE_UNICODE_INTERNALS	euclidemu2.cpp	134;"	d	file:
+CYTHON_USE_UNICODE_INTERNALS	euclidemu2.cpp	190;"	d	file:
+CYTHON_USE_UNICODE_INTERNALS	euclidemu2.cpp	96;"	d	file:
+CYTHON_USE_UNICODE_INTERNALS	euclidemu2.cpp	97;"	d	file:
+CYTHON_USE_UNICODE_WRITER	euclidemu2.cpp	136;"	d	file:
+CYTHON_USE_UNICODE_WRITER	euclidemu2.cpp	137;"	d	file:
+CYTHON_USE_UNICODE_WRITER	euclidemu2.cpp	193;"	d	file:
+CYTHON_USE_UNICODE_WRITER	euclidemu2.cpp	194;"	d	file:
+CYTHON_USE_UNICODE_WRITER	euclidemu2.cpp	196;"	d	file:
+CYTHON_USE_UNICODE_WRITER	euclidemu2.cpp	98;"	d	file:
+CYTHON_USE_UNICODE_WRITER	euclidemu2.cpp	99;"	d	file:
+CYTHON_WITHOUT_ASSERTIONS	euclidemu2.cpp	671;"	d	file:
+Cosmology	cosmo.cxx	/^Cosmology::Cosmology(double Omega_b, double Omega_m, double Sum_m_nu, double n_s, double h, double w_0, double w_a, double A_s):$/;"	f	class:Cosmology
+Cosmology	cosmo.h	/^class Cosmology{$/;"	c
+DECREF	euclidemu2.cpp	/^    void (*DECREF)(void*, PyObject*, int);$/;"	m	struct:__anon6	file:
+DL_EXPORT	euclidemu2.cpp	66;"	d	file:
+DL_IMPORT	euclidemu2.cpp	63;"	d	file:
+Delta_t	cosmo.h	/^		double t0, t10, Delta_t, Neff, H0;$/;"	m	class:Cosmology
+EMULATOR_C_CONNECTOR_H	emulator_c_connector.h	2;"	d
+EMULATOR_H	emulator.h	21;"	d
+EPSCOSMO	cosmo.cxx	27;"	d	file:
+EuclidEmulator	emulator.cxx	/^EuclidEmulator::EuclidEmulator():$/;"	f	class:EuclidEmulator
+EuclidEmulator	emulator.h	/^class EuclidEmulator{$/;"	c
+EuclidEmulator_compute_nlc	emulator_c_connector.c	/^void EuclidEmulator_compute_nlc(double Omega_b, double Omega_m, double Sum_m_nu, double n_s, double h, double w_0, double w_a, double A_s, double* redshift, int n_redshift, double* kout, double* pkout) {$/;"	f
+EuclidEmulator_instance	emulator_c_connector.c	/^static EuclidEmulator *EuclidEmulator_instance = NULL;$/;"	v	file:
+FinishContext	euclidemu2.cpp	/^    void (*FinishContext)(void**);$/;"	m	struct:__anon6	file:
+G	units_and_constants.h	/^	const double G        = 1.0; \/\/ Newton's constant of gravity$/;"	m	namespace:planck_units
+G	units_and_constants.h	/^	const double G        = 6.67428e-11 * pow(meter,3)\/(kilogram*pow(second,2)); \/\/ Newton's constant of gravity$/;"	m	namespace:SI_units
+G	units_and_constants.h	/^    const double G        = 1.0; \/\/ Newton's constant of gravity$/;"	m	namespace:cosmological_units
+G	units_and_constants.h	/^    const double G        = 1.0; \/\/ Newton's constant of gravity$/;"	m	namespace:pkdgrav_units
+GIVEREF	euclidemu2.cpp	/^    void (*GIVEREF)(void*, PyObject*, int);$/;"	m	struct:__anon6	file:
+GOTREF	euclidemu2.cpp	/^    void (*GOTREF)(void*, PyObject*, int);$/;"	m	struct:__anon6	file:
+H0	cosmo.h	/^		double t0, t10, Delta_t, Neff, H0;$/;"	m	class:Cosmology
+HAVE_LONG_LONG	euclidemu2.cpp	71;"	d	file:
+INCREF	euclidemu2.cpp	/^    void (*INCREF)(void*, PyObject*, int);$/;"	m	struct:__anon6	file:
+Joule	units_and_constants.h	/^	const double Joule     = kilogram * pow(meter,2)\/pow(second,2); \/\/ Joule$/;"	m	namespace:SI_units
+Joule	units_and_constants.h	/^	const double Joule = kilogram * pow(meter,2)\/pow(second,2); \/\/ in planckian energy units$/;"	m	namespace:planck_units
+Joule	units_and_constants.h	/^    const double Joule = kilogram * pow(meter,2)\/pow(second,2); \/\/ in planckian energy units$/;"	m	namespace:cosmological_units
+Joule	units_and_constants.h	/^    const double Joule = kilogram * pow(meter,2)\/pow(second,2); \/\/ in planckian energy units$/;"	m	namespace:pkdgrav_units
+Kelvin	units_and_constants.h	/^	const double Kelvin   = 1.0; \/\/ in Kelvin$/;"	m	namespace:SI_units
+Kelvin	units_and_constants.h	/^	const double Kelvin   = 1.0\/(1.416785e32);  \/\/ in planck temperature$/;"	m	namespace:planck_units
+Kelvin	units_and_constants.h	/^    const double Kelvin   = 1.0\/(1.416785e32);  \/\/ in planck temperature$/;"	m	namespace:cosmological_units
+Kelvin	units_and_constants.h	/^    const double Kelvin   = 1.0\/(1.416785e32);  \/\/ in planck temperature$/;"	m	namespace:pkdgrav_units
+LIMIT	cosmo.cxx	28;"	d	file:
+Lbox	units_and_constants.h	/^	const double Lbox   = 1000 * Mpc;$/;"	m	namespace:SI_units
+Lbox	units_and_constants.h	/^	const double Lbox   = 1000 * Mpc;$/;"	m	namespace:planck_units
+Lbox	units_and_constants.h	/^    const double Lbox   = 1000 * Mpc;$/;"	m	namespace:cosmological_units
+Lbox	units_and_constants.h	/^    const double Lbox   = 1000 * Mpc;$/;"	m	namespace:pkdgrav_units
+MASK	euclidemu2.cpp	233;"	d	file:
+METH_FASTCALL	euclidemu2.cpp	387;"	d	file:
+METH_STACKLESS	euclidemu2.cpp	383;"	d	file:
+Mpc	units_and_constants.h	/^	const double Mpc       = 3.085677581282e22 * meter; \/\/ megaparsec$/;"	m	namespace:SI_units
+Mpc	units_and_constants.h	/^	const double Mpc   = 3.085677581282e22 * meter; \/\/ in planck lengths$/;"	m	namespace:planck_units
+Mpc	units_and_constants.h	/^    const double Mpc   = 3.085677581282e22 * meter; \/\/ in planck lengths$/;"	m	namespace:cosmological_units
+Mpc	units_and_constants.h	/^    const double Mpc   = 3.085677581282e22 * meter; \/\/ in planck lengths$/;"	m	namespace:pkdgrav_units
+Msol	units_and_constants.h	/^	const double Msol      = 1.98841e30 *kilogram; \/\/ solar kilogram$/;"	m	namespace:SI_units
+Msol	units_and_constants.h	/^	const double Msol  = 1.98841e30 * kilogram; \/\/ solar mass in planck masses$/;"	m	namespace:planck_units
+Msol	units_and_constants.h	/^    const double Msol  = 1.98841e30 * kilogram; \/\/ solar mass in planck masses$/;"	m	namespace:cosmological_units
+Msol	units_and_constants.h	/^    const double Msol  = 1.98841e30 * kilogram; \/\/ solar mass in planck masses$/;"	m	namespace:pkdgrav_units
+Neff	cosmo.h	/^		double t0, t10, Delta_t, Neff, H0;$/;"	m	class:Cosmology
+Omega_DE	cosmo.cxx	/^double Cosmology::Omega_DE(double a){$/;"	f	class:Cosmology
+Omega_DE_0	cosmo.h	/^		double Omega_gamma_0, Omega_nu_0, Omega_DE_0, rho_crit, T_gamma_0, T_nu_0;$/;"	m	class:Cosmology
+Omega_b	parse.h	/^	std::vector<double> Omega_b;$/;"	m	struct:csmpars
+Omega_gamma	cosmo.cxx	/^double Cosmology::Omega_gamma(double a){$/;"	f	class:Cosmology
+Omega_gamma_0	cosmo.h	/^		double Omega_gamma_0, Omega_nu_0, Omega_DE_0, rho_crit, T_gamma_0, T_nu_0;$/;"	m	class:Cosmology
+Omega_m	parse.h	/^    std::vector<double> Omega_m;$/;"	m	struct:csmpars
+Omega_matter	cosmo.cxx	/^double Cosmology::Omega_matter(double a){$/;"	f	class:Cosmology
+Omega_nu	cosmo.cxx	/^double Cosmology::Omega_nu(double a){$/;"	f	class:Cosmology
+Omega_nu_0	cosmo.h	/^		double Omega_gamma_0, Omega_nu_0, Omega_DE_0, rho_crit, T_gamma_0, T_nu_0;$/;"	m	class:Cosmology
+Omega_nu_0	euclidemu2.pyx	/^     def Omega_nu_0(self):$/;"	m	class:PyCosmology
+Omega_nu_0	euclidemu2.pyx	/^     def Omega_nu_0(self, Omega_nu_0):$/;"	m	class:PyCosmology
+PATH_TO_EE2_DATA_FILE	emulator.h	24;"	d
+PRINT_FLAG	cosmo.cxx	31;"	d	file:
+PY_LONG_LONG	euclidemu2.cpp	75;"	d	file:
+PY_SSIZE_T_CLEAN	euclidemu2.cpp	37;"	d	file:
+PyBaseString_Type	euclidemu2.cpp	534;"	d	file:
+PyBoolObject	euclidemu2.cpp	583;"	d	file:
+PyByteArray_Check	euclidemu2.cpp	518;"	d	file:
+PyCosmology	euclidemu2.pyx	/^cdef class PyCosmology:$/;"	c
+PyEuclidEmulator	euclidemu2.pyx	/^cdef class PyEuclidEmulator:$/;"	c
+PyIntObject	euclidemu2.cpp	566;"	d	file:
+PyInt_AS_LONG	euclidemu2.cpp	576;"	d	file:
+PyInt_AsLong	euclidemu2.cpp	575;"	d	file:
+PyInt_AsSsize_t	euclidemu2.cpp	577;"	d	file:
+PyInt_AsUnsignedLongLongMask	euclidemu2.cpp	579;"	d	file:
+PyInt_AsUnsignedLongMask	euclidemu2.cpp	578;"	d	file:
+PyInt_Check	euclidemu2.cpp	568;"	d	file:
+PyInt_CheckExact	euclidemu2.cpp	569;"	d	file:
+PyInt_FromLong	euclidemu2.cpp	572;"	d	file:
+PyInt_FromSize_t	euclidemu2.cpp	573;"	d	file:
+PyInt_FromSsize_t	euclidemu2.cpp	574;"	d	file:
+PyInt_FromString	euclidemu2.cpp	570;"	d	file:
+PyInt_FromUnicode	euclidemu2.cpp	571;"	d	file:
+PyInt_Type	euclidemu2.cpp	567;"	d	file:
+PyMem_RawFree	euclidemu2.cpp	410;"	d	file:
+PyMem_RawMalloc	euclidemu2.cpp	408;"	d	file:
+PyMem_RawRealloc	euclidemu2.cpp	409;"	d	file:
+PyNumber_Int	euclidemu2.cpp	580;"	d	file:
+PyObject_ASCII	euclidemu2.cpp	531;"	d	file:
+PyObject_Format	euclidemu2.cpp	521;"	d	file:
+PyObject_Free	euclidemu2.cpp	404;"	d	file:
+PyObject_Malloc	euclidemu2.cpp	403;"	d	file:
+PyObject_Realloc	euclidemu2.cpp	405;"	d	file:
+PyObject_Unicode	euclidemu2.cpp	540;"	d	file:
+PySet_CheckExact	euclidemu2.cpp	551;"	d	file:
+PyStringObject	euclidemu2.cpp	535;"	d	file:
+PyString_Check	euclidemu2.cpp	537;"	d	file:
+PyString_CheckExact	euclidemu2.cpp	538;"	d	file:
+PyString_Type	euclidemu2.cpp	536;"	d	file:
+PyThread_tss_alloc	euclidemu2.cpp	/^static CYTHON_INLINE Py_tss_t * PyThread_tss_alloc(void) {$/;"	f	file:
+PyThread_tss_create	euclidemu2.cpp	/^static CYTHON_INLINE int PyThread_tss_create(Py_tss_t *key) {$/;"	f	file:
+PyThread_tss_delete	euclidemu2.cpp	/^static CYTHON_INLINE void PyThread_tss_delete(Py_tss_t *key) {$/;"	f	file:
+PyThread_tss_free	euclidemu2.cpp	/^static CYTHON_INLINE void PyThread_tss_free(Py_tss_t *key) {$/;"	f	file:
+PyThread_tss_get	euclidemu2.cpp	/^static CYTHON_INLINE void * PyThread_tss_get(Py_tss_t *key) {$/;"	f	file:
+PyThread_tss_is_created	euclidemu2.cpp	/^static CYTHON_INLINE int PyThread_tss_is_created(Py_tss_t *key) {$/;"	f	file:
+PyThread_tss_set	euclidemu2.cpp	/^static CYTHON_INLINE int PyThread_tss_set(Py_tss_t *key, void *value) {$/;"	f	file:
+PyUnicode_1BYTE_KIND	euclidemu2.cpp	493;"	d	file:
+PyUnicode_2BYTE_KIND	euclidemu2.cpp	494;"	d	file:
+PyUnicode_4BYTE_KIND	euclidemu2.cpp	495;"	d	file:
+PyUnicode_Contains	euclidemu2.cpp	515;"	d	file:
+PyUnicode_InternFromString	euclidemu2.cpp	587;"	d	file:
+Py_HUGE_VAL	euclidemu2.cpp	78;"	d	file:
+Py_MEMBER_SIZE	euclidemu2.cpp	1105;"	d	file:
+Py_OptimizeFlag	euclidemu2.cpp	350;"	d	file:
+Py_TPFLAGS_CHECKTYPES	euclidemu2.cpp	371;"	d	file:
+Py_TPFLAGS_HAVE_FINALIZE	euclidemu2.cpp	380;"	d	file:
+Py_TPFLAGS_HAVE_INDEX	euclidemu2.cpp	374;"	d	file:
+Py_TPFLAGS_HAVE_NEWBUFFER	euclidemu2.cpp	377;"	d	file:
+Py_hash_t	euclidemu2.cpp	/^  typedef long Py_hash_t;$/;"	t	file:
+Py_tss_NEEDS_INIT	euclidemu2.cpp	430;"	d	file:
+Py_tss_t	euclidemu2.cpp	/^typedef int Py_tss_t;$/;"	t	file:
+SHIFT	euclidemu2.cpp	231;"	d	file:
+SI_units	units_and_constants.h	/^namespace SI_units{$/;"	n
+SetupContext	euclidemu2.cpp	/^    void* (*SetupContext)(const char*, int, const char*);$/;"	m	struct:__anon6	file:
+Sum_m_nu	parse.h	/^    std::vector<double> Sum_m_nu;$/;"	m	struct:csmpars
+T_gamma	cosmo.cxx	/^double Cosmology::T_gamma(double a){$/;"	f	class:Cosmology
+T_gamma_0	cosmo.h	/^		double Omega_gamma_0, Omega_nu_0, Omega_DE_0, rho_crit, T_gamma_0, T_nu_0;$/;"	m	class:Cosmology
+T_nu	cosmo.cxx	/^double Cosmology::T_nu(double a){$/;"	f	class:Cosmology
+T_nu_0	cosmo.h	/^		double Omega_gamma_0, Omega_nu_0, Omega_DE_0, rho_crit, T_gamma_0, T_nu_0;$/;"	m	class:Cosmology
+Tgamma	units_and_constants.h	/^	const double Tgamma = 2.7255 * Kelvin;$/;"	m	namespace:SI_units
+Tgamma	units_and_constants.h	/^	const double Tgamma = 2.7255 * Kelvin;$/;"	m	namespace:planck_units
+Tgamma	units_and_constants.h	/^    const double Tgamma = 2.7255 * Kelvin;$/;"	m	namespace:cosmological_units
+Tgamma	units_and_constants.h	/^    const double Tgamma = 2.7255 * Kelvin;$/;"	m	namespace:pkdgrav_units
+UNITS_AND_CONSTANTS	units_and_constants.h	21;"	d
+_USE_MATH_DEFINES	euclidemu2.cpp	622;"	d	file:
+__PYX_BUILD_PY_SSIZE_T	euclidemu2.cpp	352;"	d	file:
+__PYX_COMMA	euclidemu2.cpp	68;"	d	file:
+__PYX_DEFAULT_STRING_ENCODING	euclidemu2.cpp	/^static char* __PYX_DEFAULT_STRING_ENCODING;$/;"	v	file:
+__PYX_DEFAULT_STRING_ENCODING	euclidemu2.cpp	680;"	d	file:
+__PYX_DEFAULT_STRING_ENCODING_IS_ASCII	euclidemu2.cpp	677;"	d	file:
+__PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT	euclidemu2.cpp	679;"	d	file:
+__PYX_DEFAULT_STRING_ENCODING_IS_UTF8	euclidemu2.cpp	678;"	d	file:
+__PYX_DICT_VERSION_INIT	euclidemu2.cpp	1126;"	d	file:
+__PYX_ERR	euclidemu2.cpp	642;"	d	file:
+__PYX_EXTERN_C	euclidemu2.cpp	647;"	d	file:
+__PYX_EXTERN_C	euclidemu2.cpp	649;"	d	file:
+__PYX_GET_DICT_VERSION	euclidemu2.cpp	1127;"	d	file:
+__PYX_GET_DICT_VERSION	euclidemu2.cpp	1145;"	d	file:
+__PYX_HAVE_API__euclidemu2	euclidemu2.cpp	654;"	d	file:
+__PYX_HAVE__euclidemu2	euclidemu2.cpp	653;"	d	file:
+__PYX_MARK_ERR_POS	euclidemu2.cpp	640;"	d	file:
+__PYX_NAN	euclidemu2.cpp	/^static CYTHON_INLINE float __PYX_NAN() {$/;"	f	file:
+__PYX_NAN	euclidemu2.cpp	626;"	d	file:
+__PYX_PY_DICT_LOOKUP_IF_MODIFIED	euclidemu2.cpp	1131;"	d	file:
+__PYX_PY_DICT_LOOKUP_IF_MODIFIED	euclidemu2.cpp	1147;"	d	file:
+__PYX_UPDATE_DICT_CACHE	euclidemu2.cpp	1128;"	d	file:
+__PYX_UPDATE_DICT_CACHE	euclidemu2.cpp	1146;"	d	file:
+__PYX_VERIFY_RETURN_INT	euclidemu2.cpp	12271;"	d	file:
+__PYX_VERIFY_RETURN_INT_EXC	euclidemu2.cpp	12273;"	d	file:
+__PYX__VERIFY_RETURN_INT	euclidemu2.cpp	12275;"	d	file:
+__Pxy_PyFrame_Initialize_Offsets	euclidemu2.cpp	1109;"	d	file:
+__Pyx_AddTraceback	euclidemu2.cpp	/^static void __Pyx_AddTraceback(const char *funcname, int c_line,$/;"	f	file:
+__Pyx_ArgTypeTest	euclidemu2.cpp	1045;"	d	file:
+__Pyx_BUILD_ASSERT_EXPR	euclidemu2.cpp	1102;"	d	file:
+__Pyx_BUILTIN_MODULE_NAME	euclidemu2.cpp	355;"	d	file:
+__Pyx_BUILTIN_MODULE_NAME	euclidemu2.cpp	360;"	d	file:
+__Pyx_CLEAR	euclidemu2.cpp	970;"	d	file:
+__Pyx_CLineForTraceback	euclidemu2.cpp	/^static int __Pyx_CLineForTraceback(CYTHON_NCP_UNUSED PyThreadState *tstate, int c_line) {$/;"	f	file:
+__Pyx_CLineForTraceback	euclidemu2.cpp	1302;"	d	file:
+__Pyx_CheckKeywordStrings	euclidemu2.cpp	/^static int __Pyx_CheckKeywordStrings($/;"	f	file:
+__Pyx_CodeObjectCache	euclidemu2.cpp	/^struct __Pyx_CodeObjectCache {$/;"	s	file:
+__Pyx_CodeObjectCacheEntry	euclidemu2.cpp	/^} __Pyx_CodeObjectCacheEntry;$/;"	t	typeref:struct:__anon7	file:
+__Pyx_CppExn2PyErr	euclidemu2.cpp	/^static void __Pyx_CppExn2PyErr() {$/;"	f	file:
+__Pyx_CreateCodeObjectForTraceback	euclidemu2.cpp	/^static PyCodeObject* __Pyx_CreateCodeObjectForTraceback($/;"	f	file:
+__Pyx_DECREF	euclidemu2.cpp	942;"	d	file:
+__Pyx_DECREF	euclidemu2.cpp	954;"	d	file:
+__Pyx_DECREF_SET	euclidemu2.cpp	966;"	d	file:
+__Pyx_DefaultClassType	euclidemu2.cpp	358;"	d	file:
+__Pyx_DefaultClassType	euclidemu2.cpp	368;"	d	file:
+__Pyx_ErrFetch	euclidemu2.cpp	1022;"	d	file:
+__Pyx_ErrFetch	euclidemu2.cpp	1038;"	d	file:
+__Pyx_ErrFetchInState	euclidemu2.cpp	/^static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {$/;"	f	file:
+__Pyx_ErrFetchInState	euclidemu2.cpp	1036;"	d	file:
+__Pyx_ErrFetchWithState	euclidemu2.cpp	1020;"	d	file:
+__Pyx_ErrFetchWithState	euclidemu2.cpp	1034;"	d	file:
+__Pyx_ErrRestore	euclidemu2.cpp	1021;"	d	file:
+__Pyx_ErrRestore	euclidemu2.cpp	1037;"	d	file:
+__Pyx_ErrRestoreInState	euclidemu2.cpp	/^static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {$/;"	f	file:
+__Pyx_ErrRestoreInState	euclidemu2.cpp	1035;"	d	file:
+__Pyx_ErrRestoreWithState	euclidemu2.cpp	1019;"	d	file:
+__Pyx_ErrRestoreWithState	euclidemu2.cpp	1033;"	d	file:
+__Pyx_ExceptionReset	euclidemu2.cpp	1259;"	d	file:
+__Pyx_ExceptionReset	euclidemu2.cpp	1263;"	d	file:
+__Pyx_ExceptionSave	euclidemu2.cpp	1257;"	d	file:
+__Pyx_ExceptionSave	euclidemu2.cpp	1262;"	d	file:
+__Pyx_FakeReference	euclidemu2.cpp	/^    __Pyx_FakeReference() : ptr(NULL) { }$/;"	f	class:__Pyx_FakeReference
+__Pyx_FakeReference	euclidemu2.cpp	/^    __Pyx_FakeReference(const T& ref) : ptr(const_cast<T*>(&ref)) { }$/;"	f	class:__Pyx_FakeReference
+__Pyx_FakeReference	euclidemu2.cpp	/^class __Pyx_FakeReference {$/;"	c	file:
+__Pyx_GIVEREF	euclidemu2.cpp	944;"	d	file:
+__Pyx_GIVEREF	euclidemu2.cpp	956;"	d	file:
+__Pyx_GOTREF	euclidemu2.cpp	943;"	d	file:
+__Pyx_GOTREF	euclidemu2.cpp	955;"	d	file:
+__Pyx_GetBuiltinName	euclidemu2.cpp	/^static PyObject *__Pyx_GetBuiltinName(PyObject *name) {$/;"	f	file:
+__Pyx_GetItemInt	euclidemu2.cpp	1054;"	d	file:
+__Pyx_GetItemInt_Fast	euclidemu2.cpp	/^static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Fast(PyObject *o, Py_ssize_t i, int is_list,$/;"	f	file:
+__Pyx_GetItemInt_Generic	euclidemu2.cpp	/^static PyObject *__Pyx_GetItemInt_Generic(PyObject *o, PyObject* j) {$/;"	f	file:
+__Pyx_GetItemInt_List	euclidemu2.cpp	1059;"	d	file:
+__Pyx_GetItemInt_List_Fast	euclidemu2.cpp	/^static CYTHON_INLINE PyObject *__Pyx_GetItemInt_List_Fast(PyObject *o, Py_ssize_t i,$/;"	f	file:
+__Pyx_GetItemInt_Tuple	euclidemu2.cpp	1065;"	d	file:
+__Pyx_GetItemInt_Tuple_Fast	euclidemu2.cpp	/^static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Tuple_Fast(PyObject *o, Py_ssize_t i,$/;"	f	file:
+__Pyx_GetModuleGlobalName	euclidemu2.cpp	1152;"	d	file:
+__Pyx_GetModuleGlobalName	euclidemu2.cpp	1166;"	d	file:
+__Pyx_GetModuleGlobalNameUncached	euclidemu2.cpp	1159;"	d	file:
+__Pyx_GetModuleGlobalNameUncached	euclidemu2.cpp	1167;"	d	file:
+__Pyx_INCREF	euclidemu2.cpp	941;"	d	file:
+__Pyx_INCREF	euclidemu2.cpp	953;"	d	file:
+__Pyx_Import	euclidemu2.cpp	/^  static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level) {$/;"	f	file:
+__Pyx_ImportFrom	euclidemu2.cpp	/^  static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {$/;"	f	file:
+__Pyx_InBases	euclidemu2.cpp	/^static int __Pyx_InBases(PyTypeObject *a, PyTypeObject *b) {$/;"	f	file:
+__Pyx_InitCachedBuiltins	euclidemu2.cpp	/^static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {$/;"	f	file:
+__Pyx_InitCachedConstants	euclidemu2.cpp	/^static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {$/;"	f	file:
+__Pyx_InitGlobals	euclidemu2.cpp	/^static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {$/;"	f	file:
+__Pyx_InitStrings	euclidemu2.cpp	/^  static int __Pyx_InitStrings(__Pyx_StringTabEntry *t) {$/;"	f	file:
+__Pyx_IsSubtype	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_IsSubtype(PyTypeObject *a, PyTypeObject *b) {$/;"	f	file:
+__Pyx_IterFinish	euclidemu2.cpp	/^  static CYTHON_INLINE int __Pyx_IterFinish(void) {$/;"	f	file:
+__Pyx_IternextUnpackEndCheck	euclidemu2.cpp	/^  static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {$/;"	f	file:
+__Pyx_ListComp_Append	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_ListComp_Append(PyObject* list, PyObject* x) {$/;"	f	file:
+__Pyx_ListComp_Append	euclidemu2.cpp	1230;"	d	file:
+__Pyx_MODULE_NAME	euclidemu2.cpp	1421;"	d	file:
+__Pyx_NewRef	euclidemu2.cpp	752;"	d	file:
+__Pyx_Owned_Py_None	euclidemu2.cpp	753;"	d	file:
+__Pyx_ParseOptionalKeywords	euclidemu2.cpp	/^static int __Pyx_ParseOptionalKeywords($/;"	f	file:
+__Pyx_PyAsyncMethodsStruct	euclidemu2.cpp	/^    } __Pyx_PyAsyncMethodsStruct;$/;"	t	typeref:struct:__anon4	file:
+__Pyx_PyAsyncMethodsStruct	euclidemu2.cpp	605;"	d	file:
+__Pyx_PyBaseString_Check	euclidemu2.cpp	544;"	d	file:
+__Pyx_PyBaseString_Check	euclidemu2.cpp	547;"	d	file:
+__Pyx_PyBaseString_CheckExact	euclidemu2.cpp	545;"	d	file:
+__Pyx_PyBaseString_CheckExact	euclidemu2.cpp	548;"	d	file:
+__Pyx_PyBool_FromLong	euclidemu2.cpp	/^static CYTHON_INLINE PyObject * __Pyx_PyBool_FromLong(long b) {$/;"	f	file:
+__Pyx_PyByteArray_FromCString	euclidemu2.cpp	741;"	d	file:
+__Pyx_PyByteArray_FromString	euclidemu2.cpp	716;"	d	file:
+__Pyx_PyByteArray_FromStringAndSize	euclidemu2.cpp	717;"	d	file:
+__Pyx_PyBytes_AsSString	euclidemu2.cpp	732;"	d	file:
+__Pyx_PyBytes_AsString	euclidemu2.cpp	731;"	d	file:
+__Pyx_PyBytes_AsUString	euclidemu2.cpp	733;"	d	file:
+__Pyx_PyBytes_AsWritableSString	euclidemu2.cpp	729;"	d	file:
+__Pyx_PyBytes_AsWritableString	euclidemu2.cpp	728;"	d	file:
+__Pyx_PyBytes_AsWritableUString	euclidemu2.cpp	730;"	d	file:
+__Pyx_PyBytes_FromCString	euclidemu2.cpp	740;"	d	file:
+__Pyx_PyBytes_FromString	euclidemu2.cpp	718;"	d	file:
+__Pyx_PyBytes_FromStringAndSize	euclidemu2.cpp	719;"	d	file:
+__Pyx_PyCFunctionFast	euclidemu2.cpp	/^  typedef PyObject *(*__Pyx_PyCFunctionFast) (PyObject *self, PyObject *const *args, Py_ssize_t nargs);$/;"	t	file:
+__Pyx_PyCFunctionFast	euclidemu2.cpp	393;"	d	file:
+__Pyx_PyCFunctionFastWithKeywords	euclidemu2.cpp	/^  typedef PyObject *(*__Pyx_PyCFunctionFastWithKeywords) (PyObject *self, PyObject *const *args,$/;"	t	file:
+__Pyx_PyCFunctionFastWithKeywords	euclidemu2.cpp	394;"	d	file:
+__Pyx_PyCFunction_FastCall	euclidemu2.cpp	/^static CYTHON_INLINE PyObject * __Pyx_PyCFunction_FastCall(PyObject *func_obj, PyObject **args, Py_ssize_t nargs) {$/;"	f	file:
+__Pyx_PyCFunction_FastCall	euclidemu2.cpp	1090;"	d	file:
+__Pyx_PyCode_HasFreeVars	euclidemu2.cpp	413;"	d	file:
+__Pyx_PyCode_HasFreeVars	euclidemu2.cpp	416;"	d	file:
+__Pyx_PyCode_New	euclidemu2.cpp	356;"	d	file:
+__Pyx_PyCode_New	euclidemu2.cpp	362;"	d	file:
+__Pyx_PyCode_New	euclidemu2.cpp	365;"	d	file:
+__Pyx_PyDict_GetItem	euclidemu2.cpp	/^static PyObject *__Pyx_PyDict_GetItem(PyObject *d, PyObject* key) {$/;"	f	file:
+__Pyx_PyDict_GetItem	euclidemu2.cpp	1082;"	d	file:
+__Pyx_PyDict_GetItemStr	euclidemu2.cpp	471;"	d	file:
+__Pyx_PyDict_GetItemStr	euclidemu2.cpp	473;"	d	file:
+__Pyx_PyDict_NewPresized	euclidemu2.cpp	459;"	d	file:
+__Pyx_PyDict_NewPresized	euclidemu2.cpp	461;"	d	file:
+__Pyx_PyErr_Clear	euclidemu2.cpp	1018;"	d	file:
+__Pyx_PyErr_Clear	euclidemu2.cpp	1031;"	d	file:
+__Pyx_PyErr_ExceptionMatches	euclidemu2.cpp	1268;"	d	file:
+__Pyx_PyErr_ExceptionMatches	euclidemu2.cpp	1271;"	d	file:
+__Pyx_PyErr_ExceptionMatchesInState	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err) {$/;"	f	file:
+__Pyx_PyErr_ExceptionMatchesTuple	euclidemu2.cpp	/^static int __Pyx_PyErr_ExceptionMatchesTuple(PyObject *exc_type, PyObject *tuple) {$/;"	f	file:
+__Pyx_PyErr_GetTopmostException	euclidemu2.cpp	/^__Pyx_PyErr_GetTopmostException(PyThreadState *tstate)$/;"	f	file:
+__Pyx_PyErr_GivenExceptionMatches	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches(PyObject *err, PyObject* exc_type) {$/;"	f	file:
+__Pyx_PyErr_GivenExceptionMatches	euclidemu2.cpp	1388;"	d	file:
+__Pyx_PyErr_GivenExceptionMatches2	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *exc_type1, PyObject *exc_type2) {$/;"	f	file:
+__Pyx_PyErr_GivenExceptionMatches2	euclidemu2.cpp	1389;"	d	file:
+__Pyx_PyErr_GivenExceptionMatchesTuple	euclidemu2.cpp	/^static int __Pyx_PyErr_GivenExceptionMatchesTuple(PyObject *exc_type, PyObject *tuple) {$/;"	f	file:
+__Pyx_PyErr_Occurred	euclidemu2.cpp	1009;"	d	file:
+__Pyx_PyErr_Occurred	euclidemu2.cpp	1013;"	d	file:
+__Pyx_PyErr_SetNone	euclidemu2.cpp	1026;"	d	file:
+__Pyx_PyErr_SetNone	euclidemu2.cpp	1028;"	d	file:
+__Pyx_PyErr_SetNone	euclidemu2.cpp	1032;"	d	file:
+__Pyx_PyException_Check	euclidemu2.cpp	1391;"	d	file:
+__Pyx_PyFastCFunction_Check	euclidemu2.cpp	397;"	d	file:
+__Pyx_PyFastCFunction_Check	euclidemu2.cpp	400;"	d	file:
+__Pyx_PyFloat_TrueDivideObjC	euclidemu2.cpp	/^static PyObject* __Pyx_PyFloat_TrueDivideObjC(PyObject *op1, PyObject *op2, double floatval, int inplace, int zerodivision_check) {$/;"	f	file:
+__Pyx_PyFloat_TrueDivideObjC	euclidemu2.cpp	1188;"	d	file:
+__Pyx_PyFrame_GetLocalsplus	euclidemu2.cpp	1112;"	d	file:
+__Pyx_PyFrame_SetLineNumber	euclidemu2.cpp	414;"	d	file:
+__Pyx_PyFrame_SetLineNumber	euclidemu2.cpp	417;"	d	file:
+__Pyx_PyFunction_FastCall	euclidemu2.cpp	1095;"	d	file:
+__Pyx_PyFunction_FastCallDict	euclidemu2.cpp	/^static PyObject *__Pyx_PyFunction_FastCallDict(PyObject *func, PyObject **args, Py_ssize_t nargs, PyObject *kwargs) {$/;"	f	file:
+__Pyx_PyFunction_FastCallDict	euclidemu2.cpp	1100;"	d	file:
+__Pyx_PyFunction_FastCallNoKw	euclidemu2.cpp	/^static PyObject* __Pyx_PyFunction_FastCallNoKw(PyCodeObject *co, PyObject **args, Py_ssize_t na,$/;"	f	file:
+__Pyx_PyIndex_AsSsize_t	euclidemu2.cpp	/^static CYTHON_INLINE Py_ssize_t __Pyx_PyIndex_AsSsize_t(PyObject* b) {$/;"	f	file:
+__Pyx_PyInt_AsHash_t	euclidemu2.cpp	593;"	d	file:
+__Pyx_PyInt_AsHash_t	euclidemu2.cpp	596;"	d	file:
+__Pyx_PyInt_As_int	euclidemu2.cpp	/^  static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {$/;"	f	file:
+__Pyx_PyInt_As_long	euclidemu2.cpp	/^  static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {$/;"	f	file:
+__Pyx_PyInt_As_size_t	euclidemu2.cpp	/^  static CYTHON_INLINE size_t __Pyx_PyInt_As_size_t(PyObject *x) {$/;"	f	file:
+__Pyx_PyInt_FromHash_t	euclidemu2.cpp	592;"	d	file:
+__Pyx_PyInt_FromHash_t	euclidemu2.cpp	595;"	d	file:
+__Pyx_PyInt_FromSize_t	euclidemu2.cpp	/^static CYTHON_INLINE PyObject * __Pyx_PyInt_FromSize_t(size_t ival) {$/;"	f	file:
+__Pyx_PyInt_From_long	euclidemu2.cpp	/^  static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value) {$/;"	f	file:
+__Pyx_PyMODINIT_FUNC	euclidemu2.cpp	10216;"	d	file:
+__Pyx_PyMODINIT_FUNC	euclidemu2.cpp	10219;"	d	file:
+__Pyx_PyMODINIT_FUNC	euclidemu2.cpp	10221;"	d	file:
+__Pyx_PyMODINIT_FUNC	euclidemu2.cpp	10225;"	d	file:
+__Pyx_PyMODINIT_FUNC	euclidemu2.cpp	10227;"	d	file:
+__Pyx_PyMethod_New	euclidemu2.cpp	599;"	d	file:
+__Pyx_PyMethod_New	euclidemu2.cpp	601;"	d	file:
+__Pyx_PyNumber_Divide	euclidemu2.cpp	464;"	d	file:
+__Pyx_PyNumber_Divide	euclidemu2.cpp	467;"	d	file:
+__Pyx_PyNumber_Float	euclidemu2.cpp	773;"	d	file:
+__Pyx_PyNumber_InPlaceDivide	euclidemu2.cpp	465;"	d	file:
+__Pyx_PyNumber_InPlaceDivide	euclidemu2.cpp	468;"	d	file:
+__Pyx_PyNumber_Int	euclidemu2.cpp	769;"	d	file:
+__Pyx_PyNumber_Int	euclidemu2.cpp	771;"	d	file:
+__Pyx_PyNumber_IntOrLong	euclidemu2.cpp	/^static CYTHON_INLINE PyObject* __Pyx_PyNumber_IntOrLong(PyObject* x) {$/;"	f	file:
+__Pyx_PyNumber_IntOrLongWrongResultType	euclidemu2.cpp	/^static PyObject* __Pyx_PyNumber_IntOrLongWrongResultType(PyObject* result, const char* type_name) {$/;"	f	file:
+__Pyx_PyObject_AsSString	euclidemu2.cpp	737;"	d	file:
+__Pyx_PyObject_AsString	euclidemu2.cpp	/^static CYTHON_INLINE const char* __Pyx_PyObject_AsString(PyObject* o) {$/;"	f	file:
+__Pyx_PyObject_AsStringAndSize	euclidemu2.cpp	/^static CYTHON_INLINE const char* __Pyx_PyObject_AsStringAndSize(PyObject* o, Py_ssize_t *length) {$/;"	f	file:
+__Pyx_PyObject_AsUString	euclidemu2.cpp	738;"	d	file:
+__Pyx_PyObject_AsWritableSString	euclidemu2.cpp	735;"	d	file:
+__Pyx_PyObject_AsWritableString	euclidemu2.cpp	734;"	d	file:
+__Pyx_PyObject_AsWritableUString	euclidemu2.cpp	736;"	d	file:
+__Pyx_PyObject_Call	euclidemu2.cpp	/^static CYTHON_INLINE PyObject* __Pyx_PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw) {$/;"	f	file:
+__Pyx_PyObject_Call	euclidemu2.cpp	1002;"	d	file:
+__Pyx_PyObject_Call2Args	euclidemu2.cpp	/^  static CYTHON_UNUSED PyObject* __Pyx_PyObject_Call2Args(PyObject* function, PyObject* arg1, PyObject* arg2) {$/;"	f	file:
+__Pyx_PyObject_CallMethO	euclidemu2.cpp	/^static CYTHON_INLINE PyObject* __Pyx_PyObject_CallMethO(PyObject *func, PyObject *arg) {$/;"	f	file:
+__Pyx_PyObject_CallNoArg	euclidemu2.cpp	/^static CYTHON_INLINE PyObject* __Pyx_PyObject_CallNoArg(PyObject *func) {$/;"	f	file:
+__Pyx_PyObject_CallNoArg	euclidemu2.cpp	1175;"	d	file:
+__Pyx_PyObject_CallOneArg	euclidemu2.cpp	/^static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObject *arg) {$/;"	f	file:
+__Pyx_PyObject_Dict_GetItem	euclidemu2.cpp	1078;"	d	file:
+__Pyx_PyObject_Dict_GetItem	euclidemu2.cpp	1083;"	d	file:
+__Pyx_PyObject_FromCString	euclidemu2.cpp	739;"	d	file:
+__Pyx_PyObject_FromString	euclidemu2.cpp	681;"	d	file:
+__Pyx_PyObject_FromStringAndSize	euclidemu2.cpp	682;"	d	file:
+__Pyx_PyObject_GenericGetAttr	euclidemu2.cpp	/^static PyObject* __Pyx_PyObject_GenericGetAttr(PyObject* obj, PyObject* attr_name) {$/;"	f	file:
+__Pyx_PyObject_GenericGetAttr	euclidemu2.cpp	1285;"	d	file:
+__Pyx_PyObject_GenericGetAttrNoDict	euclidemu2.cpp	/^static CYTHON_INLINE PyObject* __Pyx_PyObject_GenericGetAttrNoDict(PyObject* obj, PyObject* attr_name) {$/;"	f	file:
+__Pyx_PyObject_GenericGetAttrNoDict	euclidemu2.cpp	1278;"	d	file:
+__Pyx_PyObject_GetAttrStr	euclidemu2.cpp	/^static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStr(PyObject* obj, PyObject* attr_name) {$/;"	f	file:
+__Pyx_PyObject_GetAttrStr	euclidemu2.cpp	977;"	d	file:
+__Pyx_PyObject_GetAttrStrNoError	euclidemu2.cpp	/^static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStrNoError(PyObject* obj, PyObject* attr_name) {$/;"	f	file:
+__Pyx_PyObject_GetAttrStr_ClearAttributeError	euclidemu2.cpp	/^  static void __Pyx_PyObject_GetAttrStr_ClearAttributeError(void) {$/;"	f	file:
+__Pyx_PyObject_GetIndex	euclidemu2.cpp	/^static PyObject *__Pyx_PyObject_GetIndex(PyObject *obj, PyObject* index) {$/;"	f	file:
+__Pyx_PyObject_GetItem	euclidemu2.cpp	/^static PyObject *__Pyx_PyObject_GetItem(PyObject *obj, PyObject* key) {$/;"	f	file:
+__Pyx_PyObject_GetItem	euclidemu2.cpp	1237;"	d	file:
+__Pyx_PyObject_GetSlice	euclidemu2.cpp	/^  static CYTHON_INLINE PyObject* __Pyx_PyObject_GetSlice(PyObject* obj,$/;"	f	file:
+__Pyx_PyObject_IsTrue	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_PyObject_IsTrue(PyObject* x) {$/;"	f	file:
+__Pyx_PyObject_IsTrueAndDecref	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_PyObject_IsTrueAndDecref(PyObject* x) {$/;"	f	file:
+__Pyx_PySequence_ContainsTF	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_PySequence_ContainsTF(PyObject* item, PyObject* seq, int eq) {$/;"	f	file:
+__Pyx_PySequence_SIZE	euclidemu2.cpp	561;"	d	file:
+__Pyx_PySequence_SIZE	euclidemu2.cpp	563;"	d	file:
+__Pyx_PySequence_Tuple	euclidemu2.cpp	758;"	d	file:
+__Pyx_PyStr_FromCString	euclidemu2.cpp	742;"	d	file:
+__Pyx_PyStr_FromString	euclidemu2.cpp	722;"	d	file:
+__Pyx_PyStr_FromString	euclidemu2.cpp	725;"	d	file:
+__Pyx_PyStr_FromStringAndSize	euclidemu2.cpp	723;"	d	file:
+__Pyx_PyStr_FromStringAndSize	euclidemu2.cpp	726;"	d	file:
+__Pyx_PyString_Format	euclidemu2.cpp	526;"	d	file:
+__Pyx_PyString_Format	euclidemu2.cpp	528;"	d	file:
+__Pyx_PyString_FormatSafe	euclidemu2.cpp	523;"	d	file:
+__Pyx_PyThreadState_Current	euclidemu2.cpp	420;"	d	file:
+__Pyx_PyThreadState_Current	euclidemu2.cpp	422;"	d	file:
+__Pyx_PyThreadState_Current	euclidemu2.cpp	424;"	d	file:
+__Pyx_PyThreadState_Current	euclidemu2.cpp	426;"	d	file:
+__Pyx_PyThreadState_assign	euclidemu2.cpp	1008;"	d	file:
+__Pyx_PyThreadState_assign	euclidemu2.cpp	1012;"	d	file:
+__Pyx_PyThreadState_declare	euclidemu2.cpp	1007;"	d	file:
+__Pyx_PyThreadState_declare	euclidemu2.cpp	1011;"	d	file:
+__Pyx_PyType_AsAsync	euclidemu2.cpp	606;"	d	file:
+__Pyx_PyType_AsAsync	euclidemu2.cpp	608;"	d	file:
+__Pyx_PyType_AsAsync	euclidemu2.cpp	611;"	d	file:
+__Pyx_PyUnicode_AsStringAndSize	euclidemu2.cpp	/^static CYTHON_INLINE const char* __Pyx_PyUnicode_AsStringAndSize(PyObject* o, Py_ssize_t *length) {$/;"	f	file:
+__Pyx_PyUnicode_AsStringAndSize	euclidemu2.cpp	/^static const char* __Pyx_PyUnicode_AsStringAndSize(PyObject* o, Py_ssize_t *length) {$/;"	f	file:
+__Pyx_PyUnicode_AsUnicode	euclidemu2.cpp	751;"	d	file:
+__Pyx_PyUnicode_Concat	euclidemu2.cpp	507;"	d	file:
+__Pyx_PyUnicode_Concat	euclidemu2.cpp	510;"	d	file:
+__Pyx_PyUnicode_ConcatSafe	euclidemu2.cpp	508;"	d	file:
+__Pyx_PyUnicode_ConcatSafe	euclidemu2.cpp	511;"	d	file:
+__Pyx_PyUnicode_DATA	euclidemu2.cpp	483;"	d	file:
+__Pyx_PyUnicode_DATA	euclidemu2.cpp	501;"	d	file:
+__Pyx_PyUnicode_FormatSafe	euclidemu2.cpp	524;"	d	file:
+__Pyx_PyUnicode_FromCString	euclidemu2.cpp	743;"	d	file:
+__Pyx_PyUnicode_FromString	euclidemu2.cpp	/^static CYTHON_INLINE PyObject* __Pyx_PyUnicode_FromString(const char* c_str) {$/;"	f	file:
+__Pyx_PyUnicode_FromStringAndSize	euclidemu2.cpp	821;"	d	file:
+__Pyx_PyUnicode_FromStringAndSize	euclidemu2.cpp	823;"	d	file:
+__Pyx_PyUnicode_FromUnicode	euclidemu2.cpp	749;"	d	file:
+__Pyx_PyUnicode_FromUnicodeAndLength	euclidemu2.cpp	750;"	d	file:
+__Pyx_PyUnicode_GET_LENGTH	euclidemu2.cpp	479;"	d	file:
+__Pyx_PyUnicode_GET_LENGTH	euclidemu2.cpp	497;"	d	file:
+__Pyx_PyUnicode_IS_TRUE	euclidemu2.cpp	487;"	d	file:
+__Pyx_PyUnicode_IS_TRUE	euclidemu2.cpp	489;"	d	file:
+__Pyx_PyUnicode_IS_TRUE	euclidemu2.cpp	504;"	d	file:
+__Pyx_PyUnicode_KIND	euclidemu2.cpp	482;"	d	file:
+__Pyx_PyUnicode_KIND	euclidemu2.cpp	500;"	d	file:
+__Pyx_PyUnicode_MAX_CHAR_VALUE	euclidemu2.cpp	481;"	d	file:
+__Pyx_PyUnicode_MAX_CHAR_VALUE	euclidemu2.cpp	499;"	d	file:
+__Pyx_PyUnicode_READ	euclidemu2.cpp	484;"	d	file:
+__Pyx_PyUnicode_READ	euclidemu2.cpp	502;"	d	file:
+__Pyx_PyUnicode_READY	euclidemu2.cpp	477;"	d	file:
+__Pyx_PyUnicode_READY	euclidemu2.cpp	496;"	d	file:
+__Pyx_PyUnicode_READ_CHAR	euclidemu2.cpp	480;"	d	file:
+__Pyx_PyUnicode_READ_CHAR	euclidemu2.cpp	498;"	d	file:
+__Pyx_PyUnicode_WRITE	euclidemu2.cpp	485;"	d	file:
+__Pyx_PyUnicode_WRITE	euclidemu2.cpp	503;"	d	file:
+__Pyx_Py_UNICODE_strlen	euclidemu2.cpp	/^static CYTHON_INLINE size_t __Pyx_Py_UNICODE_strlen(const Py_UNICODE *u) {$/;"	f	file:
+__Pyx_Raise	euclidemu2.cpp	/^static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause) {$/;"	f	file:
+__Pyx_Raise	euclidemu2.cpp	/^static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb,$/;"	f	file:
+__Pyx_RaiseArgtupleInvalid	euclidemu2.cpp	/^static void __Pyx_RaiseArgtupleInvalid($/;"	f	file:
+__Pyx_RaiseDoubleKeywordsError	euclidemu2.cpp	/^static void __Pyx_RaiseDoubleKeywordsError($/;"	f	file:
+__Pyx_RaiseGenericGetAttributeError	euclidemu2.cpp	/^static PyObject *__Pyx_RaiseGenericGetAttributeError(PyTypeObject *tp, PyObject *attr_name) {$/;"	f	file:
+__Pyx_RaiseNeedMoreValuesError	euclidemu2.cpp	/^  static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {$/;"	f	file:
+__Pyx_RaiseTooManyValuesError	euclidemu2.cpp	/^  static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {$/;"	f	file:
+__Pyx_RaiseUnboundLocalError	euclidemu2.cpp	/^  static CYTHON_INLINE void __Pyx_RaiseUnboundLocalError(const char *varname) {$/;"	f	file:
+__Pyx_RefNanny	euclidemu2.cpp	/^  static __Pyx_RefNannyAPIStruct *__Pyx_RefNanny = NULL;$/;"	v	file:
+__Pyx_RefNannyAPIStruct	euclidemu2.cpp	/^  } __Pyx_RefNannyAPIStruct;$/;"	t	typeref:struct:__anon6	file:
+__Pyx_RefNannyDeclarations	euclidemu2.cpp	925;"	d	file:
+__Pyx_RefNannyDeclarations	euclidemu2.cpp	950;"	d	file:
+__Pyx_RefNannyFinishContext	euclidemu2.cpp	939;"	d	file:
+__Pyx_RefNannyFinishContext	euclidemu2.cpp	952;"	d	file:
+__Pyx_RefNannyImportAPI	euclidemu2.cpp	/^static __Pyx_RefNannyAPIStruct *__Pyx_RefNannyImportAPI(const char *modname) {$/;"	f	file:
+__Pyx_RefNannySetupContext	euclidemu2.cpp	927;"	d	file:
+__Pyx_RefNannySetupContext	euclidemu2.cpp	936;"	d	file:
+__Pyx_RefNannySetupContext	euclidemu2.cpp	951;"	d	file:
+__Pyx_SET_REFCNT	euclidemu2.cpp	554;"	d	file:
+__Pyx_SET_REFCNT	euclidemu2.cpp	557;"	d	file:
+__Pyx_SET_SIZE	euclidemu2.cpp	555;"	d	file:
+__Pyx_SET_SIZE	euclidemu2.cpp	558;"	d	file:
+__Pyx_SetItemInt	euclidemu2.cpp	1241;"	d	file:
+__Pyx_SetItemInt_Fast	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_SetItemInt_Fast(PyObject *o, Py_ssize_t i, PyObject *v, int is_list,$/;"	f	file:
+__Pyx_SetItemInt_Generic	euclidemu2.cpp	/^  static int __Pyx_SetItemInt_Generic(PyObject *o, PyObject *j, PyObject *v) {$/;"	f	file:
+__Pyx_StringTabEntry	euclidemu2.cpp	/^                const char is_unicode; const char is_str; const char intern; } __Pyx_StringTabEntry;$/;"	t	typeref:struct:__anon5	file:
+__Pyx_TypeCheck	euclidemu2.cpp	1382;"	d	file:
+__Pyx_TypeCheck	euclidemu2.cpp	1387;"	d	file:
+__Pyx_XCLEAR	euclidemu2.cpp	971;"	d	file:
+__Pyx_XDECREF	euclidemu2.cpp	946;"	d	file:
+__Pyx_XDECREF	euclidemu2.cpp	958;"	d	file:
+__Pyx_XDECREF_SET	euclidemu2.cpp	962;"	d	file:
+__Pyx_XGIVEREF	euclidemu2.cpp	948;"	d	file:
+__Pyx_XGIVEREF	euclidemu2.cpp	960;"	d	file:
+__Pyx_XGOTREF	euclidemu2.cpp	947;"	d	file:
+__Pyx_XGOTREF	euclidemu2.cpp	959;"	d	file:
+__Pyx_XINCREF	euclidemu2.cpp	945;"	d	file:
+__Pyx_XINCREF	euclidemu2.cpp	957;"	d	file:
+__Pyx__ArgTypeTest	euclidemu2.cpp	/^static int __Pyx__ArgTypeTest(PyObject *obj, PyTypeObject *type, const char *name, int exact)$/;"	f	file:
+__Pyx__ExceptionReset	euclidemu2.cpp	/^static CYTHON_INLINE void __Pyx__ExceptionReset(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {$/;"	f	file:
+__Pyx__ExceptionSave	euclidemu2.cpp	/^static CYTHON_INLINE void __Pyx__ExceptionSave(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {$/;"	f	file:
+__Pyx__GetModuleGlobalName	euclidemu2.cpp	/^static PyObject *__Pyx__GetModuleGlobalName(PyObject *name, PY_UINT64_T *dict_version, PyObject **dict_cached_value)$/;"	f	file:
+__Pyx__PyObject_CallOneArg	euclidemu2.cpp	/^static PyObject* __Pyx__PyObject_CallOneArg(PyObject *func, PyObject *arg) {$/;"	f	file:
+__Pyx_call_destructor	euclidemu2.cpp	/^void __Pyx_call_destructor(T& x) {$/;"	f
+__Pyx_carray_from_py_double	euclidemu2.cpp	/^static int __Pyx_carray_from_py_double(PyObject *__pyx_v_o, double *__pyx_v_v, Py_ssize_t __pyx_v_length) {$/;"	f	file:
+__Pyx_carray_from_py_double___5b_0x265_5d_	euclidemu2.cpp	/^static int __Pyx_carray_from_py_double___5b_0x265_5d_(PyObject *__pyx_v_o, double (*__pyx_v_v)[0x265], Py_ssize_t __pyx_v_length) {$/;"	f	file:
+__Pyx_carray_to_py_double	euclidemu2.cpp	/^static CYTHON_INLINE PyObject *__Pyx_carray_to_py_double(double *__pyx_v_v, Py_ssize_t __pyx_v_length) {$/;"	f	file:
+__Pyx_carray_to_py_double___5b_0x265_5d_	euclidemu2.cpp	/^static CYTHON_INLINE PyObject *__Pyx_carray_to_py_double___5b_0x265_5d_(double (*__pyx_v_v)[0x265], Py_ssize_t __pyx_v_length) {$/;"	f	file:
+__Pyx_carray_to_tuple_double	euclidemu2.cpp	/^static CYTHON_INLINE PyObject *__Pyx_carray_to_tuple_double(double *__pyx_v_v, Py_ssize_t __pyx_v_length) {$/;"	f	file:
+__Pyx_carray_to_tuple_double___5b_0x265_5d_	euclidemu2.cpp	/^static CYTHON_INLINE PyObject *__Pyx_carray_to_tuple_double___5b_0x265_5d_(double (*__pyx_v_v)[0x265], Py_ssize_t __pyx_v_length) {$/;"	f	file:
+__Pyx_check_binary_version	euclidemu2.cpp	/^  static int __Pyx_check_binary_version(void) {$/;"	f	file:
+__Pyx_fits_Py_ssize_t	euclidemu2.cpp	685;"	d	file:
+__Pyx_get_object_dict_version	euclidemu2.cpp	/^static CYTHON_INLINE PY_UINT64_T __Pyx_get_object_dict_version(PyObject *obj) {$/;"	f	file:
+__Pyx_get_tp_dict_version	euclidemu2.cpp	/^static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj) {$/;"	f	file:
+__Pyx_init_sys_getdefaultencoding_params	euclidemu2.cpp	/^static int __Pyx_init_sys_getdefaultencoding_params(void) {$/;"	f	file:
+__Pyx_inner_PyErr_GivenExceptionMatches2	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_inner_PyErr_GivenExceptionMatches2(PyObject *err, PyObject* exc_type1, PyObject *exc_type2) {$/;"	f	file:
+__Pyx_inner_PyErr_GivenExceptionMatches2	euclidemu2.cpp	/^static int __Pyx_inner_PyErr_GivenExceptionMatches2(PyObject *err, PyObject* exc_type1, PyObject* exc_type2) {$/;"	f	file:
+__Pyx_is_valid_index	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_is_valid_index(Py_ssize_t i, Py_ssize_t limit) {$/;"	f	file:
+__Pyx_long_cast	euclidemu2.cpp	684;"	d	file:
+__Pyx_modinit_function_export_code	euclidemu2.cpp	/^static int __Pyx_modinit_function_export_code(void) {$/;"	f	file:
+__Pyx_modinit_function_import_code	euclidemu2.cpp	/^static int __Pyx_modinit_function_import_code(void) {$/;"	f	file:
+__Pyx_modinit_global_init_code	euclidemu2.cpp	/^static int __Pyx_modinit_global_init_code(void) {$/;"	f	file:
+__Pyx_modinit_type_import_code	euclidemu2.cpp	/^static int __Pyx_modinit_type_import_code(void) {$/;"	f	file:
+__Pyx_modinit_type_init_code	euclidemu2.cpp	/^static int __Pyx_modinit_type_init_code(void) {$/;"	f	file:
+__Pyx_modinit_variable_export_code	euclidemu2.cpp	/^static int __Pyx_modinit_variable_export_code(void) {$/;"	f	file:
+__Pyx_modinit_variable_import_code	euclidemu2.cpp	/^static int __Pyx_modinit_variable_import_code(void) {$/;"	f	file:
+__Pyx_object_dict_version_matches	euclidemu2.cpp	/^static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UINT64_T tp_dict_version, PY_UINT64_T obj_dict_version) {$/;"	f	file:
+__Pyx_pretend_to_initialize	euclidemu2.cpp	/^static CYTHON_INLINE void __Pyx_pretend_to_initialize(void* ptr) { (void)ptr; }$/;"	f	file:
+__Pyx_setup_reduce	euclidemu2.cpp	/^static int __Pyx_setup_reduce(PyObject* type_obj) {$/;"	f	file:
+__Pyx_setup_reduce_is_named	euclidemu2.cpp	/^  static int __Pyx_setup_reduce_is_named(PyObject* meth, PyObject* name) {$/;"	f	file:
+__Pyx_sst_abs	euclidemu2.cpp	700;"	d	file:
+__Pyx_sst_abs	euclidemu2.cpp	702;"	d	file:
+__Pyx_sst_abs	euclidemu2.cpp	704;"	d	file:
+__Pyx_sst_abs	euclidemu2.cpp	706;"	d	file:
+__Pyx_sst_abs	euclidemu2.cpp	708;"	d	file:
+__Pyx_sst_abs	euclidemu2.cpp	710;"	d	file:
+__Pyx_sst_abs	euclidemu2.cpp	712;"	d	file:
+__Pyx_sys_getdefaultencoding_not_ascii	euclidemu2.cpp	/^static int __Pyx_sys_getdefaultencoding_not_ascii;$/;"	v	file:
+__Pyx_truncl	euclidemu2.cpp	635;"	d	file:
+__Pyx_truncl	euclidemu2.cpp	637;"	d	file:
+__Pyx_uchar_cast	euclidemu2.cpp	683;"	d	file:
+__Pyx_void_to_None	euclidemu2.cpp	282;"	d	file:
+__cdecl	euclidemu2.cpp	56;"	d	file:
+__cinit__	euclidemu2.pyx	/^     def __cinit__(self):$/;"	m	class:PyEuclidEmulator	file:
+__cinit__	euclidemu2.pyx	/^     def __cinit__(self, double Omega_b , double Omega_m , double Sum_m_nu , double n_s , double h , double w_0 , double w_a , double A_s ):$/;"	m	class:PyCosmology	file:
+__fastcall	euclidemu2.cpp	59;"	d	file:
+__has_attribute	euclidemu2.cpp	239;"	d	file:
+__has_cpp_attribute	euclidemu2.cpp	242;"	d	file:
+__pyx_PyFloat_AsDouble	euclidemu2.cpp	763;"	d	file:
+__pyx_PyFloat_AsDouble	euclidemu2.cpp	765;"	d	file:
+__pyx_PyFloat_AsFloat	euclidemu2.cpp	767;"	d	file:
+__pyx_b	euclidemu2.cpp	/^static PyObject *__pyx_b;$/;"	v	file:
+__pyx_bisect_code_objects	euclidemu2.cpp	/^  static int __pyx_bisect_code_objects(__Pyx_CodeObjectCacheEntry* entries, int count, int code_line) {$/;"	f	file:
+__pyx_builtin_IndexError	euclidemu2.cpp	/^static PyObject *__pyx_builtin_IndexError;$/;"	v	file:
+__pyx_builtin_OverflowError	euclidemu2.cpp	/^static PyObject *__pyx_builtin_OverflowError;$/;"	v	file:
+__pyx_builtin_TypeError	euclidemu2.cpp	/^static PyObject *__pyx_builtin_TypeError;$/;"	v	file:
+__pyx_builtin_ValueError	euclidemu2.cpp	/^static PyObject *__pyx_builtin_ValueError;$/;"	v	file:
+__pyx_builtin_any	euclidemu2.cpp	/^static PyObject *__pyx_builtin_any;$/;"	v	file:
+__pyx_builtin_enumerate	euclidemu2.cpp	/^static PyObject *__pyx_builtin_enumerate;$/;"	v	file:
+__pyx_builtin_max	euclidemu2.cpp	/^static PyObject *__pyx_builtin_max;$/;"	v	file:
+__pyx_builtin_min	euclidemu2.cpp	/^static PyObject *__pyx_builtin_min;$/;"	v	file:
+__pyx_builtin_print	euclidemu2.cpp	/^static PyObject *__pyx_builtin_print;$/;"	v	file:
+__pyx_builtin_range	euclidemu2.cpp	/^static PyObject *__pyx_builtin_range;$/;"	v	file:
+__pyx_builtin_zip	euclidemu2.cpp	/^static PyObject *__pyx_builtin_zip;$/;"	v	file:
+__pyx_cfilenm	euclidemu2.cpp	/^static const char * __pyx_cfilenm= __FILE__;$/;"	v	file:
+__pyx_check_sizeof_voidp	euclidemu2.cpp	/^    enum { __pyx_check_sizeof_voidp = 1 \/ (int)(SIZEOF_VOID_P == sizeof(void*)) };$/;"	e	enum:__anon3	file:
+__pyx_clineno	euclidemu2.cpp	/^static int __pyx_clineno = 0;$/;"	v	file:
+__pyx_code_cache	euclidemu2.cpp	/^static struct __Pyx_CodeObjectCache __pyx_code_cache = {0,0,NULL};$/;"	v	typeref:struct:__Pyx_CodeObjectCache	file:
+__pyx_codeobj__15	euclidemu2.cpp	/^static PyObject *__pyx_codeobj__15;$/;"	v	file:
+__pyx_codeobj__17	euclidemu2.cpp	/^static PyObject *__pyx_codeobj__17;$/;"	v	file:
+__pyx_codeobj__19	euclidemu2.cpp	/^static PyObject *__pyx_codeobj__19;$/;"	v	file:
+__pyx_convert_string_from_py_std__in_string	euclidemu2.cpp	/^static std::string __pyx_convert_string_from_py_std__in_string(PyObject *__pyx_v_o) {$/;"	f	file:
+__pyx_convert_vector_from_py_double	euclidemu2.cpp	/^static std::vector<double>  __pyx_convert_vector_from_py_double(PyObject *__pyx_v_o) {$/;"	f	file:
+__pyx_cython_runtime	euclidemu2.cpp	/^static PyObject *__pyx_cython_runtime = NULL;$/;"	v	file:
+__pyx_d	euclidemu2.cpp	/^static PyObject *__pyx_d;$/;"	v	file:
+__pyx_doc_10euclidemu2_11PyCosmology_2__init__	euclidemu2.cpp	/^static char __pyx_doc_10euclidemu2_11PyCosmology_2__init__[] = "Cython signature: void Cosmology(double Omega_b, double Omega_m, double Sum_m_nu, double n_s, double h, double w_0, double w_a, double A_s)";$/;"	v	file:
+__pyx_doc_10euclidemu2_2convert_to_emu	euclidemu2.cpp	/^static char __pyx_doc_10euclidemu2_2convert_to_emu[] = "\\n    Signature:    convert_to_emu(class_pars_dict)\\n\\n    Description:  Converts the set of parameters accepted by several\\n                  other codes into a set of parameters accepted by\\n                  EuclidEmulator2. Also checks the params exist.\\n\\n    Input type:   python dictionary\\n\\n    Output type:  python dictionary\\n\\n    Related:      class_to_emu\\n    ";$/;"	v	file:
+__pyx_doc_10euclidemu2_check_param_range	euclidemu2.cpp	/^static char __pyx_doc_10euclidemu2_check_param_range[] = "\\n    Checks if all parameters in the cosmology dictionary 'par_dict'\\n    passed to this function obey the limits set by the emulator.\\n    ";$/;"	v	file:
+__pyx_empty_bytes	euclidemu2.cpp	/^static PyObject *__pyx_empty_bytes;$/;"	v	file:
+__pyx_empty_tuple	euclidemu2.cpp	/^static PyObject *__pyx_empty_tuple;$/;"	v	file:
+__pyx_empty_unicode	euclidemu2.cpp	/^static PyObject *__pyx_empty_unicode;$/;"	v	file:
+__pyx_f	euclidemu2.cpp	/^static const char *__pyx_f[] = {$/;"	v	file:
+__pyx_filename	euclidemu2.cpp	/^static const char *__pyx_filename;$/;"	v	file:
+__pyx_find_code_object	euclidemu2.cpp	/^static PyCodeObject *__pyx_find_code_object(int code_line) {$/;"	f	file:
+__pyx_float_0_0	euclidemu2.cpp	/^static PyObject *__pyx_float_0_0;$/;"	v	file:
+__pyx_float_0_00	euclidemu2.cpp	/^static PyObject *__pyx_float_0_00;$/;"	v	file:
+__pyx_float_0_04	euclidemu2.cpp	/^static PyObject *__pyx_float_0_04;$/;"	v	file:
+__pyx_float_0_06	euclidemu2.cpp	/^static PyObject *__pyx_float_0_06;$/;"	v	file:
+__pyx_float_0_15	euclidemu2.cpp	/^static PyObject *__pyx_float_0_15;$/;"	v	file:
+__pyx_float_0_24	euclidemu2.cpp	/^static PyObject *__pyx_float_0_24;$/;"	v	file:
+__pyx_float_0_40	euclidemu2.cpp	/^static PyObject *__pyx_float_0_40;$/;"	v	file:
+__pyx_float_0_5	euclidemu2.cpp	/^static PyObject *__pyx_float_0_5;$/;"	v	file:
+__pyx_float_0_61	euclidemu2.cpp	/^static PyObject *__pyx_float_0_61;$/;"	v	file:
+__pyx_float_0_73	euclidemu2.cpp	/^static PyObject *__pyx_float_0_73;$/;"	v	file:
+__pyx_float_0_92	euclidemu2.cpp	/^static PyObject *__pyx_float_0_92;$/;"	v	file:
+__pyx_float_100_	euclidemu2.cpp	/^static PyObject *__pyx_float_100_;$/;"	v	file:
+__pyx_float_10_0	euclidemu2.cpp	/^static PyObject *__pyx_float_10_0;$/;"	v	file:
+__pyx_float_1_00	euclidemu2.cpp	/^static PyObject *__pyx_float_1_00;$/;"	v	file:
+__pyx_float_1_0eneg_10	euclidemu2.cpp	/^static PyObject *__pyx_float_1_0eneg_10;$/;"	v	file:
+__pyx_float_1_7eneg_9	euclidemu2.cpp	/^static PyObject *__pyx_float_1_7eneg_9;$/;"	v	file:
+__pyx_float_2_5eneg_9	euclidemu2.cpp	/^static PyObject *__pyx_float_2_5eneg_9;$/;"	v	file:
+__pyx_float_neg_0_7	euclidemu2.cpp	/^static PyObject *__pyx_float_neg_0_7;$/;"	v	file:
+__pyx_float_neg_1_0	euclidemu2.cpp	/^static PyObject *__pyx_float_neg_1_0;$/;"	v	file:
+__pyx_float_neg_1_3	euclidemu2.cpp	/^static PyObject *__pyx_float_neg_1_3;$/;"	v	file:
+__pyx_getprop_10euclidemu2_11PyCosmology__free_inst	euclidemu2.cpp	/^static PyObject *__pyx_getprop_10euclidemu2_11PyCosmology__free_inst(PyObject *o, CYTHON_UNUSED void *x) {$/;"	f	file:
+__pyx_getprop_10euclidemu2_16PyEuclidEmulator_Bvec	euclidemu2.cpp	/^static PyObject *__pyx_getprop_10euclidemu2_16PyEuclidEmulator_Bvec(PyObject *o, CYTHON_UNUSED void *x) {$/;"	f	file:
+__pyx_getprop_10euclidemu2_16PyEuclidEmulator_kvec	euclidemu2.cpp	/^static PyObject *__pyx_getprop_10euclidemu2_16PyEuclidEmulator_kvec(PyObject *o, CYTHON_UNUSED void *x) {$/;"	f	file:
+__pyx_getsets_10euclidemu2_PyCosmology	euclidemu2.cpp	/^static struct PyGetSetDef __pyx_getsets_10euclidemu2_PyCosmology[] = {$/;"	v	typeref:struct:PyGetSetDef	file:
+__pyx_getsets_10euclidemu2_PyEuclidEmulator	euclidemu2.cpp	/^static struct PyGetSetDef __pyx_getsets_10euclidemu2_PyEuclidEmulator[] = {$/;"	v	typeref:struct:PyGetSetDef	file:
+__pyx_insert_code_object	euclidemu2.cpp	/^static void __pyx_insert_code_object(int code_line, PyCodeObject* code_object) {$/;"	f	file:
+__pyx_int_10	euclidemu2.cpp	/^static PyObject *__pyx_int_10;$/;"	v	file:
+__pyx_int_2	euclidemu2.cpp	/^static PyObject *__pyx_int_2;$/;"	v	file:
+__pyx_k_A_s	euclidemu2.cpp	/^static const char __pyx_k_A_s[] = "A_s";$/;"	v	file:
+__pyx_k_A_s_not_in_range	euclidemu2.cpp	/^static const char __pyx_k_A_s_not_in_range[] = "A_s_not_in_range";$/;"	v	file:
+__pyx_k_A_s_range	euclidemu2.cpp	/^static const char __pyx_k_A_s_range[] = "A_s_range";$/;"	v	file:
+__pyx_k_As	euclidemu2.cpp	/^static const char __pyx_k_As[] = "As";$/;"	v	file:
+__pyx_k_Bvec	euclidemu2.cpp	/^static const char __pyx_k_Bvec[] = "Bvec";$/;"	v	file:
+__pyx_k_CubicSpline	euclidemu2.cpp	/^static const char __pyx_k_CubicSpline[] = "_CubicSpline";$/;"	v	file:
+__pyx_k_CubicSpline_2	euclidemu2.cpp	/^static const char __pyx_k_CubicSpline_2[] = "CubicSpline";$/;"	v	file:
+__pyx_k_EuclidEmulator2_allows_only_reds	euclidemu2.cpp	/^static const char __pyx_k_EuclidEmulator2_allows_only_reds[] = "EuclidEmulator2 allows only redshifts z <= 10.0.\\n";$/;"	v	file:
+__pyx_k_EuclidEmulator2_emulates_the_non	euclidemu2.cpp	/^static const char __pyx_k_EuclidEmulator2_emulates_the_non[] = "EuclidEmulator2 emulates the non-linear correction in \\nthe interval [8.73e-3 h\/Mpc, 9.41h\/Mpc]. You are \\nrequesting k modes beyond k_max = 9.41h\/Mpc. \\nHigher k modes constantly extrapolated.";$/;"	v	file:
+__pyx_k_EuclidEmulator2_emulates_the_non_2	euclidemu2.cpp	/^static const char __pyx_k_EuclidEmulator2_emulates_the_non_2[] = "EuclidEmulator2 emulates the non-linear correction in \\nthe interval [8.73e-3 h\/Mpc, 9.41h\/Mpc]. You are \\nrequesting k modes below k_min = 8.73e-3 h\/Mpc. \\nLower k modes constantly extrapolated.";$/;"	v	file:
+__pyx_k_H0	euclidemu2.cpp	/^static const char __pyx_k_H0[] = "H0";$/;"	v	file:
+__pyx_k_IndexError	euclidemu2.cpp	/^static const char __pyx_k_IndexError[] = "IndexError";$/;"	v	file:
+__pyx_k_Missing_parameter_A_s_or_ln10_10	euclidemu2.cpp	/^static const char __pyx_k_Missing_parameter_A_s_or_ln10_10[] = "Missing parameter A_s or ln10^{10}A_s. Can't proceed.";$/;"	v	file:
+__pyx_k_Missing_parameter_Omega_b_Can_t	euclidemu2.cpp	/^static const char __pyx_k_Missing_parameter_Omega_b_Can_t[] = "Missing parameter Omega_b. Can't proceed.";$/;"	v	file:
+__pyx_k_Missing_parameter_Omega_m_or_Ome	euclidemu2.cpp	/^static const char __pyx_k_Missing_parameter_Omega_m_or_Ome[] = "Missing parameter Omega_m or Omega_cdm. Can't proceed.";$/;"	v	file:
+__pyx_k_Missing_parameter_h_Can_t_procee	euclidemu2.cpp	/^static const char __pyx_k_Missing_parameter_h_Can_t_procee[] = "Missing parameter h. Can't proceed.";$/;"	v	file:
+__pyx_k_Missing_parameter_m_ncdm_Can_t_p	euclidemu2.cpp	/^static const char __pyx_k_Missing_parameter_m_ncdm_Can_t_p[] = "Missing parameter m_ncdm. Can't proceed.";$/;"	v	file:
+__pyx_k_Missing_parameter_n_s_Can_t_proc	euclidemu2.cpp	/^static const char __pyx_k_Missing_parameter_n_s_Can_t_proc[] = "Missing parameter n_s. Can't proceed.";$/;"	v	file:
+__pyx_k_Missing_parameter_w0_Will_set_to	euclidemu2.cpp	/^static const char __pyx_k_Missing_parameter_w0_Will_set_to[] = "Missing parameter w0. Will set to -1.";$/;"	v	file:
+__pyx_k_Missing_parameter_wa_Will_set_to	euclidemu2.cpp	/^static const char __pyx_k_Missing_parameter_wa_Will_set_to[] = "Missing parameter wa. Will set to 0.";$/;"	v	file:
+__pyx_k_Om_b	euclidemu2.cpp	/^static const char __pyx_k_Om_b[] = "Om_b";$/;"	v	file:
+__pyx_k_Om_cdm	euclidemu2.cpp	/^static const char __pyx_k_Om_cdm[] = "Om_cdm";$/;"	v	file:
+__pyx_k_Om_m	euclidemu2.cpp	/^static const char __pyx_k_Om_m[] = "Om_m";$/;"	v	file:
+__pyx_k_Omb	euclidemu2.cpp	/^static const char __pyx_k_Omb[] = "Omb";$/;"	v	file:
+__pyx_k_Omc	euclidemu2.cpp	/^static const char __pyx_k_Omc[] = "Omc";$/;"	v	file:
+__pyx_k_Omega_b	euclidemu2.cpp	/^static const char __pyx_k_Omega_b[] = "Omega_b";$/;"	v	file:
+__pyx_k_Omega_cdm	euclidemu2.cpp	/^static const char __pyx_k_Omega_cdm[] = "Omega_cdm";$/;"	v	file:
+__pyx_k_Omega_m	euclidemu2.cpp	/^static const char __pyx_k_Omega_m[] = "Omega_m";$/;"	v	file:
+__pyx_k_Omm	euclidemu2.cpp	/^static const char __pyx_k_Omm[] = "Omm";$/;"	v	file:
+__pyx_k_OverflowError	euclidemu2.cpp	/^static const char __pyx_k_OverflowError[] = "OverflowError";$/;"	v	file:
+__pyx_k_Parameter_range_violation_A_s_is	euclidemu2.cpp	/^static const char __pyx_k_Parameter_range_violation_A_s_is[] = "Parameter range violation:                           A_s is set to %f, but should be in the interval                           [1.7e-9, 2.5e-9].";$/;"	v	file:
+__pyx_k_Parameter_range_violation_Omega	euclidemu2.cpp	/^static const char __pyx_k_Parameter_range_violation_Omega[] = "Parameter range violation:                           Omega_b is set to %f, but should be in the interval                           [0.04, 0.06].";$/;"	v	file:
+__pyx_k_Parameter_range_violation_Omega_2	euclidemu2.cpp	/^static const char __pyx_k_Parameter_range_violation_Omega_2[] = "Parameter range violation:                           Omega_m is set to %f, but should be in the interval                           [0.24, 0.40].";$/;"	v	file:
+__pyx_k_Parameter_range_violation_h_is_s	euclidemu2.cpp	/^static const char __pyx_k_Parameter_range_violation_h_is_s[] = "Parameter range violation:                           h is set to %f, but should be in the interval                           [0.61, 0.73].";$/;"	v	file:
+__pyx_k_Parameter_range_violation_m_ncdm	euclidemu2.cpp	/^static const char __pyx_k_Parameter_range_violation_m_ncdm[] = "Parameter range violation:                           m_ncdm is set to %f, but should be in the interval                           [0.00, 0.15].";$/;"	v	file:
+__pyx_k_Parameter_range_violation_n_s_is	euclidemu2.cpp	/^static const char __pyx_k_Parameter_range_violation_n_s_is[] = "Parameter range violation:                           n_s is set to %f, but should be in the interval                           [0.92, 1.00].";$/;"	v	file:
+__pyx_k_Parameter_range_violation_w_0_is	euclidemu2.cpp	/^static const char __pyx_k_Parameter_range_violation_w_0_is[] = "Parameter range violation:                           w_0 is set to %f, but should be in the interval                           [-1.3, -0.7].";$/;"	v	file:
+__pyx_k_Parameter_range_violation_w_a_is	euclidemu2.cpp	/^static const char __pyx_k_Parameter_range_violation_w_a_is[] = "Parameter range violation:                           w_a is set to %f, but should be in the interval                           [-0.7,  0.5].";$/;"	v	file:
+__pyx_k_PyCosmology	euclidemu2.cpp	/^static const char __pyx_k_PyCosmology[] = "PyCosmology";$/;"	v	file:
+__pyx_k_PyEuclidEmulator	euclidemu2.cpp	/^static const char __pyx_k_PyEuclidEmulator[] = "PyEuclidEmulator";$/;"	v	file:
+__pyx_k_Sum_m_nu	euclidemu2.cpp	/^static const char __pyx_k_Sum_m_nu[] = "Sum_m_nu";$/;"	v	file:
+__pyx_k_The_cosmological_parameters_must	euclidemu2.cpp	/^static const char __pyx_k_The_cosmological_parameters_must[] = "The cosmological parameters must be passed as a                python dictionary.\\n";$/;"	v	file:
+__pyx_k_TypeError	euclidemu2.cpp	/^static const char __pyx_k_TypeError[] = "TypeError";$/;"	v	file:
+__pyx_k_ValueError	euclidemu2.cpp	/^static const char __pyx_k_ValueError[] = "ValueError";$/;"	v	file:
+__pyx_k_any	euclidemu2.cpp	/^static const char __pyx_k_any[] = "any";$/;"	v	file:
+__pyx_k_arg_A_s_wrong_type	euclidemu2.cpp	/^static const char __pyx_k_arg_A_s_wrong_type[] = "arg A_s wrong type";$/;"	v	file:
+__pyx_k_arg_Omega_b_wrong_type	euclidemu2.cpp	/^static const char __pyx_k_arg_Omega_b_wrong_type[] = "arg Omega_b wrong type";$/;"	v	file:
+__pyx_k_arg_Omega_m_wrong_type	euclidemu2.cpp	/^static const char __pyx_k_arg_Omega_m_wrong_type[] = "arg Omega_m wrong type";$/;"	v	file:
+__pyx_k_arg_Sum_m_nu_wrong_type	euclidemu2.cpp	/^static const char __pyx_k_arg_Sum_m_nu_wrong_type[] = "arg Sum_m_nu wrong type";$/;"	v	file:
+__pyx_k_arg_h_wrong_type	euclidemu2.cpp	/^static const char __pyx_k_arg_h_wrong_type[] = "arg h wrong type";$/;"	v	file:
+__pyx_k_arg_n_s_wrong_type	euclidemu2.cpp	/^static const char __pyx_k_arg_n_s_wrong_type[] = "arg n_s wrong type";$/;"	v	file:
+__pyx_k_arg_w_0_wrong_type	euclidemu2.cpp	/^static const char __pyx_k_arg_w_0_wrong_type[] = "arg w_0 wrong type";$/;"	v	file:
+__pyx_k_arg_w_a_wrong_type	euclidemu2.cpp	/^static const char __pyx_k_arg_w_a_wrong_type[] = "arg w_a wrong type";$/;"	v	file:
+__pyx_k_asarray	euclidemu2.cpp	/^static const char __pyx_k_asarray[] = "asarray";$/;"	v	file:
+__pyx_k_b_extrap	euclidemu2.cpp	/^static const char __pyx_k_b_extrap[] = "b_extrap";$/;"	v	file:
+__pyx_k_boost	euclidemu2.cpp	/^static const char __pyx_k_boost[] = "boost";$/;"	v	file:
+__pyx_k_bvals	euclidemu2.cpp	/^static const char __pyx_k_bvals[] = "bvals";$/;"	v	file:
+__pyx_k_check_param_range	euclidemu2.cpp	/^static const char __pyx_k_check_param_range[] = "check_param_range";$/;"	v	file:
+__pyx_k_class_pars_dict	euclidemu2.cpp	/^static const char __pyx_k_class_pars_dict[] = "class_pars_dict";$/;"	v	file:
+__pyx_k_cline_in_traceback	euclidemu2.cpp	/^static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";$/;"	v	file:
+__pyx_k_compute_nlc	euclidemu2.cpp	/^static const char __pyx_k_compute_nlc[] = "compute_nlc";$/;"	v	file:
+__pyx_k_concatenate	euclidemu2.cpp	/^static const char __pyx_k_concatenate[] = "concatenate";$/;"	v	file:
+__pyx_k_convert_to_emu	euclidemu2.cpp	/^static const char __pyx_k_convert_to_emu[] = "convert_to_emu";$/;"	v	file:
+__pyx_k_cosmo	euclidemu2.cpp	/^static const char __pyx_k_cosmo[] = "cosmo";$/;"	v	file:
+__pyx_k_cosmo_par	euclidemu2.cpp	/^static const char __pyx_k_cosmo_par[] = "cosmo_par";$/;"	v	file:
+__pyx_k_cosmo_par_in	euclidemu2.cpp	/^static const char __pyx_k_cosmo_par_in[] = "cosmo_par_in";$/;"	v	file:
+__pyx_k_csm	euclidemu2.cpp	/^static const char __pyx_k_csm[] = "csm";$/;"	v	file:
+__pyx_k_custom_k_above	euclidemu2.cpp	/^static const char __pyx_k_custom_k_above[] = "custom_k_above";$/;"	v	file:
+__pyx_k_custom_k_below	euclidemu2.cpp	/^static const char __pyx_k_custom_k_below[] = "custom_k_below";$/;"	v	file:
+__pyx_k_custom_k_within_range	euclidemu2.cpp	/^static const char __pyx_k_custom_k_within_range[] = "custom_k_within_range";$/;"	v	file:
+__pyx_k_custom_kvec	euclidemu2.cpp	/^static const char __pyx_k_custom_kvec[] = "custom_kvec";$/;"	v	file:
+__pyx_k_do_extrapolate_above	euclidemu2.cpp	/^static const char __pyx_k_do_extrapolate_above[] = "do_extrapolate_above";$/;"	v	file:
+__pyx_k_do_extrapolate_below	euclidemu2.cpp	/^static const char __pyx_k_do_extrapolate_below[] = "do_extrapolate_below";$/;"	v	file:
+__pyx_k_ee2	euclidemu2.cpp	/^static const char __pyx_k_ee2[] = "ee2";$/;"	v	file:
+__pyx_k_emu_pars_dict	euclidemu2.cpp	/^static const char __pyx_k_emu_pars_dict[] = "emu_pars_dict";$/;"	v	file:
+__pyx_k_enumerate	euclidemu2.cpp	/^static const char __pyx_k_enumerate[] = "enumerate";$/;"	v	file:
+__pyx_k_euclidemu2	euclidemu2.cpp	/^static const char __pyx_k_euclidemu2[] = "euclidemu2";$/;"	v	file:
+__pyx_k_exit	euclidemu2.cpp	/^static const char __pyx_k_exit[] = "exit";$/;"	v	file:
+__pyx_k_exp	euclidemu2.cpp	/^static const char __pyx_k_exp[] = "exp";$/;"	v	file:
+__pyx_k_filename	euclidemu2.cpp	/^static const char __pyx_k_filename[] = "filename";$/;"	v	file:
+__pyx_k_get_boost	euclidemu2.cpp	/^static const char __pyx_k_get_boost[] = "get_boost";$/;"	v	file:
+__pyx_k_getstate	euclidemu2.cpp	/^static const char __pyx_k_getstate[] = "__getstate__";$/;"	v	file:
+__pyx_k_h	euclidemu2.cpp	/^static const char __pyx_k_h[] = "h";$/;"	v	file:
+__pyx_k_h_not_in_range	euclidemu2.cpp	/^static const char __pyx_k_h_not_in_range[] = "h_not_in_range";$/;"	v	file:
+__pyx_k_h_range	euclidemu2.cpp	/^static const char __pyx_k_h_range[] = "h_range";$/;"	v	file:
+__pyx_k_i	euclidemu2.cpp	/^static const char __pyx_k_i[] = "i";$/;"	v	file:
+__pyx_k_import	euclidemu2.cpp	/^static const char __pyx_k_import[] = "__import__";$/;"	v	file:
+__pyx_k_k	euclidemu2.cpp	/^static const char __pyx_k_k[] = "k";$/;"	v	file:
+__pyx_k_k_shape	euclidemu2.cpp	/^static const char __pyx_k_k_shape[] = "k_shape";$/;"	v	file:
+__pyx_k_kvals	euclidemu2.cpp	/^static const char __pyx_k_kvals[] = "kvals";$/;"	v	file:
+__pyx_k_kvec	euclidemu2.cpp	/^static const char __pyx_k_kvec[] = "kvec";$/;"	v	file:
+__pyx_k_l	euclidemu2.cpp	/^static const char __pyx_k_l[] = "l";$/;"	v	file:
+__pyx_k_len_kvals	euclidemu2.cpp	/^static const char __pyx_k_len_kvals[] = "len_kvals";$/;"	v	file:
+__pyx_k_len_redshifts	euclidemu2.cpp	/^static const char __pyx_k_len_redshifts[] = "len_redshifts";$/;"	v	file:
+__pyx_k_ln10_10_A_s	euclidemu2.cpp	/^static const char __pyx_k_ln10_10_A_s[] = "ln10^{10}A_s";$/;"	v	file:
+__pyx_k_log10	euclidemu2.cpp	/^static const char __pyx_k_log10[] = "log10";$/;"	v	file:
+__pyx_k_lower_mask	euclidemu2.cpp	/^static const char __pyx_k_lower_mask[] = "lower_mask";$/;"	v	file:
+__pyx_k_m_ncdm	euclidemu2.cpp	/^static const char __pyx_k_m_ncdm[] = "m_ncdm";$/;"	v	file:
+__pyx_k_m_nu	euclidemu2.cpp	/^static const char __pyx_k_m_nu[] = "m_nu";$/;"	v	file:
+__pyx_k_m_nu_not_in_range	euclidemu2.cpp	/^static const char __pyx_k_m_nu_not_in_range[] = "m_nu_not_in_range";$/;"	v	file:
+__pyx_k_m_nu_range	euclidemu2.cpp	/^static const char __pyx_k_m_nu_range[] = "m_nu_range";$/;"	v	file:
+__pyx_k_main	euclidemu2.cpp	/^static const char __pyx_k_main[] = "__main__";$/;"	v	file:
+__pyx_k_mask	euclidemu2.cpp	/^static const char __pyx_k_mask[] = "mask";$/;"	v	file:
+__pyx_k_max	euclidemu2.cpp	/^static const char __pyx_k_max[] = "max";$/;"	v	file:
+__pyx_k_min	euclidemu2.cpp	/^static const char __pyx_k_min[] = "min";$/;"	v	file:
+__pyx_k_mnu	euclidemu2.cpp	/^static const char __pyx_k_mnu[] = "mnu";$/;"	v	file:
+__pyx_k_n_redshift	euclidemu2.cpp	/^static const char __pyx_k_n_redshift[] = "n_redshift";$/;"	v	file:
+__pyx_k_n_s	euclidemu2.cpp	/^static const char __pyx_k_n_s[] = "n_s";$/;"	v	file:
+__pyx_k_n_s_not_in_range	euclidemu2.cpp	/^static const char __pyx_k_n_s_not_in_range[] = "n_s_not_in_range";$/;"	v	file:
+__pyx_k_n_s_range	euclidemu2.cpp	/^static const char __pyx_k_n_s_range[] = "n_s_range";$/;"	v	file:
+__pyx_k_name	euclidemu2.cpp	/^static const char __pyx_k_name[] = "__name__";$/;"	v	file:
+__pyx_k_no_default___reduce___due_to_non	euclidemu2.cpp	/^static const char __pyx_k_no_default___reduce___due_to_non[] = "no default __reduce__ due to non-trivial __cinit__";$/;"	v	file:
+__pyx_k_np	euclidemu2.cpp	/^static const char __pyx_k_np[] = "np";$/;"	v	file:
+__pyx_k_ns	euclidemu2.cpp	/^static const char __pyx_k_ns[] = "ns";$/;"	v	file:
+__pyx_k_numpy	euclidemu2.cpp	/^static const char __pyx_k_numpy[] = "numpy";$/;"	v	file:
+__pyx_k_om_b	euclidemu2.cpp	/^static const char __pyx_k_om_b[] = "om_b";$/;"	v	file:
+__pyx_k_om_b_not_in_range	euclidemu2.cpp	/^static const char __pyx_k_om_b_not_in_range[] = "om_b_not_in_range";$/;"	v	file:
+__pyx_k_om_b_range	euclidemu2.cpp	/^static const char __pyx_k_om_b_range[] = "om_b_range";$/;"	v	file:
+__pyx_k_om_m	euclidemu2.cpp	/^static const char __pyx_k_om_m[] = "om_m";$/;"	v	file:
+__pyx_k_om_m_not_in_range	euclidemu2.cpp	/^static const char __pyx_k_om_m_not_in_range[] = "om_m_not_in_range";$/;"	v	file:
+__pyx_k_om_m_range	euclidemu2.cpp	/^static const char __pyx_k_om_m_range[] = "om_m_range";$/;"	v	file:
+__pyx_k_ombh2	euclidemu2.cpp	/^static const char __pyx_k_ombh2[] = "ombh2";$/;"	v	file:
+__pyx_k_omch2	euclidemu2.cpp	/^static const char __pyx_k_omch2[] = "omch2";$/;"	v	file:
+__pyx_k_omega_b	euclidemu2.cpp	/^static const char __pyx_k_omega_b[] = "omega_b";$/;"	v	file:
+__pyx_k_omega_cdm	euclidemu2.cpp	/^static const char __pyx_k_omega_cdm[] = "omega_cdm";$/;"	v	file:
+__pyx_k_omega_m	euclidemu2.cpp	/^static const char __pyx_k_omega_m[] = "omega_m";$/;"	v	file:
+__pyx_k_ommh2	euclidemu2.cpp	/^static const char __pyx_k_ommh2[] = "ommh2";$/;"	v	file:
+__pyx_k_ones_like	euclidemu2.cpp	/^static const char __pyx_k_ones_like[] = "ones_like";$/;"	v	file:
+__pyx_k_par_dict	euclidemu2.cpp	/^static const char __pyx_k_par_dict[] = "par_dict";$/;"	v	file:
+__pyx_k_print	euclidemu2.cpp	/^static const char __pyx_k_print[] = "print";$/;"	v	file:
+__pyx_k_range	euclidemu2.cpp	/^static const char __pyx_k_range[] = "range";$/;"	v	file:
+__pyx_k_redshift	euclidemu2.cpp	/^static const char __pyx_k_redshift[] = "redshift";$/;"	v	file:
+__pyx_k_redshifts	euclidemu2.cpp	/^static const char __pyx_k_redshifts[] = "redshifts";$/;"	v	file:
+__pyx_k_reduce	euclidemu2.cpp	/^static const char __pyx_k_reduce[] = "__reduce__";$/;"	v	file:
+__pyx_k_reduce_cython	euclidemu2.cpp	/^static const char __pyx_k_reduce_cython[] = "__reduce_cython__";$/;"	v	file:
+__pyx_k_reduce_ex	euclidemu2.cpp	/^static const char __pyx_k_reduce_ex[] = "__reduce_ex__";$/;"	v	file:
+__pyx_k_reshape	euclidemu2.cpp	/^static const char __pyx_k_reshape[] = "reshape";$/;"	v	file:
+__pyx_k_scipy_interpolate	euclidemu2.cpp	/^static const char __pyx_k_scipy_interpolate[] = "scipy.interpolate";$/;"	v	file:
+__pyx_k_setstate	euclidemu2.cpp	/^static const char __pyx_k_setstate[] = "__setstate__";$/;"	v	file:
+__pyx_k_setstate_cython	euclidemu2.cpp	/^static const char __pyx_k_setstate_cython[] = "__setstate_cython__";$/;"	v	file:
+__pyx_k_shape	euclidemu2.cpp	/^static const char __pyx_k_shape[] = "shape";$/;"	v	file:
+__pyx_k_src_euclidemu2_pyx	euclidemu2.cpp	/^static const char __pyx_k_src_euclidemu2_pyx[] = "src\/euclidemu2.pyx";$/;"	v	file:
+__pyx_k_sys	euclidemu2.cpp	/^static const char __pyx_k_sys[] = "sys";$/;"	v	file:
+__pyx_k_test	euclidemu2.cpp	/^static const char __pyx_k_test[] = "__test__";$/;"	v	file:
+__pyx_k_tmp	euclidemu2.cpp	/^static const char __pyx_k_tmp[] = "tmp";$/;"	v	file:
+__pyx_k_u	euclidemu2.cpp	/^static const char __pyx_k_u[] = "u";$/;"	v	file:
+__pyx_k_upper_mask	euclidemu2.cpp	/^static const char __pyx_k_upper_mask[] = "upper_mask";$/;"	v	file:
+__pyx_k_w	euclidemu2.cpp	/^static const char __pyx_k_w[] = "w";$/;"	v	file:
+__pyx_k_w0	euclidemu2.cpp	/^static const char __pyx_k_w0[] = "w0";$/;"	v	file:
+__pyx_k_w0_fld	euclidemu2.cpp	/^static const char __pyx_k_w0_fld[] = "w0_fld";$/;"	v	file:
+__pyx_k_w_0	euclidemu2.cpp	/^static const char __pyx_k_w_0[] = "w_0";$/;"	v	file:
+__pyx_k_w_0_not_in_range	euclidemu2.cpp	/^static const char __pyx_k_w_0_not_in_range[] = "w_0_not_in_range";$/;"	v	file:
+__pyx_k_w_0_range	euclidemu2.cpp	/^static const char __pyx_k_w_0_range[] = "w_0_range";$/;"	v	file:
+__pyx_k_w_a	euclidemu2.cpp	/^static const char __pyx_k_w_a[] = "w_a";$/;"	v	file:
+__pyx_k_w_a_not_in_range	euclidemu2.cpp	/^static const char __pyx_k_w_a_not_in_range[] = "w_a_not_in_range";$/;"	v	file:
+__pyx_k_w_a_range	euclidemu2.cpp	/^static const char __pyx_k_w_a_range[] = "w_a_range";$/;"	v	file:
+__pyx_k_wa	euclidemu2.cpp	/^static const char __pyx_k_wa[] = "wa";$/;"	v	file:
+__pyx_k_wa_fld	euclidemu2.cpp	/^static const char __pyx_k_wa_fld[] = "wa_fld";$/;"	v	file:
+__pyx_k_warn	euclidemu2.cpp	/^static const char __pyx_k_warn[] = "warn";$/;"	v	file:
+__pyx_k_warnings	euclidemu2.cpp	/^static const char __pyx_k_warnings[] = "_warnings";$/;"	v	file:
+__pyx_k_warnings_2	euclidemu2.cpp	/^static const char __pyx_k_warnings_2[] = "warnings";$/;"	v	file:
+__pyx_k_wrn_message	euclidemu2.cpp	/^static const char __pyx_k_wrn_message[] = "wrn_message";$/;"	v	file:
+__pyx_k_z	euclidemu2.cpp	/^static const char __pyx_k_z[] = "z";$/;"	v	file:
+__pyx_k_zip	euclidemu2.cpp	/^static const char __pyx_k_zip[] = "zip";$/;"	v	file:
+__pyx_k_zvec	euclidemu2.cpp	/^static const char __pyx_k_zvec[] = "zvec";$/;"	v	file:
+__pyx_kp_s_no_default___reduce___due_to_non	euclidemu2.cpp	/^static PyObject *__pyx_kp_s_no_default___reduce___due_to_non;$/;"	v	file:
+__pyx_kp_s_src_euclidemu2_pyx	euclidemu2.cpp	/^static PyObject *__pyx_kp_s_src_euclidemu2_pyx;$/;"	v	file:
+__pyx_kp_u_EuclidEmulator2_allows_only_reds	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_EuclidEmulator2_allows_only_reds;$/;"	v	file:
+__pyx_kp_u_EuclidEmulator2_emulates_the_non	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_EuclidEmulator2_emulates_the_non;$/;"	v	file:
+__pyx_kp_u_EuclidEmulator2_emulates_the_non_2	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_EuclidEmulator2_emulates_the_non_2;$/;"	v	file:
+__pyx_kp_u_Missing_parameter_A_s_or_ln10_10	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Missing_parameter_A_s_or_ln10_10;$/;"	v	file:
+__pyx_kp_u_Missing_parameter_Omega_b_Can_t	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Missing_parameter_Omega_b_Can_t;$/;"	v	file:
+__pyx_kp_u_Missing_parameter_Omega_m_or_Ome	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Missing_parameter_Omega_m_or_Ome;$/;"	v	file:
+__pyx_kp_u_Missing_parameter_h_Can_t_procee	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Missing_parameter_h_Can_t_procee;$/;"	v	file:
+__pyx_kp_u_Missing_parameter_m_ncdm_Can_t_p	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Missing_parameter_m_ncdm_Can_t_p;$/;"	v	file:
+__pyx_kp_u_Missing_parameter_n_s_Can_t_proc	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Missing_parameter_n_s_Can_t_proc;$/;"	v	file:
+__pyx_kp_u_Missing_parameter_w0_Will_set_to	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Missing_parameter_w0_Will_set_to;$/;"	v	file:
+__pyx_kp_u_Missing_parameter_wa_Will_set_to	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Missing_parameter_wa_Will_set_to;$/;"	v	file:
+__pyx_kp_u_Parameter_range_violation_A_s_is	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Parameter_range_violation_A_s_is;$/;"	v	file:
+__pyx_kp_u_Parameter_range_violation_Omega	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Parameter_range_violation_Omega;$/;"	v	file:
+__pyx_kp_u_Parameter_range_violation_Omega_2	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Parameter_range_violation_Omega_2;$/;"	v	file:
+__pyx_kp_u_Parameter_range_violation_h_is_s	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Parameter_range_violation_h_is_s;$/;"	v	file:
+__pyx_kp_u_Parameter_range_violation_m_ncdm	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Parameter_range_violation_m_ncdm;$/;"	v	file:
+__pyx_kp_u_Parameter_range_violation_n_s_is	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Parameter_range_violation_n_s_is;$/;"	v	file:
+__pyx_kp_u_Parameter_range_violation_w_0_is	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Parameter_range_violation_w_0_is;$/;"	v	file:
+__pyx_kp_u_Parameter_range_violation_w_a_is	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_Parameter_range_violation_w_a_is;$/;"	v	file:
+__pyx_kp_u_The_cosmological_parameters_must	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_The_cosmological_parameters_must;$/;"	v	file:
+__pyx_kp_u_arg_A_s_wrong_type	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_arg_A_s_wrong_type;$/;"	v	file:
+__pyx_kp_u_arg_Omega_b_wrong_type	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_arg_Omega_b_wrong_type;$/;"	v	file:
+__pyx_kp_u_arg_Omega_m_wrong_type	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_arg_Omega_m_wrong_type;$/;"	v	file:
+__pyx_kp_u_arg_Sum_m_nu_wrong_type	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_arg_Sum_m_nu_wrong_type;$/;"	v	file:
+__pyx_kp_u_arg_h_wrong_type	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_arg_h_wrong_type;$/;"	v	file:
+__pyx_kp_u_arg_n_s_wrong_type	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_arg_n_s_wrong_type;$/;"	v	file:
+__pyx_kp_u_arg_w_0_wrong_type	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_arg_w_0_wrong_type;$/;"	v	file:
+__pyx_kp_u_arg_w_a_wrong_type	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_arg_w_a_wrong_type;$/;"	v	file:
+__pyx_kp_u_ln10_10_A_s	euclidemu2.cpp	/^static PyObject *__pyx_kp_u_ln10_10_A_s;$/;"	v	file:
+__pyx_lineno	euclidemu2.cpp	/^static int __pyx_lineno;$/;"	v	file:
+__pyx_m	euclidemu2.cpp	/^static PyObject *__pyx_m = NULL;$/;"	v	file:
+__pyx_mdef_10euclidemu2_1check_param_range	euclidemu2.cpp	/^static PyMethodDef __pyx_mdef_10euclidemu2_1check_param_range = {"check_param_range", (PyCFunction)__pyx_pw_10euclidemu2_1check_param_range, METH_O, __pyx_doc_10euclidemu2_check_param_range};$/;"	v	file:
+__pyx_mdef_10euclidemu2_3convert_to_emu	euclidemu2.cpp	/^static PyMethodDef __pyx_mdef_10euclidemu2_3convert_to_emu = {"convert_to_emu", (PyCFunction)__pyx_pw_10euclidemu2_3convert_to_emu, METH_O, __pyx_doc_10euclidemu2_2convert_to_emu};$/;"	v	file:
+__pyx_mdef_10euclidemu2_5get_boost	euclidemu2.cpp	/^static PyMethodDef __pyx_mdef_10euclidemu2_5get_boost = {"get_boost", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_10euclidemu2_5get_boost, METH_VARARGS|METH_KEYWORDS, 0};$/;"	v	file:
+__pyx_methods	euclidemu2.cpp	/^static PyMethodDef __pyx_methods[] = {$/;"	v	file:
+__pyx_methods_10euclidemu2_PyCosmology	euclidemu2.cpp	/^static PyMethodDef __pyx_methods_10euclidemu2_PyCosmology[] = {$/;"	v	file:
+__pyx_methods_10euclidemu2_PyEuclidEmulator	euclidemu2.cpp	/^static PyMethodDef __pyx_methods_10euclidemu2_PyEuclidEmulator[] = {$/;"	v	file:
+__pyx_module_is_main_euclidemu2	euclidemu2.cpp	/^int __pyx_module_is_main_euclidemu2 = 0;$/;"	v
+__pyx_moduledef	euclidemu2.cpp	/^static struct PyModuleDef __pyx_moduledef = {$/;"	v	typeref:struct:PyModuleDef	file:
+__pyx_moduledef_slots	euclidemu2.cpp	/^static PyModuleDef_Slot __pyx_moduledef_slots[] = {$/;"	v	file:
+__pyx_n_s_A_s	euclidemu2.cpp	/^static PyObject *__pyx_n_s_A_s;$/;"	v	file:
+__pyx_n_s_A_s_not_in_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_A_s_not_in_range;$/;"	v	file:
+__pyx_n_s_A_s_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_A_s_range;$/;"	v	file:
+__pyx_n_s_Bvec	euclidemu2.cpp	/^static PyObject *__pyx_n_s_Bvec;$/;"	v	file:
+__pyx_n_s_CubicSpline	euclidemu2.cpp	/^static PyObject *__pyx_n_s_CubicSpline;$/;"	v	file:
+__pyx_n_s_CubicSpline_2	euclidemu2.cpp	/^static PyObject *__pyx_n_s_CubicSpline_2;$/;"	v	file:
+__pyx_n_s_IndexError	euclidemu2.cpp	/^static PyObject *__pyx_n_s_IndexError;$/;"	v	file:
+__pyx_n_s_Om_b	euclidemu2.cpp	/^static PyObject *__pyx_n_s_Om_b;$/;"	v	file:
+__pyx_n_s_Om_cdm	euclidemu2.cpp	/^static PyObject *__pyx_n_s_Om_cdm;$/;"	v	file:
+__pyx_n_s_Om_m	euclidemu2.cpp	/^static PyObject *__pyx_n_s_Om_m;$/;"	v	file:
+__pyx_n_s_Omega_b	euclidemu2.cpp	/^static PyObject *__pyx_n_s_Omega_b;$/;"	v	file:
+__pyx_n_s_Omega_m	euclidemu2.cpp	/^static PyObject *__pyx_n_s_Omega_m;$/;"	v	file:
+__pyx_n_s_OverflowError	euclidemu2.cpp	/^static PyObject *__pyx_n_s_OverflowError;$/;"	v	file:
+__pyx_n_s_PyCosmology	euclidemu2.cpp	/^static PyObject *__pyx_n_s_PyCosmology;$/;"	v	file:
+__pyx_n_s_PyEuclidEmulator	euclidemu2.cpp	/^static PyObject *__pyx_n_s_PyEuclidEmulator;$/;"	v	file:
+__pyx_n_s_Sum_m_nu	euclidemu2.cpp	/^static PyObject *__pyx_n_s_Sum_m_nu;$/;"	v	file:
+__pyx_n_s_TypeError	euclidemu2.cpp	/^static PyObject *__pyx_n_s_TypeError;$/;"	v	file:
+__pyx_n_s_ValueError	euclidemu2.cpp	/^static PyObject *__pyx_n_s_ValueError;$/;"	v	file:
+__pyx_n_s_any	euclidemu2.cpp	/^static PyObject *__pyx_n_s_any;$/;"	v	file:
+__pyx_n_s_asarray	euclidemu2.cpp	/^static PyObject *__pyx_n_s_asarray;$/;"	v	file:
+__pyx_n_s_b_extrap	euclidemu2.cpp	/^static PyObject *__pyx_n_s_b_extrap;$/;"	v	file:
+__pyx_n_s_boost	euclidemu2.cpp	/^static PyObject *__pyx_n_s_boost;$/;"	v	file:
+__pyx_n_s_bvals	euclidemu2.cpp	/^static PyObject *__pyx_n_s_bvals;$/;"	v	file:
+__pyx_n_s_check_param_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_check_param_range;$/;"	v	file:
+__pyx_n_s_class_pars_dict	euclidemu2.cpp	/^static PyObject *__pyx_n_s_class_pars_dict;$/;"	v	file:
+__pyx_n_s_cline_in_traceback	euclidemu2.cpp	/^static PyObject *__pyx_n_s_cline_in_traceback;$/;"	v	file:
+__pyx_n_s_compute_nlc	euclidemu2.cpp	/^static PyObject *__pyx_n_s_compute_nlc;$/;"	v	file:
+__pyx_n_s_concatenate	euclidemu2.cpp	/^static PyObject *__pyx_n_s_concatenate;$/;"	v	file:
+__pyx_n_s_convert_to_emu	euclidemu2.cpp	/^static PyObject *__pyx_n_s_convert_to_emu;$/;"	v	file:
+__pyx_n_s_cosmo	euclidemu2.cpp	/^static PyObject *__pyx_n_s_cosmo;$/;"	v	file:
+__pyx_n_s_cosmo_par	euclidemu2.cpp	/^static PyObject *__pyx_n_s_cosmo_par;$/;"	v	file:
+__pyx_n_s_cosmo_par_in	euclidemu2.cpp	/^static PyObject *__pyx_n_s_cosmo_par_in;$/;"	v	file:
+__pyx_n_s_csm	euclidemu2.cpp	/^static PyObject *__pyx_n_s_csm;$/;"	v	file:
+__pyx_n_s_custom_k_above	euclidemu2.cpp	/^static PyObject *__pyx_n_s_custom_k_above;$/;"	v	file:
+__pyx_n_s_custom_k_below	euclidemu2.cpp	/^static PyObject *__pyx_n_s_custom_k_below;$/;"	v	file:
+__pyx_n_s_custom_k_within_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_custom_k_within_range;$/;"	v	file:
+__pyx_n_s_custom_kvec	euclidemu2.cpp	/^static PyObject *__pyx_n_s_custom_kvec;$/;"	v	file:
+__pyx_n_s_do_extrapolate_above	euclidemu2.cpp	/^static PyObject *__pyx_n_s_do_extrapolate_above;$/;"	v	file:
+__pyx_n_s_do_extrapolate_below	euclidemu2.cpp	/^static PyObject *__pyx_n_s_do_extrapolate_below;$/;"	v	file:
+__pyx_n_s_ee2	euclidemu2.cpp	/^static PyObject *__pyx_n_s_ee2;$/;"	v	file:
+__pyx_n_s_emu_pars_dict	euclidemu2.cpp	/^static PyObject *__pyx_n_s_emu_pars_dict;$/;"	v	file:
+__pyx_n_s_enumerate	euclidemu2.cpp	/^static PyObject *__pyx_n_s_enumerate;$/;"	v	file:
+__pyx_n_s_euclidemu2	euclidemu2.cpp	/^static PyObject *__pyx_n_s_euclidemu2;$/;"	v	file:
+__pyx_n_s_exit	euclidemu2.cpp	/^static PyObject *__pyx_n_s_exit;$/;"	v	file:
+__pyx_n_s_exp	euclidemu2.cpp	/^static PyObject *__pyx_n_s_exp;$/;"	v	file:
+__pyx_n_s_filename	euclidemu2.cpp	/^static PyObject *__pyx_n_s_filename;$/;"	v	file:
+__pyx_n_s_get_boost	euclidemu2.cpp	/^static PyObject *__pyx_n_s_get_boost;$/;"	v	file:
+__pyx_n_s_getstate	euclidemu2.cpp	/^static PyObject *__pyx_n_s_getstate;$/;"	v	file:
+__pyx_n_s_h	euclidemu2.cpp	/^static PyObject *__pyx_n_s_h;$/;"	v	file:
+__pyx_n_s_h_not_in_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_h_not_in_range;$/;"	v	file:
+__pyx_n_s_h_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_h_range;$/;"	v	file:
+__pyx_n_s_i	euclidemu2.cpp	/^static PyObject *__pyx_n_s_i;$/;"	v	file:
+__pyx_n_s_import	euclidemu2.cpp	/^static PyObject *__pyx_n_s_import;$/;"	v	file:
+__pyx_n_s_k	euclidemu2.cpp	/^static PyObject *__pyx_n_s_k;$/;"	v	file:
+__pyx_n_s_k_shape	euclidemu2.cpp	/^static PyObject *__pyx_n_s_k_shape;$/;"	v	file:
+__pyx_n_s_kvals	euclidemu2.cpp	/^static PyObject *__pyx_n_s_kvals;$/;"	v	file:
+__pyx_n_s_kvec	euclidemu2.cpp	/^static PyObject *__pyx_n_s_kvec;$/;"	v	file:
+__pyx_n_s_l	euclidemu2.cpp	/^static PyObject *__pyx_n_s_l;$/;"	v	file:
+__pyx_n_s_len_kvals	euclidemu2.cpp	/^static PyObject *__pyx_n_s_len_kvals;$/;"	v	file:
+__pyx_n_s_len_redshifts	euclidemu2.cpp	/^static PyObject *__pyx_n_s_len_redshifts;$/;"	v	file:
+__pyx_n_s_log10	euclidemu2.cpp	/^static PyObject *__pyx_n_s_log10;$/;"	v	file:
+__pyx_n_s_lower_mask	euclidemu2.cpp	/^static PyObject *__pyx_n_s_lower_mask;$/;"	v	file:
+__pyx_n_s_m_ncdm	euclidemu2.cpp	/^static PyObject *__pyx_n_s_m_ncdm;$/;"	v	file:
+__pyx_n_s_m_nu_not_in_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_m_nu_not_in_range;$/;"	v	file:
+__pyx_n_s_m_nu_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_m_nu_range;$/;"	v	file:
+__pyx_n_s_main	euclidemu2.cpp	/^static PyObject *__pyx_n_s_main;$/;"	v	file:
+__pyx_n_s_mask	euclidemu2.cpp	/^static PyObject *__pyx_n_s_mask;$/;"	v	file:
+__pyx_n_s_max	euclidemu2.cpp	/^static PyObject *__pyx_n_s_max;$/;"	v	file:
+__pyx_n_s_min	euclidemu2.cpp	/^static PyObject *__pyx_n_s_min;$/;"	v	file:
+__pyx_n_s_n_redshift	euclidemu2.cpp	/^static PyObject *__pyx_n_s_n_redshift;$/;"	v	file:
+__pyx_n_s_n_s	euclidemu2.cpp	/^static PyObject *__pyx_n_s_n_s;$/;"	v	file:
+__pyx_n_s_n_s_not_in_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_n_s_not_in_range;$/;"	v	file:
+__pyx_n_s_n_s_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_n_s_range;$/;"	v	file:
+__pyx_n_s_name	euclidemu2.cpp	/^static PyObject *__pyx_n_s_name;$/;"	v	file:
+__pyx_n_s_np	euclidemu2.cpp	/^static PyObject *__pyx_n_s_np;$/;"	v	file:
+__pyx_n_s_numpy	euclidemu2.cpp	/^static PyObject *__pyx_n_s_numpy;$/;"	v	file:
+__pyx_n_s_om_b_not_in_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_om_b_not_in_range;$/;"	v	file:
+__pyx_n_s_om_b_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_om_b_range;$/;"	v	file:
+__pyx_n_s_om_m_not_in_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_om_m_not_in_range;$/;"	v	file:
+__pyx_n_s_om_m_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_om_m_range;$/;"	v	file:
+__pyx_n_s_ones_like	euclidemu2.cpp	/^static PyObject *__pyx_n_s_ones_like;$/;"	v	file:
+__pyx_n_s_par_dict	euclidemu2.cpp	/^static PyObject *__pyx_n_s_par_dict;$/;"	v	file:
+__pyx_n_s_print	euclidemu2.cpp	/^static PyObject *__pyx_n_s_print;$/;"	v	file:
+__pyx_n_s_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_range;$/;"	v	file:
+__pyx_n_s_redshift	euclidemu2.cpp	/^static PyObject *__pyx_n_s_redshift;$/;"	v	file:
+__pyx_n_s_redshifts	euclidemu2.cpp	/^static PyObject *__pyx_n_s_redshifts;$/;"	v	file:
+__pyx_n_s_reduce	euclidemu2.cpp	/^static PyObject *__pyx_n_s_reduce;$/;"	v	file:
+__pyx_n_s_reduce_cython	euclidemu2.cpp	/^static PyObject *__pyx_n_s_reduce_cython;$/;"	v	file:
+__pyx_n_s_reduce_ex	euclidemu2.cpp	/^static PyObject *__pyx_n_s_reduce_ex;$/;"	v	file:
+__pyx_n_s_reshape	euclidemu2.cpp	/^static PyObject *__pyx_n_s_reshape;$/;"	v	file:
+__pyx_n_s_scipy_interpolate	euclidemu2.cpp	/^static PyObject *__pyx_n_s_scipy_interpolate;$/;"	v	file:
+__pyx_n_s_setstate	euclidemu2.cpp	/^static PyObject *__pyx_n_s_setstate;$/;"	v	file:
+__pyx_n_s_setstate_cython	euclidemu2.cpp	/^static PyObject *__pyx_n_s_setstate_cython;$/;"	v	file:
+__pyx_n_s_shape	euclidemu2.cpp	/^static PyObject *__pyx_n_s_shape;$/;"	v	file:
+__pyx_n_s_sys	euclidemu2.cpp	/^static PyObject *__pyx_n_s_sys;$/;"	v	file:
+__pyx_n_s_test	euclidemu2.cpp	/^static PyObject *__pyx_n_s_test;$/;"	v	file:
+__pyx_n_s_tmp	euclidemu2.cpp	/^static PyObject *__pyx_n_s_tmp;$/;"	v	file:
+__pyx_n_s_u	euclidemu2.cpp	/^static PyObject *__pyx_n_s_u;$/;"	v	file:
+__pyx_n_s_upper_mask	euclidemu2.cpp	/^static PyObject *__pyx_n_s_upper_mask;$/;"	v	file:
+__pyx_n_s_w0_fld	euclidemu2.cpp	/^static PyObject *__pyx_n_s_w0_fld;$/;"	v	file:
+__pyx_n_s_w_0	euclidemu2.cpp	/^static PyObject *__pyx_n_s_w_0;$/;"	v	file:
+__pyx_n_s_w_0_not_in_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_w_0_not_in_range;$/;"	v	file:
+__pyx_n_s_w_0_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_w_0_range;$/;"	v	file:
+__pyx_n_s_w_a	euclidemu2.cpp	/^static PyObject *__pyx_n_s_w_a;$/;"	v	file:
+__pyx_n_s_w_a_not_in_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_w_a_not_in_range;$/;"	v	file:
+__pyx_n_s_w_a_range	euclidemu2.cpp	/^static PyObject *__pyx_n_s_w_a_range;$/;"	v	file:
+__pyx_n_s_wa_fld	euclidemu2.cpp	/^static PyObject *__pyx_n_s_wa_fld;$/;"	v	file:
+__pyx_n_s_warn	euclidemu2.cpp	/^static PyObject *__pyx_n_s_warn;$/;"	v	file:
+__pyx_n_s_warnings	euclidemu2.cpp	/^static PyObject *__pyx_n_s_warnings;$/;"	v	file:
+__pyx_n_s_warnings_2	euclidemu2.cpp	/^static PyObject *__pyx_n_s_warnings_2;$/;"	v	file:
+__pyx_n_s_wrn_message	euclidemu2.cpp	/^static PyObject *__pyx_n_s_wrn_message;$/;"	v	file:
+__pyx_n_s_z	euclidemu2.cpp	/^static PyObject *__pyx_n_s_z;$/;"	v	file:
+__pyx_n_s_zip	euclidemu2.cpp	/^static PyObject *__pyx_n_s_zip;$/;"	v	file:
+__pyx_n_s_zvec	euclidemu2.cpp	/^static PyObject *__pyx_n_s_zvec;$/;"	v	file:
+__pyx_n_u_A_s	euclidemu2.cpp	/^static PyObject *__pyx_n_u_A_s;$/;"	v	file:
+__pyx_n_u_As	euclidemu2.cpp	/^static PyObject *__pyx_n_u_As;$/;"	v	file:
+__pyx_n_u_H0	euclidemu2.cpp	/^static PyObject *__pyx_n_u_H0;$/;"	v	file:
+__pyx_n_u_Omb	euclidemu2.cpp	/^static PyObject *__pyx_n_u_Omb;$/;"	v	file:
+__pyx_n_u_Omc	euclidemu2.cpp	/^static PyObject *__pyx_n_u_Omc;$/;"	v	file:
+__pyx_n_u_Omega_b	euclidemu2.cpp	/^static PyObject *__pyx_n_u_Omega_b;$/;"	v	file:
+__pyx_n_u_Omega_cdm	euclidemu2.cpp	/^static PyObject *__pyx_n_u_Omega_cdm;$/;"	v	file:
+__pyx_n_u_Omega_m	euclidemu2.cpp	/^static PyObject *__pyx_n_u_Omega_m;$/;"	v	file:
+__pyx_n_u_Omm	euclidemu2.cpp	/^static PyObject *__pyx_n_u_Omm;$/;"	v	file:
+__pyx_n_u_h	euclidemu2.cpp	/^static PyObject *__pyx_n_u_h;$/;"	v	file:
+__pyx_n_u_m_ncdm	euclidemu2.cpp	/^static PyObject *__pyx_n_u_m_ncdm;$/;"	v	file:
+__pyx_n_u_m_nu	euclidemu2.cpp	/^static PyObject *__pyx_n_u_m_nu;$/;"	v	file:
+__pyx_n_u_mnu	euclidemu2.cpp	/^static PyObject *__pyx_n_u_mnu;$/;"	v	file:
+__pyx_n_u_n_s	euclidemu2.cpp	/^static PyObject *__pyx_n_u_n_s;$/;"	v	file:
+__pyx_n_u_ns	euclidemu2.cpp	/^static PyObject *__pyx_n_u_ns;$/;"	v	file:
+__pyx_n_u_om_b	euclidemu2.cpp	/^static PyObject *__pyx_n_u_om_b;$/;"	v	file:
+__pyx_n_u_om_m	euclidemu2.cpp	/^static PyObject *__pyx_n_u_om_m;$/;"	v	file:
+__pyx_n_u_ombh2	euclidemu2.cpp	/^static PyObject *__pyx_n_u_ombh2;$/;"	v	file:
+__pyx_n_u_omch2	euclidemu2.cpp	/^static PyObject *__pyx_n_u_omch2;$/;"	v	file:
+__pyx_n_u_omega_b	euclidemu2.cpp	/^static PyObject *__pyx_n_u_omega_b;$/;"	v	file:
+__pyx_n_u_omega_cdm	euclidemu2.cpp	/^static PyObject *__pyx_n_u_omega_cdm;$/;"	v	file:
+__pyx_n_u_omega_m	euclidemu2.cpp	/^static PyObject *__pyx_n_u_omega_m;$/;"	v	file:
+__pyx_n_u_ommh2	euclidemu2.cpp	/^static PyObject *__pyx_n_u_ommh2;$/;"	v	file:
+__pyx_n_u_w	euclidemu2.cpp	/^static PyObject *__pyx_n_u_w;$/;"	v	file:
+__pyx_n_u_w0	euclidemu2.cpp	/^static PyObject *__pyx_n_u_w0;$/;"	v	file:
+__pyx_n_u_w0_fld	euclidemu2.cpp	/^static PyObject *__pyx_n_u_w0_fld;$/;"	v	file:
+__pyx_n_u_w_0	euclidemu2.cpp	/^static PyObject *__pyx_n_u_w_0;$/;"	v	file:
+__pyx_n_u_w_a	euclidemu2.cpp	/^static PyObject *__pyx_n_u_w_a;$/;"	v	file:
+__pyx_n_u_wa	euclidemu2.cpp	/^static PyObject *__pyx_n_u_wa;$/;"	v	file:
+__pyx_n_u_wa_fld	euclidemu2.cpp	/^static PyObject *__pyx_n_u_wa_fld;$/;"	v	file:
+__pyx_obj_10euclidemu2_PyCosmology	euclidemu2.cpp	/^struct __pyx_obj_10euclidemu2_PyCosmology {$/;"	s	file:
+__pyx_obj_10euclidemu2_PyEuclidEmulator	euclidemu2.cpp	/^struct __pyx_obj_10euclidemu2_PyEuclidEmulator {$/;"	s	file:
+__pyx_pf_10euclidemu2_11PyCosmology_10_free_inst_2__set__	euclidemu2.cpp	/^static int __pyx_pf_10euclidemu2_11PyCosmology_10_free_inst_2__set__(struct __pyx_obj_10euclidemu2_PyCosmology *__pyx_v_self, PyObject *__pyx_v_value) {$/;"	f	file:
+__pyx_pf_10euclidemu2_11PyCosmology_10_free_inst___get__	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_11PyCosmology_10_free_inst___get__(struct __pyx_obj_10euclidemu2_PyCosmology *__pyx_v_self) {$/;"	f	file:
+__pyx_pf_10euclidemu2_11PyCosmology_2__init__	euclidemu2.cpp	/^static int __pyx_pf_10euclidemu2_11PyCosmology_2__init__(struct __pyx_obj_10euclidemu2_PyCosmology *__pyx_v_self, double __pyx_v_Omega_b, double __pyx_v_Omega_m, double __pyx_v_Sum_m_nu, double __pyx_v_n_s, double __pyx_v_h, double __pyx_v_w_0, double __pyx_v_w_a, double __pyx_v_A_s) {$/;"	f	file:
+__pyx_pf_10euclidemu2_11PyCosmology_4__dealloc__	euclidemu2.cpp	/^static void __pyx_pf_10euclidemu2_11PyCosmology_4__dealloc__(struct __pyx_obj_10euclidemu2_PyCosmology *__pyx_v_self) {$/;"	f	file:
+__pyx_pf_10euclidemu2_11PyCosmology_6__reduce_cython__	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_11PyCosmology_6__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10euclidemu2_PyCosmology *__pyx_v_self) {$/;"	f	file:
+__pyx_pf_10euclidemu2_11PyCosmology_8__setstate_cython__	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_11PyCosmology_8__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10euclidemu2_PyCosmology *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {$/;"	f	file:
+__pyx_pf_10euclidemu2_11PyCosmology___cinit__	euclidemu2.cpp	/^static int __pyx_pf_10euclidemu2_11PyCosmology___cinit__(struct __pyx_obj_10euclidemu2_PyCosmology *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v_args, CYTHON_UNUSED PyObject *__pyx_v_kwargs) {$/;"	f	file:
+__pyx_pf_10euclidemu2_16PyEuclidEmulator_2compute_nlc	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_16PyEuclidEmulator_2compute_nlc(struct __pyx_obj_10euclidemu2_PyEuclidEmulator *__pyx_v_self, struct __pyx_obj_10euclidemu2_PyCosmology *__pyx_v_csm, PyObject *__pyx_v_redshift, PyObject *__pyx_v_n_redshift) {$/;"	f	file:
+__pyx_pf_10euclidemu2_16PyEuclidEmulator_4Bvec_2__set__	euclidemu2.cpp	/^static int __pyx_pf_10euclidemu2_16PyEuclidEmulator_4Bvec_2__set__(struct __pyx_obj_10euclidemu2_PyEuclidEmulator *__pyx_v_self, PyObject *__pyx_v_Bvec) {$/;"	f	file:
+__pyx_pf_10euclidemu2_16PyEuclidEmulator_4Bvec___get__	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_16PyEuclidEmulator_4Bvec___get__(struct __pyx_obj_10euclidemu2_PyEuclidEmulator *__pyx_v_self) {$/;"	f	file:
+__pyx_pf_10euclidemu2_16PyEuclidEmulator_4kvec_2__set__	euclidemu2.cpp	/^static int __pyx_pf_10euclidemu2_16PyEuclidEmulator_4kvec_2__set__(struct __pyx_obj_10euclidemu2_PyEuclidEmulator *__pyx_v_self, PyObject *__pyx_v_kvec) {$/;"	f	file:
+__pyx_pf_10euclidemu2_16PyEuclidEmulator_4kvec___get__	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_16PyEuclidEmulator_4kvec___get__(struct __pyx_obj_10euclidemu2_PyEuclidEmulator *__pyx_v_self) {$/;"	f	file:
+__pyx_pf_10euclidemu2_16PyEuclidEmulator_4write_nlc2file	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_16PyEuclidEmulator_4write_nlc2file(struct __pyx_obj_10euclidemu2_PyEuclidEmulator *__pyx_v_self, PyObject *__pyx_v_filename, PyObject *__pyx_v_zvec, PyObject *__pyx_v_n_redshift) {$/;"	f	file:
+__pyx_pf_10euclidemu2_16PyEuclidEmulator_6__reduce_cython__	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_16PyEuclidEmulator_6__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_10euclidemu2_PyEuclidEmulator *__pyx_v_self) {$/;"	f	file:
+__pyx_pf_10euclidemu2_16PyEuclidEmulator_8__setstate_cython__	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_16PyEuclidEmulator_8__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_10euclidemu2_PyEuclidEmulator *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {$/;"	f	file:
+__pyx_pf_10euclidemu2_16PyEuclidEmulator___cinit__	euclidemu2.cpp	/^static int __pyx_pf_10euclidemu2_16PyEuclidEmulator___cinit__(struct __pyx_obj_10euclidemu2_PyEuclidEmulator *__pyx_v_self) {$/;"	f	file:
+__pyx_pf_10euclidemu2_2convert_to_emu	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_2convert_to_emu(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_class_pars_dict) {$/;"	f	file:
+__pyx_pf_10euclidemu2_4get_boost	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_4get_boost(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_cosmo_par_in, PyObject *__pyx_v_redshifts, PyObject *__pyx_v_custom_kvec) {$/;"	f	file:
+__pyx_pf_10euclidemu2_check_param_range	euclidemu2.cpp	/^static PyObject *__pyx_pf_10euclidemu2_check_param_range(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_par_dict) {$/;"	f	file:
+__pyx_ptype_10euclidemu2_PyCosmology	euclidemu2.cpp	/^static PyTypeObject *__pyx_ptype_10euclidemu2_PyCosmology = 0;$/;"	v	file:
+__pyx_ptype_10euclidemu2_PyEuclidEmulator	euclidemu2.cpp	/^static PyTypeObject *__pyx_ptype_10euclidemu2_PyEuclidEmulator = 0;$/;"	v	file:
+__pyx_pw_10euclidemu2_11PyCosmology_10_free_inst_1__get__	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_11PyCosmology_10_free_inst_1__get__(PyObject *__pyx_v_self) {$/;"	f	file:
+__pyx_pw_10euclidemu2_11PyCosmology_10_free_inst_3__set__	euclidemu2.cpp	/^static int __pyx_pw_10euclidemu2_11PyCosmology_10_free_inst_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value) {$/;"	f	file:
+__pyx_pw_10euclidemu2_11PyCosmology_1__cinit__	euclidemu2.cpp	/^static int __pyx_pw_10euclidemu2_11PyCosmology_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {$/;"	f	file:
+__pyx_pw_10euclidemu2_11PyCosmology_3__init__	euclidemu2.cpp	/^static int __pyx_pw_10euclidemu2_11PyCosmology_3__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {$/;"	f	file:
+__pyx_pw_10euclidemu2_11PyCosmology_5__dealloc__	euclidemu2.cpp	/^static void __pyx_pw_10euclidemu2_11PyCosmology_5__dealloc__(PyObject *__pyx_v_self) {$/;"	f	file:
+__pyx_pw_10euclidemu2_11PyCosmology_7__reduce_cython__	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_11PyCosmology_7__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {$/;"	f	file:
+__pyx_pw_10euclidemu2_11PyCosmology_9__setstate_cython__	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_11PyCosmology_9__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {$/;"	f	file:
+__pyx_pw_10euclidemu2_16PyEuclidEmulator_1__cinit__	euclidemu2.cpp	/^static int __pyx_pw_10euclidemu2_16PyEuclidEmulator_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {$/;"	f	file:
+__pyx_pw_10euclidemu2_16PyEuclidEmulator_3compute_nlc	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_16PyEuclidEmulator_3compute_nlc(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {$/;"	f	file:
+__pyx_pw_10euclidemu2_16PyEuclidEmulator_4Bvec_1__get__	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_16PyEuclidEmulator_4Bvec_1__get__(PyObject *__pyx_v_self) {$/;"	f	file:
+__pyx_pw_10euclidemu2_16PyEuclidEmulator_4Bvec_3__set__	euclidemu2.cpp	/^static int __pyx_pw_10euclidemu2_16PyEuclidEmulator_4Bvec_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_Bvec) {$/;"	f	file:
+__pyx_pw_10euclidemu2_16PyEuclidEmulator_4kvec_1__get__	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_16PyEuclidEmulator_4kvec_1__get__(PyObject *__pyx_v_self) {$/;"	f	file:
+__pyx_pw_10euclidemu2_16PyEuclidEmulator_4kvec_3__set__	euclidemu2.cpp	/^static int __pyx_pw_10euclidemu2_16PyEuclidEmulator_4kvec_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_kvec) {$/;"	f	file:
+__pyx_pw_10euclidemu2_16PyEuclidEmulator_5write_nlc2file	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_16PyEuclidEmulator_5write_nlc2file(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {$/;"	f	file:
+__pyx_pw_10euclidemu2_16PyEuclidEmulator_7__reduce_cython__	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_16PyEuclidEmulator_7__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {$/;"	f	file:
+__pyx_pw_10euclidemu2_16PyEuclidEmulator_9__setstate_cython__	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_16PyEuclidEmulator_9__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {$/;"	f	file:
+__pyx_pw_10euclidemu2_1check_param_range	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_1check_param_range(PyObject *__pyx_self, PyObject *__pyx_v_par_dict) {$/;"	f	file:
+__pyx_pw_10euclidemu2_3convert_to_emu	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_3convert_to_emu(PyObject *__pyx_self, PyObject *__pyx_v_class_pars_dict) {$/;"	f	file:
+__pyx_pw_10euclidemu2_5get_boost	euclidemu2.cpp	/^static PyObject *__pyx_pw_10euclidemu2_5get_boost(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {$/;"	f	file:
+__pyx_pyframe_localsplus_offset	euclidemu2.cpp	/^  static size_t __pyx_pyframe_localsplus_offset = 0;$/;"	v	file:
+__pyx_setprop_10euclidemu2_11PyCosmology__free_inst	euclidemu2.cpp	/^static int __pyx_setprop_10euclidemu2_11PyCosmology__free_inst(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {$/;"	f	file:
+__pyx_setprop_10euclidemu2_16PyEuclidEmulator_Bvec	euclidemu2.cpp	/^static int __pyx_setprop_10euclidemu2_16PyEuclidEmulator_Bvec(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {$/;"	f	file:
+__pyx_setprop_10euclidemu2_16PyEuclidEmulator_kvec	euclidemu2.cpp	/^static int __pyx_setprop_10euclidemu2_16PyEuclidEmulator_kvec(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {$/;"	f	file:
+__pyx_string_tab	euclidemu2.cpp	/^static __Pyx_StringTabEntry __pyx_string_tab[] = {$/;"	v	file:
+__pyx_tp_dealloc_10euclidemu2_PyCosmology	euclidemu2.cpp	/^static void __pyx_tp_dealloc_10euclidemu2_PyCosmology(PyObject *o) {$/;"	f	file:
+__pyx_tp_dealloc_10euclidemu2_PyEuclidEmulator	euclidemu2.cpp	/^static void __pyx_tp_dealloc_10euclidemu2_PyEuclidEmulator(PyObject *o) {$/;"	f	file:
+__pyx_tp_new_10euclidemu2_PyCosmology	euclidemu2.cpp	/^static PyObject *__pyx_tp_new_10euclidemu2_PyCosmology(PyTypeObject *t, PyObject *a, PyObject *k) {$/;"	f	file:
+__pyx_tp_new_10euclidemu2_PyEuclidEmulator	euclidemu2.cpp	/^static PyObject *__pyx_tp_new_10euclidemu2_PyEuclidEmulator(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {$/;"	f	file:
+__pyx_tuple_	euclidemu2.cpp	/^static PyObject *__pyx_tuple_;$/;"	v	file:
+__pyx_tuple__10	euclidemu2.cpp	/^static PyObject *__pyx_tuple__10;$/;"	v	file:
+__pyx_tuple__11	euclidemu2.cpp	/^static PyObject *__pyx_tuple__11;$/;"	v	file:
+__pyx_tuple__12	euclidemu2.cpp	/^static PyObject *__pyx_tuple__12;$/;"	v	file:
+__pyx_tuple__13	euclidemu2.cpp	/^static PyObject *__pyx_tuple__13;$/;"	v	file:
+__pyx_tuple__14	euclidemu2.cpp	/^static PyObject *__pyx_tuple__14;$/;"	v	file:
+__pyx_tuple__16	euclidemu2.cpp	/^static PyObject *__pyx_tuple__16;$/;"	v	file:
+__pyx_tuple__18	euclidemu2.cpp	/^static PyObject *__pyx_tuple__18;$/;"	v	file:
+__pyx_tuple__2	euclidemu2.cpp	/^static PyObject *__pyx_tuple__2;$/;"	v	file:
+__pyx_tuple__3	euclidemu2.cpp	/^static PyObject *__pyx_tuple__3;$/;"	v	file:
+__pyx_tuple__4	euclidemu2.cpp	/^static PyObject *__pyx_tuple__4;$/;"	v	file:
+__pyx_tuple__5	euclidemu2.cpp	/^static PyObject *__pyx_tuple__5;$/;"	v	file:
+__pyx_tuple__6	euclidemu2.cpp	/^static PyObject *__pyx_tuple__6;$/;"	v	file:
+__pyx_tuple__7	euclidemu2.cpp	/^static PyObject *__pyx_tuple__7;$/;"	v	file:
+__pyx_tuple__8	euclidemu2.cpp	/^static PyObject *__pyx_tuple__8;$/;"	v	file:
+__pyx_tuple__9	euclidemu2.cpp	/^static PyObject *__pyx_tuple__9;$/;"	v	file:
+__pyx_type_10euclidemu2_PyCosmology	euclidemu2.cpp	/^static PyTypeObject __pyx_type_10euclidemu2_PyCosmology = {$/;"	v	file:
+__pyx_type_10euclidemu2_PyEuclidEmulator	euclidemu2.cpp	/^static PyTypeObject __pyx_type_10euclidemu2_PyEuclidEmulator = {$/;"	v	file:
+__pyx_wrapperbase_10euclidemu2_11PyCosmology_2__init__	euclidemu2.cpp	/^struct wrapperbase __pyx_wrapperbase_10euclidemu2_11PyCosmology_2__init__;$/;"	v	typeref:struct:wrapperbase
+__stdcall	euclidemu2.cpp	53;"	d	file:
+_free_inst	euclidemu2.cpp	/^  int _free_inst;$/;"	m	struct:__pyx_obj_10euclidemu2_PyCosmology	file:
+_inst	euclidemu2.cpp	/^  void *_inst;$/;"	m	struct:__pyx_obj_10euclidemu2_PyCosmology	file:
+a	cosmo.h	/^            double a;$/;"	m	struct:Cosmology::__anon1
+a2Hubble	cosmo.cxx	/^double Cosmology::a2Hubble(double a){$/;"	f	class:Cosmology
+a2t	cosmo.cxx	/^double Cosmology::a2t(double a){$/;"	f	class:Cosmology
+a2t_integrand	cosmo.cxx	/^double Cosmology::a2t_integrand(double lna, void *params){$/;"	f	class:Cosmology
+a2t_parameters	cosmo.h	/^		} a2t_parameters;$/;"	t	class:Cosmology	typeref:struct:Cosmology::__anon2
+acc	cosmo.h	/^		gsl_interp_accel *acc;$/;"	m	class:Cosmology
+am_aiter	euclidemu2.cpp	/^        unaryfunc am_aiter;$/;"	m	struct:__anon4	file:
+am_anext	euclidemu2.cpp	/^        unaryfunc am_anext;$/;"	m	struct:__anon4	file:
+am_await	euclidemu2.cpp	/^        unaryfunc am_await;$/;"	m	struct:__anon4	file:
+c	units_and_constants.h	/^	const double c        = 1.0; \/\/ speed of light$/;"	m	namespace:planck_units
+c	units_and_constants.h	/^	const double c        = 2.99792458e8 * meter\/second; \/\/ speed of light$/;"	m	namespace:SI_units
+c	units_and_constants.h	/^    const double c        = 1.0; \/\/ speed of light$/;"	m	namespace:cosmological_units
+c	units_and_constants.h	/^    const double c        = 1.0; \/\/ speed of light$/;"	m	namespace:pkdgrav_units
+check_implicit_cambparameters	parse.cxx	/^void check_implicit_cambparameters(std::string current_line){$/;"	f
+check_implicit_classparameters	parse.cxx	/^void check_implicit_classparameters(std::string current_line){$/;"	f
+check_param_range	euclidemu2.pyx	/^def check_param_range(par_dict): #, csm_index=0): #Only one cosmology for now$/;"	f
+check_parameter_ranges	cosmo.cxx	/^void Cosmology::check_parameter_ranges(){$/;"	f	class:Cosmology
+code_line	euclidemu2.cpp	/^    int code_line;$/;"	m	struct:__anon7	file:
+code_object	euclidemu2.cpp	/^    PyCodeObject* code_object;$/;"	m	struct:__anon7	file:
+compute_nlc	emulator.cxx	/^void EuclidEmulator::compute_nlc(Cosmology csm, vector<double> redshift, int n_redshift){$/;"	f	class:EuclidEmulator
+compute_nlc	euclidemu2.pyx	/^     def compute_nlc(self,PyCosmology csm, redshift, n_redshift):$/;"	m	class:PyEuclidEmulator
+compute_step_number	cosmo.cxx	/^double Cosmology::compute_step_number(double z){$/;"	f	class:Cosmology
+compute_z2nStep_spline	cosmo.cxx	/^void Cosmology::compute_z2nStep_spline(){$/;"	f	class:Cosmology
+convert_to_emu	euclidemu2.pyx	/^def convert_to_emu(class_pars_dict):$/;"	f
+cosmo	cosmo.h	/^		double cosmo[8], cosmo_tf[8];$/;"	m	class:Cosmology
+cosmo_tf	cosmo.h	/^		double cosmo[8], cosmo_tf[8];$/;"	m	class:Cosmology
+cosmological_units	units_and_constants.h	/^namespace cosmological_units{$/;"	n
+count	euclidemu2.cpp	/^    int count;$/;"	m	struct:__Pyx_CodeObjectCache	file:
+csm_instance	cosmo.h	/^            Cosmology * csm_instance;$/;"	m	struct:Cosmology::__anon1
+csm_instance	cosmo.h	/^            Cosmology * csm_instance;$/;"	m	struct:Cosmology::__anon2
+csmpars	parse.h	/^struct csmpars {$/;"	s
+eV	units_and_constants.h	/^	const double eV       = 1.602176487e-19 * Joule; \/\/ electron Volt$/;"	m	namespace:SI_units
+eV	units_and_constants.h	/^	const double eV       = 1.602176487e-19 * Joule; \/\/ electron Volt$/;"	m	namespace:planck_units
+eV	units_and_constants.h	/^    const double eV       = 1.602176487e-19 * Joule; \/\/ electron Volt$/;"	m	namespace:cosmological_units
+eV	units_and_constants.h	/^    const double eV       = 1.602176487e-19 * Joule; \/\/ electron Volt$/;"	m	namespace:pkdgrav_units
+ee2	euclidemu2.cpp	/^  EuclidEmulator *ee2;$/;"	m	struct:__pyx_obj_10euclidemu2_PyEuclidEmulator	file:
+ee2_parser	parse.cxx	/^csmpars ee2_parser(int n_args, char * vec_args[]){$/;"	f
+encoding	euclidemu2.cpp	/^typedef struct {PyObject **p; const char *s; const Py_ssize_t n; const char* encoding;$/;"	m	struct:__anon5	file:
+entries	euclidemu2.cpp	/^    __Pyx_CodeObjectCacheEntry* entries;$/;"	m	struct:__Pyx_CodeObjectCache	file:
+extract_value	parse.cxx	/^double extract_value(std::string line){$/;"	f
+get_boost	euclidemu2.pyx	/^def get_boost(cosmo_par_in,redshifts,custom_kvec=None):$/;"	f
+get_plin	euclidemu2.pyx	/^def get_plin(emu_pars_dict, custom_kvec, redshifts):$/;"	f
+get_pnonlin	euclidemu2.pyx	/^def get_pnonlin(emu_pars_dict, redshifts, custom_kvec=None):$/;"	f
+gsl_wsp	cosmo.h	/^		gsl_integration_workspace *gsl_wsp;$/;"	m	class:Cosmology
+h	parse.h	/^    std::vector<double> h;$/;"	m	struct:csmpars
+hbar	units_and_constants.h	/^	const double hbar     = 1.0; \/\/ reduced Planck constant$/;"	m	namespace:planck_units
+hbar	units_and_constants.h	/^	const double hbar     = 6.62606896e-34\/(2*M_PI) * Joule * second; \/\/ reduced Planck constant$/;"	m	namespace:SI_units
+hbar	units_and_constants.h	/^    const double hbar     = 1.0; \/\/ reduced Planck constant$/;"	m	namespace:cosmological_units
+hbar	units_and_constants.h	/^    const double hbar     = 1.0; \/\/ reduced Planck constant$/;"	m	namespace:pkdgrav_units
+initeuclidemu2	euclidemu2.cpp	/^__Pyx_PyMODINIT_FUNC initeuclidemu2(void)$/;"	f
+intern	euclidemu2.cpp	/^                const char is_unicode; const char is_str; const char intern; } __Pyx_StringTabEntry;$/;"	m	struct:__anon5	file:
+is_str	euclidemu2.cpp	/^                const char is_unicode; const char is_str; const char intern; } __Pyx_StringTabEntry;$/;"	m	struct:__anon5	file:
+is_unicode	euclidemu2.cpp	/^                const char is_unicode; const char is_str; const char intern; } __Pyx_StringTabEntry;$/;"	m	struct:__anon5	file:
+isoprob_tf	cosmo.cxx	/^void Cosmology::isoprob_tf(){$/;"	f	class:Cosmology
+kB	units_and_constants.h	/^	const double kB       = 1.0; \/\/ Boltzmann constant$/;"	m	namespace:planck_units
+kB	units_and_constants.h	/^	const double kB       = 1.3806504e-23 * Joule\/Kelvin; \/\/ Boltzmann constant$/;"	m	namespace:SI_units
+kB	units_and_constants.h	/^    const double kB       = 1.0; \/\/ Boltzmann constant$/;"	m	namespace:cosmological_units
+kB	units_and_constants.h	/^    const double kB       = 1.0; \/\/ Boltzmann constant$/;"	m	namespace:pkdgrav_units
+kilogram	units_and_constants.h	/^	const double kilogram = 1.0; \/\/ in kilogram$/;"	m	namespace:SI_units
+kilogram	units_and_constants.h	/^	const double kilogram = 1.0\/(2.176434e-8);  \/\/ in planck mass$/;"	m	namespace:planck_units
+kilogram	units_and_constants.h	/^    const double kilogram = 1.0\/(2.176434e-8);  \/\/ in planck mass$/;"	m	namespace:cosmological_units
+kilogram	units_and_constants.h	/^    const double kilogram = 1.0\/(2.176434e-8);  \/\/ in planck mass$/;"	m	namespace:pkdgrav_units
+kilometer	units_and_constants.h	/^	const double kilometer = 1000 * meter;$/;"	m	namespace:SI_units
+kvec	emulator.h	/^		double kvec[613];$/;"	m	class:EuclidEmulator
+kvec	euclidemu2.pyx	/^     def kvec(self):$/;"	m	class:PyEuclidEmulator
+kvec	euclidemu2.pyx	/^     def kvec(self, kvec):$/;"	m	class:PyEuclidEmulator
+lazyEuclidEmulator	emulator_c_connector.c	/^void lazyEuclidEmulator() {$/;"	f
+likely	euclidemu2.cpp	852;"	d	file:
+likely	euclidemu2.cpp	855;"	d	file:
+lmax	emulator.h	/^		const int lmax;$/;"	m	class:EuclidEmulator
+logk2pc_acc	emulator.h	/^		gsl_interp_accel * logk2pc_acc[15];$/;"	m	class:EuclidEmulator
+logklogz2pc_spline	emulator.h	/^    	gsl_spline2d     * logklogz2pc_spline[15];$/;"	m	class:EuclidEmulator
+logz2pc_acc	emulator.h	/^    	gsl_interp_accel * logz2pc_acc[15];$/;"	m	class:EuclidEmulator
+ltrim	parse.cxx	/^std::string ltrim(const std::string& s) {$/;"	f
+main	main.cxx	/^int main(int argc, char *argv[]) {$/;"	f
+max_count	euclidemu2.cpp	/^    int max_count;$/;"	m	struct:__Pyx_CodeObjectCache	file:
+maxima	cosmo.h	/^        const double maxima[8] = {0.06, 0.40, 0.15, 1.00, 0.73, -0.7, 0.7, 2.5e-9};$/;"	m	class:Cosmology
+meter	units_and_constants.h	/^	const double meter    = 1.0; \/\/ in meters$/;"	m	namespace:SI_units
+meter	units_and_constants.h	/^	const double meter    = 1.0\/(1.616255e-35); \/\/ in planck length$/;"	m	namespace:planck_units
+meter	units_and_constants.h	/^    const double meter    = 1.0\/(1.616255e-35); \/\/ in planck length$/;"	m	namespace:cosmological_units
+meter	units_and_constants.h	/^    const double meter    = 1.0\/(1.616255e-35); \/\/ in planck length$/;"	m	namespace:pkdgrav_units
+minima	cosmo.h	/^        const double minima[8] = {0.04, 0.24, 0.00, 0.92, 0.61, -1.3, -0.7, 1.7e-9};$/;"	m	class:Cosmology
+mnu_i	cosmo.h	/^            double mnu_i;$/;"	m	struct:Cosmology::__anon1
+n	euclidemu2.cpp	/^typedef struct {PyObject **p; const char *s; const Py_ssize_t n; const char* encoding;$/;"	m	struct:__anon5	file:
+nSteps	cosmo.h	/^		const int nSteps, nTable;	$/;"	m	class:Cosmology
+nTable	cosmo.h	/^		const int nSteps, nTable;	$/;"	m	class:Cosmology
+n_coeffs	emulator.h	/^		const int n_coeffs[14];$/;"	m	class:EuclidEmulator
+n_redshift	parse.h	/^    std::vector<int> n_redshift;$/;"	m	struct:csmpars
+n_s	parse.h	/^    std::vector<double> n_s;$/;"	m	struct:csmpars
+nk	emulator.h	/^		const int nk; \/\/ number of k modes in training data$/;"	m	class:EuclidEmulator
+nz	emulator.h	/^		const int nz; \/\/ number of redshifts in the training data$/;"	m	class:EuclidEmulator
+offsetof	euclidemu2.cpp	49;"	d	file:
+operator !=	euclidemu2.cpp	/^    template<typename U> bool operator !=(U other) { return *ptr != other; }$/;"	f	class:__Pyx_FakeReference
+operator &	euclidemu2.cpp	/^    T *operator&() { return ptr; }$/;"	f	class:__Pyx_FakeReference
+operator ->	euclidemu2.cpp	/^    T *operator->() { return ptr; }$/;"	f	class:__Pyx_FakeReference
+operator ==	euclidemu2.cpp	/^    template<typename U> bool operator ==(U other) { return *ptr == other; }$/;"	f	class:__Pyx_FakeReference
+operator T&	euclidemu2.cpp	/^    operator T&() { return *ptr; }$/;"	f	class:__Pyx_FakeReference
+outdir	parse.h	/^	std::string outdir;$/;"	m	struct:csmpars
+outfilename	parse.h	/^	std::string outfilename;$/;"	m	struct:csmpars
+p	euclidemu2.cpp	/^typedef struct {PyObject **p; const char *s; const Py_ssize_t n; const char* encoding;$/;"	m	struct:__anon5	file:
+pc	emulator.h	/^		double * pc[15];             \/\/ principal components$/;"	m	class:EuclidEmulator
+pc_2d_interp	emulator.cxx	/^void EuclidEmulator::pc_2d_interp(){$/;"	f	class:EuclidEmulator
+pc_weights	emulator.h	/^		double pc_weights[14];      \/\/ PCA weights$/;"	m	class:EuclidEmulator
+pce_basisfuncs	emulator.h	/^		double * pce_basisfuncs;		\/\/ multivariate legendre polynomials$/;"	m	class:EuclidEmulator
+pce_coeffs	emulator.h	/^		double * pce_coeffs[14];     \/\/ PCE coefficients$/;"	m	class:EuclidEmulator
+pce_multiindex	emulator.h	/^		double * pce_multiindex[14]; \/\/ PCE multi-indices$/;"	m	class:EuclidEmulator
+pkdgrav_units	units_and_constants.h	/^namespace pkdgrav_units{$/;"	n
+planck_units	units_and_constants.h	/^namespace planck_units{$/;"	n
+print_cosmo	cosmo.cxx	/^void Cosmology::print_cosmo(){$/;"	f	class:Cosmology
+print_cosmo_tf	cosmo.cxx	/^void Cosmology::print_cosmo_tf(){$/;"	f	class:Cosmology
+print_info	emulator.cxx	/^void EuclidEmulator::print_info(){$/;"	f	class:EuclidEmulator
+ptr	euclidemu2.cpp	/^    T *ptr;$/;"	m	class:__Pyx_FakeReference	file:
+read_cambfile	parse.cxx	/^void read_cambfile(std::string camb_file_name, csmpars &CSM){$/;"	f
+read_classfile	parse.cxx	/^void read_classfile(std::string class_file_name, csmpars &CSM){$/;"	f
+read_cosmo_from_cmdline	parse.cxx	/^void read_cosmo_from_cmdline(cxxopts::ParseResult result, csmpars &CSM){$/;"	f
+read_from_file	cosmo.cxx	/^void read_from_file(char *filename){}$/;"	f
+read_in_ee2_data_file	emulator.cxx	/^void EuclidEmulator::read_in_ee2_data_file(){$/;"	f	class:EuclidEmulator
+read_parfile	parse.cxx	/^void read_parfile(std::string par_file_name, csmpars &CSM){$/;"	f
+removeblanks	parse.cxx	/^std::string removeblanks(const std::string& s) {$/;"	f
+rho_crit	cosmo.h	/^		double Omega_gamma_0, Omega_nu_0, Omega_DE_0, rho_crit, T_gamma_0, T_nu_0;$/;"	m	class:Cosmology
+rho_crit_over_h2	units_and_constants.h	/^	const double rho_crit_over_h2 = 2.77536627e11 * Msol\/pow(Mpc,3); \/\/ critical density of the Universe$/;"	m	namespace:SI_units
+rho_crit_over_h2	units_and_constants.h	/^	const double rho_crit_over_h2 = 2.77536627e11 * Msol\/pow(Mpc,3); \/\/ critical density of the Universe$/;"	m	namespace:planck_units
+rho_crit_over_h2	units_and_constants.h	/^    const double rho_crit_over_h2 = 2.77536627e11 * Msol\/pow(Mpc,3); \/\/ critical density of the Universe$/;"	m	namespace:cosmological_units
+rho_crit_over_h2	units_and_constants.h	/^    const double rho_crit_over_h2 = 2.77536627e11 * Msol\/pow(Mpc,3); \/\/ critical density of the Universe$/;"	m	namespace:pkdgrav_units
+rho_nu_i_integrand	cosmo.cxx	/^double Cosmology::rho_nu_i_integrand(double p, void * params){$/;"	f	class:Cosmology
+rho_nu_parameters	cosmo.h	/^		} rho_nu_parameters;$/;"	t	class:Cosmology	typeref:struct:Cosmology::__anon1
+rtrim	parse.cxx	/^std::string rtrim(const std::string& s) {$/;"	f
+s	euclidemu2.cpp	/^typedef struct {PyObject **p; const char *s; const Py_ssize_t n; const char* encoding;$/;"	m	struct:__anon5	file:
+second	units_and_constants.h	/^	const double second   = 1.0; \/\/ in seconds$/;"	m	namespace:SI_units
+second	units_and_constants.h	/^	const double second   = 1.0\/(5.391247e-44); \/\/ in planck times$/;"	m	namespace:planck_units
+second	units_and_constants.h	/^    const double second   = 1.0\/(5.391247e-44); \/\/ in planck times$/;"	m	namespace:cosmological_units
+second	units_and_constants.h	/^    const double second   = 1.0\/(5.391247e-44); \/\/ in planck times$/;"	m	namespace:pkdgrav_units
+starts_with	parse.cxx	/^bool starts_with(std::string str1, std::string str2){$/;"	f
+t0	cosmo.h	/^		double t0, t10, Delta_t, Neff, H0;$/;"	m	class:Cosmology
+t10	cosmo.h	/^		double t0, t10, Delta_t, Neff, H0;$/;"	m	class:Cosmology
+trim	parse.cxx	/^std::string trim(const std::string& s) {$/;"	f
+uint32_t	euclidemu2.cpp	/^           typedef unsigned __int32  uint32_t;$/;"	t	file:
+uint32_t	euclidemu2.cpp	/^           typedef unsigned int      uint32_t;$/;"	t	file:
+uint8_t	euclidemu2.cpp	/^           typedef unsigned __int8   uint8_t;$/;"	t	file:
+uint8_t	euclidemu2.cpp	/^           typedef unsigned char     uint8_t;$/;"	t	file:
+univ_legendre	emulator.h	/^		double * univ_legendre[8]; \/\/ univariate legendre polynomials$/;"	m	class:EuclidEmulator
+unlikely	euclidemu2.cpp	853;"	d	file:
+unlikely	euclidemu2.cpp	856;"	d	file:
+verbosity_level	parse.h	/^	int verbosity_level;$/;"	m	struct:csmpars
+w_0	parse.h	/^    std::vector<double> w_0;$/;"	m	struct:csmpars
+w_a	parse.h	/^    std::vector<double> w_a;$/;"	m	struct:csmpars
+write_nlc2file	emulator.cxx	/^void EuclidEmulator::write_nlc2file(const string& filename, vector<double> zvec, int n_redshift){$/;"	f	class:EuclidEmulator
+write_nlc2file	euclidemu2.pyx	/^     def write_nlc2file(self,filename, zvec, n_redshift):$/;"	m	class:PyEuclidEmulator
+z2nStep_spline	cosmo.h	/^    	gsl_spline *z2nStep_spline;$/;"	m	class:Cosmology
+zvec	parse.h	/^    std::vector< std::vector<double> > zvec;$/;"	m	struct:csmpars
+~EuclidEmulator	emulator.cxx	/^EuclidEmulator::~EuclidEmulator(){$/;"	f	class:EuclidEmulator
