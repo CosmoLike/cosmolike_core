@@ -642,13 +642,13 @@ double get_class_s8(struct file_content *fc, int *status){
 // pass neutrino parameters
   if (cosmology.M_nu > 1.e-5 || cosmology.Omega_nu >0.){
     strcpy(fc->name[14],"N_ncdm");
-    sprintf(fc->value[14],"%d",1);
+    sprintf(fc->value[14],"%d",3);
 
     if (cosmology.Omega_nu >0.)
     {
       strcpy(fc->name[15],"Omega_ncdm");
-//      sprintf(fc->value[15],"%e,%e,%e",cosmology.Omega_nu/3,cosmology.Omega_nu/3,cosmology.Omega_nu/3);
-      sprintf(fc->value[15],"%e",cosmology.Omega_nu);
+      sprintf(fc->value[15],"%e,%e,%e",cosmology.Omega_nu/3,cosmology.Omega_nu/3,cosmology.Omega_nu/3);
+      //sprintf(fc->value[15],"%e",cosmology.Omega_nu);
     }
     else{
       strcpy(fc->name[15],"m_ncdm"); //\Sigma(m_nu) in eV
@@ -656,7 +656,7 @@ double get_class_s8(struct file_content *fc, int *status){
       sprintf(fc->value[15],"%e,%e,%e",cosmology.M_nu/3,cosmology.M_nu/3,cosmology.M_nu/3);
     }
     strcpy(fc->name[16],"N_ur");
-    sprintf(fc->value[16],"%e",2.0328);//0.00641);
+    sprintf(fc->value[16],"%e",0.00641);//0.00641);
   }
   //normalization comes last, so that all other parameters are filled in for determining A_s if sigma_8 is specified
   if (cosmology.A_s >0){
@@ -1536,6 +1536,79 @@ return exp(val);
   // returns the dimensionless power spectrum as a function of scale factor a and k in units of h/Mpc
 }
 
+double p_emu2_only(double k_NL,double a)
+{
+  static cosmopara C;
+
+  static double logkmin = 0., logkmax = 0., dk = 0., da = 0.;
+  static double **table_P_NL=0;
+
+  double aa,klog,val, oldk;
+  double kstar[613],p_emu[613],emu_min,emu_max,k_min_emu,k_max_emu;
+  double ystar[101][613];
+  int i,j,k, nk, status;
+
+    if (recompute_cosmo3D(C)){
+        update_cosmopara(&C);
+        if (table_P_NL!=0) free_double_matrix(table_P_NL,0, Ntable.N_a-1, 0, Ntable.N_k_nlin-1);
+        table_P_NL = create_double_matrix(0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);
+        da = (1.0 - limits.a_min)/(Ntable.N_a-1.);
+        logkmin = log(limits.k_min_mpc/cosmology.h0);
+        logkmax = log(limits.k_max_mpc/cosmology.h0);
+        dk = (logkmax - logkmin)/(Ntable.N_k_nlin-1.);
+
+        printf("Starting P_delta %le %le %le %le %le %le %le\n",cosmology.Omega_m,cosmology.omb,cosmology.n_spec,cosmology.A_s,cosmology.w0,cosmology.wa,cosmology.h0);
+        double * redshift = create_double_vector(0, Ntable.N_a-1);
+        aa = limits.a_min;
+        for (i=0; i<Ntable.N_a; i++, aa +=da){
+            redshift[i] = 1.0/(aa)-1.0;
+            if(redshift[i]<0) redshift[i]=0;
+        }
+        EuclidEmulator_compute_nlc(cosmology.omb, cosmology.Omega_m, cosmology.Omega_nu*cosmology.h0*cosmology.h0*93.14, cosmology.n_spec, cosmology.h0, cosmology.w0, cosmology.wa, cosmology.A_s, redshift, Ntable.N_a, kstar, ystar);
+        aa = limits.a_min;
+        for (i=0; i<Ntable.N_a; i++, aa +=da) {
+            gsl_interp_accel *acc = gsl_interp_accel_alloc ();
+            nk=0;
+            oldk = -1;
+            for (k=0; k<613; k++){
+                if(kstar[k]<=oldk) break;
+                oldk = kstar[k];
+                p_emu[k]=ystar[i][k]*p_class(kstar[k]*cosmology.coverH0,aa, 0, 0, &status);
+                nk+=1;
+            }
+            gsl_spline *timspline = gsl_spline_alloc (gsl_interp_cspline, nk);
+            double kstar_in[nk], p_emu_in[nk];
+            for(k=0;k<nk; k++){
+                kstar_in[k] = kstar[k];
+                p_emu_in[k] = p_emu[k]; 
+            }
+            gsl_spline_init (timspline, kstar_in, p_emu_in, nk);
+            emu_min=p_emu[0];
+            emu_max=p_emu[nk-1];
+            k_min_emu=kstar[0];
+            k_max_emu=kstar[nk-1];
+            klog = logkmin; // log k in h/MPC
+            for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
+              if ((klog >= log(k_min_emu)) && (klog <= log(k_max_emu))){
+                    table_P_NL[i][j]=log(gsl_spline_eval(timspline, exp(klog), acc));
+              }
+              if(klog>log(k_max_emu))  table_P_NL[i][j]=log(emu_max);
+              if(klog<log(k_min_emu)) table_P_NL[i][j]=log(p_class(exp(klog)*cosmology.coverH0,aa, 0, 0, &status));
+                //printf("Halofit used: exceeded emu k range k=%le k_min=%le k_max=%le\n",exp(klog),k_min_emu/cosmology.h0,k_max_emu/cosmology.h0);
+            }
+            gsl_interp_accel_free(acc);
+            gsl_spline_free(timspline);
+        }
+    }
+    klog = log(k_NL);
+    val = interpol2d_fitslope(table_P_NL, Ntable.N_a, limits.a_min, 1., da, fmin(a,.999999), Ntable.N_k_nlin, logkmin, logkmax, dk, klog, cosmology.n_spec);
+    return exp(val);
+  // returns the dimensionless power spectrum as a function of scale factor a and k in units of h/Mpc
+}
+
+
+
+
 
 double PkRatio_baryons(double kintern,double a){
 	// return P(k)_bary/P(k)_DMO from hydro sims ; kintern in unit [h/Mpc]
@@ -1641,7 +1714,8 @@ double Pdelta(double k_NL,double a)
     if (strcmp(pdeltaparams.runmode,"classtagn")==0) P_type = 6;
     if (strcmp(pdeltaparams.runmode,"classhmcode")==0) P_type = 7;
     if (strcmp(pdeltaparams.runmode,"cosmo_sim_test") ==0) P_type = 5;
-
+    if (strcmp(pdeltaparams.runmode,"emu2_only") ==0) P_type = 8;
+    if (strcmp(pdeltaparams.runmode,"classlinear") ==0) P_type = 9;
   }
 
   double pdelta = 0.,kintern=k_NL/cosmology.coverH0,error,k_nonlin,res;
@@ -1655,6 +1729,8 @@ double Pdelta(double k_NL,double a)
     case 5: k_nonlin=nonlinear_scale_computation(a);
     case 6: pdelta=p_class_tagn(k_NL,a,1,0,&status); break;
     case 7: pdelta=p_class_hmcode(k_NL,a,1,0,&status); break;
+    case 8: pdelta=p_emu2_only(kintern,a); break;
+    case 9: pdelta=p_class(k_NL,a,0,0,&status); break;
     if (kintern<0.01) pdelta=2.0*constants.pi_sqr*Delta_NL_Halofit(kintern,a)/k_NL/k_NL/k_NL;
     else{
       error=0.01*pow((pdeltaparams.DIFF_A*kintern/k_nonlin),pdeltaparams.DIFF_n);
