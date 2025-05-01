@@ -303,8 +303,8 @@ double zdistr_histo_n(double z,  void *params) // return nz(z,j) based on redshi
   static double **tab;
   FILE *ein;
   static double zhisto_max,zhisto_min,dz;
-  
-  if (tab==0){
+  static char REDSHIFT_FILE[200];  
+  if (tab==0 || strcmp(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE) !=0){
     double *z_v;
     int i,k,zbins;
     zbins = line_count(redshift.shear_REDSHIFT_FILE);
@@ -346,6 +346,7 @@ double zdistr_histo_n(double z,  void *params) // return nz(z,j) based on redshi
       printf("Error in redshift.c:zdistr_histo_n: %s parameters incompatible with tomo.shear bin choice\nEXIT!\n",redshift.shear_REDSHIFT_FILE);
       exit(1);
     }
+    strcpy(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE);
   }
   
   if ((z>=zhisto_min) &&(z<zhisto_max)){
@@ -400,13 +401,15 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   static double da = 0.0;
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
+  static char REDSHIFT_FILE[200];  
   static int zbins = -1;
   static gsl_spline * photoz_splines[11];
   static gsl_interp_accel * photoz_accel[11];
 
   if (redshift.shear_photoz == -1){return n_of_z(zz,j);}
-  if ((redshift.shear_photoz != 4 && recompute_zphot_shear(N)) || table==0){
+  if ((redshift.shear_photoz != 4 && recompute_zphot_shear(N)) || table==0 ||strcmp(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE) !=0){
     update_nuisance(&N);
+    strcpy(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE);
     if (table == 0){
       int zbins1 = line_count(redshift.shear_REDSHIFT_FILE);
       if(redshift.shear_photoz !=4){zbins = zbins1*20;}
@@ -606,8 +609,8 @@ double pf_histo_n(double z,  void *params) //return pf(z,j) based on redshift fi
   static double **tab;
   FILE *ein;
   static double zhisto_max,zhisto_min,dz;
-  
-  if (tab==0){
+  static char REDSHIFT_FILE[200];
+  if (tab==0 || strcmp(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE) !=0){
     double *z_v;
     int i,k,zbins;
     zbins = line_count(redshift.clustering_REDSHIFT_FILE);
@@ -646,6 +649,7 @@ double pf_histo_n(double z,  void *params) //return pf(z,j) based on redshift fi
       printf("Error in redshift.c:pf_histo_n.c: %s parameters incompatible with tomo.clustering bin choice\nEXIT!\n",redshift.clustering_REDSHIFT_FILE);
       exit(1);
     }
+    strcpy(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE);
   }
   
   if ((z>=zhisto_min) &&(z<zhisto_max)){
@@ -671,16 +675,18 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
 {
   static double **table = 0;
   static double *z_v = 0;
-static double *zmean_tomo = 0;
+  static double *zmean_tomo = 0;
   static double da = 0.0;
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
+  static char REDSHIFT_FILE[200];
   static int zbins = -1;
   static gsl_spline * photoz_splines[11];
   static gsl_interp_accel * photoz_accel[11];
   if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}
-    if ((redshift.clustering_photoz != 4 && recompute_zphot_clustering(N)) || table==0){
+    if ((redshift.clustering_photoz != 4 && recompute_zphot_clustering(N)) || table==0 || strcmp(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE) !=0){
     update_nuisance(&N);
+    strcpy(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE);
     if (table == 0){
       zbins = line_count(redshift.clustering_REDSHIFT_FILE);
       if (redshift.clustering_photoz !=4 && redshift.clustering_photoz !=0){pf_histo(0.5,NULL); zbins*=20;}//upsample if convolving with analytic photo-z model
