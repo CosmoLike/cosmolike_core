@@ -107,6 +107,8 @@ void update_nuisance (nuisancepara *N){
     N->cluster_selection[_i] = nuisance.cluster_selection[_i];
   }
   N->cluster_b2=cbias.b2[2];
+  strcpy(N->clustering_REDSHIFT_FILE, redshift.clustering_REDSHIFT_FILE);
+  strcpy(N->shear_REDSHIFT_FILE, redshift.shear_REDSHIFT_FILE);
 }
 int recompute_expansion(cosmopara C){ //rules for recomputing growth factor & comoving distance
   if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
@@ -150,9 +152,10 @@ int recompute_cosmo3D_CLASS(cosmopara C){
 
 int recompute_zphot_shear(nuisancepara N){
   static int photoz = -1;
-  static char REDSHIFT_FILE[200];
+  //static char REDSHIFT_FILE[200];
   //recompute condition for passing new REDSHIFT_FILE for each n(z) draw - e.g., DES-Y6KP 
-  if (strcmp(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE) !=0){strcpy(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE); return 1;}
+  //if (strcmp(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE) !=0){strcpy(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE); return 1;}
+  if(strcmp(N.shear_REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE)!=0) return 1;
 
   if (photoz != redshift.shear_photoz){photoz = redshift.shear_photoz; return 1;}
   if (redshift.shear_photoz != 3 && redshift.shear_photoz != 4){return 0;}
@@ -164,10 +167,10 @@ int recompute_zphot_shear(nuisancepara N){
 }
 int recompute_zphot_clustering(nuisancepara N){
   static int photoz = -1;
-  static char REDSHIFT_FILE[200];
+  //static char REDSHIFT_FILE[200];
   //recompute condition for passing new REDSHIFT_FILE for each n(z) draw - e.g., DES-Y6KP 
-  if (strcmp(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE) !=0){strcpy(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE); return 1;}
-
+  //if (strcmp(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE) !=0){strcpy(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE); return 1;}
+  if(strcmp(N.clustering_REDSHIFT_FILE, redshift.clustering_REDSHIFT_FILE)!=0) return 1;
   if (photoz != redshift.clustering_photoz){photoz = redshift.clustering_photoz; return 1;}
   if (redshift.clustering_photoz != 3 && redshift.clustering_photoz != 4){return 0;}
   int i, res = 0;

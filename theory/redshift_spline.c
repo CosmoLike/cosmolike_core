@@ -301,15 +301,17 @@ double zdistr_histo_n(double z,  void *params) // return nz(z,j) based on redshi
 {
   double *array = (double*)params;
   static double **tab;
+  static double *z_v;
   FILE *ein;
   static double zhisto_max,zhisto_min,dz;
   static char REDSHIFT_FILE[200];  
   if (tab==0 || strcmp(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE) !=0){
-    double *z_v;
     int i,k,zbins;
     zbins = line_count(redshift.shear_REDSHIFT_FILE);
-    tab=create_double_matrix(0,tomo.shear_Nbin-1,0, zbins-1);
-    z_v=create_double_vector(0, zbins-1);
+    if (tab==0){
+        tab=create_double_matrix(0,tomo.shear_Nbin-1,0, zbins-1);
+        z_v=create_double_vector(0, zbins-1);
+    }
     ein=fopen(redshift.shear_REDSHIFT_FILE,"r");
     for (i=0;i<zbins;i++){
       fscanf(ein, "%le", &z_v[i]);
@@ -339,7 +341,7 @@ double zdistr_histo_n(double z,  void *params) // return nz(z,j) based on redshi
       tomo.shear_zmax[k] = z_v[i];
       printf("tomo.shear_zmin[%d] = %.3f,tomo.shear_zmax[%d] = %.3f\n",k,tomo.shear_zmin[k],k,tomo.shear_zmax[k]);
     }
-    free_double_vector(z_v,0,zbins-1);
+    //free_double_vector(z_v,0,zbins-1);
     if (zhisto_max < tomo.shear_zmax[tomo.shear_Nbin-1] || zhisto_min > tomo.shear_zmin[0]){
       printf("zhisto_min = %e,zhisto_max = %e\n",zhisto_min,zhisto_max);
       printf("tomo.shear_zmin[0] = %e, tomo.shear_zmax[N-1] = %e\n", tomo.shear_zmin[0],tomo.shear_zmax[tomo.shear_Nbin-1]);
@@ -409,7 +411,6 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   if (redshift.shear_photoz == -1){return n_of_z(zz,j);}
   if ((redshift.shear_photoz != 4 && recompute_zphot_shear(N)) || table==0 ||strcmp(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE) !=0){
     update_nuisance(&N);
-    strcpy(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE);
     if (table == 0){
       int zbins1 = line_count(redshift.shear_REDSHIFT_FILE);
       if(redshift.shear_photoz !=4){zbins = zbins1*20;}
@@ -420,23 +421,26 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
         photoz_splines[i] = gsl_spline_alloc(Z_SPLINE_TYPE, zbins);
         photoz_accel[i] = gsl_interp_accel_alloc();
       }
-
-      if (redshift.shear_photoz ==4){//if multihisto, force zmin, zmax, tomo bins to match supplied file
-        FILE *ein;
-        double space;
-        int i,k;
-        ein=fopen(redshift.shear_REDSHIFT_FILE,"r");
-        for (i=0;i<zbins1;i++){
-          fscanf(ein, "%le", &z_v[i]);
-          if (i > 0 && z_v[i] < z_v[i-1]){break;}
-          for (k = 0; k < tomo.shear_Nbin; k++){fscanf(ein,"%le",&space);}
-        }
-        fclose(ein);
-        redshift.shear_zdistrpar_zmin = fmax(z_v[0],1.e-5);
-        redshift.shear_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(zbins1-1.);
-        printf("redshift_spline.c %d %e %e\n", zbins,redshift.shear_zdistrpar_zmin,redshift.shear_zdistrpar_zmax);
       }
-    }
+      if  (table == 0 || strcmp(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE) !=0 ){
+          if (redshift.shear_photoz ==4){//if multihisto, force zmin, zmax, tomo bins to match supplied file
+            int zbins1 = line_count(redshift.shear_REDSHIFT_FILE);
+            FILE *ein;
+            double space;
+            int i,k;
+            ein=fopen(redshift.shear_REDSHIFT_FILE,"r");
+            for (i=0;i<zbins1;i++){
+              fscanf(ein, "%le", &z_v[i]);
+              if (i > 0 && z_v[i] < z_v[i-1]){break;}
+              for (k = 0; k < tomo.shear_Nbin; k++){fscanf(ein,"%le",&space);}
+            }
+            fclose(ein);
+            redshift.shear_zdistrpar_zmin = z_v[0]; //fmax(z_v[0],1.e-5);
+            redshift.shear_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(zbins1-1.);
+            printf("redshift_spline.c %d %e %e\n", zbins,redshift.shear_zdistrpar_zmin,redshift.shear_zdistrpar_zmax);
+          }
+      }
+    strcpy(REDSHIFT_FILE,redshift.shear_REDSHIFT_FILE);
 
     zhisto_max =redshift.shear_zdistrpar_zmax;
     zhisto_min = redshift.shear_zdistrpar_zmin;
@@ -569,15 +573,19 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
 {
   static double *tab = 0;
   FILE *ein;
+  static double * z_v=0;
 
   static double zhisto_max,zhisto_min,dz;
   
-  if (tab==0){
-    double *z_v,space1,space2;
+  static char REDSHIFT_FILE[200];
+  if (tab==0 || strcmp(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE) !=0){
+    double space1,space2;
     int i,zbins;
     zbins = line_count(redshift.clustering_REDSHIFT_FILE);
-    tab=create_double_vector(0, zbins-1);
-    z_v=create_double_vector(0, zbins-1);
+    if (tab==0){
+        tab=create_double_vector(0, zbins-1);
+        z_v=create_double_vector(0, zbins-1);
+    }
     ein=fopen(redshift.clustering_REDSHIFT_FILE,"r");
     for (i=0;i<zbins;i++){
       fscanf(ein,"%le %le %le %le\n",&z_v[i],&space1,&space2,&tab[i]);
@@ -589,11 +597,12 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
     zhisto_min=z_v[0];
     // redshift.clustering_zdistrpar_zmin = zhisto_min;
     // redshift.clustering_zdistrpar_zmax = zhisto_max;
-    free_double_vector(z_v,0,zbins-1);
+    //free_double_vector(z_v,0,zbins-1);
     if (zhisto_max < tomo.clustering_zmax[tomo.clustering_Nbin-1] || zhisto_min > tomo.clustering_zmin[0]){
       printf("Error in redshift_spline.c:pf_histo.c: %s parameters incompatible with tomo.clustering bin choice\nEXIT!\n",redshift.clustering_REDSHIFT_FILE);
       exit(1);
     }
+    strcpy(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE);
   }
   
   if ((z>=zhisto_min) &&(z<zhisto_max)){
@@ -606,16 +615,18 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
 double pf_histo_n(double z,  void *params) //return pf(z,j) based on redshift file with structure z[i] nz[0][i] .. nz[tomo.clustering_Nbin-1][i]
 {
   double *array = (double*)params;
-  static double **tab;
+  static double **tab=0;
   FILE *ein;
+  static double *z_v=0;
   static double zhisto_max,zhisto_min,dz;
   static char REDSHIFT_FILE[200];
   if (tab==0 || strcmp(REDSHIFT_FILE,redshift.clustering_REDSHIFT_FILE) !=0){
-    double *z_v;
     int i,k,zbins;
     zbins = line_count(redshift.clustering_REDSHIFT_FILE);
-    tab=create_double_matrix(0,tomo.clustering_Nbin-1,0, zbins-1);
-    z_v=create_double_vector(0, zbins-1);
+    if (tab==0){
+        tab=create_double_matrix(0,tomo.clustering_Nbin-1,0, zbins-1);
+        z_v=create_double_vector(0, zbins-1);
+    }
     ein=fopen(redshift.clustering_REDSHIFT_FILE,"r");
     for (i=0;i<zbins;i++){
       fscanf(ein, "%le", &z_v[i]);
@@ -635,15 +646,15 @@ double pf_histo_n(double z,  void *params) //return pf(z,j) based on redshift fi
         if (tab[k][i]> max){max = tab[k][i];}
       }
       i = 0;
-      while (tab[k][i] <1.e-8*max && i < zbins-2){i++;}
+      while (fabs(tab[k][i]) <1.e-8*max && i < zbins-2){i++;}
       tomo.clustering_zmin[k] = z_v[i];
       i = zbins-1;
-      while (tab[k][i] <1.e-8*max && i > 0){i--;}
+      while (fabs(tab[k][i]) <1.e-8*max && i > 0){i--;}
       tomo.clustering_zmax[k] = z_v[i];
       printf("tomo.clustering_zmin[%d] = %.3f,tomo.clustering_zmax[%d] = %.3f\n",k,tomo.clustering_zmin[k],k,tomo.clustering_zmax[k]);
     }
 
-    free_double_vector(z_v,0,zbins-1);
+    //free_double_vector(z_v,0,zbins-1);
     if (zhisto_max < tomo.clustering_zmax[tomo.clustering_Nbin-1] || zhisto_min > tomo.clustering_zmin[0]){
       printf("%e %e   %e %e\n",zhisto_min,tomo.clustering_zmin[0],zhisto_max,tomo.clustering_zmax[tomo.clustering_Nbin-1]);
       printf("Error in redshift.c:pf_histo_n.c: %s parameters incompatible with tomo.clustering bin choice\nEXIT!\n",redshift.clustering_REDSHIFT_FILE);
@@ -707,7 +718,8 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
           for (k = 0; k < tomo.clustering_Nbin; k++){fscanf(ein,"%le",&space);}
         }
         fclose(ein);
-        redshift.clustering_zdistrpar_zmin = fmax(z_v[0],1.e-5);
+        //redshift.clustering_zdistrpar_zmin = fmax(z_v[0],1.e-5);
+        redshift.clustering_zdistrpar_zmin = z_v[0]; 
         redshift.clustering_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(zbins-1.);
       }
     }
@@ -834,7 +846,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   } 
   if (redshift.clustering_photoz == 4){ zz = (zz - nuisance.bias_zphot_clustering[j]- zmean_tomo[j])/nuisance.stretch_zphot_clustering[j] + zmean_tomo[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
-  double res= fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
+  double res= gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]);
   if (redshift.clustering_photoz == 4){
       res = res/nuisance.stretch_zphot_clustering[j];
   }

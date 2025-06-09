@@ -279,6 +279,8 @@ typedef struct {
   int N_cluster_selection;
   double cluster_selection[10];
   double cluster_b2;
+  char clustering_REDSHIFT_FILE[200];
+  char shear_REDSHIFT_FILE[200];
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
@@ -403,6 +405,8 @@ typedef struct input_nuisance_params_mpp {
     double selection[10];
     double b_mag[10];
     double pm[10];
+    double lens_z_u[20];
+    double source_z_u[20];
 } input_nuisance_params_mpp;
 
 typedef struct input_HOD_params {
