@@ -58,6 +58,22 @@ double ggl_efficiency(int zl, int zs);
 ///
 double g_bg (double a, int nzlens);//no longer supported - declaration only to prevent compile errors
 
+int N_clustering_tomo (int z1, int z2){ //find shear tomography bin number N_shear of tomography combination (z1,z2)
+  static int N[20][20] = {-42};
+  if (N[0][0] < -1){
+    int i, j,n = 0;
+    for (i = 0; i < tomo.clustering_Nbin; i ++){
+      for (j = i; j < tomo.clustering_Nbin; j++){
+        N[i][j] = n;
+        N[j][i] = n;
+        n++;
+      }
+    }
+  }
+  return N[z1][z2];
+}
+
+
 
 /********** integration boundary routines *************/
 double amin_source(int i){

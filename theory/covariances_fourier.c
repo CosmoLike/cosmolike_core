@@ -316,3 +316,239 @@ double cov_G_cl_gl_tomo(double l, double delta_l, int z1, int z2, int zl, int zs
   
 }
 
+/**************** look-up tuables for covarian_e  *********************/
+double filter_cov_fourier(double l1, double l2, double lmax, double lpivot) {
+  long i,j;
+  double W;
+  double l_interval = lmax - lpivot;
+  if(l_interval<=0) {return 1.;}
+
+  if(l1<=lpivot){
+    W = 1.;
+  }
+  else if(l1>=lmax){
+    W = 0.;
+  }
+  else{
+    W = (lmax - l1) / l_interval - 1./(2.*M_PI) * sin(2.*(lmax - l1)*M_PI/l_interval);
+  }
+
+  if(l2<=lpivot){
+    W *= 1.;
+  }
+  else if(l2>=lmax){
+    W *= 0.;
+  }
+  else{
+    W *= (lmax - l2) / l_interval - 1./(2.*M_PI) * sin(2.*(lmax - l2)*M_PI/l_interval);
+  }
+  return W;
+}
+
+double bin_cov_NG_shear_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
+  static int Z1 = -42;
+  static int Z2 = -42;
+  static int Z3 = -42;
+  static int Z4 = -42;
+  static int Ntab = 20;
+  static double **table=0;
+  static double ds = .0, logsmin = .0, logsmax = .0;
+  int i,j;
+  double res, llog1,llog2,ll1,ll2;
+  if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
+    {
+    if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
+    logsmin = log(1.);
+    logsmax = log(5.e+4);
+    ds = (logsmax - logsmin)/(Ntab - 1.);
+    llog1 = logsmin;
+    for (i=0; i<Ntab; i++, llog1+=ds) {
+      ll1 = exp(llog1);
+      llog2 = logsmin;
+      for (j=0; j<Ntab; j++, llog2+=ds) {
+        ll2 = exp(llog2);
+        table[i][j]=log(cov_NG_shear_shear_tomo(ll1,ll2,z1,z2,z3,z4));
+      }
+    }
+    Z1=z1; Z2=z2; Z3=z3; Z4=z4;
+    }
+  res = 0.;
+  llog1=log(l1);
+  llog2=log(l2);
+  if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
+    res = exp(interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0));}
+    res *= filter_cov_fourier(llog1, llog2, logsmax, log(4.e4));
+  return res;
+}
+double bin_cov_NG_gl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
+  static int Z1 = -42;
+  static int Z2 = -42;
+  static int Z3 = -42;
+  static int Z4 = -42;
+  static int Ntab = 40;
+  static double **table=0;
+  static double ds = .0, logsmin = .0, logsmax = .0;
+  int i,j;
+  double res, llog1,llog2,ll1,ll2;
+  if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
+    {
+    if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
+    logsmin = log(1.);
+    logsmax = log(5.e+4);
+    ds = (logsmax - logsmin)/(Ntab - 1.);
+    llog1 = logsmin;
+    for (i=0; i<Ntab; i++, llog1+=ds) {
+      ll1 = exp(llog1);
+      llog2 = logsmin;
+      for (j=0; j<Ntab; j++, llog2+=ds) {
+        ll2 = exp(llog2);
+        table[i][j]= cov_NG_gl_gl_tomo(ll1,ll2,z1,z2,z3,z4);
+      }
+    }
+    Z1=z1; Z2=z2; Z3=z3; Z4=z4;
+    }
+  res = 0.;
+  llog1=log(l1);
+  llog2=log(l2);
+  if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
+  return res;
+}
+double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
+  static int Z1 = -42;
+  static int Z2 = -42;
+  static int Z3 = -42;
+  static int Z4 = -42;
+  static int Ntab = 40;
+  static double **table=0;
+  static double ds = .0, logsmin = .0, logsmax = .0;
+  int i,j;
+  double res, llog1,llog2,ll1,ll2;
+  if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
+    {
+    if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
+    logsmin = log(1.);
+    logsmax = log(5.e+4);
+    ds = (logsmax - logsmin)/(Ntab - 1.);
+    llog1 = logsmin;
+    for (i=0; i<Ntab; i++, llog1+=ds) {
+      ll1 = exp(llog1);
+      llog2 = logsmin;
+      for (j=0; j<Ntab; j++, llog2+=ds) {
+        ll2 = exp(llog2);
+        table[i][j]=cov_NG_cl_cl_tomo(ll1,ll2,z1,z2,z3,z4);
+      }
+    }
+    Z1=z1; Z2=z2; Z3=z3; Z4=z4;
+  }
+  res = 0.;
+  llog1=log(l1);
+  llog2=log(l2);
+  if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
+  return res;
+}
+double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
+  static int Z1 = -42;
+  static int Z2 = -42;
+  static int Z3 = -42;
+  static int Z4 = -42;
+  static int Ntab = 40;
+  static double **table=0;
+  static double ds = .0, logsmin = .0, logsmax = .0;
+  int i,j;
+  double res, llog1,llog2,ll1,ll2;
+  if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
+    {
+    if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
+    logsmin = log(1.);
+    logsmax = log(5.e+4);
+    ds = (logsmax - logsmin)/(Ntab - 1.);
+    llog1 = logsmin;
+    for (i=0; i<Ntab; i++, llog1+=ds) {
+      ll1 = exp(llog1);
+      llog2 = logsmin;
+      for (j=0; j<Ntab; j++, llog2+=ds) {
+        ll2 = exp(llog2);
+        table[i][j]=cov_NG_cl_shear_tomo(ll1,ll2,z1,z2,z3,z4);
+        // printf("cov_NG_cl_shear_tomo(%lg,%lg),%lg\n",ll1,ll2, table[i][j]);
+      }
+    }
+    Z1=z1; Z2=z2; Z3=z3; Z4=z4;
+    }
+  res = 0.;
+  llog1=log(l1);
+  llog2=log(l2);
+  if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
+  return res;
+}
+double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
+  static int Z1 = -42;
+  static int Z2 = -42;
+  static int Z3 = -42;
+  static int Z4 = -42;
+  static int Ntab = 40;
+  static double **table=0;
+  static double ds = .0, logsmin = .0, logsmax = .0;
+  int i,j;
+  double res, llog1,llog2,ll1,ll2;
+  if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
+    {
+    if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
+    logsmin = log(1.);
+    logsmax = log(5.e+4);
+    ds = (logsmax - logsmin)/(Ntab - 1.);
+    llog1 = logsmin;
+    for (i=0; i<Ntab; i++, llog1+=ds) {
+      ll1 = exp(llog1);
+      llog2 = logsmin;
+      for (j=0; j<Ntab; j++, llog2+=ds) {
+        ll2 = exp(llog2);
+        table[i][j]=cov_NG_cl_gl_tomo(ll1,ll2,z1,z2,z3,z4);
+      }
+    }
+    Z1=z1; Z2=z2; Z3=z3; Z4=z4;
+    }
+  res = 0.;
+  llog1=log(l1);
+  llog2=log(l2);
+  if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
+  return res;
+}
+double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int z4){
+  static int Z1 = -42;
+  static int Z2 = -42;
+  static int Z3 = -42;
+  static int Z4 = -42;
+  static int Ntab = 40;
+  static double **table=0;
+  static double ds = .0, logsmin = .0, logsmax = .0;
+  int i,j;
+  double res, llog1,llog2,ll1,ll2;
+  if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
+    {
+    if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
+    logsmin = log(1.);
+    logsmax = log(5.e+4);
+    ds = (logsmax - logsmin)/(Ntab - 1.);
+    llog1 = logsmin;
+    for (i=0; i<Ntab; i++, llog1+=ds) {
+      ll1 = exp(llog1);
+      llog2 = logsmin;
+      for (j=0; j<Ntab; j++, llog2+=ds) {
+        ll2 = exp(llog2);
+        table[i][j]=cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4);
+        // printf("cov_NG_gl_shear_tomo(%lg,%lg),%lg\n",ll1,ll2, cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4));
+      }
+    }
+    Z1=z1; Z2=z2; Z3=z3; Z4=z4;
+    }
+  res = 0.;
+  llog1=log(l1);
+  llog2=log(l2);
+  if (llog1 > logsmin && llog2 > logsmin && llog1 < logsmax && llog2 < logsmax){
+    res = interpol2d(table, Ntab, logsmin, logsmax, ds, llog1, Ntab, logsmin, logsmax, ds, llog2,0.0,0.0);}
+  return res;
+}

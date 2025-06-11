@@ -9,7 +9,7 @@ double xi_pm_TATT(int pm, int nt, int ni, int nj); //shear tomography correlatio
 //ell_max for transform to angular correlation functions
 int LMAX = 100000;
 //ell_min for switching from exact evalution of C(ell) to interpolated look-up table
-int LMIN_tab =20;
+int LMIN_tab = 0.9;
 //number of grid point for C(ell) look-up tables
 int NTAB_TATT = 60;
 
@@ -366,7 +366,7 @@ double C_EE_tab(double l, int ni, int nj)  //shear power spectrum of source gala
     if (table==0) {
       table   = create_double_matrix(0, tomo.shear_Npowerspectra-1, 0, NTAB_TATT-1);
       sig = create_double_vector(0,tomo.ggl_Npowerspectra-1);
-      logsmin = log(fmax(LMIN_tab - 1.,1.0));
+      logsmin = log(fmax(LMIN_tab - 1.,0.9));
       logsmax = log(LMAX + 1);
       ds = (logsmax - logsmin)/(NTAB_TATT - 1.);
     }
@@ -424,7 +424,7 @@ double C_BB_tab(double l, int ni, int nj)  //shear power spectrum of source gala
     if (table==0) {
       table   = create_double_matrix(0, tomo.shear_Npowerspectra-1, 0, NTAB_TATT-1);
       sig = create_double_vector(0,tomo.ggl_Npowerspectra-1);
-      logsmin = log(fmax(LMIN_tab - 1.,1.0));
+      logsmin = log(fmax(LMIN_tab - 1.,0.9));
       logsmax = log(LMAX + 1);
       ds = (logsmax - logsmin)/(NTAB_TATT - 1.);
     }
@@ -484,7 +484,7 @@ double C_ggl_TATT_tab(double l, int ni, int nj)  //G-G lensing power spectrum, l
     if (table==0){
       table   = create_double_matrix(0, tomo.ggl_Npowerspectra-1, 0, NTAB_TATT-1);
       sig = create_double_vector(0,tomo.ggl_Npowerspectra-1);
-      logsmin = log(fmax(LMIN_tab - 1.,1.0));
+      logsmin = log(fmax(LMIN_tab - 1.,0.99));
       logsmax = log(LMAX + 1);
       ds = (logsmax - logsmin)/(NTAB_TATT - 1.);
     }
