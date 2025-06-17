@@ -804,8 +804,11 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
   static int zbins = -1;
-  static gsl_spline * photoz_splines[31];
-  static gsl_interp_accel * photoz_accel[31];
+  // static gsl_spline * photoz_splines[31];
+  // static gsl_interp_accel * photoz_accel[31];
+
+  static gsl_spline ** photoz_splines = NULL;
+  static gsl_interp_accel ** photoz_accel = NULL;
 
   static double *nz_old=0, *nz_diag=0, *nz_ext=0;
   static double **nz_ext_bin=0;
@@ -821,6 +824,13 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
 
       table   = create_double_matrix(0, tomo.clustering_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
+
+      photoz_splines = malloc((tomo.clustering_Nbin+1) * sizeof(gsl_spline*));
+      photoz_accel = malloc((tomo.clustering_Nbin+1) * sizeof(gsl_interp_accel*));
+      if (!photoz_splines || !photoz_accel){
+        fprintf(stderr, "Memory allocation failed for photoz_splines or photoz_accel in pf_photoz\n");
+        exit(1);
+      }
       for (int i = 0; i < tomo.clustering_Nbin+1; i++){
         photoz_splines[i] = gsl_spline_alloc(Z_SPLINE_TYPE, zbins);
         photoz_accel[i] = gsl_interp_accel_alloc();
@@ -870,8 +880,14 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     }
 
     double array[4],norm,x1,x2,eta,outfrac,zi;
+
     double *NORM = NULL;
-    NORM = malloc(tomo.clustering_Nbin*sizeof(double));
+    NORM = malloc(tomo.clustering_Nbin * sizeof(double));
+    if (!NORM){
+      fprintf(stderr, "Memory allocation failed for NORM in pf_photoz\n");
+      exit(1);
+    }
+
     //the outlier fraction (outfrac) should be specified externally. This is a temporary hack.
     int i,k;
     int z_index;
