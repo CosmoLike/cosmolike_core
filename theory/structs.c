@@ -90,8 +90,8 @@ typedef struct {
   double n_source[10];
   int clustering_Nbin; // number of tomography bins
   int clustering_Npowerspectra;// number of tomography power spectra+2+3+...+Nbin
-  double clustering_zmax[10]; 
-  double clustering_zmin[10];
+  double clustering_zmax[30]; 
+  double clustering_zmin[30];
   double n_lens[10];
   int cluster_Nbin; // number of cluster redshift bins
   double cluster_zmax[10];
@@ -164,17 +164,21 @@ double b1_per_bin(double z, int nz);
 
 typedef  double (*B1_model)(double z, int nz);
 typedef struct{
-  double b[10]; /* linear galaxy bias paramter in clustering bin i*/
-  double b2[10]; /* quadratic bias parameter for redshift bin i */
+  double b[30]; /* linear galaxy bias paramter in clustering bin i*/
+  double b2[30]; /* quadratic bias parameter for redshift bin i */
   double bs2[10]; /* leading order tidal bias for redshift bin i */
   double rcorr[10];
-  double hod[10][6]; /*HOD[i] contains HOD parameters of galaxies in clustering bin i, following 5 parameter model of Zehavi et al. 2011 + modification of concentration parameter*/
+  double hod[30][6]; /*HOD[i] contains HOD parameters of galaxies in clustering bin i, following 5 parameter model of Zehavi et al. 2011 + modification of concentration parameter*/
   double cg[10];
   double n_hod[10];
-  double b_mag[10]; /*amplitude of magnification bias, b_mag[i] = 5*s[i]+beta[i] -2 */
+  double b_mag[30]; /*amplitude of magnification bias, b_mag[i] = 5*s[i]+beta[i] -2 */
   B1_model b1_function;
 }galpara;
-galpara gbias ={.b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},.b1_function = &b1_per_bin, .b_mag ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}; //default: point to old bgal_z routin
+galpara gbias ={
+  .b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
+  .bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
+  .b1_function = &b1_per_bin, 
+  .b_mag ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}; //default: point to old bgal_z routin
 
 typedef struct{
   double hod[5];
@@ -255,8 +259,8 @@ typedef struct {
   double shear_calibration_m[10];
   double sigma_zphot_shear[10];
   double bias_zphot_shear[10];
-  double sigma_zphot_clustering[10];
-  double bias_zphot_clustering[10];
+  double sigma_zphot_clustering[30];
+  double bias_zphot_clustering[30];
   double sigma_zphot_magnification[10];
   double bias_zphot_magnification[10];
   double LF_alpha;
@@ -314,8 +318,8 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .shear_calibration_m = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bary = {0.0, 0.0, 0.0},
   .frac_lowz = 0.,
   .frac_highz = 0.,
@@ -354,8 +358,8 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double shear_calibration_m[10][2];
   double sigma_zphot_shear[10][2];
   double bias_zphot_shear[10][2];
-  double sigma_zphot_clustering[10][2];
-  double bias_zphot_clustering[10][2];
+  double sigma_zphot_clustering[30][2];
+  double bias_zphot_clustering[30][2];
   double sigma_zphot_magnification[10][2];
   double bias_zphot_magnification[10][2];
   double cluster_Mobs_lgM0[2];
@@ -399,8 +403,8 @@ priorpara prior = {
  .shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
-.sigma_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
-.bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.sigma_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bary_Q1 = {0.,0.},
 .bary_Q2 = {0.,0.},
 .bary_Q3 = {0.,0.}

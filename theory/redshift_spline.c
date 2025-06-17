@@ -804,8 +804,8 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
   static int zbins = -1;
-  static gsl_spline * photoz_splines[11];
-  static gsl_interp_accel * photoz_accel[11];
+  static gsl_spline * photoz_splines[31];
+  static gsl_interp_accel * photoz_accel[31];
 
   static double *nz_old=0, *nz_diag=0, *nz_ext=0;
   static double **nz_ext_bin=0;
@@ -869,7 +869,9 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
       z_v[i] = zhisto_min+(i+0.5)*da;
     }
 
-    double array[4], NORM[11],norm,x1,x2,eta,outfrac,zi;
+    double array[4],norm,x1,x2,eta,outfrac,zi;
+    double *NORM = NULL;
+    NORM = malloc(tomo.clustering_Nbin*sizeof(double));
     //the outlier fraction (outfrac) should be specified externally. This is a temporary hack.
     int i,k;
     int z_index;
@@ -1056,7 +1058,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
       //for(k = 0; k<zbins; k++){printf("%d %d %e %e\n",i,k,z_v[k],table[i+1][k]);}
       gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);
     }
-
+    free(NORM);
   }
   if (j >= tomo.clustering_Nbin){
     printf("redshift.c: pf_photoz(z,%d) outside tomo.clustering_Nbin range\n", j);
