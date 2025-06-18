@@ -11,9 +11,9 @@ void set_cosmological_parameters_to_MILLENIUM();
 void set_cosmological_parameters_to_Tinker();
 void set_cosmological_parameters_to_BCC();
 void set_cosmological_parameters_to_chincilla();
-void set_cosmological_parameters_to_();
-void set_cov_parameters_to_();
-void set_survey_parameters_to_();
+void set_cosmological_parameters_to_(char *cosmofile, int output);
+void set_cov_parameters_to_(char *covparamfile, int output);
+void set_survey_parameters_to_(char *surveyfile, int output);
 void set_survey_parameters_to_DES_COV_Y1();
 void set_survey_parameters_to_DES_Y1();
 void set_survey_parameters_to_CFHTLS();
@@ -46,7 +46,7 @@ void set_cov_parameters_to_(char *covparamfile, int output)
   FILE* input = fopen(covparamfile, "r");
   while(fgets(line, 256, input) != NULL)
   {
-    char name[128],val[128];
+    char name[129],val[129];
 
     iline++;
     if(line[0] == '#') continue;
