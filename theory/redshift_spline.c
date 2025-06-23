@@ -129,7 +129,7 @@ int test_zoverlap_c(int zc, int zs){ //test whether source bin zs is behind lens
 }
 
 int N_ggl(int zl, int zs){
-  static int N[10][10] = {-42};
+  static int N[30][30] = {-42};
   if (N[0][0] < 0){
     int i, j,n;
     n = 0;
@@ -159,7 +159,7 @@ void write_gglensing_zbins(char *surveyname){
   fclose(F1);
 }
 int ZL(int Nbin){
-  static int N[100] = {-42};
+  static int N[465] = {-42};
   if (N[0] < -1){
     int i,j,n = 0;
     for (i = 0; i < tomo.clustering_Nbin; i ++){
@@ -171,7 +171,7 @@ int ZL(int Nbin){
   return N[Nbin];
 }
 int ZS(int Nbin){
-  static int N[100] = {-42};
+  static int N[465] = {-42};
   if (N[0] < -1){
     int i,j,n = 0;
     for (i = 0; i < tomo.clustering_Nbin; i ++){
@@ -184,7 +184,7 @@ int ZS(int Nbin){
 }
 
 int N_cgl(int zc, int zs){
-  static int N[10][10] = {-42};
+  static int N[30][30] = {-42};
   if (N[0][0] < 0){
     int i, j,n;
     n = 0;
@@ -222,7 +222,7 @@ int ZSC(int Nbin){
   return N[Nbin];
 }
 int N_shear (int z1, int z2){ //find shear tomography bin number N_shear of tomography combination (z1,z2)
-  static int N[10][10] = {-42};
+  static int N[30][30] = {-42};
   if (N[0][0] < -1){
     int i, j,n = 0;
     for (i = 0; i < tomo.shear_Nbin; i ++){
@@ -236,7 +236,7 @@ int N_shear (int z1, int z2){ //find shear tomography bin number N_shear of tomo
   return N[z1][z2];
 }
 int Z1(int Nbin){// find z1 of tomography combination (z1,z2) constituting shear tomography bin Nbin
-  static int N[55] = {-42};
+  static int N[465] = {-42};
   if (N[0] < -1){
     int i, j,n = 0;
     for (i = 0; i < tomo.shear_Nbin; i ++){
@@ -250,7 +250,7 @@ int Z1(int Nbin){// find z1 of tomography combination (z1,z2) constituting shear
 }
 
 int Z2(int Nbin){ // find z2 of tomography combination (z1,z2) constituting shear tomography bin Nbin
-  static int N[55]={-42};
+  static int N[465]={-42};
   if (N[0] < -1){
     int i, j,n = 0;
     for (i = 0; i < tomo.shear_Nbin; i ++){
@@ -264,7 +264,7 @@ int Z2(int Nbin){ // find z2 of tomography combination (z1,z2) constituting shea
 }
 
 int Zcl1(int Nbin){// find zcl1 of tomography combination (zcl1,zcl2) constituting galaxy clustering tomography bin Nbin
-  static int N[55] = {-42};
+  static int N[465] = {-42};
   if (N[0] < -1){
     int i, j,n = 0;
     for (i = 0; i < tomo.clustering_Nbin; i ++){
@@ -278,7 +278,7 @@ int Zcl1(int Nbin){// find zcl1 of tomography combination (zcl1,zcl2) constituti
 }
 
 int Zcl2(int Nbin){ // find zcl2 of tomography combination (zcl1,zcl2) constituting galaxy clustering tomography bin Nbin
-  static int N[55]={-42};
+  static int N[465]={-42};
   if (N[0] < -1){
     int i, j,n = 0;
     for (i = 0; i < tomo.clustering_Nbin; i ++){
@@ -413,8 +413,8 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
   static int zbins = -1;
-  static gsl_spline * photoz_splines[11];
-  static gsl_interp_accel * photoz_accel[11];
+  static gsl_spline * photoz_splines[31];
+  static gsl_interp_accel * photoz_accel[31];
 
   static double *nz_old=0, *nz_diag=0, *nz_ext=0;
   static double **nz_ext_bin=0;

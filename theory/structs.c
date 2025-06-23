@@ -85,14 +85,14 @@ cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_
 typedef struct {
   int shear_Nbin; // number of tomography bins
   int shear_Npowerspectra;// number of tomography power spectra+2+3+...+Nbin
-  double shear_zmax[10]; // code needs modification if more than 10 zbins
-  double shear_zmin[10];
-  double n_source[10];
+  double shear_zmax[30]; // code needs modification if more than 10 zbins
+  double shear_zmin[30];
+  double n_source[30];
   int clustering_Nbin; // number of tomography bins
   int clustering_Npowerspectra;// number of tomography power spectra+2+3+...+Nbin
   double clustering_zmax[30]; 
   double clustering_zmin[30];
-  double n_lens[10];
+  double n_lens[30];
   int cluster_Nbin; // number of cluster redshift bins
   double cluster_zmax[10];
   double cluster_zmin[10];
@@ -104,7 +104,10 @@ typedef struct {
   double magnification_zmax[10]; 
   double magnification_zmin[10];
 }tomopara;
-tomopara tomo = {.n_source = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},.n_lens = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}};
+tomopara tomo = {
+    .n_source = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+    .n_lens = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}
+  };
 
 
 typedef struct {
@@ -244,9 +247,9 @@ typedef struct {
   //like.IA = 4: NLA, power law
   //like.IA = 5: TATT, per bin
   //like.IA = 6: TATT, power law
-  double A_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3 or like.IA = 5)
-  double A2_z[10]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA = 5)
-  double b_ta_z[10]; //b_ta, per bin (like.IA = 6), or use b_ta_z[0] with like.IA = 5
+  double A_z[30]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA =3 or like.IA = 5)
+  double A2_z[30]; //NLA normalization per source redshift bin, for mpp analyis (activate with like.IA = 5)
+  double b_ta_z[30]; //b_ta, per bin (like.IA = 6), or use b_ta_z[0] with like.IA = 5
   double A_ia; //A IA see Joachimi2012
   double A2_ia; //placeholder param for quadratic,etc IA
   double beta_ia; //beta IA see Joachimi2012
@@ -256,9 +259,9 @@ typedef struct {
   double oneplusz0_ia; //oneplusz0-ia MegaZ
   double c1rhocrit_ia;
   double fred[10];
-  double shear_calibration_m[10];
-  double sigma_zphot_shear[10];
-  double bias_zphot_shear[10];
+  double shear_calibration_m[30];
+  double sigma_zphot_shear[30];
+  double bias_zphot_shear[30];
   double sigma_zphot_clustering[30];
   double bias_zphot_clustering[30];
   double sigma_zphot_magnification[10];
@@ -312,12 +315,12 @@ typedef struct {
 }
 nuisancepara;
 nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
-  .A_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .A2_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .b_ta_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .shear_calibration_m = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .sigma_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
-  .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .A_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .A2_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .b_ta_z ={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .shear_calibration_m = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .sigma_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bary = {0.0, 0.0, 0.0},
@@ -355,9 +358,9 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double LF_red_alpha[2];
   double LF_red_P[2];
   double LF_red_Q[2];
-  double shear_calibration_m[10][2];
-  double sigma_zphot_shear[10][2];
-  double bias_zphot_shear[10][2];
+  double shear_calibration_m[30][2];
+  double sigma_zphot_shear[30][2];
+  double bias_zphot_shear[30][2];
   double sigma_zphot_clustering[30][2];
   double bias_zphot_clustering[30][2];
   double sigma_zphot_magnification[10][2];
@@ -400,9 +403,9 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   // double gas_f_H[2];
 }priorpara;
 priorpara prior = {
- .shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
-.sigma_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
-.bias_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+ .shear_calibration_m = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.sigma_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.bias_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bary_Q1 = {0.,0.},

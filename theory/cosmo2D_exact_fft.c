@@ -148,7 +148,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 16, Nchi = 500;
+	int Nell_block = 16, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar, **Fk2_Mag_ar;
@@ -247,7 +247,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	double k1_cH0;
 
 
-	while ((fabs(dev) > tolerance) && (L < LMAX)){
+	while ((fabs(dev) > tolerance)){
 	// while(0){
 	// while (L<100){
 		//Cl[L] = C_cl_RSD(L,nz,nz);
@@ -296,7 +296,6 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		}
 
 		i_block++;
-
         if(L>=LMAX-Nell_block){ // break before memory leak in next iteration
             printf("L>Lmax\n");
             break;
