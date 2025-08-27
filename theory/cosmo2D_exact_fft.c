@@ -32,8 +32,8 @@ double int_for_C_cl_lin(double a, void *params)
 	k      = ell/fK;
 	
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
-	res= res*p_lin(k,a);
-	// res = res * p_lin(k, a) * G_taper(k);
+	// res= res*p_lin(k,a);
+	res = res * p_lin(k, a) * G_taper(k);
 	return res;
 }
 
@@ -149,7 +149,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 16, Nchi = 1000;
+	int Nell_block = 100, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar, **Fk2_Mag_ar;
@@ -279,14 +279,14 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
 				if(ni == nj) {
-					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
-					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0) * G_taper(k1_cH0);
+					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0) * G_taper(k1_cH0);
 					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *Pdelta(k1_cH0,0.9999);
 					// printf("plin,%lg, %lg\n", k1_ar[i][j],p_lin(k1_cH0,1.0));
 				}
 				else {
-					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
-					// cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0) * G_taper(k1_cH0);
+					// cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0) * G_taper(k1_cH0);
 				}
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
