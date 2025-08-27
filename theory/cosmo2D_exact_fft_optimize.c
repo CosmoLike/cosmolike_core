@@ -32,7 +32,8 @@ double int_for_C_cl_lin(double a, void *params)
 	k      = ell/fK;
 	
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
-	res= res*p_lin(k,a)*G_taper(k);
+	// res= res*p_lin(k,a)*G_taper(k);
+	res= res*p_lin(k,a); // be consistent with Halofit and exact.c
 	return res;
 }
 
@@ -120,14 +121,14 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	// ni = 4;
 	// nj = 4;
 
-	extern double S_integrands_cl[30][200][1001];
+	extern double S_integrands_cl[30][501][2001];
 	extern int S_integrands_cl_flag[30];
 
 	int i,j,i_block;
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 150, Nchi = 1000;
+	int Nell_block = 500, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar, **Fk2_Mag_ar;
@@ -158,6 +159,8 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	double f1_chi_RSD_ar[Nchi], f2_chi_RSD_ar[Nchi];
 	double f1_chi_Mag_ar[Nchi], f2_chi_Mag_ar[Nchi];
 
+	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
+	// double chi_min = chi(1./(1.+0.002))*real_coverH0, chi_max = chi(1./(1.+4.))*real_coverH0;
 	double chi_min = 60., chi_max = 6000.;
 	double dlnchi = log(chi_max/chi_min) / (Nchi - 1.);
 	double dlnk = dlnchi;
@@ -168,7 +171,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 
 	double ell_prefactor, ell_prefactor2;
 
-	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
+	// double real_coverH0 = cosmology.coverH0 / cosmology.h0;
 	double k1_cH0;
 
 	double cl_temp;
@@ -428,8 +431,8 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// nl = 4;
 	// ns = 0;
 
-	extern double S_integrands_cl[30][200][1001];
-	extern double S_integrands_sh[30][200][1001];
+	extern double S_integrands_cl[30][501][2001];
+	extern double S_integrands_sh[30][501][2001];
 	extern int S_integrands_cl_flag[30];
 	extern int S_integrands_sh_flag[30];
 
@@ -438,7 +441,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 150, Nchi = 1000;
+	int Nell_block = 150, Nchi = 2000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar;

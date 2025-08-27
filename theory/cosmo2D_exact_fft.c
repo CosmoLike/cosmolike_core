@@ -33,6 +33,7 @@ double int_for_C_cl_lin(double a, void *params)
 	
 	res=W_gal(a,ar[0])*W_gal(a,ar[1])*dchi_da(a)/fK/fK;
 	res= res*p_lin(k,a);
+	// res = res * p_lin(k, a) * G_taper(k);
 	return res;
 }
 
@@ -279,11 +280,13 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
 				if(ni == nj) {
 					cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0) * G_taper(k1_cH0);
 					// cl_temp += (Fk1_ar[i][j]) * (Fk1_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *Pdelta(k1_cH0,0.9999);
 					// printf("plin,%lg, %lg\n", k1_ar[i][j],p_lin(k1_cH0,1.0));
 				}
 				else {
 					cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+					// cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0) * G_taper(k1_cH0);
 				}
 			}
 			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_cl_tomo_nointerp(1.*ell_ar[i],ni,nj) - C_cl_lin_nointerp(1.*ell_ar[i],ni,nj);
@@ -430,7 +433,6 @@ double w_tomo_nonLimber(int nt, int ni, int nj){
 
 ///////////////////////// 
 ///////// galaxy-galaxy lensing
-/*
 double int_for_C_gl_lin(double a, void *params)
 {
 	double res,ell, fK, k;
@@ -635,7 +637,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 100, Nchi = 1000;
+	int Nell_block = 16, Nchi = 1000;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar;
@@ -798,22 +800,45 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
 				cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
 			}
+
+			/* add to account for no IA (20250807 YHH) */
+			if (like.IA == 0) {
+				Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns) - C_gl_lin_nointerp(1.*ell_ar[i],nl,ns);
+				dev = Cl[ell_ar[i]]/C_gl_tomo_nointerp(1.0*ell_ar[i],nl,ns) - 1.;
+			}
+			else {
+				Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_ggl_IA(1.*ell_ar[i],nl,ns) - C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns);
+				dev = Cl[ell_ar[i]]/C_ggl_IA(1.0*ell_ar[i],nl,ns)-1.;
+			}
 			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns) - C_gl_lin_nointerp(1.*ell_ar[i],nl,ns);
-			Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_ggl_IA(1.*ell_ar[i],nl,ns) - C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns);
+			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI + C_ggl_IA(1.*ell_ar[i],nl,ns) - C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns);
 			// Cl[ell_ar[i]] = cl_temp * dlnk * 2./M_PI;
 			// printf("cl_temp: %d, %lg\n", i, cl_temp);
 			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_gl_tomo_nointerp(1.*ell_ar[i],nl,ns), C_gl_lin_nointerp(1.*ell_ar[i],nl,ns));
 			// fprintf(OUT, "%d %lg %lg %lg\n", ell_ar[i], Cl[ell_ar[i]], C_ggl_IA(1.*ell_ar[i],nl,ns), C_gl_lin_IA_nointerp(1.*ell_ar[i],nl,ns));
 			// dev = Cl[ell_ar[i]]/C_gl_tomo_nointerp(1.0*ell_ar[i],nl,ns)-1.;
-			dev = Cl[ell_ar[i]]/C_ggl_IA(1.0*ell_ar[i],nl,ns)-1.;
+			// dev = Cl[ell_ar[i]]/C_ggl_IA(1.0*ell_ar[i],nl,ns)-1.;
 
 		   // printf("nl,ns,L,Cl[L],dev=%d %d %d %e %e\n",nl,ns,ell_ar[i],Cl[ell_ar[i]],dev);
 		}
 
 		i_block++;
+
+		if (L >= LMAX - Nell_block){ // break before mememory leak in next iteration
+			printf("L>LMAX\n");
+			break;
+		}
 		L = i_block*Nell_block -1 ;
+
+		/* add to account for no IA (20250807) */
+		if (like.IA == 0){
+			dev = Cl[L]/C_gl_tomo_nointerp(1.0*L,nl,ns) - 1.;
+		}
+		else {
+			dev = Cl[L]/C_ggl_IA(1.0*L,nl,ns)-1.;
+		}
 		// dev = Cl[L]/C_gl_tomo_nointerp(1.0*L,nl,ns)-1.;
-		dev = Cl[L]/C_ggl_IA(1.0*L,nl,ns)-1.;
+		// dev = Cl[L]/C_ggl_IA(1.0*L,nl,ns)-1.;
 
 	 //   printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
 		// printf("i_block: %d\n", i_block);
@@ -828,14 +853,21 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// 	Cl[l]=C_gl_tomo((double)l,nl,ns);
 	// }
 
+	/* add to account for no IA (20250807 YHH) */
 	for (l = L; l < LMAX; l++){
+		if (like.IA == 0) {
+			Cl[l] = C_gl_tomo((double)l,nl,ns);
+		}
+		else {
+			Cl[l]=C_ggl_IA_tab((double)l,nl,ns);
+		}
 		// Cl[l]=C_gl_tomo((double)l,nl,ns);
-		Cl[l]=C_ggl_IA_tab((double)l,nl,ns);
+		// Cl[l]=C_ggl_IA_tab((double)l,nl,ns);
 	}
 	// printf("finished bin %d %d\n", nl,ns);
 	for(i=0;i<Nell_block;i++) {
-		free(k1_ar[i]);free(k2_ar[i]);
-		free(Fk1_ar[i]);free(Fk2_ar[i]);
+		free(k1_ar[i]); free(k2_ar[i]);
+		free(Fk1_ar[i]); free(Fk2_ar[i]);
 		free(Fk1_Mag_ar[i]);
 	}
 	free(k1_ar);free(k2_ar);
@@ -942,4 +974,3 @@ double w_gamma_t_nonLimber(int nt, int ni, int nj){
 	}
 	return w_vec[N_ggl(ni,nj)*like.Ntheta+nt];  
 }
-*/

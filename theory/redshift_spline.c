@@ -389,8 +389,8 @@ double zdistr_histo_1(double z, void *params) //return nz(z) based on redshift f
     dz = (z_v[i-1]-z_v[0])/(1.*i -1.);
     zhisto_max=z_v[i-1]+dz;
     zhisto_min=z_v[0];
-    redshift.shear_zdistrpar_zmin = zhisto_min;
-    redshift.shear_zdistrpar_zmax = zhisto_max;
+    // redshift.shear_zdistrpar_zmin = zhisto_min;
+    // redshift.shear_zdistrpar_zmax = zhisto_max;
     free_double_vector(z_v,0,zbins-1);
   }
 
@@ -724,6 +724,10 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
       }
     }
     fclose(ein);
+    // /* test new setup */
+    // zhisto_max = redshift.clustering_zdistrpar_zmax;
+    // zhisto_min = redshift.clustering_zdistrpar_zmin;
+    // dz = (zhisto_max - zhisto_min) / (double)(i - 1);
     dz = (z_v[i-1]-z_v[0])/(1.*i-1.);
     zhisto_max=z_v[i-1]+dz;
     zhisto_min=z_v[0];
