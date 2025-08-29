@@ -474,7 +474,13 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
     for (int i = 0;i < zbins; i++){
       z_v[i] = zhisto_min+(i+0.5)*da;
     }
-    double array[4], NORM[11],norm,x1,x2,eta,outfrac;
+    double array[4],norm,x1,x2,eta,outfrac;
+    double *NORM = NULL;
+    NORM = (double *) malloc(tomo.shear_Nbin*sizeof(double));
+    if (!NORM){
+      fprintf(stderr, "Memory allocation failed for NORM in zdistr_photoz (line 480) \n");
+      exit(1);
+    }
     //the outlier fraction (outfrac) should be specified externally. This is a temporary hack.
     int i,k;
     int z_index;
@@ -652,8 +658,8 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
       gsl_spline_init(photoz_splines[i+1], z_v, table[i+1], zbins);
 //      printf("spline init shear %d, %e\n",i,gsl_spline_eval(photoz_splines[i+1],1.0,NULL));
     }
-
-	#if 0
+    free(NORM);
+	  #if 0
     // Start JX: print the ztrue distribution of each tomo bins
     FILE *zdist_tomo_FILE;
     char zdist_tomo_fname[500];
