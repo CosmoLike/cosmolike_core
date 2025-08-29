@@ -80,7 +80,7 @@ double amin_lens(int i){
   if (i == -1 || redshift.clustering_photoz == 1 || redshift.clustering_photoz == 2){return 1./(redshift.clustering_zdistrpar_zmax+1.);}
   if (redshift.clustering_photoz == 0){ return 1./(1+tomo.clustering_zmax[i]);}
   if (redshift.clustering_photoz == 4){ return 1./(1+tomo.clustering_zmax[i]+2.*fabs(nuisance.bias_zphot_clustering[i]));}
-  if (redshift.shear_photoz == 5) {return 1./(1+redshift.clustering_zdistrpar_zmax);}
+  if (redshift.clustering_photoz == 5) {return 1./(1+redshift.clustering_zdistrpar_zmax);}
   return 1./(1+fmin(tomo.clustering_zmax[i] + 5.*nuisance.sigma_zphot_clustering[i] + fabs(nuisance.bias_zphot_clustering[i]),redshift.clustering_zdistrpar_zmax));
 }
 double amax_lens(int i){
