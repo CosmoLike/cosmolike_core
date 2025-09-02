@@ -172,7 +172,7 @@ typedef struct{
   double bs2[30]; /* leading order tidal bias for redshift bin i */
   double rcorr[10];
   double hod[30][6]; /*HOD[i] contains HOD parameters of galaxies in clustering bin i, following 5 parameter model of Zehavi et al. 2011 + modification of concentration parameter*/
-  double cg[10];
+  double cg[30];
   double n_hod[10];
   double b_mag[30]; /*amplitude of magnification bias, b_mag[i] = 5*s[i]+beta[i] -2 */
   B1_model b1_function;
@@ -258,7 +258,7 @@ typedef struct {
   double eta_ia_highz; //uncertainty in high z evolution
   double oneplusz0_ia; //oneplusz0-ia MegaZ
   double c1rhocrit_ia;
-  double fred[10];
+  double fred[30];
   double shear_calibration_m[30];
   double sigma_zphot_shear[30];
   double bias_zphot_shear[30];
