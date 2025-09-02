@@ -169,7 +169,7 @@ typedef  double (*B1_model)(double z, int nz);
 typedef struct{
   double b[30]; /* linear galaxy bias paramter in clustering bin i*/
   double b2[30]; /* quadratic bias parameter for redshift bin i */
-  double bs2[10]; /* leading order tidal bias for redshift bin i */
+  double bs2[30]; /* leading order tidal bias for redshift bin i */
   double rcorr[10];
   double hod[30][6]; /*HOD[i] contains HOD parameters of galaxies in clustering bin i, following 5 parameter model of Zehavi et al. 2011 + modification of concentration parameter*/
   double cg[10];
@@ -179,7 +179,7 @@ typedef struct{
 }galpara;
 galpara gbias ={
   .b2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
-  .bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
+  .bs2 ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0},
   .b1_function = &b1_per_bin, 
   .b_mag ={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}; //default: point to old bgal_z routin
 
