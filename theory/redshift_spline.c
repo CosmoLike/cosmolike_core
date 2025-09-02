@@ -93,7 +93,7 @@ double amax_lens(int i){
 
 /************ redshift overlap tests, allowed tomography combinations **********/
 int test_kmax(double l, int zl){ //test whether the (l,zl) bin is in the linear clustering regime - return 1 if true, 0 otherwise
-  static double chiref[10] = {-1.};
+  static double chiref[30] = {-1.};
   if (chiref[0] < 0){
     int i;
     for (i = 0; i < tomo.clustering_Nbin; i++){
