@@ -1,3 +1,4 @@
+#include "limits.h"
 void f_chi_for_Psi_cl(double* chi_ar, int Nchi, double* f_chi_ar, int ni);
 void f_chi_for_Psi_cl_RSD(double* chi_ar, int Nchi, double* f_chi_RSD_ar, int ni);
 void f_chi_for_Psi_cl_Mag(double* chi_ar, int Nchi, double* f_chi_Mag_ar, int ni);
@@ -121,14 +122,14 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	// ni = 4;
 	// nj = 4;
 
-	extern double S_integrands_cl[30][501][2001];
-	extern int S_integrands_cl_flag[30];
+	extern double S_integrands_cl[MAX_TOMO_BINS][NELL_BLOCK+1][NCHI+1];
+	extern int S_integrands_cl_flag[MAX_TOMO_BINS];
 
 	int i,j,i_block;
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 500, Nchi = 1000;
+	int Nell_block = NELL_BLOCK, Nchi = NCHI;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar, **Fk2_Mag_ar;
@@ -431,17 +432,17 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// nl = 4;
 	// ns = 0;
 
-	extern double S_integrands_cl[30][501][2001];
-	extern double S_integrands_sh[30][501][2001];
-	extern int S_integrands_cl_flag[30];
-	extern int S_integrands_sh_flag[30];
+	extern double S_integrands_cl[MAX_TOMO_BINS][NELL_BLOCK+1][NCHI+1];
+	extern double S_integrands_sh[MAX_TOMO_BINS][NELL_BLOCK+1][NCHI+1];
+	extern int S_integrands_cl_flag[MAX_TOMO_BINS];
+	extern int S_integrands_sh_flag[MAX_TOMO_BINS];
 
 
 	int i,j,i_block;
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = 150, Nchi = 2000;
+	int Nell_block = NELL_BLOCK, Nchi = NCHI;
 	int ell_ar[Nell_block];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar;
