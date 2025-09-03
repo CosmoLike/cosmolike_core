@@ -1,4 +1,5 @@
 #include "limits.h"
+#include <gsl/gsl_errno.h>
 //#define Z_SPLINE_TYPE gsl_interp_akima
 #define Z_SPLINE_TYPE gsl_interp_cspline
 // lens efficiencies
@@ -828,6 +829,13 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   static double **nz_ext_bin=0;
 
   double zmin_file, zmax_file, dz_file; // values derived from the nz file
+
+  static int __gsl_handler_off = 0;
+  if (!__gsl_handler_off) {
+    gsl_set_error_handler_off();
+    __gsl_handler_off = 1;
+  }
+
   if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}
     if ((redshift.clustering_photoz != 4 && recompute_zphot_clustering(N)) || table==0){
     update_nuisance(&N);
@@ -861,7 +869,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
         }
         fclose(ein);
         redshift.clustering_zdistrpar_zmin = fmax(z_v[0],1.e-5);
-        redshift.clustering_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(zbins-1.);
+        redshift.clustering_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(1.0*i-1.);
       }
 
       if (redshift.clustering_photoz ==5){//if extreme outlier nz from simulation
@@ -1090,13 +1098,34 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     }
     free(NORM);
   }
-  if (j >= tomo.clustering_Nbin){
-    printf("redshift.c: pf_photoz(z,%d) outside tomo.clustering_Nbin range\n", j);
+  // if (j >= tomo.clustering_Nbin){
+  //   printf("redshift.c: pf_photoz(z,%d) outside tomo.clustering_Nbin range\n", j);
+  //   exit(1);
+  // }
+  if (j < -1 || j >= tomo.clustering_Nbin){
+    fprintf(stderr, "redshift.c: pf_photoz(z=%g, j=%d) outside tomo.clustering_Nbin range [%-d, %d]\n",zz, j, -1, tomo.clustering_Nbin);
     exit(1);
   }
-  if (redshift.clustering_photoz == 4){ zz = zz -nuisance.bias_zphot_clustering[j];}
+  if (redshift.clustering_photoz == 4){ zz = zz - nuisance.bias_zphot_clustering[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
-  return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
+
+  if (!photoz_splines || !photoz_splines[j+1]){
+    fprintf(stderr, "pf_photoz: spline pointer is NULL for j=%d\n", j);
+    return 0.0;
+  }
+  double __val = 0.0;
+  gsl_interp_accel *__acc = gsl_interp_accel_alloc();
+  int __st = gsl_spline_eval_e(photoz_splines[j+1], zz, __acc, &__val);
+  gsl_interp_accel_free(__acc);
+  
+  if (__st){
+    if (__st != GSL_EDOM){
+      fprintf(stderr, "pf_photoz: gsl_splines_eval_e failed (z=%g, j=%d, status=%d)\n", zz, j, __st);
+    }
+    return 0.0;
+  }
+  return fabs(__val);
+  // return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
 }
 
 /*********** routines calculating the number of source and lens galaxies per bin ****************/
