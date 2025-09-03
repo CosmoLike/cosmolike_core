@@ -414,8 +414,8 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
   static int zbins = -1;
-  static gsl_spline * photoz_splines[MAX_TOMO_BINS+1];
-  static gsl_interp_accel * photoz_accel[MAX_TOMO_BINS+1];
+  static gsl_spline ** photoz_splines = NULL;
+  static gsl_interp_accel ** photoz_accel = NULL;
 
   static double *nz_old=0, *nz_diag=0, *nz_ext=0;
   static double **nz_ext_bin=0;
@@ -429,6 +429,9 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
       else {zbins = zbins1;}
       table   = create_double_matrix(0, tomo.shear_Nbin, 0, zbins-1);
       z_v=create_double_vector(0, zbins-1);
+
+      photoz_splines = malloc((tomo.shear_Nbin+1)*sizeof(gsl_spline *));
+      photoz_accel = malloc((tomo.shear_Nbin+1)*sizeof(gsl_interp_accel *));
       for (int i = 0; i < tomo.shear_Nbin+1; i++){
         photoz_splines[i] = gsl_spline_alloc(Z_SPLINE_TYPE, zbins);
         photoz_accel[i] = gsl_interp_accel_alloc();
