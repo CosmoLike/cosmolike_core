@@ -291,6 +291,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 	free(k1_ar); free(k2_ar);
 	free(Fk1_ar); free(Fk2_ar);
 	free(Fk1_Mag_ar); free(Fk2_Mag_ar);
+	printf("Finished computing C_l for (n_i,n_j)=(%d,%d)\n", ni, nj);
 }
 
 double w_tomo_nonLimber(int nt, int ni, int nj){
