@@ -4,7 +4,7 @@
 /* maximum tomographic bin number */
 #ifndef MAX_TOMO_BINS
 #define MAX_TOMO_BINS 30
-#define MAX_PAIRS (MAX_TOMO_BINS * (MAX_TOMO_BINS - 1) / 2)
+#define MAX_PAIRS (MAX_TOMO_BINS * (MAX_TOMO_BINS + 1) / 2)
 #endif
 
 /* The following are for exact_fft */
