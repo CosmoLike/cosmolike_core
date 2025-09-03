@@ -1,5 +1,5 @@
 #include "limits.h"
-#include <gsl/gsl_errno.h>
+// #include <gsl/gsl_errno.h>
 //#define Z_SPLINE_TYPE gsl_interp_akima
 #define Z_SPLINE_TYPE gsl_interp_cspline
 // lens efficiencies
@@ -421,6 +421,12 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   static double *nz_old=0, *nz_diag=0, *nz_ext=0;
   static double **nz_ext_bin=0;
 
+  // static int __gsl_handler_off_shear = 0;
+  // if (!__gsl_handler_off_shear){
+  //   gsl_set_error_handler_off();
+  //   __gsl_handler_off_shear = 1;
+  // }
+
   if (redshift.shear_photoz == -1){return n_of_z(zz,j);}
   if ((redshift.shear_photoz != 4 && recompute_zphot_shear(N)) || table==0){
     update_nuisance(&N);
@@ -690,13 +696,36 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
 
 
   }
-  if (j >= tomo.shear_Nbin){
-    printf("redshift.c: zdistr_photoz(z,%d) outside tomo.shear_Nbin range\n", j);
+  // check if j is within bounds
+  if (j < -1 || j > tomo.shear_Nbin){
+    fprintf(stderr, "redshift.c: zdistr_photoz(z=%g, j=%d) outside tomo.shear_Nbin range [%-d, %d]\n", zz, j, -1, tomo.shear_Nbin);
     exit(1);
   }
-  if (redshift.shear_photoz == 4){ zz = zz -nuisance.bias_zphot_shear[j];}
+  if (redshift.shear_photoz == 4){ zz = zz - nuisance.bias_zphot_shear[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
-  return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
+
+  // defense check against uninitialized/corrupted pointers
+  if (!photoz_splines[j+1]){
+    fprintf(stderr, "zdistr_photoz: spline pointer is NULL for j=%d\n", j);
+    exit(1);
+  }
+  if (!photoz_accel[j+1]) {
+    fprintf(stderr, "zdistr_photoz: accel pointer is NULL for j=%d\n", j);
+    exit(1);
+  }
+
+  // // use a fresh accel per call to avoid thread-unsafe sheared state
+  // double __val = 0.0;
+  // int __st = gsl_spline_eval_e(photoz_splines[j+1], zz, photoz_accel[j+1], &__val);
+  // if (__st) {
+  //   if (__st != GSL_EDOM) {
+  //     fprintf(stderr, "zdistr_photoz: gsl_spline_eval_e failed (j=%d, z=%g, status=%d)\n", j, zz, __st);
+  //     exit(1);
+  //   }
+  //   return 0.0;
+  // }
+  // return fabs(__val);
+  return fabs(gsl_spline_eval(photoz_splines[j+1], zz, photoz_accel[j+1]));
 }
 
 
@@ -830,11 +859,11 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
 
   double zmin_file, zmax_file, dz_file; // values derived from the nz file
 
-  static int __gsl_handler_off = 0;
-  if (!__gsl_handler_off) {
-    gsl_set_error_handler_off();
-    __gsl_handler_off = 1;
-  }
+  // static int __gsl_handler_off = 0;
+  // if (!__gsl_handler_off) {
+  //   gsl_set_error_handler_off();
+  //   __gsl_handler_off = 1;
+  // }
 
   if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}
     if ((redshift.clustering_photoz != 4 && recompute_zphot_clustering(N)) || table==0){
@@ -1098,10 +1127,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     }
     free(NORM);
   }
-  // if (j >= tomo.clustering_Nbin){
-  //   printf("redshift.c: pf_photoz(z,%d) outside tomo.clustering_Nbin range\n", j);
-  //   exit(1);
-  // }
+  // check if j is within bounds
   if (j < -1 || j >= tomo.clustering_Nbin){
     fprintf(stderr, "redshift.c: pf_photoz(z=%g, j=%d) outside tomo.clustering_Nbin range [%-d, %d]\n",zz, j, -1, tomo.clustering_Nbin);
     exit(1);
@@ -1109,23 +1135,29 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   if (redshift.clustering_photoz == 4){ zz = zz - nuisance.bias_zphot_clustering[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
 
-  if (!photoz_splines || !photoz_splines[j+1]){
+  // defense check against uninitialized/corrupted pointers
+  if (!photoz_splines[j+1]){
     fprintf(stderr, "pf_photoz: spline pointer is NULL for j=%d\n", j);
-    return 0.0;
+    exit(1);
   }
-  double __val = 0.0;
-  gsl_interp_accel *__acc = gsl_interp_accel_alloc();
-  int __st = gsl_spline_eval_e(photoz_splines[j+1], zz, __acc, &__val);
-  gsl_interp_accel_free(__acc);
-  
-  if (__st){
-    if (__st != GSL_EDOM){
-      fprintf(stderr, "pf_photoz: gsl_splines_eval_e failed (z=%g, j=%d, status=%d)\n", zz, j, __st);
-    }
-    return 0.0;
+  if (!photoz_accel[j+1]) {
+    fprintf(stderr, "pf_photoz: accel pointer is NULL for j=%d\n", j);
+    exit(1);
   }
-  return fabs(__val);
-  // return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
+
+  // // use a fresh accel per call to avoid thread-unsafe sheared state
+  // double __val = 0.0;
+  // int __st = gsl_spline_eval_e(photoz_splines[j+1], zz, photoz_accel[j+1], &__val);
+
+  // if (__st){
+  //   if (__st != GSL_EDOM){
+  //     fprintf(stderr, "pf_photoz: gsl_splines_eval_e failed (z=%g, j=%d, status=%d)\n", zz, j, __st);
+  //     exit(1);
+  //   }
+  //   return 0.0;
+  // }
+  // return fabs(__val);
+  return fabs(gsl_spline_eval(photoz_splines[j+1], zz, photoz_accel[j+1]));
 }
 
 /*********** routines calculating the number of source and lens galaxies per bin ****************/
