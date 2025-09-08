@@ -86,7 +86,7 @@ double amin_lens(int i){
   return 1./(1+fmin(tomo.clustering_zmax[i] + 5.*nuisance.sigma_zphot_clustering[i] + fabs(nuisance.bias_zphot_clustering[i]),redshift.clustering_zdistrpar_zmax));
 }
 double amax_lens(int i){
-  if (gbias.b_mag[i] != 0){return 1./(1.+fmax(redshift.clustering_zdistrpar_zmin,0.001));}
+  if (gbias.b_mag[i] != 0){return 1./(1.+fmax(redshift.shear_zdistrpar_zmin,0.001));}
   if (i == -1 || redshift.clustering_photoz == 1 || redshift.clustering_photoz == 2){return 1./(1.+fmax(redshift.clustering_zdistrpar_zmin,0.001));}
   if (redshift.clustering_photoz == 0){ return 1./(1.+fmax(tomo.clustering_zmin[i],0.001));}
   if (redshift.clustering_photoz == 4){ return 1./(1+fmax(tomo.clustering_zmin[i]-2.*fabs(nuisance.bias_zphot_clustering[i]),0.001));}
@@ -697,7 +697,7 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
 
   }
   // check if j is within bounds
-  if (j < -1 || j > tomo.shear_Nbin){
+  if (j < -1 || j >= tomo.shear_Nbin){
     fprintf(stderr, "redshift.c: zdistr_photoz(z=%g, j=%d) outside tomo.shear_Nbin range [%-d, %d]\n", zz, j, -1, tomo.shear_Nbin);
     exit(1);
   }
@@ -771,8 +771,8 @@ double pf_histo(double z, void *params) //return pf(z) based on redshift file wi
     dz = (z_v[i-1]-z_v[0])/(1.*i-1.);
     zhisto_max=z_v[i-1]+dz;
     zhisto_min=z_v[0];
-    redshift.clustering_zdistrpar_zmin = zhisto_min;
-    redshift.clustering_zdistrpar_zmax = zhisto_max;
+    // redshift.clustering_zdistrpar_zmin = zhisto_min;
+    // redshift.clustering_zdistrpar_zmax = zhisto_max;
     free_double_vector(z_v,0,zbins-1);
     if (zhisto_max < tomo.clustering_zmax[tomo.clustering_Nbin-1] || zhisto_min > tomo.clustering_zmin[0]){
       printf("Error in redshift_spline.c:pf_histo.c: %s parameters incompatible with tomo.clustering bin choice\nEXIT!\n",redshift.clustering_REDSHIFT_FILE);
