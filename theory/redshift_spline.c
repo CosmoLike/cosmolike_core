@@ -161,7 +161,7 @@ void write_gglensing_zbins(char *surveyname){
   fclose(F1);
 }
 int ZL(int Nbin){
-  static int N[MAX_PAIRS] = {-42};
+  static int N[MAX_PAIRS_CROSS] = {-42};
   if (N[0] < -1){
     int i,j,n = 0;
     for (i = 0; i < tomo.clustering_Nbin; i ++){
@@ -173,7 +173,7 @@ int ZL(int Nbin){
   return N[Nbin];
 }
 int ZS(int Nbin){
-  static int N[MAX_PAIRS] = {-42};
+  static int N[MAX_PAIRS_CROSS] = {-42};
   if (N[0] < -1){
     int i,j,n = 0;
     for (i = 0; i < tomo.clustering_Nbin; i ++){
