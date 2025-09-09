@@ -408,7 +408,7 @@ double int_for_C_gl_lin(double a, void *params)
 	wgal += W_mag(a,fK,ar[0])*(ell_prefactor1/ell/ell -1.) ;
   	res=(wgal + W_RSD(ell, a_0, a_1, ar[0]))*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
   	// res=(wgal)*W_kappa(a,fK, ar[1])*dchi_da(a)/fK/fK * ell_prefactor2/ell/ell;
-	res= res*p_lin(k,a);
+	res= res*p_lin(k,a)*G_taper(k);
 	return res;
 }
 
@@ -746,7 +746,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 			for(j=0;j<Nchi;j++) {
 				// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
 				k1_cH0 = k1_ar[i][j] * real_coverH0;
-				cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0);
+				cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0) * G_taper(k1_cH0);
 			}
 
 			/* add to account for no IA (20250807 YHH) */
