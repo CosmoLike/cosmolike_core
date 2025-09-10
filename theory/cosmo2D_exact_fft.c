@@ -611,7 +611,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 
 	double chi_ar[Nchi];
 	double f1_chi_ar[Nchi], f1_chi_RSD_ar[Nchi], f1_chi_Mag_ar[Nchi];
-	double f2_chi_ar[Nchi], f2_chi_IA_ar[Nchi];
+	double f2_chi_ar[Nchi];
 
 	// double f2_chi_temp[Nchi];
 
@@ -631,9 +631,13 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// 	f1_chi_ar[j] += f1_chi_Mag_ar[j];
 	// }
 	f_chi_for_Psi_sh(chi_ar, Nchi, f2_chi_ar, ns);
-	f_chi_for_Psi_sh_IA(chi_ar, Nchi, f2_chi_IA_ar, ns);
-	for(j=0;j<Nchi;j++) {
-		f2_chi_ar[j] += f2_chi_IA_ar[j];
+
+	if (like.IA == 3 || like.IA == 4){
+		double f2_chi_IA_ar[Nchi];
+		f_chi_for_Psi_sh_IA(chi_ar, Nchi, f2_chi_IA_ar, ns);
+		for(j=0; j<Nchi; j++) {
+			f2_chi_ar[j] += f2_chi_IA_ar[j];
+		}
 	}
 
 	// char outfilename[] = "f_chi_gl1.txt";
