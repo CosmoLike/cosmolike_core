@@ -406,12 +406,13 @@ void f_chi_for_Psi_sh_IA(double* chi_ar, int Nchi, double* f_chi_IA_ar, int ns) 
 	int i;
 	double real_coverH0 = cosmology.coverH0 / cosmology.h0;
 	double window_L, wsource;
-	double norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
+	double norm;
 
 	for(i=0;i<Nchi;i++) {
 		a = a_chi(chi_ar[i] / real_coverH0) ; // first convert unit of chi from Mpc to c/H0
 		z = 1./a - 1.;
 		fK = f_K(chi_ar[i]/real_coverH0);
+		norm = cosmology.Omega_m*nuisance.c1rhocrit_ia*growfac(0.9999)/growfac(a)*nuisance.A_ia*pow(1./(a*nuisance.oneplusz0_ia),nuisance.eta_ia);
 		if( (a<amin_source(ns)) || (a>amax_source(ns)) )
 		{
 			f_chi_IA_ar[i] = 0.;
