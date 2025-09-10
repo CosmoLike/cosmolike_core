@@ -898,7 +898,7 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
         }
         fclose(ein);
         redshift.clustering_zdistrpar_zmin = fmax(z_v[0],1.e-5);
-        redshift.clustering_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(1.0*i-1.);
+        redshift.clustering_zdistrpar_zmax = z_v[i-1] +(z_v[i-1]-z_v[0])/(zbins-1.);
       }
 
       if (redshift.clustering_photoz ==5){//if extreme outlier nz from simulation
