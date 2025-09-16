@@ -443,43 +443,42 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	long l;
 	// run 100 ells at a time, and see if switching to Limber is needed.
 	// Save runtime for Limber, and save re-creation time of fftw_plan.
-	int Nell_block = NELL_BLOCK, Nchi = NCHI;
-	int ell_ar[Nell_block];
+	int ell_ar[NELL_BLOCK];
 	double **k1_ar, **k2_ar, **Fk1_ar, **Fk2_ar;
 	double **Fk1_Mag_ar;
 
-	k1_ar = malloc(Nell_block * sizeof(double *));
-	k2_ar = malloc(Nell_block * sizeof(double *));
-	Fk1_ar = malloc(Nell_block * sizeof(double *));
-	Fk2_ar = malloc(Nell_block * sizeof(double *));
+	k1_ar = malloc(NELL_BLOCK * sizeof(double *));
+	k2_ar = malloc(NELL_BLOCK * sizeof(double *));
+	Fk1_ar = malloc(NELL_BLOCK * sizeof(double *));
+	Fk2_ar = malloc(NELL_BLOCK * sizeof(double *));
 
-	Fk1_Mag_ar = malloc(Nell_block * sizeof(double *));
-	for(i=0;i<Nell_block;i++) {
-		k1_ar[i] = malloc(Nchi * sizeof(double));
-		k2_ar[i] = malloc(Nchi * sizeof(double));
-		Fk1_ar[i] = malloc(Nchi * sizeof(double));
-		Fk2_ar[i] = malloc(Nchi * sizeof(double));
-		Fk1_Mag_ar[i] = malloc(Nchi * sizeof(double));
-		for(j=0;j<Nchi;j++) {
+	Fk1_Mag_ar = malloc(NELL_BLOCK * sizeof(double *));
+	for(i=0;i<NELL_BLOCK;i++) {
+		k1_ar[i] = malloc(NCHI * sizeof(double));
+		k2_ar[i] = malloc(NCHI * sizeof(double));
+		Fk1_ar[i] = malloc(NCHI * sizeof(double));
+		Fk2_ar[i] = malloc(NCHI * sizeof(double));
+		Fk1_Mag_ar[i] = malloc(NCHI * sizeof(double));
+		for(j=0;j<NCHI;j++) {
 			Fk1_ar[i][j] = 0.;
 			Fk2_ar[i][j] = 0.;
 			Fk1_Mag_ar[i][j] = 0.;
 		}
 	}
 
-	double chi_ar[Nchi];
-	double f1_chi_ar[Nchi], f1_chi_RSD_ar[Nchi], f1_chi_Mag_ar[Nchi];
-	double f2_chi_ar[Nchi], f2_chi_IA_ar[Nchi];
+	double chi_ar[NCHI];
+	double f1_chi_ar[NCHI], f1_chi_RSD_ar[NCHI], f1_chi_Mag_ar[NCHI];
+	double f2_chi_ar[NCHI], f2_chi_IA_ar[NCHI];
 
-	// double f2_chi_temp[Nchi];
+	// double f2_chi_temp[NCHI];
 
 	double chi_min = 60., chi_max = 6000.;
 	// double chi_min = 6., chi_max = 6000.;
 
-	double dlnchi = log(chi_max/chi_min) / (Nchi - 1.);
+	double dlnchi = log(chi_max/chi_min) / (NCHI - 1.);
 	double dlnk = dlnchi;
 
-	for(i=0; i<Nchi; i++) {
+	for(i=0; i<NCHI; i++) {
 		chi_ar[i] = chi_min * exp(dlnchi*i);
 	}
 
@@ -491,21 +490,21 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	double cl_temp;
 
 	i_block = 0;
-	for(i=0;i<Nell_block;i++) {ell_ar[i]=i+i_block*Nell_block;}
+	for(i=0;i<NELL_BLOCK;i++) {ell_ar[i]=i+i_block*NELL_BLOCK;}
 
 	if(S_integrands_cl_flag[nl]) {
-		for(i=0;i<Nell_block;i++) {
-			for(j=0;j<Nchi;j++) {
-				k1_ar[i][j] = (i+1.)/chi_ar[Nchi-1-j];
+		for(i=0;i<NELL_BLOCK;i++) {
+			for(j=0;j<NCHI;j++) {
+				k1_ar[i][j] = (i+1.)/chi_ar[NCHI-1-j];
 				Fk1_ar[i][j] = S_integrands_cl[nl][i][j];
 			}
 		}
 	}
 	else
 	{
-		f_chi_for_Psi_cl(chi_ar, Nchi, f1_chi_ar, nl);
-		f_chi_for_Psi_cl_RSD(chi_ar, Nchi, f1_chi_RSD_ar, nl);
-		f_chi_for_Psi_cl_Mag(chi_ar, Nchi, f1_chi_Mag_ar, nl);
+		f_chi_for_Psi_cl(chi_ar, NCHI, f1_chi_ar, nl);
+		f_chi_for_Psi_cl_RSD(chi_ar, NCHI, f1_chi_RSD_ar, nl);
+		f_chi_for_Psi_cl_Mag(chi_ar, NCHI, f1_chi_Mag_ar, nl);
 		// for(j=0;j<Nchi;j++) {
 		// 	f1_chi_ar[j] += f1_chi_Mag_ar[j];
 		// }
@@ -559,14 +558,14 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		// galaxy density part
-		cfftlog_ells(chi_ar, f1_chi_ar, Nchi, &my_config, ell_ar, Nell_block, k1_ar, Fk1_ar);
-		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, Nchi, &my_config_RSD, ell_ar, Nell_block, k1_ar, Fk1_ar);
+		cfftlog_ells(chi_ar, f1_chi_ar, NCHI, &my_config, ell_ar, NELL_BLOCK, k1_ar, Fk1_ar);
+		cfftlog_ells_increment(chi_ar, f1_chi_RSD_ar, NCHI, &my_config_RSD, ell_ar, NELL_BLOCK, k1_ar, Fk1_ar);
 
 		// Add in lensing magnification contribution
-		cfftlog_ells(chi_ar, f1_chi_Mag_ar, Nchi, &my_config_Mag, ell_ar, Nell_block, k1_ar, Fk1_Mag_ar);
-		for(i=0;i<Nell_block;i++) {
+		cfftlog_ells(chi_ar, f1_chi_Mag_ar, NCHI, &my_config_Mag, ell_ar, NELL_BLOCK, k1_ar, Fk1_Mag_ar);
+		for(i=0;i<NELL_BLOCK;i++) {
 			ell_prefactor = ell_ar[i]*(ell_ar[i]+1);
-			for(j=0;j<Nchi;j++) {
+			for(j=0;j<NCHI;j++) {
 				Fk1_ar[i][j]+= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j])* (gbias.b_mag[nl]) * Fk1_Mag_ar[i][j]);
 				// printf("Fk1: %d,%d, %lg\n", i,j, Fk1_ar[i][j]);
 				S_integrands_cl[nl][i][j] = Fk1_ar[i][j];
@@ -576,9 +575,9 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	}
 
 	if(S_integrands_sh_flag[ns]) {
-		for(i=0;i<Nell_block;i++) {
-			for(j=0;j<Nchi;j++) {
-				k2_ar[i][j] = (i+1.)/chi_ar[Nchi-1-j];
+		for(i=0;i<NELL_BLOCK;i++) {
+			for(j=0;j<NCHI;j++) {
+				k2_ar[i][j] = (i+1.)/chi_ar[NCHI-1-j];
 				Fk2_ar[i][j] = S_integrands_sh[ns][i][j];
 			}
 		}
@@ -593,24 +592,24 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		my_config_L.N_extrap_low = 0;
 		my_config_L.N_extrap_high = 0;
 
-		f_chi_for_Psi_sh(chi_ar, Nchi, f2_chi_ar, ns);
+		f_chi_for_Psi_sh(chi_ar, NCHI, f2_chi_ar, ns);
 
 		// turn on IA
 		if (like.IA ==3 || like.IA ==4) {
-			f_chi_for_Psi_sh_IA(chi_ar, Nchi, f2_chi_IA_ar, ns);
-			for(i=0;i<Nchi;i++) {
+			f_chi_for_Psi_sh_IA(chi_ar, NCHI, f2_chi_IA_ar, ns);
+			for(i=0;i<NCHI;i++) {
 				f2_chi_ar[i] += f2_chi_IA_ar[i];
 			}
 		}
 
-		cfftlog_ells(chi_ar, f2_chi_ar, Nchi, &my_config_L, ell_ar, Nell_block, k2_ar, Fk2_ar);	
+		cfftlog_ells(chi_ar, f2_chi_ar, NCHI, &my_config_L, ell_ar, NELL_BLOCK, k2_ar, Fk2_ar);
 
-		for(i=0;i<Nell_block;i++) {
+		for(i=0;i<NELL_BLOCK;i++) {
 			ell_prefactor2 =(ell_ar[i]-1.)*ell_ar[i]*(ell_ar[i]+1.)*(ell_ar[i]+2.);
 			if(ell_prefactor2<=0.) {ell_prefactor2=0.;}
 			else {ell_prefactor2 = sqrt(ell_prefactor2);}
 
-			for(j=0;j<Nchi;j++) {
+			for(j=0;j<NCHI;j++) {
 				// printf("preFk2: %d,%d, %lg,%d, %lg,%lg\n", i,j, Fk2_ar[i][j], ell_ar[i],ell_prefactor2,k2_ar[i][j]);
 				// Fk2_ar[i][j] = -Fk2_ar[i][j]+f2_chi_ar[0]*sqrt(M_PI)/4.* exp(lngamma_lanczos_real(ell_ar[i]/2.)-lngamma_lanczos_real((ell_ar[i]+3.)/2.));
 				Fk2_ar[i][j]*= (ell_prefactor2 / (k1_ar[i][j]*k1_ar[i][j]));
@@ -635,9 +634,9 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		C_gl_tomo_pointer = &C_gl_tomo;
 	}
 
-	for(i=0;i<Nell_block;i++) {
+	for(i=0;i<NELL_BLOCK;i++) {
 		cl_temp = 0.;
-		for(j=0;j<Nchi;j++) {
+		for(j=0;j<NCHI;j++) {
 			// printf("k,Fk: %d,%d, %lf,%lf\n", i,j, k1_ar[i][j], Fk1_ar[i][j]);
 			k1_cH0 = k1_ar[i][j] * real_coverH0;
 			cl_temp += (Fk1_ar[i][j])*(Fk2_ar[i][j]) *k1_cH0*k1_cH0*k1_cH0 *p_lin(k1_cH0,1.0)*G_taper(k1_cH0);
@@ -653,8 +652,8 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	}
 
 	i_block++;
-	L = i_block*Nell_block -1 ;
-	dev = Cl[L]/C_gl_tomo_nointerp(1.0*L,nl,ns)-1.;
+	L = i_block*NELL_BLOCK - 1;
+	dev = Cl[L] / C_gl_tomo_nointerp_pointer(1.0*L, nl, ns) - 1.;
 	// dev = Cl[L]/C_ggl_IA_tab(1.0*L,nl,ns)-1.;
 
  //   printf("ni,L,Cl[L],dev=%d %d %e %e\n",ni,L,Cl[L],dev);
@@ -674,7 +673,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		// Cl[l]=C_ggl_IA_tab((double)l,nl,ns);
 	}
 	// printf("finished bin %d %d\n", nl,ns);
-	for(i=0;i<Nell_block;i++) {
+	for(i=0;i<NELL_BLOCK;i++) {
 		free(k1_ar[i]);free(k2_ar[i]);
 		free(Fk1_ar[i]);free(Fk2_ar[i]);
 		free(Fk1_Mag_ar[i]);
