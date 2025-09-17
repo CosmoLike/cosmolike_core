@@ -720,7 +720,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 		for(i=0;i<NELL_BLOCK;i++) {
 			ell_prefactor = ell_ar[i]*(ell_ar[i]+1);
 			for(j=0;j<NCHI;j++) {
-				Fk1_ar[i][j]+= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j]* (gbias.b_mag[nl]) * Fk1_Mag_ar[i][j]));
+				Fk1_ar[i][j]+= (ell_prefactor / (k1_ar[i][j]*k1_ar[i][j]) * (gbias.b_mag[nl]) * Fk1_Mag_ar[i][j]);
 				// printf("Fk1: %d,%d, %lg\n", i,j, Fk1_ar[i][j]);
 			}
 		}
@@ -823,6 +823,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	free(k1_ar);free(k2_ar);
 	free(Fk1_ar);free(Fk2_ar);
 	free(Fk1_Mag_ar);
+	printf("Finished computing C_l for (n_l,n_s)=(%d,%d)\n", nl, ns);
 	// fclose(OUT);
 	// exit(0);
 }
