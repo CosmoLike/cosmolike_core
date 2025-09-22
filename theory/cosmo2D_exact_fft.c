@@ -709,6 +709,11 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 	// exit(0);
 
 	while (fabs(dev) > tolerance){
+		// break before memory leak in next iteration
+		if(i_block * NELL_BLOCK >= LMAX){
+			printf("C_gl_mixed reached LMAX (i_block=%d)\n", i_block);
+			break;
+		}
 		//Cl[L] = C_cl_RSD(L,nz,nz);
 		for(i=0;i<NELL_BLOCK;i++) {ell_ar[i]=i+i_block*NELL_BLOCK;}
 		// galaxy density part
@@ -774,12 +779,7 @@ void C_gl_mixed(int L, int LMAX, int nl, int ns, double *Cl, double dev, double 
 
 		i_block++;
 
-		if (L >= LMAX - NELL_BLOCK){ // break before mememory leak in next iteration
-			printf("L>LMAX\n");
-			break;
-		}
 		L = i_block*NELL_BLOCK -1 ;
-
 		/* add to account for no IA (20250807) */
 		if (like.IA == 0){
 			dev = Cl[L]/C_gl_tomo_nointerp(1.0*L,nl,ns) - 1.;
