@@ -431,10 +431,13 @@ double LD_term(double k)
       dlogk = (logkmax - logkmin)/(Ntable.N_k_nlin);
     }
     klog = logkmin;
+    FILE *F1 = fopen("/Users/yhhuang/code/cosmology/CosmoLike/3Dx2D/test_LSST/table_LD", "w");
     for (i=0; i<Ntable.N_k_nlin; i++, klog += dlogk) {
-      gsl_deriv_central (&F,klog, 0.1*klog, &result, &abserr);
+      gsl_deriv_central (&F,klog, 0.01*klog, &result, &abserr);
       table_LD[i]=(result/3.+1.);
+      fprintf(F1, "%le %le\n", exp(klog)/cosmology.coverH0, table_LD[i]);
     }
+    fclose(F1);
   }
   return -interpol(table_LD, Ntable.N_k_nlin, logkmin, logkmax, dlogk,log(k), 1.0,1.0);
 }
