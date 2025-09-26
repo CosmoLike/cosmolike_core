@@ -471,12 +471,12 @@ typedef struct input_HOD_params {
 } input_HOD_params;
 
 typedef struct input_nuisance_params {
-    double bias[10];
-    double source_z_bias[10];
+    double bias[MAX_TOMO_BINS];
+    double source_z_bias[MAX_TOMO_BINS];
     double source_z_s;
-    double lens_z_bias[10];
+    double lens_z_bias[MAX_TOMO_BINS];
     double lens_z_s;
-    double shear_m[10];
+    double shear_m[MAX_TOMO_BINS];
     double A_ia;
     double beta_ia;
     double eta_ia;
@@ -485,7 +485,7 @@ typedef struct input_nuisance_params {
     double m_lambda[6];
     double cluster_c[4];
     double bary[3];
-    double b_mag[10];
+    double b_mag[MAX_TOMO_BINS];
 } input_nuisance_params;
 
 typedef struct input_nuisance_params_grs {
