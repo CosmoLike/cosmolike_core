@@ -417,7 +417,6 @@ double LD_term(double k)
   static double dlogk = .0, logkmin = 1.0,logkmax = 1.0;
   if (recompute_cosmo3D(C)){
     update_cosmopara(&C);
-    double klog, abserr,result;
     int i;
     
     gsl_function F;    
@@ -430,14 +429,6 @@ double LD_term(double k)
       logkmax = log(limits.k_max_cH0);
       dlogk = (logkmax - logkmin)/(Ntable.N_k_nlin);
     }
-    klog = logkmin;
-    FILE *F1 = fopen("/Users/yhhuang/code/cosmology/CosmoLike/3Dx2D/test_LSST/table_LD", "w");
-    for (i=0; i<Ntable.N_k_nlin; i++, klog += dlogk) {
-      gsl_deriv_central (&F,klog, 0.01*klog, &result, &abserr);
-      table_LD[i]=(result/3.+1.);
-      fprintf(F1, "%le %le\n", exp(klog)/cosmology.coverH0, table_LD[i]);
-    }
-    fclose(F1);
   }
   return -interpol(table_LD, Ntable.N_k_nlin, logkmin, logkmax, dlogk,log(k), 1.0,1.0);
 }
