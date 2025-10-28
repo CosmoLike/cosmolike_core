@@ -34,6 +34,10 @@
 #define onuhh_max_emu 0.01
 #define onuhh_min_emu -0.000000001 //slighyl smaller than 0 since problems otherwise if Omega_nu=0.0
 
+/* for updating baryonic feedback */
+static volatile unsigned long PKR_epoch = 1UL;
+void reset_PkRatio_baryons();
+
 //void omega_a(double aa,double *om_m,double *om_v);
 double omv_vareos(double a);
 static inline double hoverh0(double a);
@@ -1374,6 +1378,9 @@ return exp(val);
   // returns the dimensionless power spectrum as a function of scale factor a and k in units of h/Mpc
 }
 
+void reset_PkRatio_baryons(){
+  PKR_epoch++;
+}
 
 double PkRatio_baryons(double kintern,double a){
 	// return P(k)_bary/P(k)_DMO from hydro sims ; kintern in unit [h/Mpc]
@@ -1389,9 +1396,11 @@ double PkRatio_baryons(double kintern,double a){
 
   if (bary.isPkbary == 0) return 1. ;
 
+  static unsigned long my_epoch = 0UL;
   static double *GSLPKR = 0;
   static gsl_interp2d *interp2d = 0;
-	if (recompute_PkRatio(B) && GSLPKR == 0){
+  
+	if (recompute_PkRatio(B) && (GSLPKR == 0 || my_epoch != PKR_epoch)) {
 
     const gsl_interp2d_type *T = gsl_interp2d_bilinear;
     interp2d = gsl_interp2d_alloc (T, bary.Nkbins, bary.Nabins);
