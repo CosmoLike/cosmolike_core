@@ -415,6 +415,7 @@ double LD_term(double k)
   
   static double *table_LD;
   static double dlogk = .0, logkmin = 1.0,logkmax = 1.0;
+  double klog, abserr, result;
   if (recompute_cosmo3D(C)){
     update_cosmopara(&C);
     int i;
@@ -428,6 +429,11 @@ double LD_term(double k)
       logkmin = log(limits.k_min_cH0);
       logkmax = log(limits.k_max_cH0);
       dlogk = (logkmax - logkmin)/(Ntable.N_k_nlin);
+    }
+    klog = logkmin;
+    for (i=0; i<Ntable.N_k_nlin; i++, klog += dlogk) {
+      gsl_deriv_central (&F,klog, 0.1*klog, &result, &abserr);
+      table_LD[i] = (result/3. + 1.);
     }
   }
   return -interpol(table_LD, Ntable.N_k_nlin, logkmin, logkmax, dlogk,log(k), 1.0,1.0);
