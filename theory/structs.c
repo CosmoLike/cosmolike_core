@@ -169,7 +169,8 @@ double b1_per_bin(double z, int nz);
 
 typedef  double (*B1_model)(double z, int nz);
 typedef struct{
-  double b[MAX_TOMO_BINS]; /* linear galaxy bias paramter in clustering bin i*/
+  // double b[MAX_TOMO_BINS]; /* linear galaxy bias paramter in clustering bin i*/
+  double b[2]; /* linear bias for linear redshift evolution */
   double b2[MAX_TOMO_BINS]; /* quadratic bias parameter for redshift bin i */
   double bs2[MAX_TOMO_BINS]; /* leading order tidal bias for redshift bin i */
   double rcorr[10];

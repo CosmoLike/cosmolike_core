@@ -3,6 +3,7 @@ double b1_per_bin(double z, int ni); //model b1 using one non-evoling parameter 
 double b1_per_bin_evolv(double z, int ni); //model b1 using one parameter per redshift bin, power-law evolution within each bin
 double b1_per_bin_pass_evolv(double z, int ni); //model b1 using one parameter per redshift bin + passive evolution
 double b1_growth_scaling(double z, int ni); //model b1 assuming b1(z) = b_{1,0}*G(z)
+double b1_linear(double z, int ni); //model b1 using a linear function of redshift, with two parameters (amplitude and slope)
 double bgal_z(double z, int ni); //bias evolution within redshift bin, used by clustering/G-G-lensing routines without HOD modeling
 
 double b2_from_b1(double b1); //fitting function for b_2(b_1)
@@ -58,8 +59,11 @@ double b1_per_bin_pass_evolv(double z, int ni){
 double b1_growth_scaling(double z, int ni){
   return gbias.b[0]/(growfac (1./(z+1.))/growfac (1.));
 }
-double b1_powerlaw(double z, int ni){
+double b1_powerlaw(double z, int ni){ // ni is dummpy
   return gbias.b[0]*pow(1+z,gbias.b[1]);
+}
+double b1_linear(double z, int ni){ // ni is dummpy 
+  return gbias.b[0]*z + gbias.b[1];
 }
 double bgal_z(double z, int ni){ //bias evolution within redshift bin, used by clustering/G-G-lensing routines without HOD modeling
   //change this into desired redshift evolution as function of (z, z_pivot = gbias[ni][1]), with z_evolv(z_pivot) =1
