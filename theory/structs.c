@@ -472,7 +472,7 @@ typedef struct input_HOD_params {
 } input_HOD_params;
 
 typedef struct input_nuisance_params {
-    double bias[MAX_TOMO_BINS];
+    double bias[2];
     double source_z_bias[MAX_TOMO_BINS];
     double source_z_s;
     double lens_z_bias[MAX_TOMO_BINS];
