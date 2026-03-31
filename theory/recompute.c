@@ -52,18 +52,25 @@ void update_cosmopara (cosmopara *C){
 
 void update_galpara (galpara *G){
   int i,j;
-  for (i = 0; i < tomo.clustering_Nbin; i++){
-    if ((gbias.hod[i][0] > 10 && gbias.hod[i][0]<16) || (gbias.b[i]> 0.2 && gbias.b[i] < 20)){
-      G->b[i] = gbias.b[i];
-      G->b2[i] = gbias.b2[i];
-      G->bs2[i] = gbias.bs2[i];
-      for(j = 0; j < 6; j++){
-        G->hod[i][j] = gbias.hod[i][j];
-      }
-      G->cg[i]= gbias.cg[i];
-    }
-    else{ printf("lens bin %d: neither HOD nor linear bias set, exit\n",i); exit(EXIT_FAILURE);}
-  }
+  // for (i = 0; i < tomo.clustering_Nbin; i++){
+  //   if ((gbias.hod[i][0] > 10 && gbias.hod[i][0]<16) || (gbias.b[i]> 0.2 && gbias.b[i] < 20)){
+  //     // G->b[i] = gbias.b[i];
+  //     G->b2[i] = gbias.b2[i];
+  //     G->bs2[i] = gbias.bs2[i];
+  //     for(j = 0; j < 6; j++){
+  //       G->hod[i][j] = gbias.hod[i][j];
+  //     }
+  //     G->cg[i]= gbias.cg[i];
+  //   }
+  //   else{ 
+  //     printf("%f\n", gbias.hod[i][0]);
+  //     printf("lens bin %d: neither HOD nor linear bias set, exit\n",i); 
+  //     exit(EXIT_FAILURE);
+  //   }
+  // }
+  // for linear z evolution
+  G->b[0] = gbias.b[0];
+  G->b[1] = gbias.b[1];
 }
 
 void update_nuisance (nuisancepara *N){
