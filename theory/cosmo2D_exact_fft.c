@@ -278,6 +278,7 @@ void C_cl_mixed(int L, int LMAX, int ni, int nj, double *Cl, double dev, double 
 		dev = Cl[L] / C_cl_tomo_nointerp((double)L, ni, nj) - 1.;
 	}
 	L++;
+	printf("Switching to Limber at l=%d, dev=%lg\n", L, dev);
 	for (l = L; l < LMAX; l++){
 		Cl[l]=C_cl_tomo((double)l,ni,nj);
 	}
