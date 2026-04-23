@@ -2,15 +2,17 @@
 #Julien Lesgourgues, 28.11.2011
 
 MDIR := $(shell pwd)
-WRKDIR = $(MDIR)/build
+WRKDIR ?= $(MDIR)/build
+CLASS_LIB ?= $(MDIR)/libclass.a
+BASEFILE := $(WRKDIR)/.base
+.DEFAULT_GOAL := all
 
-.base:
-	if ! [ -e $(WRKDIR) ]; then mkdir $(WRKDIR) ; mkdir $(WRKDIR)/lib; fi;
-	touch build/.base
+$(BASEFILE):
+	mkdir -p $(WRKDIR) $(dir $(CLASS_LIB))
+	touch $@
 
 vpath %.c source:tools:main:test
-vpath %.o build
-vpath .base build
+vpath %.o $(WRKDIR)
 
 ########################################################
 ###### LINES TO ADAPT TO YOUR PLATEFORM ################
@@ -77,7 +79,7 @@ INCLUDES += -I../hyrec
 EXTERNAL += hyrectools.o helium.o hydrogen.o history.o
 endif
 
-%.o:  %.c .base
+%.o:  %.c $(BASEFILE)
 	cd $(WRKDIR);$(CC) $(OPTFLAG) $(OMPFLAG) $(CCFLAG) $(INCLUDES) -c ../$< -o $*.o
 
 TOOLS = growTable.o dei_rkck.o sparse.o evolver_rkck.o  evolver_ndf15.o arrays.o parser.o quadrature.o hyperspherical.o common.o
@@ -144,60 +146,60 @@ PYTHON_FILES = python/classy.pyx python/setup.py python/cclassy.pxd python/test_
 
 
 
-all: libclass.a
+all: $(CLASS_LIB)
 #all: class
 	
-# libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
-# 	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
+# $(CLASS_LIB): $(TOOLS) $(SOURCE) $(EXTERNAL)
+# 	$(AR)  $@ $(addprefix $(WRKDIR)/, $(TOOLS) $(SOURCE) $(EXTERNAL))
 
-libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
-	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
+$(CLASS_LIB): $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
+	$(AR)  $@ $(addprefix $(WRKDIR)/, $(TOOLS) $(SOURCE) $(EXTERNAL))
 
 class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o class $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o class $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_sigma: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(TEST_SIGMA)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o test_sigma $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o test_sigma $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_loops: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(TEST_LOOPS)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o $@ $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_loops_omp: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(TEST_LOOPS_OMP)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o $@ $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_stephane: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(TEST_STEPHANE)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o $@ $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_degeneracy: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(TEST_DEGENERACY)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o $@ $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_transfer: $(TOOLS) $(SOURCE) $(EXTERNAL) $(TEST_TRANSFER)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_nonlinear: $(TOOLS) $(SOURCE) $(EXTERNAL) $(TEST_NONLINEAR)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_perturbations: $(TOOLS) $(SOURCE) $(EXTERNAL) $(TEST_PERTURBATIONS)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_thermodynamics: $(TOOLS) $(SOURCE) $(EXTERNAL) $(TEST_THERMODYNAMICS)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_background: $(TOOLS) $(SOURCE) $(EXTERNAL) $(TEST_BACKGROUND)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o  $@ $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 test_hyperspherical: $(TOOLS) $(TEST_HYPERSPHERICAL)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o test_hyperspherical $(addprefix build/,$(notdir $^)) -lm
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o test_hyperspherical $(addprefix $(WRKDIR)/,$(notdir $^)) -lm
 
 
 tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 	tar czvf class.tar.gz $(C_ALL) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 
-classy: libclass.a python/classy.pyx python/cclassy.pxd
+classy: $(CLASS_LIB) python/classy.pyx python/cclassy.pxd
 	cd python; export CC=$(CC); $(PYTHON) setup.py install $(PYTHONFLAGS)
 
-clean: .base
+clean: $(BASEFILE)
 	rm -rf $(WRKDIR);
-	rm -f libclass.a
+	rm -f $(CLASS_LIB)
 	rm -f $(MDIR)/python/classy.c
 	rm -rf $(MDIR)/python/build
