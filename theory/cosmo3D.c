@@ -495,6 +495,11 @@ void free_class_structs(
   if (background_free(ba) == _FAILURE_) {
     printf("\n\nError in background_free \n=>%s\n",ba->error_message);
   }
+#if defined(CLASS_V33)
+  if (distortions_free(sd) == _FAILURE_) {
+    printf("\n\nError in distortions_free \n=>%s\n",sd->error_message);
+  }
+#endif
 }
 
 #if defined(CLASS_V33)
