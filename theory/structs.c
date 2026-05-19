@@ -205,8 +205,9 @@ typedef struct {
   char baryons[300];
   double DIFF_n; //difference fucntion describing the constant uncertainty in Pdelta for k>0.01
   double DIFF_A; //difference fucntion describing the scale dependent uncertainty in Pdelta for k>0.01
+  double t_agn;  // log10T_heat_hmcode for HMcode2020_baryonic_feedback (0 = use CLASS default)
 }pdeltapara;
-pdeltapara pdeltaparams = {.runmode = "Halofit", .DIFF_n = 0., .DIFF_A = 0.};
+pdeltapara pdeltaparams = {.runmode = "Halofit", .DIFF_n = 0., .DIFF_A = 0., .t_agn = 0.};
 
 
 typedef struct {
