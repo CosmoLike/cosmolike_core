@@ -2,15 +2,50 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#ifndef CLASS_V29
+/*#ifndef CLASS_V29
   #include "../class/include/class.h"
 #else
   #include "../class_v29/include/class.h"
+#endif*/
+#if defined(CLASS_V29)
+  #include "../class_v29/include/class.h"
+#elif defined(CLASS_V33)
+  #include "../class_v33/include/class.h"
+#else
+  #include "../class/include/class.h"
 #endif
 #include <gsl/gsl_odeiv.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_errno.h>
+
+/* CLASS version compatibility: struct typedefs and function name aliases */
+#if defined(CLASS_V33)
+  typedef struct thermodynamics CLASS_thermo_t;
+  typedef struct perturbations  CLASS_perturbs_t;
+  typedef struct fourier        CLASS_nl_t;
+  typedef struct harmonic       CLASS_sp_t;
+  typedef struct transfer       CLASS_tr_t;
+  typedef struct distortions    CLASS_sd_t;
+  #define class_perturb_init    perturbations_init
+  #define class_perturb_free    perturbations_free
+  #define class_nl_init         fourier_init
+  #define class_nl_free         fourier_free
+  #define class_sp_init         harmonic_init
+  #define class_sp_free         harmonic_free
+#else
+  typedef struct thermo         CLASS_thermo_t;
+  typedef struct perturbs       CLASS_perturbs_t;
+  typedef struct nonlinear      CLASS_nl_t;
+  typedef struct spectra        CLASS_sp_t;
+  typedef struct transfers      CLASS_tr_t;
+  #define class_perturb_init    perturb_init
+  #define class_perturb_free    perturb_free
+  #define class_nl_init         nonlinear_init
+  #define class_nl_free         nonlinear_free
+  #define class_sp_init         spectra_init
+  #define class_sp_free         spectra_free
+#endif
 
 
 //===
@@ -407,37 +442,50 @@ double Delta_L_wiggle(double k)
 //   val = interpol2d(table_P_Lz, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_lin, logkmin, logkmax, dk, klog, cosmology.n_spec, 0.0);
 //   return exp(val);
 // }
+#if defined(CLASS_V33)
 void free_class_structs(
  struct background *ba,
- struct thermo *th,
- struct perturbs *pt,
- struct transfers *tr,
+ CLASS_thermo_t *th,
+ CLASS_perturbs_t *pt,
+ CLASS_tr_t *tr,
  struct primordial *pm,
- struct spectra *sp,
- struct nonlinear *nl,
+ CLASS_sp_t *sp,
+ CLASS_nl_t *nl,
+ struct lensing *le,
+ CLASS_sd_t *sd){
+#else
+void free_class_structs(
+ struct background *ba,
+ CLASS_thermo_t *th,
+ CLASS_perturbs_t *pt,
+ CLASS_tr_t *tr,
+ struct primordial *pm,
+ CLASS_sp_t *sp,
+ CLASS_nl_t *nl,
  struct lensing *le){
+#endif
   if (lensing_free(le) == _FAILURE_) {
     printf("\n\nError in lensing_free \n=>%s\n",le->error_message);
   }
 
-  if (spectra_free(sp) == _FAILURE_) {
-    printf("\n\nError in spectra_free \n=>%s\n",sp->error_message);
+  if (class_sp_free(sp) == _FAILURE_) {
+    printf("\n\nError in spectra/harmonic_free \n=>%s\n",sp->error_message);
   }
 
   if (transfer_free(tr) == _FAILURE_) {
     printf("\n\nError in transfer_free \n=>%s\n",tr->error_message);
   }
 
-  if (nonlinear_free(nl) == _FAILURE_) {
-    printf("\n\nError in nonlinear_free \n=>%s\n",nl->error_message);
+  if (class_nl_free(nl) == _FAILURE_) {
+    printf("\n\nError in nonlinear/fourier_free \n=>%s\n",nl->error_message);
   }
 
   if (primordial_free(pm) == _FAILURE_) {
     printf("\n\nError in primordial_free \n=>%s\n",pm->error_message);
   }
 
-  if (perturb_free(pt) == _FAILURE_) {
-    printf("\n\nError in perturb_free \n=>%s\n",pt->error_message);
+  if (class_perturb_free(pt) == _FAILURE_) {
+    printf("\n\nError in perturb/perturbations_free \n=>%s\n",pt->error_message);
   }
 
   if (thermodynamics_free(th) == _FAILURE_) {
@@ -449,21 +497,39 @@ void free_class_structs(
   }
 }
 
+#if defined(CLASS_V33)
 int run_class(
   struct file_content *fc,
   struct background *ba,
-  struct thermo *th,
-  struct perturbs *pt,
-  struct transfers *tr,
+  CLASS_thermo_t *th,
+  CLASS_perturbs_t *pt,
+  CLASS_tr_t *tr,
   struct primordial *pm,
-  struct spectra *sp,
-  struct nonlinear *nl,
+  CLASS_sp_t *sp,
+  CLASS_nl_t *nl,
+  struct lensing *le,
+  CLASS_sd_t *sd){
+#else
+int run_class(
+  struct file_content *fc,
+  struct background *ba,
+  CLASS_thermo_t *th,
+  CLASS_perturbs_t *pt,
+  CLASS_tr_t *tr,
+  struct primordial *pm,
+  CLASS_sp_t *sp,
+  CLASS_nl_t *nl,
   struct lensing *le){
+#endif
   struct precision pr;        // for precision parameters
   struct output op;           /* for output files */
   ErrorMsg errmsg; // for error messages
 
+#if defined(CLASS_V33)
+  if(input_read_from_file(fc,&pr,ba,th,pt,tr,pm,sp,nl,le,sd,&op,errmsg) == _FAILURE_) {
+#else
   if(input_init(fc,&pr,ba,th,pt,tr,pm,sp,nl,le,&op,errmsg) == _FAILURE_) {
+#endif
     fprintf(stderr,"cosmo3D.c: Error running CLASS input:%s\n",errmsg);
     parser_free(fc);
     return 1;
@@ -481,7 +547,7 @@ int run_class(
   cosmology.h0 = ba->h;
 //    printf("theta_* = %.5f\n",cosmology.theta_s);
 //    printf("h_CLASS = %.3f\n\n", ba->h);
-  if (perturb_init(&pr,ba,th,pt) == _FAILURE_) {
+  if (class_perturb_init(&pr,ba,th,pt) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS perturb:%s\n",pt->error_message);
     thermodynamics_free(th);
     background_free(ba);
@@ -489,16 +555,16 @@ int run_class(
   }
   if (primordial_init(&pr,pt,pm) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS primordial:%s\n",pm->error_message);
-    perturb_free(pt);
+    class_perturb_free(pt);
     thermodynamics_free(th);
     background_free(ba);
     return 1;
   }
 
-  if (nonlinear_init(&pr,ba,th,pt,pm,nl) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS nonlinear:%s\n",nl->error_message);
+  if (class_nl_init(&pr,ba,th,pt,pm,nl) == _FAILURE_) {
+    fprintf(stderr,"cosmo3D.c: Error running CLASS nonlinear/fourier:%s\n",nl->error_message);
     primordial_free(pm);
-    perturb_free(pt);
+    class_perturb_free(pt);
     thermodynamics_free(th);
     background_free(ba);
     return 1;
@@ -506,82 +572,103 @@ int run_class(
 
   if (transfer_init(&pr,ba,th,pt,nl,tr) == _FAILURE_) {
     fprintf(stderr,"cosmo3D.c: Error running CLASS transfer:%s\n",tr->error_message);
-    nonlinear_free(nl);
+    class_nl_free(nl);
     primordial_free(pm);
-    perturb_free(pt);
+    class_perturb_free(pt);
     thermodynamics_free(th);
     background_free(ba);
     return 1;
   }
-  if (spectra_init(&pr,ba,pt,pm,nl,tr,sp) == _FAILURE_) {
-    fprintf(stderr,"cosmo3D.c: Error running CLASS spectra:%s\n",sp->error_message);
+  if (class_sp_init(&pr,ba,pt,pm,nl,tr,sp) == _FAILURE_) {
+    fprintf(stderr,"cosmo3D.c: Error running CLASS spectra/harmonic:%s\n",sp->error_message);
     transfer_free(tr);
-    nonlinear_free(nl);
+    class_nl_free(nl);
     primordial_free(pm);
-    perturb_free(pt);
+    class_perturb_free(pt);
     thermodynamics_free(th);
     background_free(ba);
     return 1;
   }
   return 0;
 }
-double CLASS_sigma8(struct spectra *sp, struct nonlinear *nl){
-  #ifndef CLASS_V29
-    return sp->sigma8;
+double CLASS_sigma8(CLASS_sp_t *sp, CLASS_nl_t *nl){
+  #if defined(CLASS_V33)
+    return *nl->sigma8;
   #else
-    return  *nl->sigma8;
+    #ifndef CLASS_V29
+      return sp->sigma8;
+    #else
+      return *nl->sigma8;
+    #endif
   #endif
 }
 double get_class_s8(struct file_content *fc, int *status){
 //structures for class test run
     struct background ba;       // for cosmological background
-    struct thermo th;           // for thermodynamics
-    struct perturbs pt;         // for source functions
-    struct transfers tr;        // for transfer functions
+    CLASS_thermo_t th;          // for thermodynamics
+    CLASS_perturbs_t pt;        // for source functions
+    CLASS_tr_t tr;              // for transfer functions
     struct primordial pm;       // for primordial spectra
-    struct spectra sp;          // for output spectra
-    struct nonlinear nl;        // for non-linear spectra
+    CLASS_sp_t sp;              // for output spectra
+    CLASS_nl_t nl;              // for non-linear spectra
     struct lensing le;
+  #if defined(CLASS_V33)
+    CLASS_sd_t sd;              // for spectral distortions (v33 only)
+  #endif
 
   //temporarily overwrite P_k_max_1/Mpc to speed up sigma_8 calculation
     double k_max_old = 0.;
     int position_kmax =2;
     double A_s_guess;
+#if defined(CLASS_V33)
+    strcpy(fc->name[1],"non_linear");
+#else
     strcpy(fc->name[1],"non linear");
+#endif
     strcpy(fc->value[1],"none");
     if (strcmp(fc->name[position_kmax],"P_k_max_1/Mpc")){
       k_max_old = strtof(fc->value[position_kmax],NULL);
       sprintf(fc->value[position_kmax],"%e",10.);
     }
+  double s8 = 0.;
+  #if defined(CLASS_V33)
+    *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&sd);
+    s8 = CLASS_sigma8(&sp,&nl);
+    if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&sd);
+  #else
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+    s8 = CLASS_sigma8(&sp,&nl);
     if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+  #endif
     if (k_max_old >0){
       sprintf(fc->value[position_kmax],"%e",k_max_old);
     }
-    return CLASS_sigma8(&sp,&nl);
-/*    #ifndef CLASS_V29
-      return sp.sigma8;
-    #else
-      return  *nl.sigma8;
-    #endif*/
+    return s8;
   }
 
   double get_class_As(struct file_content *fc, int position_As,double sigma8, int *status){
 //structures for class test run
     struct background ba;       // for cosmological background
-    struct thermo th;           // for thermodynamics
-    struct perturbs pt;         // for source functions
-    struct transfers tr;        // for transfer functions
+    CLASS_thermo_t th;          // for thermodynamics
+    CLASS_perturbs_t pt;        // for source functions
+    CLASS_tr_t tr;              // for transfer functions
     struct primordial pm;       // for primordial spectra
-    struct spectra sp;          // for output spectra
-    struct nonlinear nl;        // for non-linear spectra
+    CLASS_sp_t sp;              // for output spectra
+    CLASS_nl_t nl;              // for non-linear spectra
     struct lensing le;
+  #if defined(CLASS_V33)
+    CLASS_sd_t sd;              // for spectral distortions (v33 only)
+  #endif
 
   //temporarily overwrite P_k_max_1/Mpc to speed up sigma_8 calculation
     double k_max_old = 0.;
     int position_kmax =2;
     double A_s_guess;
+#if defined(CLASS_V33)
+    strcpy(fc->name[1],"non_linear");
+#else
     strcpy(fc->name[1],"non linear");
+#endif
     strcpy(fc->value[1],"none");
     if (strcmp(fc->name[position_kmax],"P_k_max_1/Mpc")){
       k_max_old = strtof(fc->value[position_kmax],NULL);
@@ -591,6 +678,17 @@ double get_class_s8(struct file_content *fc, int *status){
     printf("A_s_guess=%e\n",A_s_guess);
     sprintf(fc->value[position_As],"%e",A_s_guess);
 
+  #if defined(CLASS_V33)
+    *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&sd);
+    A_s_guess*=pow(sigma8/CLASS_sigma8(&sp,&nl),2.);
+    printf("A_s_guess=%e\n",A_s_guess);
+    if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&sd);
+    sprintf(fc->value[position_As],"%e",A_s_guess);
+    *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&sd);
+    A_s_guess*=pow(sigma8/CLASS_sigma8(&sp,&nl),2.);
+    printf("A_s_guess=%e\n",A_s_guess);
+    if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&sd);
+  #else
     *status = run_class(fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
     A_s_guess*=pow(sigma8/CLASS_sigma8(&sp,&nl),2.);
     printf("A_s_guess=%e\n",A_s_guess);
@@ -599,6 +697,7 @@ double get_class_s8(struct file_content *fc, int *status){
     A_s_guess*=pow(sigma8/CLASS_sigma8(&sp,&nl),2.);
     printf("A_s_guess=%e\n",A_s_guess);
     if (*status ==0) free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+  #endif
 
     if (k_max_old >0){
       sprintf(fc->value[position_kmax],"%e",k_max_old);
@@ -693,9 +792,42 @@ int fill_class_parameters(struct file_content * fc,int parser_length){
     cosmology.A_s = A_s;
     printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
   }
+  // validate t_agn: only supported by HMcode2020_baryonic_feedback
+  if (pdeltaparams.t_agn > 0.) {
+    int is_halofit = (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0);
+    int supports_tagn = (strstr(pdeltaparams.runmode,"2020_baryonic_feedback") != NULL);
+    if (is_halofit || !supports_tagn) {
+      fprintf(stderr,"cosmo3D_v33: t_agn (log10T_heat_hmcode=%.4f) specified but runmode '%s' "
+              "does not support it.\nOnly HMcode2020_baryonic_feedback accepts t_agn.\n",
+              pdeltaparams.t_agn, pdeltaparams.runmode);
+      exit(1);
+    }
+  }
+
+#if defined(CLASS_V33)
+  strcpy(fc->name[1],"non_linear");
+#else
   strcpy(fc->name[1],"non linear");
-  strcpy(fc->value[1],"Halofit"); //to use Halofit within CLASS  HMcode
-//  strcpy(fc->value[1],"HMcode"); //to use HMCode within CLASS (only for >=v2.9)
+#endif
+  if (strcmp(pdeltaparams.runmode,"CLASS")==0 || strcmp(pdeltaparams.runmode,"class")==0) {
+    strcpy(fc->value[1],"halofit");
+  } else {
+    // HMCode variant: pass hmcode to CLASS and set hmcode_version from runmode string
+    strcpy(fc->value[1],"hmcode");
+    strcpy(fc->name[9],"hmcode_version");
+    if (strstr(pdeltaparams.runmode,"2020_baryonic_feedback") != NULL) {
+      strcpy(fc->value[9],"2020_baryonic_feedback");
+      if (pdeltaparams.t_agn > 0.) {
+        strcpy(fc->name[17],"log10T_heat_hmcode");
+        sprintf(fc->value[17],"%e",pdeltaparams.t_agn);
+      }
+    } else if (strstr(pdeltaparams.runmode,"2020") != NULL)
+      strcpy(fc->value[9],"2020");
+    else if (strstr(pdeltaparams.runmode,"2016") != NULL || strstr(pdeltaparams.runmode,"2015") != NULL)
+      strcpy(fc->value[9],"2016");
+    // else: no version suffix → CLASS uses its default HMcode version
+  }
+  printf("\n\n\n\nrunning CLASS with non_linear = %s\n\n\n\n",fc->value[1]);
 
   return status;
 }
@@ -723,13 +855,16 @@ double p_class(double k_coverh0,double a, int NL, int *status){
     }
     //allocate CLASS structures
     struct background ba;       // for cosmological background
-    struct thermo th;           // for thermodynamics
-    struct perturbs pt;         // for source functions
-    struct transfers tr;        // for transfer functions
+    CLASS_thermo_t th;          // for thermodynamics
+    CLASS_perturbs_t pt;        // for source functions
+    CLASS_tr_t tr;              // for transfer functions
     struct primordial pm;       // for primordial spectra
-    struct spectra sp;          // for output spectra
-    struct nonlinear nl;        // for non-linear spectra
+    CLASS_sp_t sp;              // for output spectra
+    CLASS_nl_t nl;              // for non-linear spectra
     struct lensing le;
+  #if defined(CLASS_V33)
+    CLASS_sd_t sd;              // for spectral distortions (v33 only)
+  #endif
     struct output op;
 
   	ErrorMsg errmsg; // for error messages
@@ -749,7 +884,11 @@ double p_class(double k_coverh0,double a, int NL, int *status){
    *status = fill_class_parameters(&fc,parser_length);
 
    if(*status>0) return 1;
+  #if defined(CLASS_V33)
+   *status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&sd);
+  #else
    *status = run_class(&fc,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+  #endif
    if(*status>0) {
      fprint_parser(&fc,parser_length);
      parser_free(&fc);
@@ -772,18 +911,27 @@ double p_class(double k_coverh0,double a, int NL, int *status){
       klog = logkmin;
       for (j=0; j<Ntable.N_k_nlin; j++, klog += dk) {
         k_class =exp(klog)*cosmology.h0/cosmology.coverH0;
-        #ifndef CLASS_V29
-          s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
-          s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pknl);
+        #if defined(CLASS_V33)
+          s = fourier_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+          s = fourier_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pknl, &ic);
         #else
-          s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
-          s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total,  &Pknl, &ic);
+          #ifndef CLASS_V29
+            s = spectra_pk_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pk,&ic);
+            s = spectra_pk_nl_at_k_and_z(&ba, &pm, &sp,k_class,fmax(1./aa-1.,0.), &Pknl);
+          #else
+            s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_linear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pk, &ic);
+            s = nonlinear_pk_at_k_and_z(&ba, &pm, &nl, pk_nonlinear, k_class,fmax(1./aa-1.,0.), nl.index_pk_total, &Pknl, &ic);
+          #endif
         #endif
         table_P_L[i][j] = log(Pk) +norm;
         table_P_NL[i][j] = log(Pknl) +norm;
       }
     }
+  #if defined(CLASS_V33)
+    free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&sd);
+  #else
     free_class_structs(&ba,&th,&pt,&tr,&pm,&sp,&nl,&le);
+  #endif
   }
   update_cosmopara(&C);
 }
@@ -1476,9 +1624,10 @@ double Pdelta(double k_NL,double a)
     if (strcmp(pdeltaparams.runmode,"linear")==0) P_type = 3;
     if (strcmp(pdeltaparams.runmode,"CLASS")==0) P_type = 4;
     if (strcmp(pdeltaparams.runmode,"class")==0) P_type = 4;
+    // HMCode variants supported by class_v33 (all route through p_class with hmcode non-linear)
+    if (strncasecmp(pdeltaparams.runmode,"HMcode",6)==0) P_type = 4;
     if (strcmp(pdeltaparams.runmode,"cosmo_sim_test") ==0) P_type = 5;
     if (strcmp(pdeltaparams.runmode,"halomodel") ==0) P_type = 6;
-
   }
 
   //printf("%s set\n",pdeltaparams.runmode);
