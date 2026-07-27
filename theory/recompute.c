@@ -68,9 +68,13 @@ void update_galpara (galpara *G){
   //     exit(EXIT_FAILURE);
   //   }
   // }
-  // for linear z evolution
-  G->b[0] = gbias.b[0];
-  G->b[1] = gbias.b[1];
+  // copy all bias slots: b[0], b[1] for the linear-evolution model,
+  // b[0..clustering_Nbin-1] for the per-bin model. recompute_galaxies()
+  // compares G.b[i] for every lens bin, so a partial copy would force a
+  // recompute on every call.
+  for (i = 0; i < MAX_TOMO_BINS; i++){
+    G->b[i] = gbias.b[i];
+  }
 }
 
 void update_nuisance (nuisancepara *N){
