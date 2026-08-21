@@ -401,12 +401,12 @@ typedef struct input_nuisance_params_mpp {
     double source_z_bias[10];
     double shear_m[10];
     double A_z[10];
+    double lens_z_u[20];
+    double source_z_u[20];
     double MOR[10];
     double selection[10];
     double b_mag[10];
     double pm[10];
-    double lens_z_u[20];
-    double source_z_u[20];
 } input_nuisance_params_mpp;
 
 typedef struct input_HOD_params {
