@@ -257,3 +257,74 @@ void set_bary_parameters_to_BAHAMAS_T8p0()
 		
 	for (int i=0;i < bary.Nabins;i++) bary.z_bins[i]=z[i];
 }
+
+void set_bary_parameters_to_antilles(int id)
+{
+    if (id < 1 || id > 400) {
+        fprintf(stderr, "ANTILLES simulation ID must be 1..400\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Prepare locally; update global state only after validation. */
+    barypara next = bary;
+
+    int n = snprintf(next.FILE_logPkR, sizeof next.FILE_logPkR,
+        "../cosmolike_core/logPkRatio/logPkRatio_antilles-%d.dat", id);
+
+    if (n < 0 || (size_t)n >= sizeof next.FILE_logPkR) {
+        fprintf(stderr, "ANTILLES table path is too long\n");
+        exit(EXIT_FAILURE);
+    }
+
+    FILE *fp = fopen(next.FILE_logPkR, "r");
+    if (fp == NULL) {
+        perror(next.FILE_logPkR);
+        exit(EXIT_FAILURE);
+    }
+
+    char header[1024];
+    if (fgets(header, sizeof header, fp) == NULL ||
+        strchr(header, '\n') == NULL) {
+        fprintf(stderr, "Invalid ANTILLES header: %s\n",
+                next.FILE_logPkR);
+        fclose(fp);
+        exit(EXIT_FAILURE);
+    }
+    fclose(fp);
+
+    char *token = strtok(header, " \t\r\n");
+    if (token == NULL || strcmp(token, "logk") != 0)
+        goto bad_header;
+
+    for (int j = 0; j < 15; ++j) {
+        token = strtok(NULL, " \t\r\n");
+        if (token == NULL || strncmp(token, "z=", 2) != 0)
+            goto bad_header;
+
+        char *end;
+        double z = strtod(token + 2, &end);
+        if (end == token + 2 || *end != '\0' ||
+            !isfinite(z) || z < 0.0 ||
+            (j > 0 && z >= next.z_bins[j - 1]))
+            goto bad_header;
+
+        next.z_bins[j] = z;
+    }
+
+    if (strtok(NULL, " \t\r\n") != NULL)
+        goto bad_header;
+
+    snprintf(next.scenario, sizeof next.scenario, "antilles-%d", id);
+    next.Nkbins = 400;
+    next.Nabins = 15;
+    next.isPkbary = 1;
+
+    bary = next;
+    reset_PkRatio_baryons();
+    return;
+
+bad_header:
+    fprintf(stderr, "Invalid ANTILLES redshift grid: %s\n",
+            next.FILE_logPkR);
+    exit(EXIT_FAILURE);
+}

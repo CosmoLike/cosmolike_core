@@ -32,4 +32,18 @@ void init_bary(char *scenario){
 	if(strcmp(scenario,"BAHAMAS")==0) set_bary_parameters_to_BAHAMAS();               // vd19: powtable_BAHAMAS_nu0_WMAP9.dat
 	if(strcmp(scenario,"BAHAMAS_T7p6")==0) set_bary_parameters_to_BAHAMAS_T7p6();     // vd19: powtable_BAHAMAS_Theat7.6_nu0_WMAP9.dat
 	if(strcmp(scenario,"BAHAMAS_T8p0")==0) set_bary_parameters_to_BAHAMAS_T8p0();     // vd19: powtable_BAHAMAS_Theat8.0_nu0_WMAP9.dat
+	// antilles simulations: 1-400
+	if (strncmp(scenario, "antilles-", 9) == 0) {
+		const char *digits = scenario + 9;
+		size_t len = strlen(digits);
+
+		if (len == 0 || len > 3 ||
+			strspn(digits, "0123456789") != len) {
+			fprintf(stderr, "Invalid ANTILLES scenario: %s\n", scenario);
+			exit(EXIT_FAILURE);
+		}
+
+		set_bary_parameters_to_antilles(atoi(digits));
+		return;
+	}
 }
