@@ -12,6 +12,8 @@ void set_bary_parameters_to_owls_REF();
 void set_bary_parameters_to_owls_WDENS();
 void set_bary_parameters_to_owls_WML1V848();
 void set_bary_parameters_to_owls_WML4();
+void set_bary_parameters_to_antilles(int id);
+void reset_PkRatio_baryons(void);
 
 void set_bary_parameters_to_TNG100()
 {

@@ -12,3 +12,6 @@ class/libclass\.a
 class/build/
 
 class/class
+
+# ANTILLES tables are distributed as logPkRatio_antilles.zip.
+/logPkRatio/logPkRatio_antilles-*.dat

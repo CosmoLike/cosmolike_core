@@ -36,3 +36,24 @@ BAHAMAS T7.6 : logPkRatio_BAHAMAS_T7.6_WMAP9_L400N1024.dat
 BAHAMAS T8.0 : logPkRatio_BAHAMAS_T8.0_WMAP9_L400N1024.dat
 
 =z[15] = {3.0,2.75,2.50,2.25,2.00,1.75,1.50,1.25,1.00,0.75,0.50,0.375,0.25,0.125,0.0};
+
+
+ANTILLES (simulations 1..400)
+---------------------------
+The 400 tables are distributed in logPkRatio_antilles.zip; extracted .dat files
+are ignored by Git. Commit the ZIP, ensure_antilles.py, this README and the core
+.gitignore together. The 3Dx2D Makefile runs ensure_antilles.py before compilation
+(and checks the tables even when binaries are already up to date).
+Requires Python 3, with no third-party packages. Manual extraction/check:
+
+    python3 logPkRatio/ensure_antilles.py       # from cosmolike_core
+
+The helper restores missing or CRC-mismatched tables atomically, leaves matching
+files untouched, and fails the build on a missing/invalid archive. To update the
+tables, update the ZIP as well: the ZIP is the authoritative copy.
+
+Each logPkRatio_antilles-N.dat corresponds to Cocoa antilles/logPkR/simN.
+Each file has one header and 400 rows: log10(k [h/Mpc]), then 15 columns of
+log10(P_hydro/P_DMO). Redshifts are recorded at full source precision in the header:
+3, 2.75, 2.5, 2.25, 2, 1.75, 1.5, 1.25, 1, 0.75, 0.5,
+0.37000000476837158, 0.25, 0.11999999731779099, 0.
