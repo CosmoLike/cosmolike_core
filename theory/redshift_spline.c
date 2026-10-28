@@ -79,7 +79,8 @@ double amax_source_IA(int i){
 double amin_lens(int i){
   if (i == -1 || redshift.clustering_photoz == 1 || redshift.clustering_photoz == 2){return 1./(redshift.clustering_zdistrpar_zmax+1.);}
   if (redshift.clustering_photoz == 0){ return 1./(1+tomo.clustering_zmax[i]);}
-  if (redshift.clustering_photoz == 4){ return 1./(1+tomo.clustering_zmax[i]+2.*fabs(nuisance.bias_zphot_clustering[i]));}
+  // pad by the extension of a stretched n(z) beyond the histogram support (stretch about the mean)
+  if (redshift.clustering_photoz == 4){ return 1./(1+tomo.clustering_zmax[i]+2.*fabs(nuisance.bias_zphot_clustering[i])+fmax(nuisance.stretch_zphot_clustering[i]-1.,0.)*(tomo.clustering_zmax[i]-tomo.clustering_zmin[i]));}
   if (redshift.shear_photoz == 5) {return 1./(1+redshift.clustering_zdistrpar_zmax);}
   return 1./(1+fmin(tomo.clustering_zmax[i] + 5.*nuisance.sigma_zphot_clustering[i] + fabs(nuisance.bias_zphot_clustering[i]),redshift.clustering_zdistrpar_zmax));
 }
@@ -87,7 +88,7 @@ double amax_lens(int i){
   if (gbias.b_mag[i] != 0){return 1./(1.+fmax(redshift.shear_zdistrpar_zmin,0.001));}
   if (i == -1 || redshift.clustering_photoz == 1 || redshift.clustering_photoz == 2){return 1./(1.+fmax(redshift.clustering_zdistrpar_zmin,0.001));}
   if (redshift.clustering_photoz == 0){ return 1./(1.+fmax(tomo.clustering_zmin[i],0.001));}
-  if (redshift.clustering_photoz == 4){ return 1./(1+fmax(tomo.clustering_zmin[i]-2.*fabs(nuisance.bias_zphot_clustering[i]),0.001));}
+  if (redshift.clustering_photoz == 4){ return 1./(1+fmax(tomo.clustering_zmin[i]-2.*fabs(nuisance.bias_zphot_clustering[i])-fmax(nuisance.stretch_zphot_clustering[i]-1.,0.)*(tomo.clustering_zmax[i]-tomo.clustering_zmin[i]),0.001));}
   return 1./(1+fmax(tomo.clustering_zmin[i] - 5.*nuisance.sigma_zphot_clustering[i]-fabs(nuisance.bias_zphot_clustering[i]),0.001));
 }
 
@@ -796,10 +797,23 @@ double pf_histo_n(double z,  void *params) //return pf(z,j) based on redshift fi
   }
   return 0.;
 }
+
+double int_for_zmean_histo_n(double z, void* params)
+{
+  double* ar = (double*) params;
+  return z * pf_histo_n(z, (void *)ar);
+}
+
+double norm_for_zmean_histo_n(double z, void* params)
+{
+  double* ar = (double*) params;
+  return pf_histo_n(z, (void *)ar);
+}
 double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j
 {
   static double **table = 0;
   static double *z_v = 0;
+  static double *zmean_tomo = 0; // mean of the histogram n(z) per lens bin, centre of the n(z) stretch
   static double da = 0.0;
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
@@ -944,6 +958,14 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
         case 4: // histogram file contains n(z) estimates for each bin
           array[0] = 1.0*i;
           pf_histo_n(0.,(void*) array);
+          if (zmean_tomo == 0){
+            zmean_tomo = create_double_vector(0, tomo.clustering_Nbin-1);
+            for (int jz = 0; jz < tomo.clustering_Nbin; jz++){
+              double ar_j[1] = {1.0*jz};
+              zmean_tomo[jz] = int_gsl_integrate_medium_precision(int_for_zmean_histo_n, (void*) ar_j, tomo.clustering_zmin[jz], tomo.clustering_zmax[jz], NULL, 1024)/int_gsl_integrate_medium_precision(norm_for_zmean_histo_n, (void*) ar_j, tomo.clustering_zmin[jz], tomo.clustering_zmax[jz], NULL, 1024);
+              printf("z_mean of lens bin %d = %.3f (histogram file)\n", jz+1, zmean_tomo[jz]);
+            }
+          }
           norm = int_gsl_integrate_medium_precision(pf_histo_n, (void*)array, tomo.clustering_zmin[i],tomo.clustering_zmax[i],NULL, 1024);
           if (norm == 0){
             printf("redshift.c:pf_photoz:norm(nz=%d)=0\nEXIT\n",i);
@@ -1062,9 +1084,13 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
     printf("redshift.c: pf_photoz(z,%d) outside tomo.clustering_Nbin range\n", j);
     exit(1);
   }
-  if (redshift.clustering_photoz == 4){ zz = zz -nuisance.bias_zphot_clustering[j];}
+  // histogram n(z): n(z) -> n((z - dz - zmean)/s + zmean)/s, i.e. stretch by s about the
+  // mean, then shift by dz (as CosmoSIS photoz_width mode=stretch followed by photoz_bias)
+  if (redshift.clustering_photoz == 4){ zz = (zz - nuisance.bias_zphot_clustering[j] - zmean_tomo[j])/nuisance.stretch_zphot_clustering[j] + zmean_tomo[j];}
   if (zz <= z_v[0] || zz >= z_v[zbins-1]) return 0.0;
-  return fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
+  double res = fabs(gsl_spline_eval(photoz_splines[j+1],zz,photoz_accel[j+1]));
+  if (redshift.clustering_photoz == 4){ res /= nuisance.stretch_zphot_clustering[j];}
+  return res;
 }
 
 /*********** routines calculating the number of source and lens galaxies per bin ****************/
