@@ -48,6 +48,7 @@ void update_cosmopara (cosmopara *C){
   C->MGmu = cosmology.MGmu;
   C->M_nu = cosmology.M_nu;
   C->theta_s = cosmology.theta_s;
+  C->t_agn = pdeltaparams.t_agn;
 }
 
 void update_galpara (galpara *G){
@@ -84,6 +85,7 @@ void update_nuisance (nuisancepara *N){
     N-> fred[i] = nuisance.fred[i];
     N->sigma_zphot_clustering[i] = nuisance.sigma_zphot_clustering[i];
     N->bias_zphot_clustering[i] = nuisance.bias_zphot_clustering[i];
+    N->stretch_zphot_clustering[i] = nuisance.stretch_zphot_clustering[i];
   }
   for(i = 0; i < tomo.shear_Nbin; i++){
     N->sigma_zphot_shear[i] = nuisance.sigma_zphot_shear[i];
@@ -157,7 +159,7 @@ int recompute_Delta(cosmopara C){ //rules for recomputing early time power spect
 }
 
 int recompute_cosmo3D(cosmopara C){
-  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
+  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu || C.t_agn != pdeltaparams.t_agn){return 1;}
   if (cosmology.A_s){
      if(C.A_s != cosmology.A_s){return 1;}
   }
@@ -168,7 +170,7 @@ int recompute_cosmo3D(cosmopara C){
   return 0;
 }
 int recompute_cosmo3D_CLASS(cosmopara C){
-  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
+  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu || C.t_agn != pdeltaparams.t_agn){return 1;}
   if (cosmology.A_s > 0){
      if(C.A_s != cosmology.A_s){return 1;}
   }
@@ -197,7 +199,7 @@ int recompute_zphot_clustering(nuisancepara N){
   if (redshift.clustering_photoz != 3 && redshift.clustering_photoz != 4){return 0;}
   int i, res = 0;
   for(i = 0; i < tomo.clustering_Nbin; i++){
-    if (N.sigma_zphot_clustering[i]!= nuisance.sigma_zphot_clustering[i] || N.bias_zphot_clustering[i]!= nuisance.bias_zphot_clustering[i]){ res = 1;}
+    if (N.sigma_zphot_clustering[i]!= nuisance.sigma_zphot_clustering[i] || N.bias_zphot_clustering[i]!= nuisance.bias_zphot_clustering[i] || N.stretch_zphot_clustering[i]!= nuisance.stretch_zphot_clustering[i]){ res = 1;}
   }
   return res;
 }

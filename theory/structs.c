@@ -79,6 +79,7 @@ typedef struct {
      double MGSigma;
      double MGmu;
      double theta_s;
+     double t_agn; // copy of pdeltaparams.t_agn, only used for recompute checks
 }cosmopara;
 cosmopara cosmology = {.A_s = 0., .sigma_8=0., .alpha_s =0.0, .M_nu =0., .Omega_nu =0.,.coverH0= 2997.92458, .rho_crit = 7.4775e+21,.MGSigma=0.0,.MGmu=0.0,.theta_s =0.0, .Omega_rad_h2 = 2.5094694598641805e-05};
 
@@ -205,8 +206,9 @@ typedef struct {
   char baryons[300];
   double DIFF_n; //difference fucntion describing the constant uncertainty in Pdelta for k>0.01
   double DIFF_A; //difference fucntion describing the scale dependent uncertainty in Pdelta for k>0.01
+  double t_agn;  // log10T_heat_hmcode for HMcode2020_baryonic_feedback (0 = use CLASS default)
 }pdeltapara;
-pdeltapara pdeltaparams = {.runmode = "Halofit", .DIFF_n = 0., .DIFF_A = 0.};
+pdeltapara pdeltaparams = {.runmode = "Halofit", .DIFF_n = 0., .DIFF_A = 0., .t_agn = 0.};
 
 
 typedef struct {
@@ -257,6 +259,7 @@ typedef struct {
   double bias_zphot_shear[10];
   double sigma_zphot_clustering[10];
   double bias_zphot_clustering[10];
+  double stretch_zphot_clustering[10];
   double sigma_zphot_magnification[10];
   double bias_zphot_magnification[10];
   double LF_alpha;
@@ -316,6 +319,7 @@ nuisancepara nuisance ={.c1rhocrit_ia = 0.013873073650776856,
   .bias_zphot_shear = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .sigma_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
   .bias_zphot_clustering = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.},
+  .stretch_zphot_clustering = {1.,1.,1.,1.,1.,1.,1.,1.,1.,1.},
   .bary = {0.0, 0.0, 0.0},
   .frac_lowz = 0.,
   .frac_highz = 0.,
@@ -356,6 +360,7 @@ typedef struct { //two parameters for each nuisance parameter: Center (prior.*[0
   double bias_zphot_shear[10][2];
   double sigma_zphot_clustering[10][2];
   double bias_zphot_clustering[10][2];
+  double stretch_zphot_clustering[10][2];
   double sigma_zphot_magnification[10][2];
   double bias_zphot_magnification[10][2];
   double cluster_Mobs_lgM0[2];
@@ -401,6 +406,7 @@ priorpara prior = {
 .bias_zphot_shear = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .sigma_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bias_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
+.stretch_zphot_clustering = {{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.},{0.,0.}},
 .bary_Q1 = {0.,0.},
 .bary_Q2 = {0.,0.},
 .bary_Q3 = {0.,0.}
